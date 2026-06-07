@@ -1,0 +1,40 @@
+last_checked_at: '2026-06-07T11:27:48.529315+00:00'
+overall_status: ok
+tools:
+  python:
+    status: ok
+    version: 3.14.5
+    notes: ''
+  git:
+    status: ok
+    version: Git-155)
+    notes: ''
+  node:
+    status: ok
+    version: v26.0.0
+    notes: ''
+  npm:
+    status: ok
+    version: 11.12.1
+    notes: ''
+  cursor:
+    status: manual_check_required
+    version: null
+    notes: Cursor MCP 状态需要在 Cursor Workspace MCP Servers 中确认
+  codex:
+    status: manual_check_required
+    version: null
+    notes: Codex 是否可用需要用户确认
+  mcp_servers:
+    status: manual_check_required
+    expected:
+    - chrome-devtools
+    - context7
+    - filesystem
+    - github
+    - playwright
+    - stitch
+    notes: 本脚本不直接启用 MCP，只记录检查要求
+    config_files_found:
+    - .cursor/mcp.example.json
+    - .cursor/mcp.json

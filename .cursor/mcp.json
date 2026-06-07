@@ -1,0 +1,61 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/alalapi/PycharmProjects/personal-control-hub"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ]
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ]
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ]
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "<SET_IN_CURSOR_OR_SHELL_ENV>"
+      }
+    },
+    "stitch": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "stitch-mcp"
+      ],
+      "env": {
+        "STITCH_API_KEY": "<SET_IN_CURSOR_OR_SHELL_ENV>"
+      }
+    },
+    "Prisma-Local": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "prisma",
+        "mcp"
+      ]
+    }
+  }
+}

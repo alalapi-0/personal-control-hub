@@ -1,0 +1,16 @@
+proposals: []
+
+confirmed_links:
+  - id: link_personal_control_hub_self
+    program_id: personal_control_hub
+    project_id: personal-control-hub
+    confirmed_by: user_intent_in_restart_round
+    confirmed_on: "2026-06-07"
+    reason: "本仓库自身就是 personal-control-hub program 的控制台。"
+
+rejected_or_deferred: []
+
+policy:
+  llm_may_create: proposals
+  user_confirmation_required_for: confirmed_links
+  note: "LLM 只能提出 proposal；用户确认后才进入 confirmed_links。"

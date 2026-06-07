@@ -1,0 +1,127 @@
+registry:
+  version: "0.7.0"
+  status: draft
+  default_enabled: false
+  host_environment: cursor
+  last_updated: "2026-06-07"
+  notes: "Round 0.6 保持六个 MCP 为候选登记；enabled_in_project 默认 false，不自动启用，不真实调用。L2/L3 具体动作须按审批策略确认。"
+
+capabilities:
+  - id: chrome-devtools
+    name: Chrome DevTools MCP
+    category: browser_debug
+    status: planned
+    enabled_in_project: false
+    recommended_for_project: true
+    approval_level: L2
+    purpose: "通过 Chrome DevTools Protocol 做页面检查、网络与性能诊断，辅助前端调试与浏览器测试复盘。"
+    allowed_scope:
+      - "只读页面快照与 DOM 结构检查"
+      - "网络请求列表与响应头只读查看"
+      - "性能指标采样与截图（经用户确认后）"
+      - "本仓库文档中的测试复盘记录"
+    forbidden_scope:
+      - "自动登录或填写凭据"
+      - "修改生产环境页面状态"
+      - "下载或上传用户隐私数据"
+      - "绕过审批直接执行脚本注入"
+    planned_round: round_005_mcp_browser_debug
+    notes: "Cursor 宿主；Round 0.6 仅登记与策略，不安装、不真实调用。"
+
+  - id: context7
+    name: Context7 MCP
+    category: documentation_context
+    status: planned
+    enabled_in_project: false
+    recommended_for_project: true
+    approval_level: L0
+    purpose: "拉取第三方库与框架的最新文档片段，为 Agent 提供准确 API 上下文，减少幻觉。"
+    allowed_scope:
+      - "按库名与版本查询公开文档"
+      - "只读代码示例与 API 说明"
+      - "写入本仓库扫描摘要或引用链接草案"
+    forbidden_scope:
+      - "上传本仓库私有代码到外部"
+      - "绕过 registry 自动启用"
+      - "替代外部项目只读扫描协议"
+    planned_round: round_005_mcp_docs_context
+    notes: "默认 L0；仍须登记在 registry 与 policy 中。"
+
+  - id: filesystem
+    name: Filesystem MCP
+    category: local_files
+    status: planned
+    enabled_in_project: false
+    recommended_for_project: true
+    approval_level: L1
+    purpose: "在受控路径内读写本仓库与明确白名单目录，支撑治理文件与扫描输出维护。"
+    allowed_scope:
+      - "读写 personal-control-hub 仓库内文档与 YAML"
+      - "读取 external_projects 注册路径下的允许入口文件"
+      - "写入 data/project_scans、profiles、snapshots 草案目录"
+    forbidden_scope:
+      - "读写 .env、私钥、cookie、token 文件"
+      - "修改外部项目本体（未经用户确认）"
+      - "删除用户内容或大规模迁移"
+      - "访问 node_modules、.git、虚拟环境缓存目录"
+    planned_round: round_005_mcp_local_files
+    notes: "与 Cursor 内置文件能力互补；启用前须更新 policy 白名单。"
+
+  - id: github
+    name: GitHub MCP
+    category: external_vcs
+    status: planned
+    enabled_in_project: false
+    recommended_for_project: true
+    approval_level: L2
+    purpose: "只读查询 GitHub 仓库状态、Issue、PR 与检查结论，为项目快照与决策日志提供证据。"
+    allowed_scope:
+      - "只读 list/read issues、pull requests、checks"
+      - "读取公开或授权仓库元数据"
+      - "生成本仓库内的状态摘要草案"
+    forbidden_scope:
+      - "push、merge、close issue 等写操作（默认 L3）"
+      - "创建或删除仓库"
+      - "修改 Actions secrets 或 deploy keys"
+      - "在仓库中存储 token"
+    planned_round: round_006_mcp_github_read
+    notes: "写操作归类 L3，Round 0.6 禁止启用写能力；只读试点也需按 L2 确认。"
+
+  - id: playwright
+    name: Playwright MCP
+    category: browser_automation
+    status: planned
+    enabled_in_project: false
+    recommended_for_project: false
+    approval_level: L3
+    purpose: "端到端浏览器自动化测试与页面操作；仅在明确测试场景与用户批准后使用。"
+    allowed_scope:
+      - "本地或 staging 环境的受控 E2E 测试脚本准备"
+      - "生成测试报告草案到本仓库"
+      - "经 SCHED-BROWSER-TEST-REVIEW 触发的复盘材料"
+    forbidden_scope:
+      - "生产环境自动发布"
+      - "自动登录真实账号"
+      - "批量抓取或爬取未授权站点"
+      - "无人值守高风险点击链"
+    planned_round: round_008_mcp_browser_automation
+    notes: "默认不推荐启用；CEO 显式批准前保持 disabled。"
+
+  - id: stitch
+    name: Stitch UI MCP
+    category: ui_generation
+    status: planned
+    enabled_in_project: false
+    recommended_for_project: true
+    approval_level: L2
+    purpose: "根据设计意图生成 UI 草案或组件草图，辅助前端探索，不直接替代业务仓库实现。"
+    allowed_scope:
+      - "生成本仓库 docs 或 prompts 中的 UI 说明草案"
+      - "输出到明确临时目录的 mock 资源"
+      - "与 active programs 关联的设计探索记录"
+    forbidden_scope:
+      - "直接写入外部业务仓库 UI 代码"
+      - "上传含敏感信息的截图到外部"
+      - "绕过审批自动提交 PR"
+    planned_round: round_007_mcp_ui_exploration
+    notes: "探索型能力；与外部项目写入策略冲突时必须停止并确认。"

@@ -1,0 +1,963 @@
+roadmap:
+  version: "0.7.0"
+  status: draft
+  last_updated: "2026-06-07"
+  authority: docs/02_master_roadmap.md
+  principle: "新需求优先进入 master roadmap、round_state、round_tasks 与 auto_advance_policy；已完成轮次只追加 note，不重写历史。"
+
+rounds:
+  - id: ROUND-0
+    name: Restart Audit and Core Skeleton
+    phase: Restart Phase
+    status: completed_pending_user_acceptance
+    can_auto_advance: false
+    goal: "完成项目重启审计、核心骨架、入口文档和最小验证脚本。"
+    inputs:
+      - README.md
+      - project.yaml
+      - AGENTS.md
+    outputs:
+      - docs/reports/restart_audit_report.md
+      - governance/round_state.yaml
+      - scripts/check_repo.py
+    acceptance_criteria:
+      - "核心入口、治理、data、prompts、scripts 文件存在。"
+      - "check_repo.py 可以运行并报告缺失项。"
+      - "completed 与 accepted 分离记录。"
+    hard_blockers:
+      - "重启核心文件大部分缺失。"
+      - "需要删除历史文件。"
+    soft_blockers:
+      - "历史参考文档仍需后续消化。"
+    next_round: ROUND-0-5
+
+  - id: ROUND-0-5
+    name: Cursor MCP Workspace Infrastructure
+    phase: Restart Phase
+    status: completed_pending_user_acceptance
+    can_auto_advance: false
+    goal: "纳入六个候选 MCP，建立能力矩阵、审批策略、Cursor 配置示例与只读 CLI。"
+    inputs:
+      - docs/11_mcp_infrastructure_strategy.md
+      - docs/12_external_tool_approval_model.md
+      - docs/13_cursor_mcp_workspace_setup.md
+    outputs:
+      - data/mcp/mcp_capability_registry.yaml
+      - data/mcp/mcp_approval_policy.yaml
+      - data/mcp/mcp_integration_roadmap.yaml
+      - .cursor/mcp.example.json
+    acceptance_criteria:
+      - "chrome-devtools、context7、filesystem、github、playwright、stitch 已登记。"
+      - "enabled_in_project 默认 true，含义是 default start with gates。"
+      - "L0-L3 审批模型清晰。"
+      - "不安装、不调用真实 MCP，不写 token。"
+    hard_blockers:
+      - "需要执行 L2/L3 MCP 动作但未获确认。"
+      - "需要写入真实 token。"
+    soft_blockers:
+      - "MCP 投产顺序后续可调整。"
+    next_round: ROUND-0-6
+
+  - id: ROUND-0-6
+    name: Roadmap Expansion + UI Console Plan + Auto-Advance Gate
+    phase: Restart Phase
+    status: completed_pending_user_acceptance
+    can_auto_advance: false
+    goal: "扩写路线图、规划 UI、建立自动推进门禁。"
+    inputs:
+      - docs/02_master_roadmap.md
+      - governance/round_state.yaml
+    outputs:
+      - data/roadmap/round_tasks.yaml
+      - data/gates/auto_advance_policy.yaml
+      - scripts/agent_gate.py
+    acceptance_criteria:
+      - "master roadmap 已扩写。"
+      - "UI 相关轮次已加入 roadmap。"
+      - "agent_gate.py 可以运行。"
+      - "hard blocker 规则已定义。"
+    hard_blockers:
+      - "需要删除用户文件。"
+      - "需要真实密钥。"
+      - "需要调用真实外部 API。"
+    soft_blockers:
+      - "某些未来轮次仍需用户细化。"
+      - "UI 美术方向尚未最终确定。"
+    next_round: ROUND-0-7
+
+  - id: ROUND-0-7
+    name: Runtime Environment Alignment + Continuous Auto-Advance Runner
+    phase: Restart Phase
+    status: completed_pending_user_acceptance
+    can_auto_advance: false
+    goal: "统一运行环境并建立持续推进入口脚本"
+    inputs:
+      - governance/round_state.yaml
+      - data/gates/auto_advance_policy.yaml
+    outputs:
+      - docs/16_runtime_environment.md
+      - docs/17_continuous_auto_advance_runner.md
+      - data/runtime/environment_requirements.yaml
+      - data/runtime/toolchain_status.yaml
+      - data/runtime/validation_commands.yaml
+      - scripts/check_environment.py
+      - scripts/round_consistency_check.py
+      - scripts/auto_advance_runner.py
+      - prompts/continuous_auto_advance_prompt.md
+    acceptance_criteria:
+      - "运行环境文档已创建"
+      - "环境检查脚本可运行"
+      - "轮次一致性检查脚本可运行"
+      - "auto_advance_runner.py 支持 check、prepare-next、finalize-round"
+      - "敏感文件检查已实现"
+      - "current_status、round_state、roadmap 描述一致"
+    hard_blockers:
+      - "需要真实密钥"
+      - "需要调用真实外部 API"
+      - "需要安装未知依赖"
+      - "需要修改外部项目"
+      - "git push 认证失败"
+      - "检测到敏感文件准备提交"
+    soft_blockers:
+      - "Node 环境未安装"
+      - "npm 环境未安装"
+      - "Cursor MCP 需要人工确认"
+      - "Codex 可用性需要人工确认"
+    next_round: ROUND-0-8
+    legacy_note: "原 ROUND-0-7 Gate Dry Run 目标已并入 ROUND-0-8。"
+
+  - id: ROUND-0-8
+    name: Runner Dry Run and Failure Simulation
+    phase: Restart Phase
+    status: completed_pending_user_acceptance
+    can_auto_advance: true
+    goal: "测试 auto_advance_runner 各模式、模拟 hard blocker 与 soft warning、测试敏感文件拦截；不真实 push。"
+    inputs:
+      - scripts/auto_advance_runner.py
+      - data/gates/auto_advance_policy.yaml
+    outputs:
+      - scripts/runner_dry_run_test.py
+      - data/logs/auto_advance_log.jsonl
+      - data/state/current_status.yaml
+    acceptance_criteria:
+      - "auto_advance_runner.py --mode check 可运行"
+      - "prepare-next 可生成 prompt 草案"
+      - "hard blocker 与 soft warning 模拟有记录"
+      - "敏感文件拦截已验证"
+      - "本轮不真实 push"
+    hard_blockers:
+      - "需要真实 push 但未获用户确认"
+      - "测试连续失败两次"
+    soft_blockers:
+      - "git 仓库未初始化"
+      - "remote 未配置"
+    next_round: ROUND-0-9
+
+  - id: ROUND-0-9
+    name: GitHub Push Workflow Validation
+    phase: Restart Phase
+    status: active
+    can_auto_advance: false
+    goal: "在用户确认后测试 finalize-round 的 commit/push、验证 push 失败时停止、验证日志写入。"
+    inputs:
+      - scripts/auto_advance_runner.py
+      - data/gates/auto_advance_policy.yaml
+    outputs:
+      - data/logs/auto_advance_log.jsonl
+      - governance/round_state.yaml
+    acceptance_criteria:
+      - "用户确认后可测试 finalize-round"
+      - "commit message 与当前轮次一致"
+      - "push 失败时 runner 停止"
+      - "auto_advance_log 有完整记录"
+    hard_blockers:
+      - "git push 认证失败"
+      - "merge conflict"
+      - "检测到敏感文件"
+      - "用户未确认真实 push"
+    soft_blockers:
+      - "remote 未配置"
+      - "工作区无变更"
+    next_round: ROUND-1
+
+  - id: ROUND-1
+    name: External Project Registry MVP
+    phase: Phase 1
+    status: planned
+    can_auto_advance: true
+    goal: "建立外部项目登记 MVP，只记录路径、读取策略、扫描开关和安全边界。"
+    inputs:
+      - data/registry/external_projects.yaml
+      - docs/05_external_project_protocol.md
+    outputs:
+      - data/registry/external_projects.yaml
+      - data/logs/automation_log.jsonl
+    acceptance_criteria:
+      - "外部项目 registry 字段稳定。"
+      - "只读策略、禁止目录、写入禁止项清晰。"
+      - "不修改外部项目本体。"
+    hard_blockers:
+      - "需要修改外部项目。"
+      - "需要读取真实 .env 或密钥。"
+    soft_blockers:
+      - "外部项目暂无更新。"
+      - "部分项目路径待用户补充。"
+    next_round: ROUND-1-1
+
+  - id: ROUND-1-1
+    name: Registry Runtime Validation
+    phase: Phase 1
+    status: planned
+    can_auto_advance: true
+    goal: "注册项目后自动验证配置一致性，检查路径、watch_paths、profile_enabled。"
+    inputs:
+      - data/registry/external_projects.yaml
+      - scripts/check_environment.py
+    outputs:
+      - data/registry/external_projects.yaml
+      - data/state/current_status.yaml
+    acceptance_criteria:
+      - "registry 字段与 protocol 一致"
+      - "不可读路径产生 warning 不 hard stop"
+      - "不修改外部项目"
+    hard_blockers:
+      - "需要修改外部项目"
+      - "需要读取真实 .env"
+    soft_blockers:
+      - "部分路径待用户补充"
+    next_round: ROUND-1-5
+
+  - id: ROUND-1-5
+    name: External Project Import UX
+    phase: Phase 1
+    status: planned
+    can_auto_advance: true
+    goal: "设计外部项目导入体验：手动登记、校验提示、缺失字段 warning 和保守默认值。"
+    inputs:
+      - data/registry/external_projects.yaml
+      - docs/14_ui_console_plan.md
+    outputs:
+      - docs/05_external_project_protocol.md
+      - data/roadmap/round_tasks.yaml
+    acceptance_criteria:
+      - "导入字段、默认值、不可读路径处理方式清晰。"
+      - "缺少偏好时使用保守默认，不阻断文档推进。"
+    hard_blockers:
+      - "需要批量扫描未知目录。"
+      - "需要覆盖用户登记内容。"
+    soft_blockers:
+      - "导入 UX 文案可后续优化。"
+    next_round: ROUND-2
+
+  - id: ROUND-2
+    name: Project Scan MVP
+    phase: Phase 1
+    status: planned
+    can_auto_advance: true
+    goal: "实现只读扫描入口，读取允许文件、git 摘要、TODO/Roadmap 线索并生成 scan 草案。"
+    inputs:
+      - data/registry/external_projects.yaml
+      - docs/05_external_project_protocol.md
+    outputs:
+      - data/project_scans/
+      - scripts/check_repo.py
+    acceptance_criteria:
+      - "扫描只访问允许入口文件。"
+      - "跳过 .git、node_modules、dist、build、缓存和真实 .env。"
+      - "扫描结果可被 profile 使用。"
+    hard_blockers:
+      - "需要读取密钥文件。"
+      - "需要写入外部项目。"
+    soft_blockers:
+      - "某些项目缺少 README。"
+    next_round: ROUND-2-1
+
+  - id: ROUND-2-1
+    name: Scan Environment Validation
+    phase: Phase 1
+    status: planned
+    can_auto_advance: true
+    goal: "扫描前检查 filesystem MCP / local read 环境；无 MCP 时走普通文件读取 fallback。"
+    inputs:
+      - data/mcp/mcp_capability_registry.yaml
+      - scripts/check_environment.py
+    outputs:
+      - docs/05_external_project_protocol.md
+      - data/state/current_status.yaml
+    acceptance_criteria:
+      - "扫描前环境检查步骤清晰"
+      - "无 MCP 时使用本地 read fallback"
+      - "不调用真实 MCP"
+    hard_blockers:
+      - "需要真实调用 MCP 未确认"
+      - "需要读取密钥文件"
+    soft_blockers:
+      - "filesystem MCP 未启用"
+    next_round: ROUND-2-5
+
+  - id: ROUND-2-5
+    name: Project Scan Delta and Dirty Detection
+    phase: Phase 1
+    status: planned
+    can_auto_advance: true
+    goal: "补充增量扫描、dirty 状态识别和变更摘要，避免重复全量读取。"
+    inputs:
+      - data/project_scans/
+      - data/registry/external_projects.yaml
+    outputs:
+      - data/project_scans/
+      - data/state/current_status.yaml
+    acceptance_criteria:
+      - "能区分首次扫描与增量扫描。"
+      - "dirty 状态仅作为风险提示，不自动修复。"
+    hard_blockers:
+      - "需要 checkout/reset 外部项目。"
+    soft_blockers:
+      - "git 仓库不可用时降级为文档扫描。"
+    next_round: ROUND-3
+
+  - id: ROUND-3
+    name: Project Profile MVP
+    phase: Phase 1
+    status: planned
+    can_auto_advance: true
+    goal: "基于扫描结果生成外部项目 profile、证据和风险摘要。"
+    inputs:
+      - data/project_scans/
+      - data/registry/external_projects.yaml
+    outputs:
+      - data/project_profiles/
+    acceptance_criteria:
+      - "profile 包含项目定位、技术栈、状态、风险和证据引用。"
+      - "LLM 只给建议，不做最终优先级决策。"
+    hard_blockers:
+      - "需要真实付费 LLM API。"
+    soft_blockers:
+      - "LLM 不可用但可用 mock。"
+    next_round: ROUND-3-5
+
+  - id: ROUND-3-5
+    name: Context7 Documentation Adapter
+    phase: Phase 1
+    status: planned
+    can_auto_advance: false
+    goal: "规划 Context7 文档上下文适配器，用于补充库文档，不上传私有代码。"
+    inputs:
+      - data/mcp/mcp_capability_registry.yaml
+      - data/project_profiles/
+    outputs:
+      - docs/11_mcp_infrastructure_strategy.md
+      - prompts/cursor_mcp_usage_prompt.md
+    acceptance_criteria:
+      - "明确 Context7 只读用途和 L0/L1 边界。"
+      - "未确认前不真实调用 MCP。"
+    hard_blockers:
+      - "需要真实调用外部 MCP 服务但未获确认。"
+    soft_blockers:
+      - "缺少部分库版本信息。"
+    next_round: ROUND-4
+
+  - id: ROUND-4
+    name: Project Snapshot MVP
+    phase: Phase 1
+    status: planned
+    can_auto_advance: true
+    goal: "把 profile 转为周期性 snapshot，输出健康度、风险和 next actions。"
+    inputs:
+      - data/project_profiles/
+      - data/tasks/next_actions.yaml
+    outputs:
+      - data/project_snapshots/
+      - data/tasks/next_actions.yaml
+    acceptance_criteria:
+      - "snapshot 可追踪时间、证据、风险和建议行动。"
+      - "建议行动保持草案状态。"
+    hard_blockers:
+      - "需要替用户确认优先级。"
+    soft_blockers:
+      - "部分证据不足时标记 unknown。"
+    next_round: ROUND-4-5
+
+  - id: ROUND-4-5
+    name: GitHub Read Adapter
+    phase: Phase 1
+    status: planned
+    can_auto_advance: false
+    goal: "规划 GitHub 只读适配器，为 snapshot 补充 issue、PR、checks 证据。"
+    inputs:
+      - data/mcp/mcp_capability_registry.yaml
+      - data/project_snapshots/
+    outputs:
+      - data/mcp/mcp_integration_roadmap.yaml
+      - docs/12_external_tool_approval_model.md
+    acceptance_criteria:
+      - "GitHub 写操作保持 L3 禁止。"
+      - "缺少 token 时可继续使用本地 git/mock 摘要。"
+    hard_blockers:
+      - "需要真实 GitHub token。"
+      - "需要 GitHub 写操作。"
+    soft_blockers:
+      - "缺少真实 GitHub token。"
+    next_round: ROUND-5
+
+  - id: ROUND-5
+    name: Program-Project Link MVP
+    phase: Phase 1
+    status: planned
+    can_auto_advance: true
+    goal: "把 active programs 与外部项目 profile/snapshot 建立 proposal/confirmed 分层链接。"
+    inputs:
+      - data/programs/active_programs.yaml
+      - data/project_snapshots/
+    outputs:
+      - data/programs/program_project_links.yaml
+    acceptance_criteria:
+      - "Agent 只能创建 proposal link。"
+      - "confirmed link 需要用户或明确验收。"
+    hard_blockers:
+      - "需要替用户做最终战略优先级。"
+    soft_blockers:
+      - "active program 描述不够细。"
+    next_round: ROUND-5-5
+
+  - id: ROUND-5-5
+    name: Priority Review Loop
+    phase: Phase 1
+    status: planned
+    can_auto_advance: true
+    goal: "建立优先级复盘循环，输出 priority suggestion 而非最终决策。"
+    inputs:
+      - data/programs/program_project_links.yaml
+      - data/tasks/next_actions.yaml
+    outputs:
+      - data/logs/project_decision_log.jsonl
+      - data/tasks/next_actions.yaml
+    acceptance_criteria:
+      - "P0/P1 改变必须用户确认。"
+      - "普通排序建议可作为草案继续推进。"
+    hard_blockers:
+      - "改变 P0/P1 战略优先级。"
+    soft_blockers:
+      - "用户偏好不关键时使用保守默认。"
+    next_round: ROUND-6
+
+  - id: ROUND-6
+    name: Scheduler Foundation
+    phase: Phase 1
+    status: planned
+    can_auto_advance: true
+    goal: "建立 scheduler 基础：任务列表、due 规则、dry-run 默认和人工确认字段。"
+    inputs:
+      - data/scheduler/scheduled_tasks.yaml
+      - docs/06_scheduler_design.md
+    outputs:
+      - data/scheduler/scheduled_tasks.yaml
+      - src/hub/services/scheduler_service.py
+    acceptance_criteria:
+      - "调度任务默认不自动执行外部动作。"
+      - "每个任务有 target、confirmation 和 dry-run 策略。"
+    hard_blockers:
+      - "需要无人值守外部写入。"
+    soft_blockers:
+      - "时间偏好可后续调整。"
+    next_round: ROUND-6-5
+
+  - id: ROUND-6-5
+    name: Auto-Advance Queue MVP
+    phase: Phase 1
+    status: planned
+    can_auto_advance: true
+    goal: "建立自动推进队列 MVP，基于 gate 决策选择下一轮 prompt。"
+    inputs:
+      - data/gates/auto_advance_policy.yaml
+      - data/roadmap/round_tasks.yaml
+    outputs:
+      - prompts/auto_advance_agent_prompt.md
+      - data/scheduler/scheduled_tasks.yaml
+    acceptance_criteria:
+      - "无硬阻塞时可继续推进。"
+      - "stop 决策不会被队列绕过。"
+    hard_blockers:
+      - "agent_gate.py 输出 stop。"
+    soft_blockers:
+      - "future round 不够细。"
+    next_round: ROUND-6-6
+
+  - id: ROUND-6-6
+    name: Auto-Advance Queue Runtime Integration
+    phase: Phase 1
+    status: planned
+    can_auto_advance: true
+    goal: "让 schedule prepare 与 auto_advance_runner 对接；不自动调用 Codex；只生成任务包。"
+    inputs:
+      - data/scheduler/scheduled_tasks.yaml
+      - scripts/auto_advance_runner.py
+    outputs:
+      - data/scheduler/scheduled_tasks.yaml
+      - data/codex_queue/
+    acceptance_criteria:
+      - "scheduler prepare 可触发 runner prepare-next"
+      - "不自动调用 Codex"
+      - "只生成 prompt 草案"
+    hard_blockers:
+      - "需要自动调用 Codex 未确认"
+      - "agent_gate 输出 stop"
+    soft_blockers:
+      - "scheduler 任务描述可优化"
+    next_round: ROUND-7
+
+  - id: ROUND-7
+    name: Codex / Cursor Prompt Queue
+    phase: Phase 1
+    status: planned
+    can_auto_advance: true
+    goal: "为 Codex/Cursor 生成受控 prompt 队列，携带 gate、MCP policy 和验收字段。"
+    inputs:
+      - prompts/codex_project_driver.md
+      - prompts/cursor_project_driver.md
+      - data/roadmap/round_tasks.yaml
+    outputs:
+      - prompts/templates/
+      - data/tasks/next_actions.yaml
+    acceptance_criteria:
+      - "每个 prompt 明确 hard/soft blocker。"
+      - "不得跳过 agent_gate.py。"
+    hard_blockers:
+      - "prompt 要求外部写入但未确认。"
+    soft_blockers:
+      - "文案可后续优化。"
+    next_round: ROUND-7-5
+
+  - id: ROUND-7-5
+    name: Agent Result Intake and Acceptance
+    phase: Phase 1
+    status: planned
+    can_auto_advance: true
+    goal: "接收 Agent 执行结果，区分 completed 与 accepted，沉淀验证证据。"
+    inputs:
+      - data/logs/automation_log.jsonl
+      - governance/round_state.yaml
+    outputs:
+      - governance/round_state.yaml
+      - data/state/current_status.yaml
+    acceptance_criteria:
+      - "completed 不等于 accepted。"
+      - "没有 accepted 不一定阻止下一轮，但安全类事项必须等待。"
+    hard_blockers:
+      - "安全、外部写入或 P0/P1 变更未获 accepted。"
+    soft_blockers:
+      - "文档类轮次未验收但证据完整。"
+    next_round: ROUND-7-6
+
+  - id: ROUND-7-6
+    name: Codex/Cursor Execution Result Consistency
+    phase: Phase 1
+    status: planned
+    can_auto_advance: true
+    goal: "检查 Codex/Cursor 执行结果是否和 roadmap 一致；防止 Agent 自称完成但状态没同步。"
+    inputs:
+      - scripts/round_consistency_check.py
+      - governance/round_state.yaml
+    outputs:
+      - data/state/current_status.yaml
+      - data/logs/automation_log.jsonl
+    acceptance_criteria:
+      - "round_consistency_check 可检测状态不同步"
+      - "completed 与 accepted 分离"
+      - "Agent 结果与 round_state 一致"
+    hard_blockers:
+      - "安全/外部写入/P0-P1 变更未 accepted"
+    soft_blockers:
+      - "文档类轮次未验收但证据完整"
+    next_round: ROUND-8
+
+  - id: ROUND-8
+    name: Feishu / Lark Mock Integration
+    phase: Phase 1
+    status: planned
+    can_auto_advance: true
+    goal: "建立 Feishu/Lark mock adapter，仅生成消息草案，不真实发送。"
+    inputs:
+      - docs/09_feishu_lark_strategy.md
+      - data/integrations/integration_targets.yaml
+    outputs:
+      - data/integrations/integration_targets.yaml
+      - data/logs/automation_log.jsonl
+    acceptance_criteria:
+      - "mock 消息结构可读。"
+      - "不调用真实 Feishu/Lark API。"
+    hard_blockers:
+      - "需要真实 Feishu/Lark API。"
+      - "需要真实 webhook。"
+    soft_blockers:
+      - "缺少真实飞书 webhook。"
+    next_round: ROUND-8-5
+
+  - id: ROUND-8-5
+    name: Feishu Notification MVP
+    phase: Phase 1
+    status: planned
+    can_auto_advance: false
+    goal: "在用户确认后规划真实通知 MVP 的最小边界和日志要求。"
+    inputs:
+      - data/integrations/integration_targets.yaml
+      - data/gates/auto_advance_policy.yaml
+    outputs:
+      - docs/09_feishu_lark_strategy.md
+      - governance/agent_policy.yaml
+    acceptance_criteria:
+      - "真实发送前必须确认。"
+      - "缺少 webhook 时停在 mock。"
+    hard_blockers:
+      - "需要真实 webhook。"
+      - "发布或发送真实内容。"
+    soft_blockers:
+      - "通知文案可后续优化。"
+    next_round: ROUND-9
+
+  - id: ROUND-9
+    name: UI Information Architecture
+    phase: Phase 2
+    status: planned
+    can_auto_advance: true
+    goal: "定义 UI/Web Console 信息架构、页面列表、导航关系和安全边界。"
+    inputs:
+      - docs/14_ui_console_plan.md
+      - data/roadmap/round_tasks.yaml
+    outputs:
+      - docs/14_ui_console_plan.md
+    acceptance_criteria:
+      - "Dashboard、Programs、Projects、Roadmap、Gate、MCP、Scheduler、Logs、Settings 页面边界明确。"
+      - "UI 当前不是第一优先级但纳入路线。"
+    hard_blockers:
+      - "要求本轮实现完整 UI。"
+    soft_blockers:
+      - "UI 美术风格未确定。"
+    next_round: ROUND-9-5
+
+  - id: ROUND-9-5
+    name: UI Data Contract
+    phase: Phase 2
+    status: planned
+    can_auto_advance: true
+    goal: "定义 UI 读取的数据契约，优先使用本仓库 YAML/JSON/JSONL。"
+    inputs:
+      - data/state/current_status.yaml
+      - data/roadmap/round_tasks.yaml
+      - data/gates/auto_advance_policy.yaml
+    outputs:
+      - docs/14_ui_console_plan.md
+      - docs/04_data_model.md
+    acceptance_criteria:
+      - "每个页面都有数据来源、允许操作、禁止操作。"
+      - "UI 不直接写外部项目或真实集成。"
+    hard_blockers:
+      - "UI 需要读取真实密钥。"
+    soft_blockers:
+      - "部分字段可后续扩展。"
+    next_round: ROUND-10
+
+  - id: ROUND-10
+    name: Static UI Prototype
+    phase: Phase 2
+    status: planned
+    can_auto_advance: true
+    goal: "创建静态 UI 原型或线框，不接真实外部 API。"
+    inputs:
+      - docs/14_ui_console_plan.md
+      - data/state/current_status.yaml
+    outputs:
+      - docs/14_ui_console_plan.md
+      - prompts/templates/
+    acceptance_criteria:
+      - "静态原型覆盖核心页面。"
+      - "所有写操作保持 mock 或 proposal。"
+    hard_blockers:
+      - "需要生产级完整 UI。"
+    soft_blockers:
+      - "UI 美术风格未确定。"
+    next_round: ROUND-10-5
+
+  - id: ROUND-10-5
+    name: Stitch UI Concept Round
+    phase: Phase 2
+    status: planned
+    can_auto_advance: false
+    goal: "规划 Stitch UI 概念草图使用边界，仅输出本仓库草案或临时 mock。"
+    inputs:
+      - data/mcp/mcp_capability_registry.yaml
+      - docs/14_ui_console_plan.md
+    outputs:
+      - data/mcp/mcp_integration_roadmap.yaml
+      - docs/14_ui_console_plan.md
+    acceptance_criteria:
+      - "Stitch 为 L2，未确认前不真实调用。"
+      - "不写外部业务仓库 UI 代码。"
+    hard_blockers:
+      - "MCP L2/L3 未获确认。"
+      - "需要上传敏感截图。"
+    soft_blockers:
+      - "UI 美术风格未确定。"
+    next_round: ROUND-11
+
+  - id: ROUND-11
+    name: Browser Test Adapter Planning
+    phase: Phase 2
+    status: planned
+    can_auto_advance: true
+    goal: "规划 Chrome DevTools 与 Playwright 在 UI 验收中的边界。"
+    inputs:
+      - data/mcp/mcp_capability_registry.yaml
+      - data/gates/gate_checklist.yaml
+    outputs:
+      - docs/14_ui_console_plan.md
+      - data/mcp/mcp_integration_roadmap.yaml
+    acceptance_criteria:
+      - "Chrome DevTools 用于只读诊断，Playwright 属 L3 高风险。"
+      - "浏览器测试不会自动登录真实账号。"
+    hard_blockers:
+      - "需要自动登录账号。"
+      - "Playwright L3 未获确认。"
+    soft_blockers:
+      - "测试环境地址未确定。"
+    next_round: ROUND-11-5
+
+  - id: ROUND-11-5
+    name: UI Acceptance Gate
+    phase: Phase 2
+    status: planned
+    can_auto_advance: true
+    goal: "定义 UI 验收门禁：页面覆盖、数据来源、禁止操作和人工确认点。"
+    inputs:
+      - docs/14_ui_console_plan.md
+      - data/gates/gate_checklist.yaml
+    outputs:
+      - data/gates/gate_checklist.yaml
+      - docs/15_auto_advance_gate.md
+    acceptance_criteria:
+      - "UI 验收可用 checklist 表达。"
+      - "真实外部写入、登录、发布必须 stop。"
+    hard_blockers:
+      - "UI 需要真实外部写入。"
+    soft_blockers:
+      - "美术和文案可后续优化。"
+    next_round: ROUND-11-6
+
+  - id: ROUND-11-6
+    name: UI Runtime Smoke Test
+    phase: Phase 2
+    status: planned
+    can_auto_advance: false
+    goal: "UI 页面出现后接入 Playwright / Chrome DevTools 本地 smoke test；不登录账号。"
+    inputs:
+      - docs/14_ui_console_plan.md
+      - data/mcp/mcp_capability_registry.yaml
+    outputs:
+      - docs/14_ui_console_plan.md
+      - data/logs/automation_log.jsonl
+    acceptance_criteria:
+      - "smoke test 计划清晰"
+      - "不自动登录真实账号"
+      - "Playwright L3 未确认时不执行"
+    hard_blockers:
+      - "需要自动登录账号"
+      - "Playwright L3 未获确认"
+    soft_blockers:
+      - "UI 页面尚未实现"
+      - "测试环境地址未确定"
+    next_round: ROUND-12
+
+  - id: ROUND-12
+    name: Daily Project Scan
+    phase: Phase 3
+    status: planned
+    can_auto_advance: true
+    goal: "建立每日项目扫描准备流程，默认 dry-run，不自动修改外部项目。"
+    inputs:
+      - data/scheduler/scheduled_tasks.yaml
+      - data/registry/external_projects.yaml
+    outputs:
+      - data/project_scans/
+      - data/logs/automation_log.jsonl
+    acceptance_criteria:
+      - "每日扫描可以生成准备材料。"
+      - "外部项目写入仍被禁止。"
+    hard_blockers:
+      - "需要无人值守外部写入。"
+    soft_blockers:
+      - "外部项目暂无更新。"
+    next_round: ROUND-12-5
+
+  - id: ROUND-12-5
+    name: Daily Feishu Summary
+    phase: Phase 3
+    status: planned
+    can_auto_advance: false
+    goal: "生成每日 Feishu 摘要草案；真实发送必须确认。"
+    inputs:
+      - data/project_snapshots/
+      - data/integrations/integration_targets.yaml
+    outputs:
+      - data/logs/automation_log.jsonl
+      - docs/09_feishu_lark_strategy.md
+    acceptance_criteria:
+      - "缺少 webhook 时使用 mock。"
+      - "真实发送前 stop。"
+    hard_blockers:
+      - "缺少真实飞书 webhook但要求真实发送。"
+      - "发布内容。"
+    soft_blockers:
+      - "缺少真实飞书 webhook。"
+    next_round: ROUND-13
+
+  - id: ROUND-13
+    name: Weekly Review Loop
+    phase: Phase 3
+    status: planned
+    can_auto_advance: true
+    goal: "建立每周复盘循环，把 active programs、snapshots、next actions 汇总为决策草案。"
+    inputs:
+      - data/programs/active_programs.yaml
+      - data/project_snapshots/
+      - data/tasks/next_actions.yaml
+    outputs:
+      - data/logs/project_decision_log.jsonl
+      - data/tasks/next_actions.yaml
+    acceptance_criteria:
+      - "复盘结果区分 proposal 与 confirmed。"
+      - "战略优先级变更等待用户确认。"
+    hard_blockers:
+      - "改变 P0/P1 战略优先级。"
+    soft_blockers:
+      - "部分项目证据不足。"
+    next_round: ROUND-13-5
+
+  - id: ROUND-13-5
+    name: Human Approval Queue
+    phase: Phase 3
+    status: planned
+    can_auto_advance: true
+    goal: "建立需要人类确认事项的队列，避免软阻塞打断自动推进。"
+    inputs:
+      - data/gates/auto_advance_policy.yaml
+      - data/tasks/next_actions.yaml
+    outputs:
+      - data/tasks/next_actions.yaml
+      - data/state/current_status.yaml
+    acceptance_criteria:
+      - "hard blocker 进入 approval queue。"
+      - "soft blocker 记录 warning 后继续。"
+    hard_blockers:
+      - "approval queue 要求绕过用户确认。"
+    soft_blockers:
+      - "偏好不关键时采用保守默认。"
+    next_round: ROUND-14
+
+  - id: ROUND-14
+    name: Auto-Advance Agent Runner
+    phase: Phase 3
+    status: planned
+    can_auto_advance: false
+    goal: "实现受控自动推进 Agent Runner，严格调用 agent_gate.py 和状态更新。"
+    inputs:
+      - prompts/auto_advance_agent_prompt.md
+      - scripts/agent_gate.py
+      - data/roadmap/round_tasks.yaml
+    outputs:
+      - data/logs/automation_log.jsonl
+      - governance/round_state.yaml
+    acceptance_criteria:
+      - "Runner 不绕过 gate。"
+      - "验证失败两次停止。"
+      - "不执行外部写入、登录、支付、发布。"
+    hard_blockers:
+      - "测试连续失败两次。"
+      - "需要真实外部写入。"
+    soft_blockers:
+      - "future round 不够细。"
+    next_round: ROUND-14-5
+
+  - id: ROUND-14-5
+    name: Auto-Advance Postmortem
+    phase: Phase 3
+    status: planned
+    can_auto_advance: true
+    goal: "复盘自动推进效果、误判、停下原因和后续安全增强。"
+    inputs:
+      - data/logs/automation_log.jsonl
+      - governance/round_state.yaml
+    outputs:
+      - docs/reports/auto_advance_postmortem.md
+      - data/gates/auto_advance_policy.yaml
+    acceptance_criteria:
+      - "记录 stop/warn/continue 的样例和改进项。"
+      - "不把失败静默吞掉。"
+    hard_blockers:
+      - "需要篡改历史日志。"
+    soft_blockers:
+      - "样本数量不足。"
+    next_round: ROUND-15
+
+  - id: ROUND-15
+    name: Remote Entry Environment Planning
+    phase: Phase 4
+    status: planned
+    can_auto_advance: false
+    goal: "研究远程入口环境方案，保持规划阶段，不执行远程控制。"
+    inputs:
+      - docs/01_project_ultimate_goal.md
+      - governance/agent_policy.yaml
+    outputs:
+      - docs/02_master_roadmap.md
+      - docs/reports/remote_entry_environment_plan.md
+    acceptance_criteria:
+      - "远程入口风险、权限、确认点清晰。"
+      - "不执行真实远程控制。"
+    hard_blockers:
+      - "执行远程控制。"
+    soft_blockers:
+      - "方案依赖后续工具选择。"
+    next_round: ROUND-16
+
+  - id: ROUND-16
+    name: Desktop Control Research
+    phase: Phase 4
+    status: planned
+    can_auto_advance: false
+    goal: "研究桌面控制边界、风险和可替代方案，不启用高风险自动操作。"
+    inputs:
+      - docs/12_external_tool_approval_model.md
+      - data/gates/auto_advance_policy.yaml
+    outputs:
+      - docs/reports/desktop_control_research.md
+    acceptance_criteria:
+      - "高风险自动点击、登录、系统控制默认禁止。"
+      - "所有实验须用户确认。"
+    hard_blockers:
+      - "执行远程控制。"
+      - "登录账号。"
+    soft_blockers:
+      - "研究资料可后续补充。"
+    next_round: ROUND-17
+
+  - id: ROUND-17
+    name: Full Personal Project OS Review
+    phase: Phase 4
+    status: planned
+    can_auto_advance: false
+    goal: "对个人项目 OS 完整闭环做阶段性复盘，决定下一阶段产品化、自动化和治理优先级。"
+    inputs:
+      - docs/02_master_roadmap.md
+      - data/state/current_status.yaml
+      - data/logs/project_decision_log.jsonl
+    outputs:
+      - docs/reports/full_personal_project_os_review.md
+      - docs/02_master_roadmap.md
+    acceptance_criteria:
+      - "复盘覆盖治理、项目状态、自动推进、安全、UI 与通知。"
+      - "下一阶段 P0/P1 由用户确认。"
+    hard_blockers:
+      - "改变 P0/P1 战略优先级。"
+    soft_blockers:
+      - "部分长期目标仍需拆解。"
+    next_round: null

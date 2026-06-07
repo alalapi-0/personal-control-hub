@@ -1,0 +1,130 @@
+integrations:
+  - id: feishu_lark_notifications
+    name: Feishu/Lark notifications
+    provider: feishu_lark
+    enabled: false
+    status: planned
+    config_source: env
+    env_keys:
+      - FEISHU_APP_ID
+      - FEISHU_APP_SECRET
+      - FEISHU_WEBHOOK_URL
+    write_back_allowed: false
+    requires_user_confirmation: true
+    allowed_current_round:
+      - strategy_documentation
+      - disabled_placeholder
+      - future_mock_adapter_design
+    forbidden_current_round:
+      - real_api_call
+      - real_message_send
+      - real_space_write
+      - token_storage
+    notes: "本轮不真实调用、不写 token、不连接空间。"
+
+  - id: feishu_lark_interactive
+    name: Feishu/Lark interactive cards
+    provider: feishu_lark
+    enabled: false
+    status: planned
+    config_source: env
+    env_keys:
+      - FEISHU_APP_ID
+      - FEISHU_APP_SECRET
+    write_back_allowed: false
+    requires_user_confirmation: true
+    approval_level: L3
+    notes: "交互卡片与回调；Round 0.5 仅登记，enabled false。"
+
+  - id: github_lightweight_sync
+    name: GitHub lightweight status sync
+    provider: github
+    enabled: false
+    status: planned
+    config_source: manual_or_env_future
+    env_keys:
+      - GITHUB_PERSONAL_ACCESS_TOKEN
+    write_back_allowed: false
+    requires_user_confirmation: true
+    approval_level: L2
+    related_mcp: github
+    notes: "只读状态与 PR/Issue 摘要；写操作 L3，本轮不 push。"
+
+  - id: github_read_mcp
+    name: GitHub read via MCP
+    provider: github
+    enabled: false
+    status: planned
+    config_source: env
+    env_keys:
+      - GITHUB_PERSONAL_ACCESS_TOKEN
+    write_back_allowed: false
+    requires_user_confirmation: true
+    approval_level: L2
+    related_mcp: github
+    notes: "与 mcp_capability_registry 中 github 条目对齐。"
+
+  - id: browser_test_integration
+    name: Browser test review
+    provider: browser
+    enabled: false
+    status: planned
+    config_source: cursor_mcp
+    related_mcps:
+      - chrome-devtools
+      - playwright
+    write_back_allowed: false
+    requires_user_confirmation: true
+    approval_level: L2
+    notes: "Playwright 部分为 L3；MCP 可 default start，但真实浏览器动作仍需审批。"
+
+  - id: codex_prompt_queue
+    name: Codex execution prompt queue
+    provider: codex
+    enabled: false
+    status: planned
+    config_source: local_files
+    write_back_allowed: false
+    requires_user_confirmation: true
+    approval_level: L1
+    notes: "生成 prompt 队列；Codex 不得绕过 MCP policy。"
+
+  - id: cursor_prompt_queue
+    name: Cursor daily prompt queue
+    provider: cursor
+    enabled: false
+    status: planned
+    config_source: local_files
+    write_back_allowed: false
+    requires_user_confirmation: false
+    approval_level: L1
+    related_mcp_host: true
+    notes: "Cursor 为 MCP 宿主；见 prompts/cursor_mcp_usage_prompt.md。"
+
+  - id: context7_docs
+    name: Context7 documentation context
+    provider: context7
+    enabled: false
+    status: planned
+    config_source: env
+    env_keys:
+      - CONTEXT7_API_KEY
+    write_back_allowed: false
+    requires_user_confirmation: false
+    approval_level: L0
+    related_mcp: context7
+    notes: "公开文档只读；Round 0.5 不调用。"
+
+  - id: stitch_ui_exploration
+    name: Stitch UI exploration
+    provider: stitch
+    enabled: false
+    status: planned
+    config_source: env
+    env_keys:
+      - STITCH_API_KEY
+    write_back_allowed: false
+    requires_user_confirmation: true
+    approval_level: L2
+    related_mcp: stitch
+    notes: "UI 探索草案；不写外部业务仓库。"

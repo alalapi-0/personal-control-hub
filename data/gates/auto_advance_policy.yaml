@@ -1,0 +1,125 @@
+policy:
+  name: auto_advance_policy
+  version: "0.7.0"
+  status: draft
+  owner: user
+  gate_script: scripts/agent_gate.py
+  scope: "personal-control-hub 本仓库内的文档、YAML、轻量脚本、mock 与只读扫描推进。"
+
+default_behavior:
+  no_hard_blocker: continue
+  soft_blocker_only: warn_and_continue
+  missing_optional_input: use_safe_default_and_continue
+  missing_required_secret: stop
+  destructive_action_required: stop
+  external_write_required: stop
+  user_preference_needed_but_not_critical: use_conservative_default
+
+decision_rules:
+  continue:
+    meaning: "无硬阻塞；可以继续下一轮或当前轮后续步骤。"
+    required_action:
+      - "记录验证证据。"
+      - "更新 round_state 与 current_status。"
+  warn_and_continue:
+    meaning: "仅存在软阻塞；记录 warning 后继续。"
+    required_action:
+      - "在最终汇报或 automation_log 中记录 warning。"
+      - "使用保守默认值。"
+  stop:
+    meaning: "存在硬阻塞；必须停止并请求用户确认。"
+    required_action:
+      - "说明阻塞原因。"
+      - "不得执行触发阻塞的动作。"
+
+hard_blockers:
+  - id: HARD-REAL-API-KEY
+    description: "需要真实 API key。"
+  - id: HARD-REAL-PASSWORD
+    description: "需要真实密码。"
+  - id: HARD-REAL-COOKIE
+    description: "需要真实 cookie。"
+  - id: HARD-EXTERNAL-PROJECT-WRITE
+    description: "写入外部项目。"
+  - id: HARD-DELETE-FILE
+    description: "删除文件。"
+  - id: HARD-OVERWRITE-USER-CONTENT
+    description: "覆盖用户内容。"
+  - id: HARD-GIT-PUSH
+    description: "git push。"
+  - id: HARD-PUBLISH-CONTENT
+    description: "发布内容。"
+  - id: HARD-LOGIN-ACCOUNT
+    description: "登录账号。"
+  - id: HARD-PAYMENT
+    description: "支付或购买。"
+  - id: HARD-P0-P1-CHANGE
+    description: "改变 P0/P1 战略优先级。"
+  - id: HARD-TESTS-FAILED-TWICE
+    description: "测试连续失败两次。"
+  - id: HARD-ROADMAP-CONFLICT
+    description: "路线图冲突无法自动判断。"
+  - id: HARD-MCP-L2-L3-NOT-CONFIRMED
+    description: "MCP L2/L3 未获确认。"
+
+soft_blockers:
+  - id: SOFT-UI-STYLE-TBD
+    description: "UI 美术风格未确定。"
+  - id: SOFT-COPYWRITING
+    description: "文案可后续优化。"
+  - id: SOFT-NO-FEISHU-WEBHOOK
+    description: "缺少真实飞书 webhook。"
+  - id: SOFT-NO-GITHUB-TOKEN
+    description: "缺少真实 GitHub token。"
+  - id: SOFT-LLM-MOCK
+    description: "LLM 不可用但可用 mock。"
+  - id: SOFT-NO-EXTERNAL-UPDATES
+    description: "外部项目暂无更新。"
+  - id: SOFT-FUTURE-ROUND-DETAIL
+    description: "future round 不够细。"
+  - id: SOFT-DOC-READABILITY
+    description: "文档可读性可优化。"
+
+accepted_vs_completed:
+  completed: "Agent 完成任务并给出证据。"
+  accepted: "用户或明确 gate 验收通过。"
+  rule: "没有 accepted 不一定阻止下一轮；安全、外部写入、P0/P1 战略变更必须等待 accepted。"
+
+logging:
+  target: data/logs/automation_log.jsonl
+  auto_advance_log: data/logs/auto_advance_log.jsonl
+  environment_check_log: data/logs/environment_check_log.jsonl
+  required_after_round: true
+  minimum_fields:
+    - timestamp
+    - round_id
+    - decision
+    - hard_blockers
+    - soft_warnings
+    - validation
+    - external_api_called
+    - external_project_written
+    - secrets_written
+
+git_policy:
+  auto_commit_allowed: true
+  auto_push_allowed: true
+  require_clean_validation_before_commit: true
+  stop_on_push_failure: true
+  stop_on_merge_conflict: true
+  stop_on_sensitive_file_detected: true
+
+runner_policy:
+  entry_script: scripts/auto_advance_runner.py
+  required_modes:
+    - check
+    - prepare-next
+    - finalize-round
+  default_after_soft_warning: continue
+  default_after_hard_blocker: stop
+
+consistency_policy:
+  require_round_state_sync: true
+  require_current_status_sync: true
+  require_roadmap_sync: true
+  require_log_append: true

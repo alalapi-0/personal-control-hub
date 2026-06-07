@@ -1,0 +1,5 @@
+canonical_protocol:
+  path: governance/repo_protocol_standard.yaml
+  status: compatibility_pointer
+  note: "Root-level file exists for discoverability. The canonical protocol remains governance/repo_protocol_standard.yaml."
+  last_updated: "2026-06-07"

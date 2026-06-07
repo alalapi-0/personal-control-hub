@@ -1,0 +1,1112 @@
+protocol:
+  name: agent_readable_repo_protocol
+  version: "0.3.0"
+  status: draft
+  purpose: "Provide a portable governance standard for AI-agent-readable repositories."
+  portability: portable_to_other_repositories
+  last_updated: "2026-05-30"
+  maintained_by:
+    - user
+    - repo_governance_agent
+
+scope:
+  applies_to:
+    - ai_novel_pipeline_repo
+    - general_ai_project_repo
+    - agent_repo
+    - prompt_library_repo
+    - multi_agent_workflow_repo
+  compatible_repo_types:
+    - python_cli_project
+    - ai_workflow_project
+    - documentation_heavy_project
+    - prompt_and_skill_repository
+    - future_web_ui_project
+    - mixed_code_and_content_repository
+  current_reference_repo: novel-continuation-agent
+  non_goals:
+    - "This standard does not replace project-specific business logic."
+    - "This standard does not store secrets or runtime credentials."
+    - "This standard does not require RAG, embeddings, a database, or a Web UI."
+    - "This standard does not require deleting historical Markdown documents."
+    - "This standard does not define provider-specific model API implementations."
+
+authority:
+  priority_order:
+    - governance/repo_protocol_standard.yaml
+    - project.yaml
+    - governance/round_state.yaml
+    - governance/agent_policy.yaml
+    - governance/file_role_map.yaml
+    - AGENTS.md
+    - README.md
+  authority_levels:
+    cross_repo_standard: governance/repo_protocol_standard.yaml
+    project_identity: project.yaml
+    current_round_state: governance/round_state.yaml
+    current_repo_agent_permissions: governance/agent_policy.yaml
+    current_repo_file_roles: governance/file_role_map.yaml
+    agent_entry_instructions: AGENTS.md
+    human_entry_instructions: README.md
+  conflict_resolution: "Use repo_protocol_standard.yaml as the general rule. Use project.yaml for project-specific overrides. If current repository facts conflict with the portable standard, record the override in project.yaml or a report instead of silently changing the standard."
+  project_override_policy:
+    allowed: true
+    location: project.yaml
+    rule: "Overrides must name the affected standard field, reason, owner, and review trigger."
+
+naming_conventions:
+  directories:
+    governance: "Machine-readable governance and policy files. This is the first structured layer for Agents and scripts."
+    docs: "Human-readable documentation, guides, architecture notes, reports and archive material."
+    docs_reports: "Audit reports, migration reports, round reports and validation summaries."
+    docs_archive: "Historical, deprecated or superseded documents that must not be treated as current authority."
+    prompts: "Reusable prompts for Codex, Cursor, Claude Code or other Agents."
+    skills: "Reusable Agent skills or instruction modules."
+    agent_contracts: "Optional machine-readable Agent I/O and behavior contracts. Keep business execution separate from contract validation."
+    scripts: "Validation, scanning, migration and utility scripts."
+    src: "Source code for application or library modules."
+    tests: "Automated tests."
+    config: "Runtime configuration without secrets."
+    configs: "Example or future configuration profiles."
+    project_state: "Project-specific machine-readable state. Portable repos may use governance/round_state.yaml instead."
+    project_memory: "Markdown-first long-term project memory. Optional but useful for AI-heavy repos."
+    story_state: "Novel-specific structured story state."
+    story_memory: "Novel-specific human-readable story memory."
+    outputs: "Generated runtime outputs. Usually ignored or low-priority for Agent reading."
+    cache: "Generated caches. Must not be treated as source of truth."
+    web: "Project-specific browser assets for a local or deployed UI. Interfaces must consume governed service boundaries."
+  files:
+    agents_md: AGENTS.md
+    readme_md: README.md
+    project_yaml: project.yaml
+    protocol_standard: governance/repo_protocol_standard.yaml
+    agent_policy: governance/agent_policy.yaml
+    file_role_map: governance/file_role_map.yaml
+    round_state: governance/round_state.yaml
+    model_policy: governance/model_policy.yaml
+    data_policy: governance/data_policy.yaml
+    novel_pipeline_contract: governance/novel_pipeline_contract.yaml
+    skill_metadata_registry: skills/registry.json
+    skill_metadata_schema: schemas/skill_metadata.schema.json
+    agent_contract_example: agents/contracts/<agent_name>_contract.json
+    agent_contract_schema_example: schemas/<agent_name>_contract.schema.json
+    repo_contract_schema: governance/repo_contract.schema.json
+    repo_inventory: governance/repo_inventory.generated.json
+  yaml_fields:
+    style: snake_case
+    required: "Stable, grep-friendly, explicit field names."
+    avoid:
+      - camelCase
+      - ambiguous_status
+      - unnamed_lists_without_path_or_id
+  round_names:
+    machine_format: round_001
+    human_format: "Round 1"
+    current_repo_legacy_format: "Round N"
+    rule: "Machine-readable round ids should be zero-padded. Human docs may keep existing Round N wording."
+  report_names:
+    format: docs/reports/<topic>_report.md
+    examples:
+      - docs/reports/repo_governance_audit.md
+      - docs/reports/doc_migration_report.md
+  prompt_names:
+    file_format: prompts/<task_or_agent_name>.md
+    template_format: prompts/templates/<task_name>.template.md
+    migration_prompt_format: prompts/apply_repo_protocol_to_new_project.md
+  skill_names:
+    directory_format: skills/<lower_snake_case_skill_name>/SKILL.md
+    rule: "Skill names should describe reusable action patterns, not current project facts."
+  agent_contract_names:
+    file_format: agents/contracts/<agent_name>_contract.json
+    schema_format: schemas/<agent_name>_contract.schema.json
+    rule: "Agent contracts should declare I/O, decisions, forbidden writes, integration boundaries and validation samples before runtime autonomy is introduced."
+  generated_files:
+    suffixes:
+      - .generated.json
+      - .generated.yaml
+      - .generated.md
+    rule: "Generated files must state their generator and should not be manually edited unless the file says otherwise."
+
+required_root_files:
+  - path: AGENTS.md
+    role: agent_entry_instructions
+    required: true
+    portable: true
+    update_policy: "Update when Agent reading order, forbidden actions, sync requirements or validation commands change."
+  - path: README.md
+    role: human_entry_document
+    required: true
+    portable: true
+    update_policy: "Update when user-facing setup, structure, workflow or governance overview changes."
+  - path: project.yaml
+    role: current_project_identity_card
+    required: true
+    portable: true
+    update_policy: "Update when project identity, owner, stage, round, entry points or standard reference changes."
+
+required_directories:
+  - path: governance/
+    role: machine_readable_governance_layer
+    required: true
+    portable: true
+    update_policy: "Update with any required YAML/JSON governance files and generated inventory."
+  - path: docs/
+    role: human_readable_documentation_layer
+    required: true
+    portable: true
+    update_policy: "Keep navigation, guides, reports and archive notes current."
+  - path: docs/reports/
+    role: governance_and_round_report_layer
+    required: true
+    portable: true
+    update_policy: "Add audit, migration, validation and round reports here."
+  - path: docs/archive/
+    role: historical_archive_layer
+    required: true
+    portable: true
+    update_policy: "Move deprecated or superseded documents here only when preserving history."
+  - path: prompts/
+    role: reusable_prompt_layer
+    required: true
+    portable: true
+    update_policy: "Keep prompt templates and Agent handoff prompts discoverable."
+  - path: scripts/
+    role: validation_and_utility_script_layer
+    required: true
+    portable: true
+    update_policy: "Scripts should run from repo root and avoid heavy dependencies."
+  - path: src/
+    role: source_code_layer
+    required: false
+    portable: true
+    update_policy: "Use for source code when the project has implementation modules."
+  - path: tests/
+    role: test_code_layer
+    required: false
+    portable: true
+    update_policy: "Use for automated tests when implementation behavior is present."
+  - path: web/
+    role: browser_ui_asset_layer
+    required: false
+    portable: true
+    update_policy: "Use only when the project has a browser surface; document and validate its API boundary."
+
+governance_files:
+  - path: governance/repo_protocol_standard.yaml
+    role: portable_cross_repo_standard
+    machine_readable: true
+    human_readable: true
+    portable: true
+    update_frequency: "Whenever protocol, naming, directory, file role, Agent rule, Round rule, validation expectation or portability guidance changes."
+    authority_level: cross_repo_standard
+  - path: project.yaml
+    role: current_project_identity
+    machine_readable: true
+    human_readable: true
+    portable: true
+    update_frequency: "When project identity, stage, owner, current round or entry points change."
+    authority_level: project_identity
+  - path: governance/round_state.yaml
+    role: current_round_state
+    machine_readable: true
+    human_readable: true
+    portable: true
+    update_frequency: "At every round end and whenever active governance tasks change."
+    authority_level: round_state
+  - path: governance/agent_policy.yaml
+    role: current_repo_agent_permissions
+    machine_readable: true
+    human_readable: true
+    portable: true
+    update_frequency: "When permissions, forbidden paths, deletion policy, network policy or model-call policy changes."
+    authority_level: repo_policy
+  - path: governance/file_role_map.yaml
+    role: current_repo_file_role_map
+    machine_readable: true
+    human_readable: true
+    portable: true
+    update_frequency: "When required files, important directories, generated files or ownership rules change."
+    authority_level: repo_policy
+  - path: governance/model_policy.yaml
+    role: current_repo_model_policy
+    machine_readable: true
+    human_readable: true
+    portable: true
+    update_frequency: "When model providers, model tiers, RAG, embeddings, context budget or cost policy changes."
+    authority_level: repo_policy
+  - path: governance/data_policy.yaml
+    role: current_repo_data_policy
+    machine_readable: true
+    human_readable: true
+    portable: true
+    update_frequency: "When generated text storage, review history, database, backup or privacy policy changes."
+    authority_level: repo_policy
+  - path: governance/novel_pipeline_contract.yaml
+    role: project_specific_novel_pipeline_contract
+    machine_readable: true
+    human_readable: true
+    portable: false
+    update_frequency: "When novel pipeline stages, artifact types, quality gates or review workflow changes."
+    authority_level: project_contract
+  - path: governance/repo_contract.schema.json
+    role: minimal_validation_schema
+    machine_readable: true
+    human_readable: false
+    portable: true
+    update_frequency: "When required fields in governance YAML files change."
+    authority_level: validation_contract
+  - path: governance/repo_inventory.generated.json
+    role: generated_repo_inventory
+    machine_readable: true
+    human_readable: false
+    portable: true
+    update_frequency: "Regenerate after structural changes or governance audits."
+    authority_level: generated_inventory
+
+file_role_taxonomy:
+  human_entry:
+    description: "Human-facing document explaining what the project is and how to start."
+    examples:
+      - README.md
+      - docs/index.md
+  agent_instruction:
+    description: "Instructions that tell Agents how to read, act, avoid hazards or continue work."
+    examples:
+      - AGENTS.md
+      - prompts/codex_next_round.md
+      - skills/*/SKILL.md
+  machine_project_state:
+    description: "Machine-readable project identity or lifecycle state."
+    examples:
+      - project.yaml
+      - project_state/active_round.json
+  machine_round_state:
+    description: "Machine-readable current round, tasks, blockers and acceptance criteria."
+    examples:
+      - governance/round_state.yaml
+  machine_policy:
+    description: "Machine-readable rules for Agent actions, files, models, data or validation."
+    examples:
+      - governance/agent_policy.yaml
+      - governance/model_policy.yaml
+  generated_inventory:
+    description: "Generated repository map or report used for navigation, not manual source authority."
+    examples:
+      - governance/repo_inventory.generated.json
+      - docs/project_file_index.md
+  historical_archive:
+    description: "Historical documents kept for traceability and not current authority."
+    examples:
+      - docs/history/
+      - docs/archive/
+  prompt_template:
+    description: "Reusable prompt or prompt template used by Agents or runtime systems."
+    examples:
+      - prompts/*.md
+      - prompts/templates/*.template.md
+  skill_definition:
+    description: "Reusable instruction module for an Agent action."
+    examples:
+      - skills/*/SKILL.md
+  skill_metadata_registry:
+    description: "Machine-readable registry for Skill input, output, validation, rollback, trust and executor-readiness metadata."
+    examples:
+      - skills/registry.json
+      - schemas/skill_metadata.schema.json
+  source_code:
+    description: "Application, library, CLI, service, or Agent source code."
+    examples:
+      - main.py
+      - src/
+      - core/
+  test_code:
+    description: "Automated tests and test fixtures."
+    examples:
+      - tests/
+  runtime_config:
+    description: "Configuration files without secrets."
+    examples:
+      - config/*.yaml
+      - configs/*.example.yaml
+      - .env.example
+  secret_file:
+    description: "Local files that may contain secrets and must not be read or committed."
+    examples:
+      - .env
+      - "*.pem"
+      - "*.key"
+
+agent_reading_protocol:
+  default_reading_order:
+    - governance/repo_protocol_standard.yaml
+    - project.yaml
+    - governance/agent_policy.yaml
+    - governance/round_state.yaml
+    - governance/file_role_map.yaml
+    - governance/novel_pipeline_contract.yaml
+    - README.md
+    - docs/index.md
+  search_first_policy: "Use glob, grep, ripgrep and targeted reads before reading large files. Prefer exact path and keyword search over vector retrieval for repository understanding."
+  full_scan_policy: "Full scans are allowed for governance upgrade, repository audit, migration, major conflict investigation or explicit user request. Full scans must skip forbidden paths and should produce a report."
+  forbidden_scan_paths:
+    - .git/
+    - node_modules/
+    - dist/
+    - build/
+    - target/
+    - __pycache__/
+    - .venv/
+    - venv/
+    - .idea/
+    - .cursor/
+    - cache/
+    - logs/
+  large_file_policy:
+    default: "Do not read large files in full. Inspect path, size, metadata, headings or targeted grep hits first."
+    threshold_hint: "Files larger than 1 MB require a reason before full read."
+    generated_assets: "Generated outputs, caches and build artifacts are not source authority."
+  grep_keywords:
+    - round
+    - Round
+    - TODO
+    - FIXME
+    - roadmap
+    - plan
+    - agent
+    - protocol
+    - standard
+    - governance
+    - novel
+    - outline
+    - chapter
+    - scene
+    - character
+    - worldbuilding
+    - review
+    - model
+    - api
+    - openrouter
+    - feishu
+    - lark
+    - database
+    - schema
+    - prompt
+    - acceptance
+    - status
+    - migration
+    - contract
+  before_editing_checklist:
+    - "Read governance/repo_protocol_standard.yaml first."
+    - "Read project.yaml and governance/round_state.yaml."
+    - "Run or inspect scripts/print_agent_context.py if available."
+    - "Use grep/ripgrep before reading large files."
+    - "Check governance/agent_policy.yaml and governance/file_role_map.yaml."
+    - "Do not scan generated, dependency or secret paths."
+    - "Do not modify secrets."
+    - "Do not delete source files, databases, story assets or important documents without explicit user approval."
+  after_editing_checklist:
+    - "Update governance/round_state.yaml when round state, active tasks or acceptance changes."
+    - "Update docs/reports/ when governance or migration changes were made."
+    - "Update governance/repo_protocol_standard.yaml if protocol, naming, directory, file role, round rule, Agent rule or validation expectation changed."
+    - "Run scripts/check_repo_contract.py when available."
+    - "Run scripts/check_protocol_standard.py when available."
+    - "Run scripts/scan_repo_inventory.py after structural changes."
+    - "Record unresolved issues in the relevant report."
+
+round_protocol:
+  round_lifecycle:
+    - name: intake
+      description: "Read fixed entry files, confirm current state, identify task scope."
+    - name: scan
+      description: "Use grep/glob/read to locate relevant files and conflicts."
+    - name: plan
+      description: "Derive focused implementation or governance changes."
+    - name: implement
+      description: "Modify only files required for the scoped round."
+    - name: validate
+      description: "Run applicable checks and record failures."
+    - name: report
+      description: "Update docs/reports and round state with completed work and remaining questions."
+    - name: sync
+      description: "Synchronize standard, project state, file roles and human docs when rules or user-facing behavior changed."
+  required_inputs:
+    - governance/repo_protocol_standard.yaml
+    - project.yaml
+    - governance/round_state.yaml
+    - governance/agent_policy.yaml
+    - governance/file_role_map.yaml
+  required_outputs:
+    - "Changed files matching the round scope."
+    - "Validation command results."
+    - "Round or audit report under docs/reports/ when governance or migration occurred."
+  required_updates_after_each_round:
+    - governance/round_state.yaml
+    - docs/reports/
+    - README.md when user-facing behavior changes
+    - docs/index.md when documentation navigation changes
+    - governance/file_role_map.yaml when important files or directories change
+    - governance/repo_protocol_standard.yaml when governance rules change
+    - project.yaml when project identity, stage, owner or entry points change
+  acceptance_policy:
+    require_check_scripts: true
+    require_report: true
+    allow_known_failures: true
+    known_failure_rule: "Any failed required check must be recorded with reason and next action."
+  report_policy:
+    location: docs/reports/
+    minimum_sections:
+      - summary
+      - files_changed
+      - validation_results
+      - unresolved_questions
+  sync_policy:
+    rule: "Any change to protocol, naming, directory conventions, file roles, Agent behavior, Round rules or validation expectations must sync repo_protocol_standard.yaml in the same round."
+
+document_policy:
+  markdown_role:
+    primary: "Explanation, guides, human navigation, rationale and historical records."
+    should_not_store_as_authority:
+      - current_machine_state
+      - permissions
+      - required_fields
+      - generated_inventory
+  yaml_role:
+    primary: "Machine-readable governance, policies, state, contracts and stable structured configuration."
+    style: snake_case
+  json_role:
+    primary: "Schemas, generated inventories, registries and strict machine exchange files."
+    rule: "No comments; keep parseable."
+  script_role:
+    primary: "Validation, scanning, migration, checks and context printing."
+    rule: "Scripts should run from repo root and have clear stdout."
+  generated_file_role:
+    primary: "Rebuildable outputs that help navigation or runtime."
+    rule: "Mark generated files clearly and avoid manual authority drift."
+  archive_policy:
+    rule: "Do not delete valuable historical Markdown. Move to docs/archive/ or docs/history/ and record in docs/reports/doc_migration_report.md."
+  migration_policy:
+    rule: "When Markdown contains machine state, migrate the authoritative fields to YAML/JSON and leave Markdown as explanation plus links."
+
+agent_policy_standard:
+  default_mode: conservative_structured_repo_governance
+  allowed_actions:
+    - "Read required governance entry files."
+    - "Use grep/ripgrep/glob for precise search."
+    - "Create or update governance YAML/JSON files."
+    - "Create validation scripts with lightweight dependencies."
+    - "Update README and docs navigation."
+    - "Archive duplicate Markdown when migration is documented."
+    - "Implement source, schema and tests inside a confirmed active business Round when explicitly requested by the user."
+    - "Synchronize project state and project memory after an explicitly requested business Round."
+  active_business_round_condition:
+    - "The user explicitly requests progress."
+    - "The machine-readable current-state file identifies the Round being implemented."
+    - "Implementation stays within documented Round boundaries and is validated before submission."
+  restricted_actions:
+    - "Large directory moves."
+    - "Business source refactors during governance rounds."
+    - "External API calls."
+    - "Dependency additions."
+    - "Database schema changes."
+  approval_required:
+    - "Deleting source code, tests, database files, prompts, story assets or important documents."
+    - "Reading secret files."
+    - "Introducing new paid model calls or network integrations."
+    - "Changing project roadmap scope or marking a business round complete without explicit instruction to progress the active Round."
+    - "Deleting user-created content, review history, human edits or preference-learning data."
+    - "Running real paid model APIs or any cost-incurring test."
+    - "Writing to a real Lark / Feishu space or any external collaboration system."
+    - "Modifying a real .env or writing real secrets."
+    - "Promoting generated content into fixed assets."
+    - "Breaking-change edits to the Story IR schema."
+    - "Large-scale directory migration without a recorded migration plan."
+    - "Pushing to a remote repository."
+    - "Changing deployment target or real production environment configuration."
+  forbidden_actions:
+    - "Read or print .env secrets."
+    - "Commit real API keys, tokens, cookies or credentials."
+    - "Treat generated reports as highest authority when structured state exists."
+    - "Delete historical documents without migration report."
+  commit_policy:
+    default: "Do not commit unless the user asks."
+    if_committing: "Commit only scoped, reviewed changes with no secrets."
+  deletion_policy:
+    default: "Prefer archive plus migration report over deletion."
+    never_delete_without_approval:
+      - source_code
+      - test_code
+      - runtime_config_examples
+      - prompt_assets
+      - story_assets
+      - database_schema
+      - project_memory
+  secret_policy:
+    rule: "Do not read or display secret files. Validate presence or ignore status only."
+  network_policy:
+    default: "No network use unless task requires current external information or explicit integration work."
+  automation_policy:
+    description: "Rules that govern how an autonomous Agent may self-advance work in this repository."
+    gate_entry: scripts/agent_gate.py
+    gate_report: docs/reports/agent_gate_report.md
+    rule: "An Agent must run scripts/agent_gate.py before any autonomous advancement. The gate is deterministic and never calls an LLM."
+    exit_codes:
+      "0": "PASS — gate passed; the Agent may continue autonomous advancement within agent_policy_standard.allowed_actions."
+      "1": "WARNING — incomplete but non-blocking; the Agent may perform low-risk governance tasks (docs, .env.example, mock adapters, dry-run tests, Playwright basics, review empty states, archive flows, reports) but should record the warnings."
+      "2": "BLOCKED — a high-risk problem exists; the Agent must only produce a report and request human confirmation. No autonomous mutation."
+    blocked_examples:
+      - "A real .env is tracked by Git."
+      - "An API key, token or credential is suspected inside a committed file."
+      - "Generated content is configured to be written directly into fixed assets."
+      - "Real Lark / Feishu write is enabled by default."
+      - "A destructive migration is not recorded."
+    agent_autonomous_allowed:
+      - "Update documentation and fix README links."
+      - "Add or expand .env.example placeholders."
+      - "Add mock adapters and dry-run tests."
+      - "Add Playwright basic UI checks."
+      - "Add review-workbench empty states and Chinese UI copy."
+      - "Add non-destructive archive flows."
+      - "Generate scan, gate and verification reports."
+      - "Correct clearly outdated documentation statements."
+      - "Add or strengthen deterministic safety checks and scripts/agent_gate.py."
+    agent_must_stop_for_human:
+      - "Delete user content."
+      - "Call real paid APIs."
+      - "Write to a real Lark / Feishu space."
+      - "Modify a real .env."
+      - "Push to a remote repository."
+      - "Perform large-scale directory migration."
+      - "Make breaking-change edits to the Story IR schema."
+      - "Promote generated content into fixed assets."
+      - "Delete review history, human edits or preference-learning data."
+      - "Change deployment method or core technology stack."
+
+model_policy_standard:
+  rag_policy:
+    default: "Do not use RAG or vector search as the first method for understanding a code repository."
+    allowed_when: "Large story memory retrieval, raw corpus search or explicit user request."
+  embedding_policy:
+    default: "Do not introduce embeddings for repo governance at the current stage."
+    allowed_when: "The repository has a scale problem that grep, registries and structured indexes cannot solve."
+  grep_policy:
+    default: "Use grep/ripgrep and structured files first."
+  context_budget_policy:
+    default: "Read fixed entry files, then targeted search results. Avoid loading all Markdown into context."
+  cheap_model_policy:
+    use_for:
+      - summaries
+      - tag extraction
+      - bulk low-risk classification
+      - draft prose
+  strong_model_policy:
+    use_for:
+      - core architecture decisions
+      - novel continuity reasoning
+      - protocol design
+      - conflict resolution
+      - final quality review
+  api_key_policy:
+    rule: "Keys must come from environment variables or secret managers, never committed files."
+
+data_policy_standard:
+  generated_text_policy:
+    default: "Generated text must have an index, version or manifest when it becomes important."
+  novel_asset_policy:
+    default: "Novel assets belong in project-specific story directories, not generic governance directories."
+  review_history_policy:
+    default: "Review comments and revisions should be linked to chapter, scene, version and reviewer."
+  database_policy:
+    default: "Use local JSON, Markdown, SQLite or structured files for MVP. Move to database only when query, collaboration or scale requires it."
+  external_document_policy:
+    default: "Feishu/Lark or other external docs are future collaboration layers, not current source of truth unless explicitly adopted."
+  backup_policy:
+    default: "Important generated outputs should be reproducible or indexed; secrets and local databases require separate backup policy outside Git."
+  privacy_policy:
+    default: "Do not commit real user private content, credentials or unpublished sensitive material without explicit policy."
+  generated_asset_lifecycle:
+    reference_doc: docs/protocols/generated_asset_lifecycle.md
+    states:
+      - generated_temp
+      - pending_review
+      - human_edited
+      - approved
+      - rejected
+      - archived
+      - promoted_to_fixed_asset
+    main_flow: "generated_temp -> pending_review -> human_edited -> approved -> promoted_to_fixed_asset"
+    side_flows:
+      - "pending_review -> needs_revision"
+      - "pending_review -> rejected"
+      - "rejected -> archived"
+      - "generated_temp -> archived"
+    classification:
+      agent_may_auto_generate:
+        - generated_temp
+      requires_human_review:
+        - pending_review
+        - human_edited
+        - approved
+        - promoted_to_fixed_asset
+      may_archive:
+        - rejected
+        - generated_temp
+      must_not_delete:
+        - human_edited
+        - review history
+        - preference_learning data
+      may_enter_git:
+        - approved indexes and manifests
+        - fixed assets selected for source control
+      may_sync_to_lark:
+        - approved metadata and review status when Lark is explicitly authorized
+      never_auto_sync_to_lark:
+        - unreviewed generated_temp
+        - private unpublished prose without explicit approval
+    rule: "Generated content is never a fixed asset by default. Promotion to fixed assets requires human approval."
+  review_workbench_policy:
+    reference_doc: docs/review_workbench/review_workbench_spec.md
+    interface_language_default: zh-CN
+    rules:
+      - "Generated content is not an official asset by default."
+      - "pending_review content must pass human review before promotion."
+      - "human_edited content must preserve the edit trail; it is preference-learning data, not a silent overwrite."
+      - "Only approved content may enter fixed assets."
+      - "rejected content must not be deleted directly; it goes to archive."
+      - "Review status must be traceable (artifact, chapter, scene, version, reviewer, decision)."
+      - "The difference between generated_text and human_edited_text is preference-learning signal."
+  lark_integration_policy:
+    reference_doc: docs/integrations/lark_integration_plan.md
+    role: storage_adapter_not_core_data_model
+    defer_until_business_round: 52
+    defer_until_phase: phase_11_external_collaboration
+    prerequisites:
+      - "Generation MVP (Round 42) complete"
+      - "Round 51 Ecosystem Governance complete"
+    defaults:
+      LARK_ENABLED: false
+      LARK_MOCK_MODE: true
+      LARK_DRY_RUN: true
+    rules:
+      - "Lark is a future storage adapter, not the core Story IR data model."
+      - "No real Lark write before real API credentials and human authorization are supplied."
+      - "Local functionality must keep working without any real Lark API."
+      - "Story IR must be able to exist independently of Lark."
+      - "Review-workbench data may sync to Lark in future, but Lark must never be the only database."
+  browser_automation_policy:
+    reference_doc: docs/integrations/playwright_browser_automation.md
+    tool: playwright
+    location: tools/browser_automation/
+    rules:
+      - "Playwright is used for browser-based UI verification only."
+      - "Playwright must not carry business logic."
+      - "Playwright screenshots, traces and reports default to the artifacts/ directory."
+      - "The artifacts/ directory is not committed to Git by default."
+      - "Browser tests must not depend on a real Lark API."
+  environment_policy:
+    reference_doc: docs/setup/environment_variables.md
+    example_file: .env.example
+    rules:
+      - ".env must be in .gitignore and must never be committed or printed."
+      - ".env.example contains placeholders only, grouped by concern."
+      - "API cost safety switches default to disabled (REAL_API_TESTS_ENABLED=false, MAX_TEST_COST_USD=0)."
+      - "Keys come from environment variables or a secret manager, never committed files."
+      - "Suspected secrets in tracked files are reported by path and line only, never with the value."
+
+portability_guide:
+  how_to_apply_to_new_repo:
+    - "Copy this file to governance/repo_protocol_standard.yaml."
+    - "Create or adapt AGENTS.md as the Agent entry."
+    - "Create project.yaml with the new repository identity."
+    - "Create governance/round_state.yaml, governance/agent_policy.yaml and governance/file_role_map.yaml."
+    - "Run a grep/glob based repository scan."
+    - "Map existing docs into human, Agent, machine, generated and archive roles."
+    - "Add validation scripts or adapt the provided scripts."
+    - "Write docs/reports/repo_governance_audit.md for the new repository."
+  minimal_files_to_copy:
+    - governance/repo_protocol_standard.yaml
+    - AGENTS.md
+    - project.yaml
+    - governance/agent_policy.yaml
+    - governance/file_role_map.yaml
+    - governance/round_state.yaml
+    - scripts/check_protocol_standard.py
+    - scripts/check_repo_contract.py
+    - scripts/scan_repo_inventory.py
+    - scripts/print_agent_context.py
+  first_prompt_for_new_repo: "Read governance/repo_protocol_standard.yaml and adapt this repository to the protocol while preserving project-specific content. Use grep/glob/read first, produce a governance audit report, and do not force project-specific novel rules onto unrelated repositories."
+  adaptation_steps:
+    - "Replace project identity fields in project.yaml."
+    - "Replace project-specific contract files or mark them not applicable."
+    - "Customize file_role_map.yaml for the actual repository structure."
+    - "Customize round_state.yaml for the current work cycle."
+    - "Keep portable naming, reading, archive, secret and sync rules unless there is a documented reason."
+  fields_to_customize:
+    - project.name
+    - project.type
+    - project.summary
+    - project.long_term_goal
+    - project.owner
+    - project.primary_language
+    - project.output_language
+    - repository.entry_points
+    - repository.authoritative_files
+    - protocol_standard.project_overrides
+    - governance/novel_pipeline_contract.yaml or equivalent project contract
+  fields_not_to_change:
+    - naming_conventions.yaml_fields.style
+    - file_role_taxonomy
+    - agent_reading_protocol.search_first_policy
+    - agent_reading_protocol.forbidden_scan_paths
+    - document_policy.archive_policy
+    - agent_policy_standard.secret_policy
+    - sync_requirements
+  fields_not_to_change_without_reason:
+    - naming_conventions
+    - required_root_files
+    - round_protocol
+    - versioning_policy
+  validation_steps:
+    - "Run python3 scripts/scan_repo_inventory.py."
+    - "Run python3 scripts/check_repo_contract.py."
+    - "Run python3 scripts/check_protocol_standard.py."
+    - "Review docs/reports/repo_governance_audit.md."
+    - "Confirm no secrets were read or committed."
+
+sync_requirements:
+  must_update_when:
+    - "A required file is added, removed, renamed or changes role."
+    - "A required directory convention changes."
+    - "A file role definition changes."
+    - "Agent reading order changes."
+    - "Forbidden paths or secret policy changes."
+    - "Round lifecycle or required outputs change."
+    - "Validation script expectations change."
+    - "Markdown/YAML/JSON/script responsibility changes."
+    - "A project-specific override becomes a reusable cross-repo rule."
+  files_to_sync_with:
+    - AGENTS.md
+    - project.yaml
+    - governance/agent_policy.yaml
+    - governance/file_role_map.yaml
+    - governance/round_state.yaml
+    - governance/model_policy.yaml
+    - governance/data_policy.yaml
+    - docs/index.md
+    - docs/protocol_standard_guide.md
+    - docs/reports/
+  consistency_checks:
+    - "AGENTS.md mentions governance/repo_protocol_standard.yaml."
+    - "project.yaml references governance/repo_protocol_standard.yaml."
+    - "project.yaml protocol_standard.version matches protocol.version in this standard."
+    - "governance/file_role_map.yaml records governance/repo_protocol_standard.yaml."
+    - "governance/round_state.yaml includes protocol_standard_sync_required."
+    - "scripts/check_protocol_standard.py passes or reports a documented exception."
+  drift_detection:
+    - "Compare default_reading_order in this file with AGENTS.md."
+    - "Compare the adopted protocol version in project.yaml with protocol.version in this file."
+    - "Compare required governance files with governance/file_role_map.yaml."
+    - "Compare project current_round with governance/round_state.yaml."
+    - "Regenerate governance/repo_inventory.generated.json after structural changes."
+
+versioning_policy:
+  version_format: semver
+  change_log_location:
+    - docs/reports/
+    - docs/CHANGELOG.md
+  backward_compatibility: "Minor versions should preserve existing required fields unless a migration report explains the change."
+  deprecated_fields_policy: "Do not delete fields immediately. Mark as deprecated, keep validation compatible for one minor version, and document migration path."
+  upgrade_policy:
+    patch: "Clarifications and typo fixes."
+    minor: "New optional fields, new recommended files, stronger validation."
+    major: "Breaking field renames, changed authority order or incompatible reading protocol."
+
+project_specific_extensions:
+  novel_pipeline:
+    location: governance/novel_pipeline_contract.yaml
+    portability: "Copy only to novel, narrative, content-generation or creative workflow repos. Do not force it onto general software projects."
+  current_reference_project:
+    project_type: ai_novel_generation_pipeline
+    operating_language: Chinese
+    output_language: Chinese novel prose
+    default_workflow: chinese_first_generation_and_review
+    director_style_engine_governance:
+      project_identity:
+        name: ai-novel-director
+        type: director_style_ai_novel_engine
+        core_goal:
+          - unified_story_ir
+          - forward_generation_pipeline
+          - reverse_analysis_pipeline
+          - human_revision_learning
+          - whole_book_context_management
+      architecture_policy:
+        style: multi_repo_layered_architecture
+        source_of_truth:
+          machine_readable: json_or_yaml
+          human_readable_projection: markdown
+        must_preserve:
+          - existing_user_content
+          - repo_protocol_standard
+          - story_ir_contract
+          - generation_run_traceability
+          - locked_human_reviewed_outputs
+      reference_absorption_policy:
+        absorb_methods_not_code: true
+        direct_code_copy_from_reference_repos: false
+        references:
+          autonovel:
+            accepted_patterns:
+              - foundation_draft_revision_export
+              - canon_hard_facts
+              - anti_slop_plus_judge
+              - reader_panel_revision_brief
+            rejected_patterns:
+              - git_reset_hard_rollback
+              - early_latex_export_pipeline
+          inkos:
+            accepted_patterns:
+              - plan_compose_write
+              - context_json
+              - rule_stack
+              - json_delta_state_update
+              - human_review_gate
+            rejected_patterns:
+              - mvp_33_dimension_audit
+              - early_full_studio
+          book_os:
+            accepted_patterns:
+              - standards_novel_manuscripts_layers
+              - lite_summaries
+              - preflight_check
+            rejected_patterns:
+              - markdown_only_source_of_truth
+          novel_generator:
+            accepted_patterns:
+              - outline_approval_gate
+              - slot_based_generation
+              - reader_vs_character_knowledge_boundary
+              - draft_versions
+            rejected_patterns:
+              - localstorage_only_persistence
+              - single_provider_lock_in
+      round_governance_policy:
+        required_sections:
+          - round_id
+          - round_name
+          - round_type
+          - objective
+          - allowed_changes
+          - forbidden_changes
+          - concrete_tasks
+          - deliverables
+          - acceptance_criteria
+          - handoff_notes
+        preferred_round_count_for_major_planning: 40
+        destructive_changes_require_report: true
+        large_scale_refactor_requires_separate_round: true
+      agent_behavior_policy:
+        must_do:
+          - inspect_repo_before_changes
+          - read_protocol_before_sync
+          - preserve_existing_content
+          - keep_changes_reviewable
+          - update_handoff_docs
+          - define_next_round
+        must_not_do:
+          - delete_user_data
+          - commit_secrets
+          - perform_git_reset_hard
+          - copy_reference_repo_code_directly
+          - mix_provider_logic_into_core_story_logic
+          - overwrite_locked_outputs
+      story_ir_policy:
+        shared_by:
+          - forward_line
+          - reverse_line
+          - preference_learning
+          - quality_reporting
+        required_domains:
+          - project_profile
+          - world_profile
+          - character_profile
+          - relationship_profile
+          - plot_profile
+          - style_profile
+          - chapter_plan
+          - scene_plan
+          - continuity_notes
+          - preference_profile
+          - quality_report
+          - generation_run
+          - review_record
+        design_principles:
+          - machine_readable_first
+          - markdown_projection_for_humans
+          - whole_book_context
+          - json_delta_for_state_updates
+          - locked_human_edits_are_protected
+      quality_gate_policy:
+        mvp_dimensions:
+          - schema_validity
+          - outline_alignment
+          - canon_consistency
+          - character_motivation_consistency
+          - style_slop_detection
+          - chapter_tail_continuity
+          - human_review_status
+        phase2_dimensions:
+          - reader_character_knowledge_boundary
+          - foreshadowing_payoff_tracking
+          - emotional_arc_consistency
+          - relationship_state_consistency
+          - preference_alignment
+      generation_run_policy:
+        must_record:
+          - run_id
+          - unit_id
+          - unit_type
+          - input_snapshot
+          - output_snapshot
+          - provider
+          - model
+          - token_usage
+          - estimated_cost
+          - status
+          - error
+          - retry_count
+          - started_at
+          - finished_at
+        rollback_policy: snapshot_soft_rollback
+        locked_output_policy: never_overwrite_locked_human_reviewed_outputs
+    future_extension_workflows:
+      - japanese_light_novel_submission
+      - translation_and_multilingual_rewrite
+    current_phase_source: project_state/current_phase.json
+    current_round_source: project_state/active_round.json
+  current_project_positioning_rules:
+    - "Current default language is Chinese for input, generation, review and UI copy."
+    - "Current primary workflow is Chinese novel generation and review."
+    - "Japanese-light-novel generation, translation and multilingual submission are optional future extensions."
+    - "Review roles must be configurable perspectives, not fictional authority identities."
+    - "Do not optimize for 'removing AI flavor' as a core objective; optimize measurable quality and consistency."
+    - "Review conclusions must separate textual facts, experience-based inference and data-required claims."
+    - "Review workbench should be understandable for non-programmer users."
+    - "Browser verification should use Playwright or equivalent visibility checks instead of code-only assumptions."
+    - "Every round must include scan, change scope, validation and report."
+    - "Every round must update human entry navigation (README or docs/index) when information architecture changes."
+    - "Every round report must distinguish implemented items from planned-only items."
+    - "Never commit real secrets; .env.example contains placeholders only."
+    - "Do not run paid external APIs without explicit authorization."
+    - "Do not break existing functionality for cosmetic completeness."
+    - "Do not force all future features into one round."
+    - "Retain Feishu/Lark integration path as a governed extension."
+    - "Retain deterministic agent-gate path for autonomous advancement checks."
+    - "Preserve human review/approval checkpoints before irreversible operations."
+    - "Roadmaps must be executable per round with acceptance criteria."
+    - "Documentation structure must support continued multi-round AI-agent handoff."
+  skill_runtime:
+    metadata_registry: skills/registry.json
+    metadata_schema: schemas/skill_metadata.schema.json
+    metadata_check: "python3 main.py skill-metadata-status"
+    executor_check: "python3 main.py skill-executor-dry-run --json --no-audit"
+    executor_boundary: "The current Skill executor is metadata dry-run only. It must not execute Skill bodies, run undeclared side effects or call model APIs."
+  agent_runtime:
+    contract_directory: agents/contracts/
+    director_contract: agents/contracts/director_agent_contract.json
+    director_schema: schemas/director_agent_contract.schema.json
+    contract_check: "python3 main.py director-contract-status --json"
+    contract_boundary: "Round 24 validates Director input/output and decision boundaries only. It does not execute a Director Agent, write story facts or dispatch worker Agents."
+    continuity_contract: agents/contracts/continuity_agent_contract.json
+    continuity_schema: schemas/continuity_agent_contract.schema.json
+    continuity_check: "python3 main.py continuity-contract-status --json"
+    continuity_boundary: "Round 25 validates sourced candidate issues and review notes only. It does not correct accepted story facts, execute an Agent or emit runtime events."
+    review_contract: agents/contracts/review_agent_contract.json
+    review_schema: schemas/review_agent_contract.schema.json
+    review_check: "python3 main.py review-contract-status --json"
+    review_boundary: "Round 26 validates sourced candidate review findings and revision task proposals only. It does not apply revisions, accept facts, execute an Agent or emit runtime events."
+    archivist_contract: agents/contracts/archivist_agent_contract.json
+    archivist_schema: schemas/archivist_agent_contract.schema.json
+    ownership_policy: governance/agent_ownership.yaml
+    story_state_changelog: story_state/CHANGELOG.md
+    archivist_check: "python3 main.py archivist-ownership-status --json"
+    archivist_boundary: "Round 27 validates candidate changelog/handoff records and primary-owner boundaries only. It does not write story facts, append audit entries during validation, execute an Agent or emit runtime events."
+  knowledge_layer:
+    context_compression_policy: config/context_compression.yaml
+    context_compression_check: "python3 main.py context-compression-dry-run --mode write --target-tokens 700 --json"
+    context_compression_boundary: "Round 28 plans local source-layer compression with explicit loss notes only. It does not summarize via models, use embeddings, write artifacts or promote compressed content to story facts."
+    embedding_provider_gate_policy: config/embedding_provider_gate.yaml
+    embedding_provider_gate_check: "python3 main.py embedding-provider-gate-status --json"
+    embedding_provider_gate_boundary: "Round 29 validates null fallback, provider trust refresh and dependency metadata only. It keeps external providers disabled, reads no secrets, emits no vectors and does not enable semantic retrieval."
+    semantic_rag_retrieval_policy: config/semantic_rag_retrieval.yaml
+    semantic_rag_retrieval_check: "python3 main.py semantic-retrieve-rag \"禁忌\" --json"
+    semantic_rag_retrieval_boundary: "Round 30 exposes semantic intent through source-linked lexical/metadata fallback under null_local. It does not call providers, persist vectors, inject context automatically or promote matches to facts."
+    knowledge_source_graph_contract: governance/knowledge_source_graph.yaml
+    knowledge_source_graph_check: "python3 main.py knowledge-source-graph-status --json"
+    knowledge_source_graph_boundary: "Round 31 validates local ownership, audit and candidate-source lineage. It rejects secret or out-of-repository sources and automatic promotion, performs no story writes and declares no accepted facts."
+  collaboration_layer:
+    web_backend_policy: config/web_backend.yaml
+    web_backend_check: "python3 main.py web-backend-status --json"
+    web_backend_smoke_check: "python3 main.py api-smoke-test"
+    web_backend_boundary: "Round 32 exposes GET-only, whitelisted local metadata and lineage summaries through the existing HTTP runtime. It does not expose prose, call models, access external authentication or Lark, or promote candidate facts."
+    minimal_web_ui_policy: config/web_ui.yaml
+    minimal_web_ui_entry: /web/
+    minimal_web_ui_check: "python3 main.py web-ui-status --json"
+    minimal_web_ui_boundary: "Round 33 serves a local static review workspace that consumes only approved GET-only Web backend routes. It renders no novel prose, authenticates no users, performs no approval or write action and integrates no external service."
+
+personal_control_hub_restart_overlay:
+  version: "0.1.0"
+  status: active_for_personal_control_hub
+  added_on: "2026-06-07"
+  purpose: "把既有可迁移 repo protocol 兼容用于 personal-control-hub 重启骨架。"
+  authority_note: "本 overlay 是 personal-control-hub 的项目级覆盖；旧项目特定条目保留为历史兼容，后续经用户确认后再清理或归档。"
+  project_identity:
+    name: personal-control-hub
+    role:
+      - project_control_layer
+      - index_layer
+      - planning_layer
+      - scheduling_layer
+      - notification_layer
+      - multi_project_governance_layer
+    non_goals:
+      - "大模型底座"
+      - "完整 Agent 平台"
+      - "浏览器自动操作平台"
+      - "完整 SaaS"
+      - "大型 dashboard"
+      - "业务 repo monorepo"
+      - "全量扫描"
+      - "真实 Feishu/Lark API"
+      - "真实付费模型 API"
+      - "真实 token"
+      - "模型最终优先级决策"
+      - "外部项目直接修改"
+      - "高风险自动操作"
+  operating_model:
+    cursor: "日常主力项目推进环境。"
+    codex: "高质量代码执行、审查、复杂修改和关键轮次推进。"
+    chatgpt: "规划、分析、Prompt 生成和外部讨论。"
+    third_party_agents: "暂非主力。"
+    environment: "中国大陆本地优先，不强制同一平台，不依赖单一云服务。"
+  governance_mechanisms:
+    - "Meta OS 管多业务 repo。"
+    - "spec/plan/tasks/acceptance criteria。"
+    - "workflow catalog。"
+    - "active programs、project registry、round roadmap、integration registry、next action catalog。"
+    - "生命周期命令、技能化 SOP、验证证据。"
+    - "只读默认、安全输出、显式写入通道、完工前验证、重要操作人类确认。"
+    - "session、branch、CR、controlled merge、manifest。"
+    - "planner/executor 分层、审批等级。"
+    - "任务树、completed 与 accepted 分离、Gate、SOP、FileWatcher/Markdown task。"
+    - "首席智能官、硅基员工、护栏、资产池、认知资产、记忆层。"
+    - "START-HERE、AGENTS、External Repo Registry、session-log、secrets discipline。"
+    - "一人公司项目矩阵、小赌注、MVP/validation/growth 判断。"
+  external_project_default:
+    access: read_only
+    write_back_allowed: false
+    full_scan_allowed: false
+    priority_decision: "LLM may suggest; user decides."
+  validation:
+    minimum_commands:
+      - "python scripts/check_repo.py"
+      - "python scripts/bootstrap.py --dry-run"

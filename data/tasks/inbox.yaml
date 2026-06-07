@@ -1,0 +1,6 @@
+items: []
+
+policy:
+  purpose: "收集尚未整理的想法、任务和输入。"
+  secret_policy: "不要写入 token、secret、cookie、API key。"
+  triage_target: data/tasks/next_actions.yaml

@@ -1,0 +1,179 @@
+roadmap:
+  name: mcp_integration_roadmap
+  version: "0.6.0"
+  status: draft
+  last_updated: "2026-06-07"
+  round_006_note: "Round 0.6 将 UI/Web Console 与自动推进 gate 纳入主路线；MCP 仍默认 disabled，L2/L3 未确认不得真实调用。"
+
+rounds:
+  - id: round_005
+    name: Cursor MCP Workspace Infrastructure
+    phase: restart_foundation
+    status: in_progress
+    goal: "建立 MCP 能力矩阵、审批策略、Cursor 配置说明与示例，不真实调用。"
+    deliverables:
+      - docs/11_mcp_infrastructure_strategy.md
+      - docs/12_external_tool_approval_model.md
+      - docs/13_cursor_mcp_workspace_setup.md
+      - data/mcp/mcp_capability_registry.yaml
+      - data/mcp/mcp_approval_policy.yaml
+      - data/mcp/mcp_integration_roadmap.yaml
+      - data/mcp/mcp_servers.example.yaml
+      - prompts/mcp_audit_prompt.md
+      - prompts/cursor_mcp_usage_prompt.md
+      - .cursor/README.md
+      - .cursor/mcp.example.json
+    acceptance:
+      - "六个 MCP 全部登记且 enabled_in_project 为 true"
+      - "default start 不等于 unlimited access，L2/L3 仍按审批策略确认"
+      - "check_repo.py 通过 MCP 专项检查"
+      - "无真实 token 写入仓库"
+
+  - id: round_005_1
+    name: MCP Registry CLI and Audit Loop
+    phase: restart_foundation
+    status: planned
+    goal: "hub mcp list/policy 稳定化，SCHED-MCP-REGISTRY-AUDIT 生成审计草案。"
+    depends_on:
+      - round_005
+
+  - id: round_006
+    name: GitHub MCP Read-Only Pilot
+    phase: phase_1_governance
+    status: planned
+    goal: "在用户确认后试点 GitHub 只读集成，写入 snapshot 证据。"
+    mcp_ids:
+      - github
+    max_approval_level: L2
+
+  - id: round_006_5
+    name: Context7 Docs Context Pilot
+    phase: phase_1_governance
+    status: planned
+    goal: "为外部项目扫描补充库文档上下文，保持 L0。"
+    mcp_ids:
+      - context7
+
+  - id: round_007
+    name: Filesystem MCP Whitelist
+    phase: phase_1_governance
+    status: planned
+    goal: "定义 Filesystem MCP 路径白名单并与 external project 协议对齐。"
+    mcp_ids:
+      - filesystem
+
+  - id: round_007_5
+    name: Stitch UI Exploration
+    phase: phase_1_governance
+    status: planned
+    goal: "UI 探索草案输出到本仓库，不写入外部项目。"
+    mcp_ids:
+      - stitch
+
+  - id: round_008
+    name: Chrome DevTools Browser Debug
+    phase: phase_2_intelligence
+    status: planned
+    goal: "浏览器测试复盘与性能诊断，L2 确认。"
+    mcp_ids:
+      - chrome-devtools
+
+  - id: round_008_5
+    name: Browser Test Review Scheduler
+    phase: phase_2_intelligence
+    status: planned
+    goal: "SCHED-BROWSER-TEST-REVIEW 与 DevTools/Playwright 策略联动。"
+    mcp_ids:
+      - chrome-devtools
+      - playwright
+
+  - id: round_009
+    name: Playwright Controlled E2E
+    phase: phase_3_program_loop
+    status: planned
+    goal: "受控 E2E 测试；默认 L3，需 CEO 批准。"
+    mcp_ids:
+      - playwright
+
+  - id: round_009_5
+    name: MCP + Feishu Notify Bridge
+    phase: phase_4_notification
+    status: planned
+    goal: "MCP 审计结果经 mock Feishu 通知，不真实发送。"
+    mcp_ids: []
+
+  - id: round_010
+    name: MCP Governance in Program Loop
+    phase: phase_3_program_loop
+    status: planned
+    goal: "将 MCP 启用状态纳入 program 复盘与决策日志。"
+    mcp_ids: []
+
+  - id: round_010_5
+    name: Cross-Agent MCP Policy Sync
+    phase: phase_4_notification
+    status: planned
+    goal: "Codex/Cursor prompt queue 携带 MCP policy 摘要，防止绕过。"
+    mcp_ids: []
+
+  - id: round_012
+    name: MCP Production Readiness Review
+    phase: phase_4_notification
+    status: planned
+    goal: "全量 MCP 能力复审、风险分级与用户验收。"
+    mcp_ids:
+      - chrome-devtools
+      - context7
+      - filesystem
+      - github
+      - playwright
+      - stitch
+
+  - id: ROUND-10-5
+    name: Stitch UI Concept Round
+    phase: phase_2_ui_console
+    status: planned
+    goal: "在用户确认后使用 Stitch 辅助 UI 概念草图；不写外部业务仓库，不上传敏感截图。"
+    mcp_ids:
+      - stitch
+    max_approval_level: L2
+    hard_blockers:
+      - "MCP L2 未获确认。"
+      - "需要上传敏感截图。"
+
+  - id: ROUND-11
+    name: Browser Test Adapter Planning
+    phase: phase_2_ui_console
+    status: planned
+    goal: "规划 Chrome DevTools 与 Playwright 在 UI 验收中的边界；DevTools L2，Playwright L3 默认禁用。"
+    mcp_ids:
+      - chrome-devtools
+      - playwright
+    max_approval_level: L3
+    hard_blockers:
+      - "Playwright L3 未获确认。"
+      - "需要自动登录真实账号。"
+
+  - id: ROUND-14
+    name: Auto-Advance Agent Runner MCP Safety
+    phase: phase_3_auto_advance
+    status: planned
+    goal: "自动推进 Runner 不得绕过 MCP policy；L2/L3 必须先经 gate stop 并用户确认。"
+    mcp_ids:
+      - context7
+      - filesystem
+      - github
+      - chrome-devtools
+      - stitch
+      - playwright
+
+priority_order:
+  near_term:
+    - context7
+    - filesystem
+    - github
+  medium_term:
+    - chrome-devtools
+    - stitch
+  long_term_requires_ceo:
+    - playwright

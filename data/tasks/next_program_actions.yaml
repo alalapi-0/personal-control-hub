@@ -1,0 +1,17 @@
+next_program_actions:
+  - id: program_review_personal_control_hub
+    program_id: personal_control_hub
+    title: "复盘 Round 0 骨架并确认 Round 1 范围。"
+    status: proposed
+    suggested_cadence: weekly
+    requires_user_confirmation: false
+
+  - id: program_confirm_external_project_paths
+    program_id: personal_control_hub
+    title: "确认首批外部项目路径和扫描开关。"
+    status: proposed
+    suggested_cadence: once
+    requires_user_confirmation: true
+
+policy:
+  source: "Agent may propose; user accepts."

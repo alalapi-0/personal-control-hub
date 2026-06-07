@@ -1,0 +1,154 @@
+file_roles:
+  root:
+    README.md:
+      role: human_entry
+      authority: high
+      update_policy: "项目定位、启动方式或验证入口变化时更新。"
+    AGENTS.md:
+      role: agent_entry
+      authority: high
+      update_policy: "Agent 必读顺序、权限或验证命令变化时更新。"
+    project.yaml:
+      role: project_identity
+      authority: high
+      update_policy: "项目身份、边界、工具分工或入口变化时更新。"
+    hub.py:
+      role: cli_entrypoint
+      authority: medium
+      update_policy: "CLI 子命令扩展时更新。"
+  governance:
+    governance/round_state.yaml:
+      role: current_round_state
+      authority: high
+    governance/agent_policy.yaml:
+      role: permissions_and_guardrails
+      authority: high
+    governance/file_role_map.yaml:
+      role: file_authority_map
+      authority: high
+    governance/repo_protocol_standard.yaml:
+      role: portable_repo_protocol
+      authority: highest
+  docs:
+    docs/00_start_here.md:
+      role: human_and_agent_start
+      authority: high
+    docs/01_project_ultimate_goal.md:
+      role: ultimate_goal_and_boundaries
+      authority: high
+    docs/02_master_roadmap.md:
+      role: roadmap
+      authority: high
+    docs/03_architecture.md:
+      role: architecture_overview
+      authority: medium
+    docs/04_data_model.md:
+      role: data_model
+      authority: medium
+    docs/05_external_project_protocol.md:
+      role: external_project_read_protocol
+      authority: high
+    docs/06_scheduler_design.md:
+      role: scheduler_design
+      authority: medium
+    docs/07_integration_strategy.md:
+      role: integration_strategy
+      authority: medium
+    docs/08_codex_cursor_workflow.md:
+      role: agent_tool_workflow
+      authority: high
+    docs/09_feishu_lark_strategy.md:
+      role: feishu_lark_strategy
+      authority: medium
+    docs/10_decision_log.md:
+      role: human_readable_decision_log
+      authority: medium
+    docs/11_mcp_infrastructure_strategy.md:
+      role: mcp_infrastructure_strategy
+      authority: high
+    docs/12_external_tool_approval_model.md:
+      role: external_tool_approval_model
+      authority: high
+    docs/13_cursor_mcp_workspace_setup.md:
+      role: cursor_mcp_workspace_setup
+      authority: high
+    docs/14_ui_console_plan.md:
+      role: ui_console_plan
+      authority: high
+    docs/15_auto_advance_gate.md:
+      role: auto_advance_gate_design
+      authority: high
+    docs/reports/restart_audit_report.md:
+      role: restart_audit_report
+      authority: medium
+  data:
+    data/registry/external_projects.yaml:
+      role: external_project_registry
+      write_policy: "只登记路径与读取策略，不写入外部项目。"
+    data/programs/active_programs.yaml:
+      role: active_program_registry
+    data/programs/program_project_links.yaml:
+      role: program_project_link_proposals_and_confirmed_links
+    data/tasks/next_actions.yaml:
+      role: next_action_catalog
+    data/scheduler/scheduled_tasks.yaml:
+      role: schedule_catalog
+    data/integrations/integration_targets.yaml:
+      role: integration_target_catalog
+    data/state/current_status.yaml:
+      role: lightweight_current_state
+    data/logs/automation_log.jsonl:
+      role: append_only_automation_log
+    data/logs/project_decision_log.jsonl:
+      role: append_only_decision_log
+    data/mcp/mcp_capability_registry.yaml:
+      role: mcp_capability_registry
+      authority: high
+    data/mcp/mcp_approval_policy.yaml:
+      role: mcp_approval_policy
+      authority: high
+    data/mcp/mcp_integration_roadmap.yaml:
+      role: mcp_integration_roadmap
+      authority: high
+    data/mcp/mcp_servers.example.yaml:
+      role: mcp_servers_example
+      authority: medium
+    data/roadmap/round_tasks.yaml:
+      role: machine_readable_round_tasks
+      authority: high
+    data/roadmap/round_dependencies.yaml:
+      role: machine_readable_round_dependencies
+      authority: high
+    data/gates/auto_advance_policy.yaml:
+      role: auto_advance_policy
+      authority: high
+    data/gates/gate_checklist.yaml:
+      role: gate_checklist
+      authority: high
+  cursor:
+    .cursor/README.md:
+      role: cursor_workspace_readme
+      authority: medium
+    .cursor/mcp.example.json:
+      role: cursor_mcp_example_config
+      authority: medium
+      update_policy: "示例配置变更时更新；不得覆盖用户 mcp.json。"
+  prompts:
+    prompts/mcp_audit_prompt.md:
+      role: mcp_audit_prompt
+      authority: medium
+    prompts/cursor_mcp_usage_prompt.md:
+      role: cursor_mcp_usage_prompt
+      authority: high
+    prompts/auto_advance_agent_prompt.md:
+      role: auto_advance_agent_prompt
+      authority: high
+  scripts:
+    scripts/agent_gate.py:
+      role: local_readonly_auto_advance_gate
+      authority: high
+      update_policy: "自动推进规则或路线图必要字段变化时更新；脚本不得写文件或调用外部 API。"
+historical_reference_docs:
+  pattern: "docs/[00-15]_*.md"
+  role: restart_reference_reports
+  policy: "编号 00-15 且无 _mcp_ / _external_tool_ / _cursor_mcp_ 后缀的为历史参考；MCP 执行入口为 docs/11_mcp_* 至 docs/13_cursor_mcp_*。"

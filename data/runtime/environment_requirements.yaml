@@ -1,0 +1,58 @@
+requirements:
+  python:
+    required: true
+    min_version: "3.10"
+    preferred_version: "3.11+"
+    check_command: "python --version"
+    required_for:
+      - scripts
+      - gate
+      - auto_advance_runner
+
+  git:
+    required: true
+    check_command: "git --version"
+    required_for:
+      - commit
+      - push
+      - project_status
+
+  node:
+    required: false
+    check_command: "node --version"
+    required_for:
+      - future_ui
+      - playwright
+      - some_mcp_servers
+
+  npm:
+    required: false
+    check_command: "npm --version"
+    required_for:
+      - future_ui
+      - playwright
+      - some_mcp_servers
+
+  cursor:
+    required: false
+    check_type: manual
+    required_for:
+      - mcp_host
+      - daily_development
+
+  codex:
+    required: false
+    check_type: manual
+    required_for:
+      - key_round_execution
+
+  mcp_servers:
+    required: false
+    check_type: manual_or_cursor_workspace
+    expected:
+      - chrome-devtools
+      - context7
+      - filesystem
+      - github
+      - playwright
+      - stitch

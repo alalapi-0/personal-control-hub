@@ -1,0 +1,142 @@
+checklists:
+  version: "0.7.0"
+  status: draft
+
+gates:
+  - id: GATE-CORE-FILES
+    name: Core Files Exist
+    purpose: "确认 Restart Round 0/0.5 核心文件仍存在。"
+    required: true
+    checks:
+      - README.md
+      - AGENTS.md
+      - project.yaml
+      - docs/00_start_here.md
+      - docs/01_project_ultimate_goal.md
+      - docs/02_master_roadmap.md
+      - governance/agent_policy.yaml
+      - governance/round_state.yaml
+      - data/mcp/mcp_capability_registry.yaml
+      - data/mcp/mcp_approval_policy.yaml
+      - data/mcp/mcp_integration_roadmap.yaml
+      - prompts/codex_project_driver.md
+      - prompts/cursor_project_driver.md
+    on_fail: stop
+
+  - id: GATE-ROADMAP-STRUCTURE
+    name: Roadmap Structure
+    purpose: "确认 active/planned round 有必要字段和可验证验收条件。"
+    required: true
+    checks:
+      - "data/roadmap/round_tasks.yaml exists"
+      - "active/planned rounds include id/name/status/goal/acceptance_criteria/can_auto_advance/hard_blockers"
+      - "dependencies only use requires/unlocks"
+      - "UI rounds are represented in Phase 2"
+    on_fail: stop
+
+  - id: GATE-MCP-SAFETY
+    name: MCP Safety
+    purpose: "确认 MCP 登记没有明显结构问题，且 L2/L3 未确认不自动调用。"
+    required: true
+    checks:
+      - "data/mcp/mcp_capability_registry.yaml exists"
+      - "registered MCP entries include id/name/approval_level/enabled_in_project"
+      - "enabled_in_project defaults to true for the six registered MCPs"
+      - "default start does not bypass MCP L2/L3 confirmation"
+    on_fail: stop
+
+  - id: GATE-NO-DESTRUCTIVE-ACTION
+    name: No Destructive Action
+    purpose: "确认本轮不删除文件、不覆盖用户内容、不写 token、不 git push。"
+    required: true
+    checks:
+      - "no delete operation"
+      - "no real secret written"
+      - "no external project write"
+      - "no git push"
+      - "no real external API call"
+    on_fail: stop
+
+  - id: GATE-UI-PLAN
+    name: UI Console Plan
+    purpose: "确认 UI/Web Console 纳入路线但未直接实现完整 UI。"
+    required: true
+    checks:
+      - "docs/14_ui_console_plan.md exists"
+      - "Phase 2 UI rounds exist in round_tasks"
+      - "pages have data sources, allowed actions, forbidden actions"
+      - "Stitch/Playwright/Chrome DevTools boundaries are documented"
+    on_fail: warn_and_continue
+
+  - id: GATE-AUTO-ADVANCE-POLICY
+    name: Auto Advance Policy
+    purpose: "确认自动推进默认继续、硬阻塞停止、软阻塞 warning 后继续。"
+    required: true
+    checks:
+      - "data/gates/auto_advance_policy.yaml exists"
+      - "default_behavior contains continue/warn/stop mapping"
+      - "hard blockers include secret/external write/delete/push/login/payment/P0-P1/MCP L2-L3"
+      - "soft blockers include UI style/copy/webhook/token/mock/no updates/future detail/readability"
+    on_fail: stop
+
+  - id: GATE-RUNTIME-ENVIRONMENT
+    name: Runtime Environment Check
+    purpose: "确认运行环境检查脚本与 requirements 存在且可运行。"
+    required: true
+    checks:
+      - "data/runtime/environment_requirements.yaml exists"
+      - "data/runtime/toolchain_status.yaml exists"
+      - "data/runtime/validation_commands.yaml exists"
+      - "scripts/check_environment.py exists"
+    on_fail: stop
+
+  - id: GATE-ROUND-CONSISTENCY
+    name: Round Consistency Check
+    purpose: "确认 round_state、current_status、roadmap 一致。"
+    required: true
+    checks:
+      - "scripts/round_consistency_check.py exists"
+      - "governance/round_state.yaml current_round matches current_status"
+      - "current round exists in round_tasks"
+    on_fail: stop
+
+  - id: GATE-VALIDATION-COMMANDS
+    name: Validation Commands Check
+    purpose: "确认 validation_commands.yaml 定义核心验证命令。"
+    required: true
+    checks:
+      - "CHECK-REPO command defined"
+      - "AGENT-GATE command defined"
+      - "ROUND-CONSISTENCY command defined"
+      - "CHECK-ENV command defined"
+    on_fail: stop
+
+  - id: GATE-SENSITIVE-FILE
+    name: Sensitive File Check
+    purpose: "commit 前阻止 .env、密钥文件和敏感内容标记。"
+    required: true
+    checks:
+      - "auto_advance_runner finalize-round scans sensitive paths"
+      - "patterns include .env, *.pem, *.key, OPENAI_API_KEY assignments"
+    on_fail: stop
+
+  - id: GATE-GIT-REMOTE
+    name: Git Remote Check
+    purpose: "finalize-round 前检查 git 仓库与 remote 状态。"
+    required: true
+    checks:
+      - "git rev-parse --is-inside-work-tree checked"
+      - "missing remote produces warning not silent success"
+      - "push failure stops runner"
+    on_fail: warn_and_continue
+
+  - id: GATE-AUTO-RUNNER
+    name: Auto Runner Presence Check
+    purpose: "确认 auto_advance_runner 存在并支持三种 mode。"
+    required: true
+    checks:
+      - "scripts/auto_advance_runner.py exists"
+      - "supports --mode check"
+      - "supports --mode prepare-next"
+      - "supports --mode finalize-round"
+    on_fail: stop

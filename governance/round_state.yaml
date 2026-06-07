@@ -1,0 +1,108 @@
+current_phase: Restart Phase
+current_round: ROUND-0-9
+current_round_name: GitHub Push Workflow Validation
+last_completed_round: ROUND-0-8
+next_round: ROUND-1
+
+auto_advance:
+  enabled: true
+  default_behavior: continue_without_hard_blocker
+  gate_script: scripts/agent_gate.py
+  runner_script: scripts/auto_advance_runner.py
+  require_gate_before_round: true
+  require_consistency_check: true
+  allow_auto_commit: true
+  allow_auto_push: true
+  decisions:
+    continue: "无硬阻塞时继续推进。"
+    warn_and_continue: "只有软阻塞时记录 warning 后继续。"
+    stop: "存在硬阻塞时停止并请求用户确认。"
+
+completed_rounds:
+  - ROUND-0
+  - ROUND-0-5
+  - ROUND-0-6
+  - ROUND-0-7
+  - ROUND-0-8
+
+active_rounds:
+  - ROUND-0-9
+
+planned_rounds:
+  - ROUND-1
+
+rounds:
+  - id: ROUND-0
+    name: Restart Audit and Core Skeleton
+    status: completed_pending_user_acceptance
+    completed_by_agent: true
+    accepted_by_user: false
+    completion_note: "重启骨架、入口文档、治理文件、data/prompts/scripts 占位已建立。"
+  - id: ROUND-0-5
+    name: Cursor MCP Workspace Infrastructure
+    status: completed_pending_user_acceptance
+    completed_by_agent: true
+    accepted_by_user: false
+    completion_note: "六个 MCP 已登记，L0-L3 审批策略与 Cursor 示例配置已建立；未安装、未真实调用 MCP。"
+  - id: ROUND-0-6
+    name: Roadmap Expansion + UI Console Plan + Auto-Advance Gate
+    status: completed_pending_user_acceptance
+    completed_by_agent: true
+    accepted_by_user: false
+    goal: "扩写路线图、规划 UI、建立自动推进门禁。"
+    completion_note: "master roadmap 已扩写；agent_gate.py 可运行；hard blocker 规则已定义。"
+    acceptance_criteria:
+      - "master roadmap 已扩写。"
+      - "UI 相关轮次已加入 roadmap。"
+      - "agent_gate.py 可以运行。"
+      - "hard blocker 规则已定义。"
+  - id: ROUND-0-7
+    name: Runtime Environment Alignment + Continuous Auto-Advance Runner
+    status: completed_pending_user_acceptance
+    completed_by_agent: true
+    accepted_by_user: false
+    goal: "统一运行环境并建立持续推进入口脚本。"
+    completion_note: "环境检查、一致性检查、auto_advance_runner 三模式、runtime 文档与 gate 更新已完成；git 已初始化，本地 commit 待 finalize-round。"
+    acceptance_criteria:
+      - "运行环境文档已创建。"
+      - "环境检查脚本可运行。"
+      - "auto_advance_runner 支持 check/prepare-next/finalize-round。"
+  - id: ROUND-0-8
+    name: Runner Dry Run and Failure Simulation
+    status: completed_pending_user_acceptance
+    completed_by_agent: true
+    accepted_by_user: false
+    goal: "测试 auto_advance_runner 各模式、模拟 hard blocker 与 soft warning、测试敏感文件拦截；不真实 push。"
+    completion_note: "runner_dry_run_test.py 全部通过；hard/soft 模拟已写入 auto_advance_log；本轮未执行真实 push。"
+    acceptance_criteria:
+      - "auto_advance_runner.py --mode check 可运行。"
+      - "prepare-next 可生成 prompt 草案。"
+      - "hard blocker 与 soft warning 模拟有记录。"
+      - "敏感文件拦截已验证。"
+      - "本轮不真实 push。"
+  - id: ROUND-0-9
+    name: GitHub Push Workflow Validation
+    status: active
+    completed_by_agent: false
+    accepted_by_user: false
+    goal: "在用户确认后测试 finalize-round 的 commit/push、验证 push 失败时停止、验证日志写入。"
+
+constraints:
+  no_delete_history: true
+  no_real_feishu_api: true
+  no_real_paid_llm_api: true
+  no_secrets_in_repo: true
+  no_external_project_writes: true
+  no_git_push_checkout_reset: true
+  no_mcp_install: true
+  no_real_mcp_calls: true
+  no_overwrite_user_mcp_json: true
+
+legacy_round_005:
+  id: round_005
+  name: Cursor MCP Workspace Infrastructure
+  status: completed_pending_user_acceptance
+  started_on: "2026-06-07"
+  owner: user
+  executor: cursor_subagent
+  note: "保留旧 round id 供历史引用；新路线图使用 ROUND-0-5。"

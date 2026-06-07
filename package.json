@@ -1,0 +1,7 @@
+{
+  "name": "personal-control-hub",
+  "private": true,
+  "scripts": {
+    "check:mcp": "node scripts/check_mcp_config.js"
+  }
+}

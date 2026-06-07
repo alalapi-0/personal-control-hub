@@ -1,0 +1,26 @@
+next_actions:
+  - id: next_round_001_governance_validation
+    title: "扩展 scripts/check_repo.py 的结构校验。"
+    status: proposed
+    program_id: personal_control_hub
+    project_id: personal-control-hub
+    source: round_000_restart
+    evidence:
+      - "Round 0 只提供最小存在性检查。"
+    suggested_executor: Cursor
+    requires_user_confirmation: false
+
+  - id: next_round_003_register_external_projects
+    title: "由用户确认首批外部项目本地路径。"
+    status: proposed
+    program_id: personal_control_hub
+    project_id: null
+    source: round_000_restart
+    evidence:
+      - "external_projects.yaml 当前保持空结构，未写真实外部路径。"
+    suggested_executor: user_then_cursor
+    requires_user_confirmation: true
+
+policy:
+  llm_output_type: proposal
+  final_priority_decision_by: user

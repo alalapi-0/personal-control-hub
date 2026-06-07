@@ -1,0 +1,61 @@
+# MCP 服务器示例配置 — 不含真实 token
+# 复制到 Cursor 用户级或项目级配置时，请用环境变量注入密钥。
+# 权威登记：data/mcp/mcp_capability_registry.yaml
+# 审批策略：data/mcp/mcp_approval_policy.yaml
+# Round 0.5：示例为 default start；仍不含真实 token，不代表本机已安装或已真实启用。
+
+mcpServers:
+  context7:
+    enabled: true
+    command: npx
+    args:
+      - "-y"
+      - "@upstash/context7-mcp"
+    env:
+      CONTEXT7_API_KEY: "${CONTEXT7_API_KEY}"
+    notes: "L0 文档上下文；default start，密钥仅放环境变量。"
+
+  filesystem:
+    enabled: true
+    command: npx
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-filesystem"
+      - "/absolute/path/to/personal-control-hub"
+    notes: "L1 本地文件；default start，路径须与白名单一致，勿指向整个用户目录。"
+
+  github:
+    enabled: true
+    command: npx
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-github"
+    env:
+      GITHUB_PERSONAL_ACCESS_TOKEN: "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+    notes: "L2 只读候选；default start 不等于免确认，写操作归类 L3，默认禁止。"
+
+  chrome-devtools:
+    enabled: true
+    command: npx
+    args:
+      - "-y"
+      - "chrome-devtools-mcp"
+    notes: "L2 浏览器调试；default start，需用户确认目标页面和数据范围。"
+
+  playwright:
+    enabled: true
+    command: npx
+    args:
+      - "-y"
+      - "@playwright/mcp"
+    notes: "L3 自动化；default start 仅表示可启动，生产登录、支付、发布、破坏性 UI 操作仍禁止或需 CEO 显式批准。"
+
+  stitch:
+    enabled: true
+    command: npx
+    args:
+      - "-y"
+      - "stitch-mcp"
+    env:
+      STITCH_API_KEY: "${STITCH_API_KEY}"
+    notes: "L2 UI 探索；default start，密钥仅放环境变量，敏感素材和外部写入需确认。"

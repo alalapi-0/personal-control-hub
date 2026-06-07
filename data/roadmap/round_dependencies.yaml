@@ -1,0 +1,233 @@
+dependencies:
+  version: "0.7.0"
+  status: draft
+  relation_types:
+    - requires
+    - unlocks
+
+rounds:
+  ROUND-0:
+    requires: []
+    unlocks:
+      - ROUND-0-5
+  ROUND-0-5:
+    requires:
+      - ROUND-0
+    unlocks:
+      - ROUND-0-6
+  ROUND-0-6:
+    requires:
+      - ROUND-0-5
+    unlocks:
+      - ROUND-0-7
+  ROUND-0-7:
+    requires:
+      - ROUND-0-6
+    unlocks:
+      - ROUND-0-8
+  ROUND-0-8:
+    requires:
+      - ROUND-0-7
+    unlocks:
+      - ROUND-0-9
+  ROUND-0-9:
+    requires:
+      - ROUND-0-8
+    unlocks:
+      - ROUND-1
+  ROUND-1:
+    requires:
+      - ROUND-0-9
+    unlocks:
+      - ROUND-1-1
+  ROUND-1-1:
+    requires:
+      - ROUND-1
+    unlocks:
+      - ROUND-1-5
+  ROUND-1-5:
+    requires:
+      - ROUND-1
+    unlocks:
+      - ROUND-2
+  ROUND-2:
+    requires:
+      - ROUND-1
+    unlocks:
+      - ROUND-2-1
+  ROUND-2-1:
+    requires:
+      - ROUND-2
+      - ROUND-0-7
+    unlocks:
+      - ROUND-2-5
+  ROUND-2-5:
+    requires:
+      - ROUND-2
+    unlocks:
+      - ROUND-3
+  ROUND-3:
+    requires:
+      - ROUND-2
+    unlocks:
+      - ROUND-3-5
+      - ROUND-4
+  ROUND-3-5:
+    requires:
+      - ROUND-3
+      - ROUND-0-5
+    unlocks:
+      - ROUND-4
+  ROUND-4:
+    requires:
+      - ROUND-3
+    unlocks:
+      - ROUND-4-5
+      - ROUND-5
+      - ROUND-9
+  ROUND-4-5:
+    requires:
+      - ROUND-4
+      - ROUND-0-5
+    unlocks:
+      - ROUND-5
+  ROUND-5:
+    requires:
+      - ROUND-4
+    unlocks:
+      - ROUND-5-5
+      - ROUND-9
+  ROUND-5-5:
+    requires:
+      - ROUND-5
+    unlocks:
+      - ROUND-6
+  ROUND-6:
+    requires:
+      - ROUND-5
+    unlocks:
+      - ROUND-6-5
+  ROUND-6-5:
+    requires:
+      - ROUND-6
+      - ROUND-0-7
+    unlocks:
+      - ROUND-6-6
+  ROUND-6-6:
+    requires:
+      - ROUND-6-5
+      - ROUND-0-7
+    unlocks:
+      - ROUND-7
+  ROUND-7:
+    requires:
+      - ROUND-6-6
+    unlocks:
+      - ROUND-7-5
+  ROUND-7-5:
+    requires:
+      - ROUND-7
+    unlocks:
+      - ROUND-7-6
+  ROUND-7-6:
+    requires:
+      - ROUND-7-5
+      - ROUND-0-7
+    unlocks:
+      - ROUND-8
+  ROUND-8:
+    requires:
+      - ROUND-7-6
+    unlocks:
+      - ROUND-8-5
+  ROUND-8-5:
+    requires:
+      - ROUND-8
+    unlocks:
+      - ROUND-9
+  ROUND-9:
+    requires:
+      - ROUND-4
+      - ROUND-5
+    unlocks:
+      - ROUND-9-5
+  ROUND-9-5:
+    requires:
+      - ROUND-9
+    unlocks:
+      - ROUND-10
+  ROUND-10:
+    requires:
+      - ROUND-9-5
+    unlocks:
+      - ROUND-10-5
+  ROUND-10-5:
+    requires:
+      - ROUND-10
+      - ROUND-0-5
+    unlocks:
+      - ROUND-11
+  ROUND-11:
+    requires:
+      - ROUND-10
+      - ROUND-0-5
+    unlocks:
+      - ROUND-11-5
+  ROUND-11-5:
+    requires:
+      - ROUND-11
+    unlocks:
+      - ROUND-11-6
+  ROUND-11-6:
+    requires:
+      - ROUND-11-5
+      - ROUND-0-7
+    unlocks:
+      - ROUND-12
+  ROUND-12:
+    requires:
+      - ROUND-6
+      - ROUND-11-6
+    unlocks:
+      - ROUND-12-5
+  ROUND-12-5:
+    requires:
+      - ROUND-12
+      - ROUND-8
+    unlocks:
+      - ROUND-13
+  ROUND-13:
+    requires:
+      - ROUND-12
+    unlocks:
+      - ROUND-13-5
+  ROUND-13-5:
+    requires:
+      - ROUND-13
+    unlocks:
+      - ROUND-14
+  ROUND-14:
+    requires:
+      - ROUND-13-5
+      - ROUND-6-6
+    unlocks:
+      - ROUND-14-5
+  ROUND-14-5:
+    requires:
+      - ROUND-14
+    unlocks:
+      - ROUND-15
+  ROUND-15:
+    requires:
+      - ROUND-14-5
+    unlocks:
+      - ROUND-16
+  ROUND-16:
+    requires:
+      - ROUND-15
+    unlocks:
+      - ROUND-17
+  ROUND-17:
+    requires:
+      - ROUND-16
+    unlocks: []

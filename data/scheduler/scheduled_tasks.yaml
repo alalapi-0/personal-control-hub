@@ -1,0 +1,126 @@
+scheduled_tasks:
+  - id: daily_project_scan_prepare
+    name: 每日项目扫描准备
+    enabled: false
+    schedule: "daily 09:00"
+    timezone: "Asia/Shanghai"
+    action_type: prepare_scan_prompt
+    target: data/registry/external_projects.yaml
+    dry_run_default: true
+    requires_user_confirmation: false
+    notes: "占位，不自动扫描外部项目，不自动调用 Codex 或 Feishu。"
+
+  - id: weekly_project_review_prepare
+    name: 每周项目复盘准备
+    enabled: false
+    schedule: "weekly Sunday 20:00"
+    timezone: "Asia/Shanghai"
+    action_type: prepare_review_prompt
+    target: data/programs/active_programs.yaml
+    dry_run_default: true
+    requires_user_confirmation: false
+    notes: "占位，只生成复盘材料。"
+
+  - id: SCHED-MCP-REGISTRY-AUDIT
+    name: MCP Registry 审计准备
+    enabled: false
+    schedule: "weekly Monday 08:00"
+    timezone: "Asia/Shanghai"
+    action_type: prepare_mcp_audit_prompt
+    target: data/mcp/mcp_capability_registry.yaml
+    prompt_template: prompts/mcp_audit_prompt.md
+    dry_run_default: true
+    requires_user_confirmation: false
+    approval_level: L1
+    notes: "对照 registry、policy、roadmap 生成审计草案；不安装、不调用真实 MCP。"
+
+  - id: SCHED-DAILY-PROJECT-SCAN-PREP
+    name: 每日项目扫描准备（MCP 扩展）
+    enabled: false
+    schedule: "daily 08:30"
+    timezone: "Asia/Shanghai"
+    action_type: prepare_daily_scan_with_mcp_context
+    target: data/registry/external_projects.yaml
+    related_mcps:
+      - context7
+      - filesystem
+    dry_run_default: true
+    requires_user_confirmation: false
+    approval_level: L0
+    notes: "为外部项目扫描准备 prompt；Context7 仅规划为 L0 上下文，本轮不调用。"
+
+  - id: SCHED-BROWSER-TEST-REVIEW
+    name: 浏览器测试复盘准备
+    enabled: false
+    schedule: "weekly Friday 17:00"
+    timezone: "Asia/Shanghai"
+    action_type: prepare_browser_test_review
+    target: data/mcp/mcp_capability_registry.yaml
+    related_mcps:
+      - chrome-devtools
+      - playwright
+    dry_run_default: true
+    requires_user_confirmation: true
+    approval_level: L2
+    notes: "Playwright 为 L3 默认禁用；此任务仅生成复盘材料，不自动执行浏览器操作。"
+
+  - id: SCHED-AUTO-ADVANCE-GATE-CHECK
+    name: 自动推进 Gate 检查
+    enabled: false
+    schedule: "manual_or_before_round"
+    timezone: "Asia/Shanghai"
+    action_type: run_agent_gate
+    target: scripts/agent_gate.py
+    dry_run_default: true
+    requires_user_confirmation: false
+    confirmation: false
+    approval_level: L1
+    notes: "每轮开始前手动或由受控队列运行；只读检查，不调用外部 API，不写文件。"
+
+  - id: SCHED-ROADMAP-VALIDATION
+    name: 路线图完整性验证
+    enabled: false
+    schedule: "weekly Sunday 19:00"
+    timezone: "Asia/Shanghai"
+    action_type: validate_master_roadmap
+    target: data/roadmap/round_tasks.yaml
+    dry_run_default: true
+    requires_user_confirmation: true
+    confirmation: true
+    approval_level: L1
+    notes: "每周对 round_tasks、dependencies、gate policy 做一致性检查；不自动修改路线图。"
+
+  - id: SCHED-AUTO-ADVANCE-RUNNER-CHECK
+    name: 自动推进 Runner 检查
+    enabled: false
+    schedule: "manual_or_before_round"
+    timezone: "Asia/Shanghai"
+    action_type: run_auto_advance_runner
+    target: scripts/auto_advance_runner.py
+    command: "python scripts/auto_advance_runner.py --mode check"
+    dry_run_default: true
+    requires_user_confirmation: false
+    approval_level: L1
+    notes: "每轮开始前运行；只读检查环境、gate 和一致性，不 commit/push。"
+
+  - id: SCHED-AUTO-ADVANCE-PREPARE-NEXT
+    name: 生成下一轮 Prompt 草案
+    enabled: false
+    schedule: "after_round_finalize"
+    timezone: "Asia/Shanghai"
+    action_type: prepare_next_round_prompt
+    target: scripts/auto_advance_runner.py
+    command: "python scripts/auto_advance_runner.py --mode prepare-next"
+    dry_run_default: true
+    requires_user_confirmation: false
+    approval_level: L1
+    notes: "finalize-round 成功后可选运行；生成 codex/cursor prompt 草案，不自动调用 Codex。"
+
+policy:
+  automatic_execution_allowed: false
+  real_feishu_allowed: false
+  real_codex_execution_allowed: false
+  real_mcp_calls_allowed: false
+  git_push_allowed: false
+  auto_advance_runner_finalize_allowed: false
+  note: "finalize-round 的 commit/push 仅在用户确认后的 Round 0.9 或明确 policy 允许时执行。"

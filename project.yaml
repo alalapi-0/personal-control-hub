@@ -1,0 +1,54 @@
+project:
+  id: personal-control-hub
+  name: personal-control-hub
+  status: restart_skeleton
+  stage: round_005_mcp_infrastructure
+  owner: user
+  primary_language: zh-CN
+  created_or_restarted_on: "2026-06-07"
+  identity:
+    short_description: "个人项目 OS 和多项目总控入口。"
+    role:
+      - project_control_layer
+      - project_index_layer
+      - planning_layer
+      - scheduling_layer
+      - notification_layer
+      - multi_project_governance_layer
+    non_goals:
+      - large_language_model_platform
+      - full_agent_platform
+      - browser_automation_platform
+      - full_saas_dashboard
+      - business_repo_monorepo
+      - full_repository_scanning
+      - real_feishu_api_in_round_0
+      - real_paid_llm_api_in_round_0
+      - external_project_direct_modification
+      - high_risk_automation
+  operating_context:
+    location_context: "中国大陆为主，本地优先。"
+    primary_daily_tool: Cursor
+    high_quality_executor: Codex
+    planning_and_discussion_tool: ChatGPT
+    future_notification_entry: Feishu/Lark
+    cloud_dependency_policy: "不依赖单一云服务。"
+    external_projects_policy: "外部项目通过本地路径接入，不复制、不默认写入。"
+  governance:
+    protocol_file: governance/repo_protocol_standard.yaml
+    agent_policy_file: governance/agent_policy.yaml
+    round_state_file: governance/round_state.yaml
+    file_role_map_file: governance/file_role_map.yaml
+  entry_points:
+    human_start: docs/00_start_here.md
+    agent_start: AGENTS.md
+    roadmap: docs/02_master_roadmap.md
+    audit_report: docs/reports/restart_audit_report.md
+    check_script: scripts/check_repo.py
+    bootstrap_script: scripts/bootstrap.py
+    mcp_strategy: docs/11_mcp_infrastructure_strategy.md
+    mcp_approval: docs/12_external_tool_approval_model.md
+    mcp_setup: docs/13_cursor_mcp_workspace_setup.md
+    hub_cli: hub.py
+  compatibility:
+    root_repo_protocol_standard_yaml: "当前根目录未发现 repo_protocol_standard.yaml；标准文件保留在 governance/repo_protocol_standard.yaml。若未来新增根目录副本，以 governance/ 为权威。"

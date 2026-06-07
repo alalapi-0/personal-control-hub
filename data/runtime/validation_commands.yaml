@@ -1,0 +1,30 @@
+validation_commands:
+  core:
+    - id: CHECK-REPO
+      command: "python scripts/check_repo.py"
+      required: true
+      description: "检查核心文件是否存在"
+    - id: AGENT-GATE
+      command: "python scripts/agent_gate.py"
+      required: true
+      description: "检查是否允许进入下一轮"
+    - id: ROUND-CONSISTENCY
+      command: "python scripts/round_consistency_check.py"
+      required: true
+      description: "检查 round_state、current_status、roadmap 是否一致"
+
+  environment:
+    - id: CHECK-ENV
+      command: "python scripts/check_environment.py"
+      required: true
+      description: "检查本地运行环境"
+
+  optional:
+    - id: AGENT-GATE-JSON
+      command: "python scripts/agent_gate.py --json"
+      required: false
+      description: "输出机器可读 gate 结果"
+    - id: RUNNER-DRY-RUN-TEST
+      command: "python scripts/runner_dry_run_test.py"
+      required: false
+      description: "ROUND-0-8 runner 干跑与敏感文件拦截验证"
