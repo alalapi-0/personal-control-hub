@@ -1,8 +1,8 @@
-current_phase: Restart Phase
-current_round: ROUND-0-9
-current_round_name: GitHub Push Workflow Validation
-last_completed_round: ROUND-0-8
-next_round: ROUND-1
+current_phase: Phase 1
+current_round: ROUND-1-1
+current_round_name: Registry Runtime Validation
+last_completed_round: ROUND-1
+next_round: ROUND-1-5
 
 auto_advance:
   enabled: true
@@ -24,12 +24,15 @@ completed_rounds:
   - ROUND-0-6
   - ROUND-0-7
   - ROUND-0-8
+  - ROUND-0-9
+  - ROUND-1
 
 active_rounds:
-  - ROUND-0-9
+  - ROUND-1-1
 
 planned_rounds:
-  - ROUND-1
+  - ROUND-1-5
+  - ROUND-2
 
 rounds:
   - id: ROUND-0
@@ -82,10 +85,33 @@ rounds:
       - "本轮不真实 push。"
   - id: ROUND-0-9
     name: GitHub Push Workflow Validation
+    status: completed_pending_user_acceptance
+    completed_by_agent: true
+    accepted_by_user: false
+    goal: "在用户确认后测试 finalize-round 的 commit/push、验证 push 失败时停止、验证日志写入。"
+    completion_note: "用户确认后创建公开仓库 alalapi-0/personal-control-hub 并 push 至 main；push 成功，日志已记录。"
+    acceptance_criteria:
+      - "用户确认后可测试 finalize-round。"
+      - "commit message 与当前轮次一致。"
+      - "push 成功或失败均有记录。"
+      - "auto_advance_log 有完整记录。"
+  - id: ROUND-1
+    name: External Project Registry MVP
+    status: completed_pending_user_acceptance
+    completed_by_agent: true
+    accepted_by_user: false
+    goal: "建立外部项目登记 MVP，只记录路径、读取策略、扫描开关和安全边界。"
+    completion_note: "registry schema 1.0、policy 字段、check_registry.py 与 hub registry list 已实现。"
+    acceptance_criteria:
+      - "外部项目 registry 字段稳定。"
+      - "只读策略、禁止目录、写入禁止项清晰。"
+      - "不修改外部项目本体。"
+  - id: ROUND-1-1
+    name: Registry Runtime Validation
     status: active
     completed_by_agent: false
     accepted_by_user: false
-    goal: "在用户确认后测试 finalize-round 的 commit/push、验证 push 失败时停止、验证日志写入。"
+    goal: "注册项目后自动验证配置一致性，检查路径、watch_paths、profile_enabled。"
 
 constraints:
   no_delete_history: true

@@ -1,3 +1,51 @@
+schema_version: "1.0"
+
+policy:
+  read_only: true
+  write_external_forbidden: true
+  copy_forbidden: true
+  auto_git_push_forbidden: true
+  priority_source_allowed:
+    - user
+    - rule
+    - proposal
+  forbidden_scan_dirs:
+    - .git
+    - node_modules
+    - dist
+    - build
+    - target
+    - __pycache__
+    - .venv
+    - venv
+    - .idea
+    - .cache
+    - cache
+    - logs
+    - outputs
+    - tmp
+  forbidden_files:
+    - .env
+    - .env.local
+    - .env.production
+  default_watch_paths:
+    - README.md
+    - AGENTS.md
+    - project.yaml
+    - docs/ROADMAP.md
+
+required_project_fields:
+  - id
+  - name
+  - root_path
+  - enabled
+  - scan_enabled
+  - profile_enabled
+  - summary_enabled
+  - project_type
+  - priority_source
+  - watch_paths
+
 projects: []
 
 # Disabled example only. Do not write real private paths unless the user confirms.
@@ -11,7 +59,7 @@ projects: []
 #     summary_enabled: false
 #     project_type: unknown
 #     priority_link: null
-#     priority_source: user_or_proposal
+#     priority_source: user
 #     watch_paths:
 #       - README.md
 #       - AGENTS.md

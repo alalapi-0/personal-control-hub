@@ -2,6 +2,34 @@
 
 外部项目默认只读。personal-control-hub 只通过本地路径索引外部仓库，不复制，不直接修改，不自动提交，不推送。
 
+## Registry 字段契约（schema_version 1.0）
+
+权威文件：`data/registry/external_projects.yaml`。
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `id` | string | 稳定 ID，仓库内唯一 |
+| `name` | string | 显示名称 |
+| `root_path` | string | 本地绝对或 `~` 路径；示例必须 disabled |
+| `enabled` | bool | 是否纳入治理 |
+| `scan_enabled` | bool | 是否允许只读扫描 |
+| `profile_enabled` | bool | 是否允许生成 profile |
+| `summary_enabled` | bool | 是否允许生成 summary |
+| `project_type` | string | 项目类型标签 |
+| `priority_link` | string/null | 关联 active program 候选 ID |
+| `priority_source` | enum | `user` / `rule` / `proposal` |
+| `watch_paths` | list[string] | 允许关注的入口路径 |
+| `notes` | string | 可选说明 |
+
+顶层 `policy` 必须声明 `read_only: true` 与 `write_external_forbidden: true`。禁止扫描目录见 registry 中 `forbidden_scan_dirs`。
+
+验证命令：
+
+```bash
+python scripts/check_registry.py
+python hub.py registry list
+```
+
 ## 默认允许读取
 
 默认只读以下入口文件和规则：

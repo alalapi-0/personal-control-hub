@@ -156,7 +156,7 @@ rounds:
   - id: ROUND-0-9
     name: GitHub Push Workflow Validation
     phase: Restart Phase
-    status: active
+    status: completed_pending_user_acceptance
     can_auto_advance: false
     goal: "在用户确认后测试 finalize-round 的 commit/push、验证 push 失败时停止、验证日志写入。"
     inputs:
@@ -183,7 +183,7 @@ rounds:
   - id: ROUND-1
     name: External Project Registry MVP
     phase: Phase 1
-    status: planned
+    status: completed_pending_user_acceptance
     can_auto_advance: true
     goal: "建立外部项目登记 MVP，只记录路径、读取策略、扫描开关和安全边界。"
     inputs:
@@ -191,6 +191,8 @@ rounds:
       - docs/05_external_project_protocol.md
     outputs:
       - data/registry/external_projects.yaml
+      - scripts/check_registry.py
+      - src/hub/services/project_registry_service.py
       - data/logs/automation_log.jsonl
     acceptance_criteria:
       - "外部项目 registry 字段稳定。"
@@ -207,7 +209,7 @@ rounds:
   - id: ROUND-1-1
     name: Registry Runtime Validation
     phase: Phase 1
-    status: planned
+    status: active
     can_auto_advance: true
     goal: "注册项目后自动验证配置一致性，检查路径、watch_paths、profile_enabled。"
     inputs:

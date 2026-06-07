@@ -1,6 +1,8 @@
 # personal-control-hub
 
-personal-control-hub 是个人项目 OS 和多项目总控入口。它负责管理项目、想法、任务、日志、优先级和行动建议，通过本地路径索引外部仓库，但不复制、不默认修改外部项目本体。
+personal-control-hub 是个人项目 OS 和多项目总控入口。
+
+GitHub: https://github.com/alalapi-0/personal-control-hub它负责管理项目、想法、任务、日志、优先级和行动建议，通过本地路径索引外部仓库，但不复制、不默认修改外部项目本体。
 
 本仓库定位为项目控制层、索引层、计划层、调度层、通知层和多项目治理层。它不是大模型底座、完整 Agent 平台、浏览器自动操作平台、SaaS dashboard、业务仓库 monorepo 或全量扫描系统。
 

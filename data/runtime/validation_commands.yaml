@@ -28,3 +28,7 @@ validation_commands:
       command: "python scripts/runner_dry_run_test.py"
       required: false
       description: "ROUND-0-8 runner 干跑与敏感文件拦截验证"
+    - id: CHECK-REGISTRY
+      command: "python scripts/check_registry.py"
+      required: false
+      description: "外部项目 registry schema 与 policy 验证"

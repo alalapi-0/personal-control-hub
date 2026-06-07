@@ -1,27 +1,30 @@
 status:
   project_id: personal-control-hub
-  current_round: ROUND-0-9
-  current_round_name: GitHub Push Workflow Validation
-  current_phase: Restart Phase
-  repo_state: Round 0.8 dry-run complete; git initialized; awaiting remote and user confirmation for push (ROUND-0-9)
-  next_focus: configure git remote and validate finalize-round commit/push with user confirmation (ROUND-0-9)
-  last_operation_summary: 完成 ROUND-0-8 runner 干跑测试、hard/soft 模拟与敏感文件拦截验证；初始化 git 仓库；未执行真实 push
+  current_round: ROUND-1-1
+  current_round_name: Registry Runtime Validation
+  current_phase: Phase 1
+  repo_state: GitHub 已同步；ROUND-0-9 push 验证完成；ROUND-1 registry MVP 完成
+  next_focus: 注册外部项目后运行 registry 运行时验证（ROUND-1-1）
+  last_operation_summary: 创建公开 GitHub 仓库并 push；完成外部项目 registry MVP（schema 1.0、check_registry、hub registry list）
   health: bootstrapping
   last_updated: "2026-06-07"
   git:
     repository_detected: true
-    remote_configured: false
-    note: "git 已初始化；remote 未配置，push 需 ROUND-0-9 用户确认后执行。"
+    remote_configured: true
+    remote_url: https://github.com/alalapi-0/personal-control-hub
+    default_branch: main
+    note: "公开仓库已创建并同步至 origin/main。"
   external_projects:
     registered_count: 0
     writes_performed: false
+    registry_schema_version: "1.0"
+    check_script: scripts/check_registry.py
   mcp:
     registry_version: "0.7.0"
     registered_count: 6
     enabled_count: 0
     host: cursor
     default_start_policy: "default disabled with gates"
-    policy_change: "Round 0.8 保持六个 MCP 登记为候选能力；enabled_in_project 默认 false，L2/L3 具体动作仍需确认。"
     real_calls_performed: false
     user_mcp_json_overwritten: false
   integrations:
@@ -32,16 +35,8 @@ status:
   roadmap:
     machine_readable_tasks: data/roadmap/round_tasks.yaml
     dependencies: data/roadmap/round_dependencies.yaml
-    current_round: ROUND-0-9
-    next_round: ROUND-1
-    ui_console_rounds:
-      - ROUND-9
-      - ROUND-9-5
-      - ROUND-10
-      - ROUND-10-5
-      - ROUND-11
-      - ROUND-11-5
-      - ROUND-11-6
+    current_round: ROUND-1-1
+    next_round: ROUND-1-5
   runtime:
     environment_doc: docs/16_runtime_environment.md
     runner_doc: docs/17_continuous_auto_advance_runner.md
@@ -49,6 +44,7 @@ status:
     consistency_script: scripts/round_consistency_check.py
     runner_script: scripts/auto_advance_runner.py
     dry_run_test_script: scripts/runner_dry_run_test.py
+    registry_check_script: scripts/check_registry.py
     requirements: data/runtime/environment_requirements.yaml
     toolchain_status: data/runtime/toolchain_status.yaml
     validation_commands: data/runtime/validation_commands.yaml
@@ -60,8 +56,8 @@ status:
     default_behavior: continue_without_hard_blocker
     last_decision: warn_and_continue
     hard_blockers: 0
-    soft_warnings: 2
-    next_round: ROUND-1
+    soft_warnings: 10
+    next_round: ROUND-1-5
     modes:
       - check
       - prepare-next
@@ -72,11 +68,8 @@ status:
     round_consistency: pass
     agent_gate: warn_and_continue
     auto_advance_runner_check: warn_and_continue
-    runner_dry_run_test: pass
-    auto_advance_runner_prepare_next: pass
-    bootstrap_dry_run: pass
-    hub_mcp_list: pass
-    hub_mcp_policy: pass
+    check_registry: pass
+    hub_registry_list: pass
     last_commands:
       - command: "python3 scripts/check_environment.py"
         result: pass
@@ -84,9 +77,7 @@ status:
         result: pass
       - command: "python3 scripts/agent_gate.py"
         result: warn_and_continue
-      - command: "python3 scripts/auto_advance_runner.py --mode check"
-        result: warn_and_continue
-      - command: "python3 scripts/runner_dry_run_test.py"
+      - command: "python3 scripts/check_registry.py"
         result: pass
-      - command: "python3 scripts/check_repo.py"
+      - command: "python3 hub.py registry list"
         result: pass
