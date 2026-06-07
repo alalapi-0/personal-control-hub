@@ -1,6 +1,6 @@
-# 下一轮任务草案：ROUND-1
+# 下一轮任务草案：ROUND-1-5
 
-**名称**：External Project Registry MVP
+**名称**：External Project Import UX
 **执行器**：Cursor
 
 ## 开始前
@@ -12,28 +12,26 @@ python scripts/agent_gate.py
 
 ## 目标
 
-建立外部项目登记 MVP，只记录路径、读取策略、扫描开关和安全边界。
+设计外部项目导入体验：手动登记、校验提示、缺失字段 warning 和保守默认值。
 
 ## 预期输出
 
-- data/registry/external_projects.yaml
-- data/logs/automation_log.jsonl
+- docs/05_external_project_protocol.md
+- data/roadmap/round_tasks.yaml
 
 ## 验收标准
 
-- 外部项目 registry 字段稳定。
-- 只读策略、禁止目录、写入禁止项清晰。
-- 不修改外部项目本体。
+- 导入字段、默认值、不可读路径处理方式清晰。
+- 缺少偏好时使用保守默认，不阻断文档推进。
 
 ## Hard Blockers
 
-- 需要修改外部项目。
-- 需要读取真实 .env 或密钥。
+- 需要批量扫描未知目录。
+- 需要覆盖用户登记内容。
 
 ## Soft Blockers
 
-- 外部项目暂无更新。
-- 部分项目路径待用户补充。
+- 导入 UX 文案可后续优化。
 
 ## 完成后
 
