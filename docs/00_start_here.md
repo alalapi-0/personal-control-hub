@@ -30,9 +30,9 @@ Cursor 是日常主力项目推进环境与 **MCP 宿主**；Codex 用于更高�
 
 ## 本轮状态
 
-当前是 **Round 0.7: Runtime Environment Alignment + Continuous Auto-Advance Runner**。本轮统一运行环境、创建 `check_environment.py`、`round_consistency_check.py`、`auto_advance_runner.py`，并写入 `docs/16_runtime_environment.md` 与 `docs/17_continuous_auto_advance_runner.md`。
+当前是 **Phase 1 / ROUND-1-1: Registry Runtime Validation**。权威状态见 `governance/round_state.yaml` 与 `data/state/current_status.yaml`。
 
-上一轮 Round 0.6（Roadmap Expansion + Auto-Advance Gate）已完成，待用户验收。本轮仍不安装 MCP、不调用真实外部 MCP、不写真实 token、不自动 push（除非用户明确确认）。
+runner 的三个模式默认都只读；gate 结果不授予写入或外部动作权限。当前仍不安装或真实调用 MCP、不写真实 token；Git 交付只能由当前 Root 按上级策略单独执行。
 
 ## 最小命令
 

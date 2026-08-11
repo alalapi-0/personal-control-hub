@@ -48,15 +48,15 @@ python hub.py mcp policy
 - 不修改外部项目本体。
 - 不自动 git push、checkout、reset。
 
-## Roadmap 与自动推进（Round 0.7）
+## Roadmap 与自动推进（当前 ROUND-1-1）
 
-当前轮次：**Round 0.7 — Runtime Environment Alignment + Continuous Auto-Advance Runner**。统一运行环境、环境检查脚本、轮次一致性检查与持续推进入口 `scripts/auto_advance_runner.py`。
+当前轮次：**ROUND-1-1 — Registry Runtime Validation**，阶段为 **Phase 1**。权威当前状态位于 `governance/round_state.yaml` 与 `data/state/current_status.yaml`。
 
 Round 0.6 把路线图扩写为 Restart Phase、Phase 1 本地项目总控闭环、Phase 2 UI/Web Console、Phase 3 半自动项目管理、Phase 4 高级自动化研究期。机器可读路线位于 `data/roadmap/round_tasks.yaml`，依赖图位于 `data/roadmap/round_dependencies.yaml`。
 
 自动推进 gate 位于 `scripts/agent_gate.py` 与 `data/gates/auto_advance_policy.yaml`。持续推进入口位于 `scripts/auto_advance_runner.py`（支持 `check`、`prepare-next`、`finalize-round`）。运行环境见 `docs/16_runtime_environment.md`，runner 说明见 `docs/17_continuous_auto_advance_runner.md`。
 
-默认规则：无 hard blocker 继续；只有 soft blocker 时 warning 后继续；需要真实密钥、删除、外部写入、登录、支付、发布、P0/P1 战略变更或 MCP L2/L3 未确认时停止。`finalize-round` 在 push 失败、merge conflict 或敏感文件检测时必须停止。
+三个 runner 模式默认都只读：`check` 检查，`prepare-next` 向标准输出预览 prompt，`finalize-round` 验证并报告风险。gate 的 `continue` 不是写入或外部动作授权；记录、状态更新和 Git 交付由当前上级授权控制。
 
 UI/Web Console 当前不是第一优先级，但已纳入 `docs/14_ui_console_plan.md` 和 Round 9-11.5 路线。
 
@@ -70,7 +70,7 @@ Cursor 是 MCP 宿主；本仓库登记能力矩阵与 L0-L3 审批策略，**�
 - 数据：`data/mcp/mcp_capability_registry.yaml` 等四个 YAML
 - 只读 CLI：`python3 hub.py mcp list`、`python3 hub.py mcp policy`
 
-六个 MCP（chrome-devtools、context7、filesystem、github、playwright、stitch）均已登记，`enabled_in_project` 默认 true，含义是 default start / 可被 Cursor 工作区启用；L2/L3 具体动作仍必须按审批策略确认。
+六个 MCP（chrome-devtools、context7、filesystem、github、playwright、stitch）均已登记，registry 中 `enabled_in_project` 默认 false。受保护的当前项目配置只包含 `filesystem`；实际运行时可用性未验证。登记、项目配置、运行时可用和具体动作授权必须分别判断。
 
 ## 主要目录
 
@@ -82,11 +82,11 @@ Cursor 是 MCP 宿主；本仓库登记能力矩阵与 L0-L3 审批策略，**�
 - `data/gates/`: 自动推进策略与 gate checklist。
 - `data/runtime/`: 运行环境 requirements、toolchain 状态与验证命令。
 - `prompts/`: Codex/Cursor 驱动提示词、MCP 审计、持续推进 prompt。
-- `.cursor/`: Cursor MCP 示例配置（不覆盖用户已有 `mcp.json`）。
+- `.cursor/`: Cursor MCP 示例与用户受保护的项目配置（不得覆盖已有 `mcp.json`）。
 - `scripts/`: 骨架检查、环境检查、轮次一致性检查、auto advance runner 与启动辅助脚本。
 - `src/hub/`: hub 服务与只读 MCP CLI。
 - `tests/`: 后续自动化测试占位。
 
 ## 当前最小可执行路径
 
-Round 0 完成治理骨架；**Round 0.5** 完成 MCP 登记与策略。Round 1-3 再建立外部项目注册、扫描和 profile/snapshot。任何外部写入、真实 MCP 调用、真实飞书调用、付费模型调用、远程控制和 GitHub push 都必须人工确认后才允许进入后续轮次。
+历史 Round 0/0.5 建立治理骨架与 MCP 登记；当前在 ROUND-1-1 验证 registry 运行时一致性。任何写入或外部动作必须具有当前上级授权；真实 MCP、飞书、付费模型、远程控制和 GitHub 写入还需相应显式授权。

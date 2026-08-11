@@ -1,12 +1,12 @@
 policy:
   name: mcp_approval_policy
-  version: "0.5.0"
+  version: "1.1.0"
   status: draft
   default_level: L0
   host: cursor
   last_updated: "2026-06-07"
-  round_005_rule: "六个已登记 MCP 可 default start；本轮禁止真实 MCP 调用，仅登记、策略与示例配置。"
-  default_start_rule: "default start 只表示可被 Cursor 工作区启用；具体动作仍按 L0-L3 审批。"
+  round_005_rule: "历史 Round 0.5 只完成登记、策略与示例；当前 registry 中六个候选默认 disabled。"
+  authority_rule: "L0-L3 只分类风险，不授予权限；登记、项目配置、运行时可用和动作授权分别判断。"
 
 levels:
   L0:
@@ -19,18 +19,18 @@ levels:
       - "GitHub 只读查看 issue 列表（经启用后）"
       - "Chrome DevTools 页面结构只读快照"
       - "读取 mcp_capability_registry 与 approval policy"
-    agent_rule: "可继续执行，须在 automation_log 记录摘要（可选轻量）。"
+    agent_rule: "仅在当前上级授权范围内执行；默认不写 automation_log。"
 
   L1:
     name: local_low_risk_write
-    confirmation_required: false
+    confirmation_required: true
     logging_required: true
     description: "写入本仓库低风险文件：文档、YAML 草案、扫描输出、日志。"
     examples:
       - "更新 data/project_scans 草案"
       - "写入 MCP 审计报告到 docs/reports"
       - "Filesystem MCP 修改本仓库治理 YAML（非覆盖用户内容）"
-    agent_rule: "完成后写入 data/logs/automation_log.jsonl。"
+    agent_rule: "仅在当前上级明确授权本地写入与记录时执行并写日志。"
 
   L2:
     name: external_or_shell_low_risk
@@ -42,7 +42,7 @@ levels:
       - "Chrome DevTools 带登录态页面检查（用户在场）"
       - "Stitch UI 生成外部可访问草稿链接"
       - "运行本地只读 git 命令辅助扫描"
-    agent_rule: "必须先停止并向用户说明范围；确认后继续并记日志。"
+    agent_rule: "必须先停止并向用户说明范围；获得当前显式授权后执行，且仅在授权包含记录时写日志。"
 
   L3:
     name: high_risk_write
@@ -57,7 +57,7 @@ levels:
       - "Feishu 真实消息发送"
       - "修改外部业务仓库"
       - "桌面或系统级高风险控制"
-    agent_rule: "默认禁止；仅当用户/CEO 显式批准且 round_state 允许时才可执行。"
+    agent_rule: "默认禁止；仅当当前上级授权与用户显式批准共同允许时才可执行，round_state 本身不授予权限。"
 
 enforcement:
   cursor_is_host: true
@@ -78,6 +78,8 @@ enforcement:
 
 logging:
   target: data/logs/automation_log.jsonl
+  authority_required: true
+  action_approval_does_not_grant_logging: true
   fields:
     - timestamp
     - agent

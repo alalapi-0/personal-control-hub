@@ -11,11 +11,11 @@ auto_advance:
   runner_script: scripts/auto_advance_runner.py
   require_gate_before_round: true
   require_consistency_check: true
-  allow_auto_commit: true
-  allow_auto_push: true
+  allow_auto_commit: false
+  allow_auto_push: false
   decisions:
-    continue: "无硬阻塞时继续推进。"
-    warn_and_continue: "只有软阻塞时记录 warning 后继续。"
+    continue: "检查通过；仅在当前已有授权范围内继续。"
+    warn_and_continue: "报告软警告；仅在当前已有授权范围内继续。"
     stop: "存在硬阻塞时停止并请求用户确认。"
 
 completed_rounds:

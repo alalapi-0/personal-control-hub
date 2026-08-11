@@ -1,6 +1,6 @@
 # Continuous Auto-Advance Agent Prompt
 
-你是 personal-control-hub 的推进轮 Agent。你的任务是在没有硬阻塞时持续推进 roadmap 轮次，并在每轮结束时保持状态一致、写入日志、同步 GitHub。
+你是 personal-control-hub 的推进轮 Agent。gate 只提供检查结果，不授予写入、日志、Git 或外部动作权限；所有动作服从当前上级授权。
 
 ## 开始前（必须）
 
@@ -9,7 +9,7 @@ python scripts/auto_advance_runner.py --mode check
 python scripts/agent_gate.py
 ```
 
-1. 若 `decision` 是 `continue` 或 `warn_and_continue`，继续执行当前 round。
+1. 若 `decision` 是 `continue` 或 `warn_and_continue`，只在当前已有授权范围内继续。
 2. 若 `decision` 是 `stop`，停止并报告硬阻塞原因，不要绕过 gate 或 runner。
 3. 软警告只记录，不因此停止。
 
@@ -20,7 +20,7 @@ python scripts/agent_gate.py
 - 不要安装未知依赖。
 - 不要写真实 token。
 - 不要修改外部项目本体。
-- 没有硬阻塞时默认继续；可用保守默认值就使用。
+- 没有硬阻塞时只在当前已有上级授权范围内继续；可用保守默认值就使用。
 
 ## 硬阻塞（必须停止）
 
@@ -30,11 +30,10 @@ python scripts/agent_gate.py
 - 支付、登录、发布
 - P0/P1 战略变更
 - MCP L2/L3 未获确认的具体动作
-- git push 失败（finalize-round）
 - 检测到敏感文件准备提交
 - merge conflict
 
-## 软阻塞（记录 warning 后继续）
+## 软阻塞（在输出中报告；不授予推进权限）
 
 - Node/npm 未安装
 - Cursor MCP 需人工确认
@@ -61,11 +60,9 @@ python scripts/check_repo.py
 python scripts/auto_advance_runner.py --mode finalize-round
 ```
 
-1. 更新 `governance/round_state.yaml`
-2. 更新 `data/state/current_status.yaml`
-3. 追加 `data/logs/automation_log.jsonl`
-4. finalize-round 负责验证、commit、push（验证通过后）
-5. push 失败必须停止，不假装成功
+1. 只有当前任务授权时才更新状态或追加日志。
+2. finalize-round 只读验证并报告风险，不暂存、commit 或 push。
+3. Git 交付由当前 Root 按上级策略单独完成。
 
 ## finalize 成功后
 
@@ -75,7 +72,7 @@ python scripts/auto_advance_runner.py --mode finalize-round
 python scripts/auto_advance_runner.py --mode prepare-next
 ```
 
-输出到 `data/codex_queue/next_round_prompt.md` 与 `next_cursor_prompt.md`。不自动调用 Codex 或 Cursor。
+prompt 只输出到标准输出，不写队列文件；不自动调用 Codex 或 Cursor。
 
 ## 一致性规则
 
@@ -85,8 +82,7 @@ python scripts/auto_advance_runner.py --mode prepare-next
 - `current_status` 当前轮次正确
 - `master roadmap` 提及当前 round
 - `round_tasks` 存在当前 round
-- `automation_log` / `auto_advance_log` 有记录
-- commit message 与当前轮次一致
+- 当前授权要求记录时，相关状态或日志已更新
 
 ## 参考文档
 

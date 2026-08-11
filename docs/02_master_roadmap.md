@@ -1,5 +1,7 @@
 # Master Roadmap
 
+当前权威状态：Phase 1 / ROUND-1-1（Registry Runtime Validation）。以下 Round 0.x 内容是历史计划与完成记录；历史 runner 的 commit/push 描述不再是当前执行语义。
+
 ## Restart Phase（重启阶段）
 
 建立项目身份、治理协议、数据骨架、入口文档、最小验证脚本，以及 **Round 0.5 MCP 工作区基础设施**。
@@ -18,7 +20,7 @@
 |---|---|---|
 | 2 | Data Model Foundation | registry/program/task/scheduler/integration schema |
 | 3 | External Project Registry MVP | 登记路径与扫描开关 |
-| **3.5** | **Context7 Docs Context Pilot** | L0 文档上下文试点（默认可启动） |
+| **3.5** | **Context7 Docs Context Pilot** | L0 文档上下文试点（需当前授权） |
 | 4 | Project Scan MVP | 只读扫描入口与 git/TODO |
 | **4.5** | **MCP Registry Audit Loop** | SCHED-MCP-REGISTRY-AUDIT 与 hub mcp CLI |
 | 5 | Project Profile MVP | profile 与 evidence |
@@ -50,16 +52,16 @@
 
 权威机器可读版本：`data/mcp/mcp_integration_roadmap.yaml`。
 
-**默认可启动（default start，动作仍受审批）**：
+**登记候选（registry 默认 disabled）**：
 
 - context7（L0）
 - filesystem（L1）
 - github 只读（L2）
 - chrome-devtools（L2）
 - stitch（L2）
-- playwright（L3，可启动但高风险动作需 CEO 批准）
+- playwright（L3，默认 disabled，高风险动作需显式批准）
 
-default start 表示可被 Cursor 工作区启用，不表示允许免确认执行 L2/L3 操作。
+受保护的当前项目配置只含 filesystem，运行时可用性未验证。登记、配置、运行时和动作授权分别判断。
 
 ## Round 0-12 总表（精简）
 
@@ -90,7 +92,7 @@ default start 表示可被 Cursor 工作区启用，不表示允许免确认执�
 
 - 每一轮都有 spec、plan、tasks、acceptance criteria 和验证证据。
 - Agent completed 不等于用户 accepted。
-- MCP 可 default start；写入必须有明确通道；L0/L1 可默认可用，L2/L3 须停止确认。
+- MCP 候选默认 disabled；L0-L3 只分类风险，任何写入与真实调用须有当前授权。
 - 外部项目优先产生 proposal，不直接修改。
 - 新增 MCP 须同时更新 registry、policy、roadmap。
 - Cursor 是 MCP 宿主；Codex 不得绕过 MCP 策略。
@@ -155,8 +157,8 @@ default start 表示可被 Cursor 工作区启用，不表示允许免确认执�
 | ROUND-12 | Daily Project Scan | planned | 建立每日扫描准备流程，默认 dry-run | data/scheduler/scheduled_tasks.yaml; data/registry/external_projects.yaml | data/project_scans/; data/logs/automation_log.jsonl | 可生成准备材料；不写外部项目 | true | 无人值守外部写入 | ROUND-12-5 |
 | ROUND-12-5 | Daily Feishu Summary | planned | 生成每日 Feishu 摘要草案 | data/project_snapshots/; data/integrations/integration_targets.yaml | data/logs/automation_log.jsonl; docs/09_feishu_lark_strategy.md | 缺 webhook 使用 mock；真实发送前 stop | false | 要求真实发送但缺 webhook；发布内容 | ROUND-13 |
 | ROUND-13 | Weekly Review Loop | planned | 汇总 programs、snapshots、next actions 为复盘草案 | data/programs/active_programs.yaml; data/project_snapshots/; data/tasks/next_actions.yaml | data/logs/project_decision_log.jsonl; data/tasks/next_actions.yaml | 复盘区分 proposal/confirmed；战略变更等待确认 | true | 改变 P0/P1 战略优先级 | ROUND-13-5 |
-| ROUND-13-5 | Human Approval Queue | planned | 建立人类确认队列，避免软阻塞打断推进 | data/gates/auto_advance_policy.yaml; data/tasks/next_actions.yaml | data/tasks/next_actions.yaml; data/state/current_status.yaml | hard blocker 入队；soft blocker 记录 warning 后继续 | true | approval queue 要求绕过用户确认 | ROUND-14 |
-| ROUND-14 | Auto-Advance Agent Runner | planned | 实现受控自动推进 Runner | prompts/auto_advance_agent_prompt.md; scripts/agent_gate.py; data/roadmap/round_tasks.yaml | data/logs/automation_log.jsonl; governance/round_state.yaml | Runner 不绕过 gate；验证失败两次停止；不执行外部高风险动作 | false | 测试连续失败两次；真实外部写入 | ROUND-14-5 |
+| ROUND-13-5 | Human Approval Queue | planned | 建立人类确认队列，避免软阻塞打断推进 | data/gates/auto_advance_policy.yaml; data/tasks/next_actions.yaml | data/tasks/next_actions.yaml; data/state/current_status.yaml | hard blocker 入队；soft blocker 在回复中报告；任何推进仍需当前授权 | true | approval queue 要求绕过用户确认 | ROUND-14 |
+| ROUND-14 | Auto-Advance Agent Runner | planned | 实现受控自动推进 Runner | prompts/auto_advance_agent_prompt.md; scripts/agent_gate.py; data/roadmap/round_tasks.yaml | data/logs/automation_log.jsonl; governance/round_state.yaml | Runner 不绕过 gate；两次无进展后诊断并改变方法；不执行外部高风险动作 | false | 未授权真实外部写入 | ROUND-14-5 |
 | ROUND-14-5 | Auto-Advance Postmortem | planned | 复盘自动推进误判、停下原因和安全增强 | data/logs/automation_log.jsonl; governance/round_state.yaml | docs/reports/auto_advance_postmortem.md; data/gates/auto_advance_policy.yaml | 记录 stop/warn/continue 样例；不吞失败 | true | 篡改历史日志 | ROUND-15 |
 
 ### Phase 4：高级自动化研究期
@@ -171,7 +173,7 @@ default start 表示可被 Cursor 工作区启用，不表示允许免确认执�
 
 ### Restart Round 0.7：Runtime Environment Alignment + Continuous Auto-Advance Runner
 
-**状态：active**
+**状态：历史完成记录（非当前 active）**
 
 目标：
 
@@ -179,7 +181,7 @@ default start 表示可被 Cursor 工作区启用，不表示允许免确认执�
 - 创建环境检查脚本 `scripts/check_environment.py`
 - 创建轮次一致性检查脚本 `scripts/round_consistency_check.py`
 - 创建自动推进 runner `scripts/auto_advance_runner.py`
-- 支持 finalize-round 自动验证、commit、push（用户确认后）
+- 当时曾支持 finalize-round Git 流程；当前 runner 已收紧为只读验证
 - 确保无硬阻塞时默认继续
 
 关键输出：`docs/16_runtime_environment.md`、`docs/17_continuous_auto_advance_runner.md`、`data/runtime/`、`prompts/continuous_auto_advance_prompt.md`

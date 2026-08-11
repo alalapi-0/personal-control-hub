@@ -5,9 +5,9 @@ status:
   current_phase: Phase 1
   repo_state: GitHub 已同步；ROUND-0-9 push 验证完成；ROUND-1 registry MVP 完成
   next_focus: 注册外部项目后运行 registry 运行时验证（ROUND-1-1）
-  last_operation_summary: 创建公开 GitHub 仓库并 push；完成外部项目 registry MVP（schema 1.0、check_registry、hub registry list）
+  last_operation_summary: 治理闭环校正当前轮次、MCP 四层状态与只读 runner；受保护 mcp.json 未改写
   health: bootstrapping
-  last_updated: "2026-06-07"
+  last_updated: "2026-08-12"
   git:
     repository_detected: true
     remote_configured: true
@@ -25,6 +25,10 @@ status:
     enabled_count: 0
     host: cursor
     default_start_policy: "default disabled with gates"
+    project_configured:
+      - filesystem
+    runtime_status: unverified
+    action_authority: "由当前上级指令决定，registry/config 不授予权限"
     real_calls_performed: false
     user_mcp_json_overwritten: false
   integrations:
@@ -62,6 +66,8 @@ status:
       - check
       - prepare-next
       - finalize-round
+    runner_write_effects: none
+    runner_git_effects: none
   validation:
     check_repo: pass
     check_environment: pass

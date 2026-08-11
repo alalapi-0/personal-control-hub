@@ -31,7 +31,7 @@ personal-control-hub 的终极目标是成为个人项目 OS 和多项目总控�
 
 ## MCP 与外部工具治理
 
-personal-control-hub 登记 MCP 能力矩阵与 L0-L3 审批策略，但不替代 Cursor 加载 MCP。六个已登记 MCP 默认进入 default start / 可被 Cursor 工作区启用状态；新增 MCP 须更新 registry、policy、roadmap。default start 不等于 unlimited access，L2/L3 具体动作仍须用户确认或 CEO 显式批准；token 仅环境变量。详见 `docs/11_mcp_infrastructure_strategy.md`。
+personal-control-hub 登记 MCP 能力矩阵与 L0-L3 风险分类，但不替代 Cursor 加载 MCP，也不授予动作权限。六个候选默认 disabled；登记、项目配置、运行时可用和具体动作授权分别判断。新增 MCP 须更新 registry、policy、roadmap；token 仅环境变量。详见 `docs/11_mcp_infrastructure_strategy.md`。
 
 ## 现实工作流
 

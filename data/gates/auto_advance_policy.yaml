@@ -17,14 +17,14 @@ default_behavior:
 
 decision_rules:
   continue:
-    meaning: "无硬阻塞；可以继续下一轮或当前轮后续步骤。"
+    meaning: "无硬阻塞；只可在当前已有上级授权范围内继续。"
     required_action:
       - "记录验证证据。"
-      - "更新 round_state 与 current_status。"
+      - "当前任务授权时才更新 round_state 与 current_status。"
   warn_and_continue:
-    meaning: "仅存在软阻塞；记录 warning 后继续。"
+    meaning: "仅存在软阻塞；报告 warning，并只在当前已有上级授权范围内继续。"
     required_action:
-      - "在最终汇报或 automation_log 中记录 warning。"
+      - "在最终汇报中报告 warning；当前任务授权时才写日志。"
       - "使用保守默认值。"
   stop:
     meaning: "存在硬阻塞；必须停止并请求用户确认。"
@@ -55,8 +55,8 @@ hard_blockers:
     description: "支付或购买。"
   - id: HARD-P0-P1-CHANGE
     description: "改变 P0/P1 战略优先级。"
-  - id: HARD-TESTS-FAILED-TWICE
-    description: "测试连续失败两次。"
+  - id: HARD-NO-PROGRESS-DIAGNOSIS
+    description: "连续两次无进展后必须诊断并改变方法；这本身不自动成为用户阻塞。"
   - id: HARD-ROADMAP-CONFLICT
     description: "路线图冲突无法自动判断。"
   - id: HARD-MCP-L2-L3-NOT-CONFIRMED
@@ -89,7 +89,8 @@ logging:
   target: data/logs/automation_log.jsonl
   auto_advance_log: data/logs/auto_advance_log.jsonl
   environment_check_log: data/logs/environment_check_log.jsonl
-  required_after_round: true
+  required_after_round: false
+  authority_required: true
   minimum_fields:
     - timestamp
     - round_id
@@ -102,8 +103,9 @@ logging:
     - secrets_written
 
 git_policy:
-  auto_commit_allowed: true
-  auto_push_allowed: true
+  auto_commit_allowed: false
+  auto_push_allowed: false
+  runner_git_writes_allowed: false
   require_clean_validation_before_commit: true
   stop_on_push_failure: true
   stop_on_merge_conflict: true
@@ -122,4 +124,4 @@ consistency_policy:
   require_round_state_sync: true
   require_current_status_sync: true
   require_roadmap_sync: true
-  require_log_append: true
+  require_log_append: false

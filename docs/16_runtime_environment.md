@@ -8,7 +8,7 @@
 
 - 本地优先、Cursor 优先、Codex 关键执行。
 - Python 脚本作为 gate、环境检查、轮次一致性检查和 auto advance runner 的入口。
-- Git 用于轮次完成后的 commit/push，但 push 失败必须停止。
+- Git 状态用于只读验证；commit/push 由当前 Root 在上级授权范围内单独完成。
 - Node/npm 当前可选，为未来 UI、Playwright 和部分 MCP 预留。
 - MCP 只登记与治理，脚本不强行启用、不调用真实 MCP。
 - 不写真实 token，不自动安装未知依赖。
@@ -37,18 +37,14 @@ python scripts/check_environment.py --json
 
 ## 5. Git 环境要求
 
-必须能运行：
+只读检查至少需要：
 
 - `git status`
-- `git add`
-- `git commit`
-- `git push`
 
 规则：
 
-- `auto_advance_runner.py --mode finalize-round` 在 push 失败时必须停止。
+- `auto_advance_runner.py --mode finalize-round` 不执行 Git 写入。
 - 不自动解决 merge conflict。
-- 未配置 remote 时 push 会失败并停止。
 - 当前工作区若不在 git 仓库中，环境检查会产生 warning。
 
 ## 6. Cursor 环境要求
@@ -75,8 +71,8 @@ python scripts/check_environment.py --json
 
 - MCP 能力登记在 `data/mcp/mcp_capability_registry.yaml`。
 - 审批策略在 `data/mcp/mcp_approval_policy.yaml`。
-- L0/L1 可默认可用；L2/L3 必须在具体动作前停止确认。
-- `check_environment.py` 只检查配置文件是否存在，不调用真实 MCP。
+- L0-L3 只分类风险，不授予权限；具体动作服从当前上级授权。
+- `check_environment.py` 区分登记候选、项目配置和未验证的运行时状态，不调用真实 MCP。
 - `auto_advance_runner.py` 不调用 MCP。
 
 ## 9. Feishu / Lark 集成环境要求
@@ -88,9 +84,9 @@ python scripts/check_environment.py --json
 
 ## 10. GitHub 同步环境要求
 
-- 轮次完成后由 `auto_advance_runner.py --mode finalize-round` 在验证通过后执行 commit/push。
-- push 失败、认证失败、merge conflict、敏感文件检测时必须停止。
-- Round 0.9 将专门验证 push 工作流；Round 0.7 不自动执行真实 push（除非用户明确确认）。
+- runner 永不暂存、commit 或 push。
+- Git 交付由当前 Root 按上级策略独立审查精确 diff 后执行。
+- merge conflict 和敏感文件检测会阻断验证通过。
 
 ## 11. 不允许写入仓库的敏感信息
 
@@ -116,7 +112,7 @@ python scripts/check_repo.py
 A: 确认 `python --version` 输出为 3.10+。
 
 **Q: Git 可用但报 warning_not_in_repo？**  
-A: 当前目录未初始化 git；finalize-round 无法 commit/push。
+A: 当前目录未初始化 git；finalize-round 无法完成 Git 状态验证。
 
 **Q: Node 未安装是否阻断？**  
 A: 否，只产生 soft warning。
@@ -130,4 +126,4 @@ A: 在 Cursor Settings → MCP 中查看；本仓库脚本不代为启用。
 - 不调用真实外部 API 或 MCP。
 - 不写真实 token。
 - 不修改外部项目本体。
-- 不在 Round 0.7 自动 push（除非用户明确确认）。
+- runner 不自动 push。

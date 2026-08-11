@@ -9,7 +9,7 @@ rounds:
   - id: round_005
     name: Cursor MCP Workspace Infrastructure
     phase: restart_foundation
-    status: in_progress
+    status: completed_pending_user_acceptance
     goal: "建立 MCP 能力矩阵、审批策略、Cursor 配置说明与示例，不真实调用。"
     deliverables:
       - docs/11_mcp_infrastructure_strategy.md
@@ -24,8 +24,8 @@ rounds:
       - .cursor/README.md
       - .cursor/mcp.example.json
     acceptance:
-      - "六个 MCP 全部登记且 enabled_in_project 为 true"
-      - "default start 不等于 unlimited access，L2/L3 仍按审批策略确认"
+      - "六个 MCP 全部登记且 enabled_in_project 默认为 false"
+      - "登记、项目配置、运行时可用和动作授权分别判断"
       - "check_repo.py 通过 MCP 专项检查"
       - "无真实 token 写入仓库"
 

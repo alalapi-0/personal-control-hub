@@ -28,4 +28,4 @@ personal-control-hub 采用轻量本地文件架构，先用 Markdown、YAML、J
 
 ## 安全边界
 
-第一阶段没有数据库、RAG、向量库、真实模型调用、真实 Feishu 调用、**真实 MCP 调用**、外部仓库写入和远程控制。MCP 默认 L0/L1；L2/L3 须确认。所有高风险动作都必须先进入 proposal 或 pending_confirmation 状态。
+第一阶段没有数据库、RAG、向量库、真实模型调用、真实 Feishu 调用、**真实 MCP 调用**、外部仓库写入和远程控制。L0-L3 仅分类风险且不授予权限；L2/L3 还须显式确认。所有高风险动作都必须先进入 proposal 或 pending_confirmation 状态。

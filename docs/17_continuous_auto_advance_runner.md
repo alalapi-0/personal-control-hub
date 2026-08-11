@@ -12,8 +12,8 @@
 2. 运行 gate（`agent_gate.py`）
 3. 运行轮次一致性检查（`round_consistency_check.py`）
 4. 判断是否可以进入下一轮
-5. 生成下一轮 prompt 草案（prepare-next）
-6. 在本轮 Agent 完成后执行验证、commit、push（finalize-round）
+5. 在标准输出中预览下一轮 prompt 草案（prepare-next）
+6. 在本轮 Agent 完成后执行只读验证与风险报告（finalize-round）
 7. 硬阻塞出现时停止
 
 权威策略：`data/gates/auto_advance_policy.yaml`  
@@ -35,9 +35,7 @@ python scripts/auto_advance_runner.py --mode check
 
 1. 先执行 check
 2. 无硬阻塞时读取 `round_tasks.yaml` 中的 next_round
-3. 生成 prompt 草案到：
-   - `data/codex_queue/next_round_prompt.md`
-   - `data/codex_queue/next_cursor_prompt.md`
+3. 在标准输出中分别预览 Codex 与 Cursor prompt；不写队列文件
 
 不调用 Codex/Cursor，不自动执行下一轮。
 
@@ -53,14 +51,13 @@ python scripts/auto_advance_runner.py --mode prepare-next
 2. check_repo.py（若存在）
 3. git status、merge conflict 检查
 4. 敏感文件检查
-5. 验证通过后：`git add .` → `git commit` → `git push`
-6. push 失败则停止
+5. 报告工作区变更、冲突和敏感路径；不执行 `git add`、`git commit` 或 `git push`
 
 ```bash
 python scripts/auto_advance_runner.py --mode finalize-round
 ```
 
-**注意**：Round 0.7 实现此模式但不自动执行，除非用户明确确认真实 push。
+**注意**：三个模式默认都只读。Git 交付只能由当前 Root 在上级策略与用户当前授权范围内单独执行。
 
 ## 决策规则
 
@@ -69,13 +66,12 @@ python scripts/auto_advance_runner.py --mode finalize-round
 | 无硬阻塞 | continue |
 | 仅软警告 | warn_and_continue |
 | 硬阻塞 | stop |
-| push 失败 | stop |
 | merge conflict | stop |
 | 敏感文件 | stop |
 
-软阻塞默认继续：Node 缺失、MCP 需人工确认、Codex 可用性待确认等只记录 warning。
+软阻塞只影响检查结果：Node 缺失、MCP 需人工确认、Codex 可用性待确认等会在输出中报告；是否继续仍取决于当前已有上级授权。
 
-硬阻塞必须停止：真实密钥、删除、外部写入、支付、登录、push 失败、敏感文件等。
+硬阻塞必须停止：真实密钥、删除、外部写入、支付、登录、未解决冲突、敏感文件等。
 
 ## 敏感文件检查
 
@@ -87,19 +83,9 @@ commit 前阻止：
 - `secrets.*`
 - 含 OPENAI_API_KEY、FEISHU_APP_SECRET、GITHUB_TOKEN 等密钥赋值内容
 
-## 日志
+## 写入与日志
 
-每次执行追加到 `data/logs/auto_advance_log.jsonl`：
-
-- timestamp
-- mode
-- decision
-- hard_blockers
-- soft_warnings
-- current_round
-- next_round
-- git_commit
-- git_push_status
+runner 不写日志、状态或 prompt 文件。`check_environment.py` 也默认只读；其 `--record` 仅在当前任务明确授权记录时使用。gate 的结果不构成写入授权。
 
 ## 与 agent_gate 的关系
 
@@ -121,7 +107,7 @@ commit 前阻止：
 1. `python scripts/auto_advance_runner.py --mode check`
 2. decision 为 continue 或 warn_and_continue → 执行当前 round
 3. decision 为 stop → 停止并报告
-4. 完成 round → `python scripts/auto_advance_runner.py --mode finalize-round`
-5. finalize 成功 → 可选 `prepare-next`
+4. 完成 round → `python scripts/auto_advance_runner.py --mode finalize-round` 做只读复核
+5. 可选 `prepare-next` 预览下一轮；是否推进仍取决于当前授权与权威状态
 
 详见 `prompts/continuous_auto_advance_prompt.md` 与 `AGENTS.md`。

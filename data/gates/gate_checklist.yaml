@@ -41,8 +41,8 @@ gates:
     checks:
       - "data/mcp/mcp_capability_registry.yaml exists"
       - "registered MCP entries include id/name/approval_level/enabled_in_project"
-      - "enabled_in_project defaults to true for the six registered MCPs"
-      - "default start does not bypass MCP L2/L3 confirmation"
+      - "enabled_in_project defaults to false for the six registered MCPs"
+      - "registry, project configuration, runtime availability, and action authority remain distinct"
     on_fail: stop
 
   - id: GATE-NO-DESTRUCTIVE-ACTION
@@ -113,7 +113,7 @@ gates:
 
   - id: GATE-SENSITIVE-FILE
     name: Sensitive File Check
-    purpose: "commit 前阻止 .env、密钥文件和敏感内容标记。"
+    purpose: "只读报告 .env、密钥文件和敏感内容标记。"
     required: true
     checks:
       - "auto_advance_runner finalize-round scans sensitive paths"
@@ -122,12 +122,11 @@ gates:
 
   - id: GATE-GIT-REMOTE
     name: Git Remote Check
-    purpose: "finalize-round 前检查 git 仓库与 remote 状态。"
+    purpose: "确认 finalize-round 只读检查 Git 状态且不执行 Git 写入。"
     required: true
     checks:
       - "git rev-parse --is-inside-work-tree checked"
-      - "missing remote produces warning not silent success"
-      - "push failure stops runner"
+      - "runner contains no git add, commit, or push path"
     on_fail: warn_and_continue
 
   - id: GATE-AUTO-RUNNER

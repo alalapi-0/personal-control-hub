@@ -1,6 +1,6 @@
 # MCP 基础设施战略
 
-Round 0.5 文档。定义 personal-control-hub 如何在 Cursor 工作区中登记、治理和默认启动 MCP 候选，而不在本轮真实安装、真实调用外部 MCP 服务或写入密钥。
+Round 0.5 历史设计文档，已按当前 Phase 1 现实校正：登记候选不等于项目配置、运行时可用或动作授权。
 
 ## 1. 文档目的与范围
 
@@ -23,16 +23,16 @@ Cursor 是日常主力与 MCP 宿主。配置示例见 `.cursor/mcp.example.json
 
 ## 5. 能力矩阵概览
 
-当前登记六个 MCP，全部在本项目治理中标记为 `enabled_in_project: true`。这里的 default start 表示可被 Cursor 工作区启用，不表示 Agent 可免确认执行 L2/L3 动作：
+当前登记六个 MCP，registry 中均为 `enabled_in_project: false`。受保护的项目配置当前只含 `filesystem`，实际运行时可用性未验证：
 
-| id | category | approval | 默认可启动 |
+| id | category | approval | registry enabled |
 |---|---|---|---|
-| context7 | documentation_context | L0 | 是 |
-| filesystem | local_files | L1 | 是 |
-| github | external_vcs | L2 | 是 |
-| chrome-devtools | browser_debug | L2 | 是 |
-| stitch | ui_generation | L2 | 是 |
-| playwright | browser_automation | L3 | 是，动作受限 |
+| context7 | documentation_context | L0 | false |
+| filesystem | local_files | L1 | false（但当前项目配置存在） |
+| github | external_vcs | L2 | false |
+| chrome-devtools | browser_debug | L2 | false |
+| stitch | ui_generation | L2 | false |
+| playwright | browser_automation | L3 | false |
 
 权威数据源：`data/mcp/mcp_capability_registry.yaml`。
 
@@ -60,12 +60,12 @@ UI 探索草案，L2，不直接写外部业务仓库。
 
 ### playwright
 
-E2E 自动化，L3，可登记为默认可启动；生产账号登录、支付、发布、破坏性 UI 操作和无人值守点击链仍禁止或需 CEO 显式批准。
+E2E 自动化候选，L3，默认 disabled；生产账号登录、支付、发布、破坏性 UI 操作和无人值守点击链仍禁止或需显式批准。
 
 ## 7. 审批模型摘要
 
-- **L0**：只读上下文，无需确认。
-- **L1**：本仓库低风险写入，记日志。
+- **L0**：只读上下文风险级别；仍服从当前上级授权。
+- **L1**：本仓库低风险写入；需要当前任务授权，获准记录时才记日志。
 - **L2**：外部系统/shell 低风险，须人工确认或白名单。
 - **L3**：高风险写操作，CEO 显式批准，当前默认禁止。
 
@@ -84,9 +84,9 @@ E2E 自动化，L3，可登记为默认可启动；生产账号登录、支付�
 
 ## 9. 启用策略与优先级
 
-**默认可启动（default start）**：chrome-devtools、context7、filesystem、github、playwright、stitch 均可作为 Cursor 工作区启动候选。
+**默认状态**：六个 registry 候选均 disabled；`.cursor/mcp.example.json` 只是候选示例。
 
-**操作边界**：L0/L1 可默认可用；L2 仍须人工确认范围和数据去向；L3 仍默认禁止具体高风险动作，需 CEO 显式批准。
+**四层边界**：登记、项目配置、运行时可用和动作授权分别判断；任何层都不能推出下一层。
 
 新增 MCP 必须同时更新 registry、policy、roadmap 三文件。
 
@@ -115,7 +115,7 @@ token 仅通过环境变量注入，示例配置使用 `${VAR_NAME}` 占位。
 
 | Round | 名称 | 重点 MCP |
 |---|---|---|
-| 0.5 | Workspace Infrastructure | 全部登记，default start with gates |
+| 0.5 | Workspace Infrastructure | 全部登记，默认 disabled |
 | 6 | GitHub Read Pilot | github |
 | 6.5 | Context7 Pilot | context7 |
 | 7 | Filesystem Whitelist | filesystem |
@@ -130,21 +130,21 @@ token 仅通过环境变量注入，示例配置使用 `${VAR_NAME}` 占位。
 ## 13. 与 Codex / Cursor 分工
 
 - **Cursor**：MCP 宿主，日常推进，遵守 L0-L3。
-- **Codex**：关键执行，不得绕过 MCP policy；外部工具调用同样记日志。
+- **Codex**：关键执行，不得绕过 MCP policy；外部工具动作与仓库日志写入分别需要当前授权。
 - **personal-control-hub**：登记、审计、调度准备，不替代 Cursor 加载 MCP。
 
 ## 14. 审计与日志
 
 - 调度任务 `SCHED-MCP-REGISTRY-AUDIT` 定期对照 registry 与 policy。
-- L1+ 操作写入 `data/logs/automation_log.jsonl`。
+- L1+ 是风险分类；只有当前任务另行授权记录时才写 `data/logs/automation_log.jsonl`。
 - 使用 `prompts/mcp_audit_prompt.md` 生成审计草案。
 
 ## 15. 验收标准与下一步
 
 **验收**：
 
-- 六个 MCP 登记完整，字段齐全，`enabled_in_project` 均为 true。
-- default start 已明确不等于 unlimited access；L2/L3 操作仍受审批策略约束。
+- 六个 MCP 登记完整，字段齐全，`enabled_in_project` 均为 false。
+- 四层状态分离；L0-L3 不被解释为授权。
 - `python3 scripts/check_repo.py` 与 `bootstrap.py --dry-run` 通过。
 - 仓库内无真实 token。
 - 未真实调用外部 MCP。

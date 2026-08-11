@@ -1,22 +1,20 @@
 policy:
   name: personal_control_hub_agent_policy
-  version: "0.6.0"
+  version: "1.1.0"
   status: draft
   default_mode: local_first_read_mostly
-  current_round: ROUND-0-7
+  current_round: ROUND-1-1
 
 allowed_without_confirmation:
   - "读取本仓库文档、YAML、脚本和测试。"
-  - "创建或更新本仓库内的轻量骨架文件。"
   - "运行本仓库本地验证脚本。"
   - "读取外部项目注册表中的允许入口文件。"
-  - "生成外部项目 profile、snapshot、priority suggestion 和 next actions 草案。"
+  - "在回复或标准输出中生成外部项目 profile、snapshot、priority suggestion 和 next actions 草案。"
   - "提出 program-project link proposal。"
-  - "生成 Codex/Cursor prompt 草案。"
+  - "在标准输出中生成 Codex/Cursor prompt 草案。"
   - "读取 git status、git branch、git log 和 git remote 信息，仅用于状态判断。"
   - "只读执行 hub.py mcp list 与 hub.py mcp policy。"
-  - "L0 MCP 等效只读上下文（登记状态下不假设 MCP 已启用）。"
-  - "六个已登记 MCP（chrome-devtools、context7、filesystem、github、playwright、stitch）可作为 Cursor 工作区 default start 候选；L0/L1 操作按策略默认可用。"
+  - "读取 MCP registry 与策略；不得从登记状态推断配置、运行时可用或动作授权。"
 
 requires_user_confirmation:
   - "修改外部项目本体。"
@@ -45,7 +43,7 @@ forbidden_in_round_0:
 
 forbidden_in_round_005:
   - "自行安装 MCP 包。"
-  - "把 L3 MCP 的 default start 解释为免审批执行。"
+  - "把 MCP 的登记、配置或运行时状态解释为动作授权。"
   - "真实调用外部 MCP API。"
   - "在仓库写入真实 token。"
   - "覆盖用户已有 .cursor/mcp.json。"
@@ -63,6 +61,7 @@ mcp_policy:
     - data/mcp/mcp_integration_roadmap.yaml
   l2_l3_must_stop_for_confirmation: true
   external_tool_logging: data/logs/automation_log.jsonl
+  logging_requires_separate_current_authority: true
   token_storage: env_only
   round_005_no_real_calls: true
 
@@ -76,18 +75,18 @@ auto_advance_policy:
   default_continue_without_hard_blocker: true
   rules:
     - "每轮开始前必须运行 python scripts/agent_gate.py 与 python scripts/auto_advance_runner.py --mode check。"
-    - "gate 输出 continue 时可以继续。"
-    - "gate 输出 warn_and_continue 时记录 warning 后继续。"
+    - "gate 输出 continue 时只表示检查通过；仅在当前已有上级授权范围内继续。"
+    - "gate 输出 warn_and_continue 时报告 warning，并仅在当前已有授权范围内继续。"
     - "gate 输出 stop 时必须停止并请求用户确认。"
     - "没有 hard blocker 不要因偏好不完美而停下。"
     - "可用保守默认值时使用保守默认值。"
     - "只有 hard blocker 才请求用户。"
-    - "每轮完成后更新 governance/round_state.yaml、data/state/current_status.yaml、data/logs/automation_log.jsonl。"
-    - "每轮完成后运行 python scripts/auto_advance_runner.py --mode finalize-round（用户确认 push 后）。"
-    - "finalize 成功后可运行 prepare-next 生成下一轮 prompt。"
+    - "只有当前任务授权时才更新 round_state、current_status 或日志。"
+    - "finalize-round 只做验证和风险报告，永不暂存、commit 或 push。"
+    - "prepare-next 只向标准输出预览下一轮 prompt，不写队列文件。"
     - "涉及代码修改必须运行最小验证。"
-    - "验证失败两次停止。"
-    - "软阻塞默认继续；push 失败、敏感文件、merge conflict 必须停止。"
+    - "两次连续尝试没有进展时诊断并改变方法；真实边界才请求用户。"
+    - "软阻塞在回复中报告；是否继续仍取决于当前已有上级授权。"
   hard_blocker_examples:
     - "真实 API key、密码、cookie。"
     - "写入外部项目。"
@@ -101,7 +100,7 @@ auto_advance_policy:
     - "缺少真实飞书 webhook 或 GitHub token，但可用 mock。"
     - "LLM 不可用但可用 mock。"
     - "future round 不够细。"
-  default_start_policy: "六个已登记 MCP 默认可作为 Cursor 工作区启动候选；default start 不等于 unlimited access。"
+  default_start_policy: "六个 MCP 仅为登记候选且默认 disabled；配置、运行时可用和动作授权分别判断。"
   enabled_l3_is_not_hard_blocker: true
 
 approval_levels:
@@ -113,11 +112,11 @@ approval_levels:
       - "读取 MCP registry 与 policy"
   L1:
     name: local_low_risk_write
-    confirmation_required: false
+    confirmation_required: true
     logging_required: true
     examples:
-      - "本仓库 MCP 文档与 YAML 更新"
-      - "写入 automation_log.jsonl"
+      - "当前任务明确授权的本仓库文档与 YAML 更新"
+      - "当前任务明确授权的 automation_log.jsonl 记录"
   L2:
     name: external_or_shell_low_risk
     confirmation_required: true

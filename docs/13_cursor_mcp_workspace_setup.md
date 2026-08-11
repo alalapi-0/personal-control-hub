@@ -7,8 +7,8 @@ Round 0.5 文档。说明如何在 Cursor 中准备 MCP 工作区配置，而不
 - Cursor 是 MCP **宿主**；personal-control-hub 提供登记与策略，不替代 Cursor 设置 UI。
 - 配置示例在 `.cursor/mcp.example.json`；**不要**在仓库写入真实 token。
 - 若用户已有 `.cursor/mcp.json`，Agent **不得覆盖**，仅报告差异。
-- 六个已登记 MCP 在本项目治理中默认进入 **default start / 可被 Cursor 工作区启用** 状态。
-- default start 不等于 unlimited access；L0/L1 可默认可用，L2/L3 具体动作仍按审批等级停止确认。
+- 六个 registry 候选默认 disabled；当前受保护项目配置只含 `filesystem`，不得自动补齐。
+- 登记、项目配置、运行时可用和动作授权分别判断；L0-L3 只分类风险。
 
 ## 2. 配置层级
 
@@ -38,28 +38,28 @@ Round 0.5 文档。说明如何在 Cursor 中准备 MCP 工作区配置，而不
 ### github（优先级：高，L2 只读）
 
 - **用途**：Issue、PR、checks 只读，支撑项目快照。
-- **启用建议**：默认可启动；真实只读查询仍按 L2 说明范围并确认，token 用 `GITHUB_PERSONAL_ACCESS_TOKEN`。
+- **启用建议**：保持 disabled，只有明确需要并获当前授权后配置；token 用 `GITHUB_PERSONAL_ACCESS_TOKEN`。
 - **安全**：写操作视为 L3，默认不授予 repo 写权限 token。
 
 ### chrome-devtools（优先级：中，L2）
 
 - **用途**：页面结构、网络、性能诊断。
-- **启用建议**：默认可启动；浏览器测试复盘时使用，目标 URL 与数据范围须用户确认。
+- **启用建议**：保持 disabled；需要浏览器测试复盘时再确认目标 URL 与数据范围。
 - **安全**：不自动登录；不操作生产写接口。
 
 ### stitch（优先级：低，L2）
 
 - **用途**：UI 草案与探索。
-- **启用建议**：默认可启动；设计探索轮次按 L2 使用。
+- **启用建议**：保持 disabled；设计探索轮次按 L2 另行授权。
 - **安全**：输出限制在本仓库或临时目录；不写外部业务 repo。
 
 ### playwright（优先级：低，L3）
 
 - **用途**：E2E 自动化。
-- **启用建议**：默认可登记为可启动；任何真实浏览器动作先按 L3 审批判断。
+- **启用建议**：保持 disabled；任何真实浏览器动作先按 L3 与当前上级授权判断。
 - **安全**：禁止无人值守生产操作、自动登录真实账号、支付、发布和破坏性 UI 操作，除非 CEO 显式批准且 governance 允许。
 
-## 4. 推荐启用顺序
+## 4. 若获授权时的评估顺序
 
 1. context7（L0）
 2. filesystem（L1，白名单后）
@@ -73,10 +73,10 @@ Round 0.5 文档。说明如何在 Cursor 中准备 MCP 工作区配置，而不
 ## 5. 安全清单
 
 - [ ] 未将真实 token 提交到 git
-- [ ] registry 中 `enabled_in_project` 与 Cursor 实际启用状态一致（人工核对）
+- [ ] registry、项目配置、Cursor 运行时状态分别记录，未相互推断
 - [ ] 新增 MCP 已更新 registry + policy + roadmap
 - [ ] L2/L3 操作有用户确认记录
-- [ ] default start 没有被解释为免审批或自动执行真实外部动作
+- [ ] 登记或配置没有被解释为免审批或自动执行真实外部动作
 - [ ] 外部项目写入仍遵守 `docs/05_external_project_protocol.md`
 
 ## 6. 与 personal-control-hub 联动

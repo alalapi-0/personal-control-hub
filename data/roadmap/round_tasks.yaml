@@ -3,7 +3,7 @@ roadmap:
   status: draft
   last_updated: "2026-06-07"
   authority: docs/02_master_roadmap.md
-  principle: "新需求优先进入 master roadmap、round_state、round_tasks 与 auto_advance_policy；已完成轮次只追加 note，不重写历史。"
+  principle: "新需求优先进入 master roadmap、round_state、round_tasks 与 auto_advance_policy；已完成轮次只追加 note，不重写历史。can_auto_advance 仅为计划元数据，不授予任何写入、日志、Git 或外部动作权限。"
 
 rounds:
   - id: ROUND-0
@@ -48,7 +48,7 @@ rounds:
       - .cursor/mcp.example.json
     acceptance_criteria:
       - "chrome-devtools、context7、filesystem、github、playwright、stitch 已登记。"
-      - "enabled_in_project 默认 true，含义是 default start with gates。"
+      - "enabled_in_project 默认为 false；登记、配置、运行时与动作授权分别判断。"
       - "L0-L3 审批模型清晰。"
       - "不安装、不调用真实 MCP，不写 token。"
     hard_blockers:
@@ -147,7 +147,7 @@ rounds:
       - "本轮不真实 push"
     hard_blockers:
       - "需要真实 push 但未获用户确认"
-      - "测试连续失败两次"
+      - "连续两次无进展后仍未诊断或改变方法"
     soft_blockers:
       - "git 仓库未初始化"
       - "remote 未配置"
@@ -477,7 +477,7 @@ rounds:
       - prompts/auto_advance_agent_prompt.md
       - data/scheduler/scheduled_tasks.yaml
     acceptance_criteria:
-      - "无硬阻塞时可继续推进。"
+      - "无硬阻塞时只在当前已有授权范围内继续。"
       - "stop 决策不会被队列绕过。"
     hard_blockers:
       - "agent_gate.py 输出 stop。"
@@ -848,7 +848,7 @@ rounds:
       - data/state/current_status.yaml
     acceptance_criteria:
       - "hard blocker 进入 approval queue。"
-      - "soft blocker 记录 warning 后继续。"
+      - "soft blocker 在回复中报告，并只在当前已有授权范围内继续。"
     hard_blockers:
       - "approval queue 要求绕过用户确认。"
     soft_blockers:
@@ -870,10 +870,10 @@ rounds:
       - governance/round_state.yaml
     acceptance_criteria:
       - "Runner 不绕过 gate。"
-      - "验证失败两次停止。"
+      - "连续两次无进展时诊断并改变方法。"
       - "不执行外部写入、登录、支付、发布。"
     hard_blockers:
-      - "测试连续失败两次。"
+      - "连续两次无进展后仍未诊断或改变方法。"
       - "需要真实外部写入。"
     soft_blockers:
       - "future round 不够细。"

@@ -31,12 +31,7 @@ REQUIRED_DIRS = [
     "governance",
 ]
 
-MCP_CONFIG_CANDIDATES = [
-    ".cursor/mcp.example.json",
-    ".cursor/mcp.json",
-]
-
-EXPECTED_MCP = [
+REGISTERED_MCP_CANDIDATES = [
     "chrome-devtools",
     "context7",
     "filesystem",
@@ -110,15 +105,35 @@ def _check_directories(hard_blockers: list[str], warnings: list[str]) -> None:
             hard_blockers.append(f"必要目录缺失：{relative}")
 
 
+def _read_mcp_server_names(relative: str, warnings: list[str]) -> list[str]:
+    path = ROOT / relative
+    if not path.is_file():
+        warnings.append(f"未找到 {relative}")
+        return []
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        warnings.append(f"{relative} 无法解析：{exc}")
+        return []
+    servers = payload.get("mcpServers")
+    if not isinstance(servers, dict):
+        warnings.append(f"{relative} 缺少 mcpServers 对象")
+        return []
+    return sorted(str(name) for name in servers)
+
+
 def _check_mcp_config(warnings: list[str]) -> dict[str, Any]:
-    found = [rel for rel in MCP_CONFIG_CANDIDATES if (ROOT / rel).is_file()]
-    if not found:
-        warnings.append("未找到 .cursor/mcp.example.json 或 .cursor/mcp.json")
+    configured = _read_mcp_server_names(".cursor/mcp.json", warnings)
+    example = _read_mcp_server_names(".cursor/mcp.example.json", warnings)
+    if "filesystem" not in configured:
+        warnings.append("当前项目配置未包含最小本地 filesystem server")
     return {
-        "status": "manual_check_required",
-        "expected": EXPECTED_MCP,
-        "notes": "本脚本不直接启用 MCP，只记录检查要求",
-        "config_files_found": found,
+        "status": "runtime_unverified",
+        "registered_candidates": REGISTERED_MCP_CANDIDATES,
+        "example_candidates": example,
+        "project_configured": configured,
+        "runtime_available": None,
+        "notes": "登记、项目配置、运行时可用和动作授权是四种不同状态；本检查不启用 MCP，也不授予调用权限",
     }
 
 
@@ -136,7 +151,7 @@ def run_check() -> dict[str, Any]:
     if git_info["status"] == "missing":
         hard_blockers.append("Git 不可用")
     elif git_info["status"] == "warning_not_in_repo":
-        warnings.append("当前目录不在 git 仓库中；finalize-round 的 commit/push 将失败")
+        warnings.append("当前目录不在 git 仓库中；只能执行非 Git 的只读检查")
 
     if node_info["status"] == "optional_missing":
         warnings.append("Node 未安装（可选，未来 UI/Playwright 可能需要）")
@@ -230,11 +245,17 @@ def _print_text(result: dict[str, Any]) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="personal-control-hub environment check")
     parser.add_argument("--json", action="store_true", help="输出 JSON")
+    parser.add_argument(
+        "--record",
+        action="store_true",
+        help="在当前任务已明确授权记录时，更新状态文件并追加日志；默认不写文件",
+    )
     args = parser.parse_args(argv)
 
     result = run_check()
-    _write_status(result)
-    _append_log(result)
+    if args.record:
+        _write_status(result)
+        _append_log(result)
 
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))

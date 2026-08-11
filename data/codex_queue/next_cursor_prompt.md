@@ -39,4 +39,6 @@ python scripts/agent_gate.py
 python scripts/auto_advance_runner.py --mode finalize-round
 ```
 
-无硬阻塞时默认继续；软阻塞只记录 warning。
+该命令只做验证，不暂存、commit 或 push；本文件是历史队列草案，不授予执行权限。
+
+本文件不授予推进权限；检查通过后也只能在当前已有上级授权范围内继续。

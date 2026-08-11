@@ -114,7 +114,7 @@ scheduled_tasks:
     dry_run_default: true
     requires_user_confirmation: false
     approval_level: L1
-    notes: "finalize-round 成功后可选运行；生成 codex/cursor prompt 草案，不自动调用 Codex。"
+    notes: "finalize-round 只读验证后可选运行；仅预览 codex/cursor prompt，不写文件或调用 Codex。"
 
 policy:
   automatic_execution_allowed: false
@@ -123,4 +123,4 @@ policy:
   real_mcp_calls_allowed: false
   git_push_allowed: false
   auto_advance_runner_finalize_allowed: false
-  note: "finalize-round 的 commit/push 仅在用户确认后的 Round 0.9 或明确 policy 允许时执行。"
+  note: "finalize-round 始终只读；Git 交付由当前 Root 按上级策略单独执行。"

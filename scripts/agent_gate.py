@@ -326,16 +326,16 @@ def run_gate(requested_round: str | None = None) -> dict[str, Any]:
     if requested_round and requested_can_auto_advance is False and decision == "continue":
         decision = "warn_and_continue"
 
-    can_auto_advance = decision in {"continue", "warn_and_continue"}
-    if requested_round and requested_can_auto_advance is False:
-        can_auto_advance = False
+    checks_passed = decision in {"continue", "warn_and_continue"}
 
     return {
         "decision": decision,
         "hard_blockers": hard_blockers,
         "soft_warnings": soft_warnings,
         "next_round": next_round,
-        "can_auto_advance": can_auto_advance,
+        "checks_passed": checks_passed,
+        "can_auto_advance": False,
+        "authority_granted": False,
     }
 
 
@@ -344,7 +344,8 @@ def _print_text(result: dict[str, Any]) -> None:
     print(f"决策：{result['decision']}")
     print(f"硬阻塞：{len(result['hard_blockers'])}")
     print(f"软警告：{len(result['soft_warnings'])}")
-    print(f"可推进轮次：{result['next_round'] or '无'}")
+    print(f"下一轮候选：{result['next_round'] or '无'}")
+    print("动作授权：未授予（gate 只报告检查结果）")
 
     if result["hard_blockers"]:
         print("\n硬阻塞明细：")
@@ -357,11 +358,11 @@ def _print_text(result: dict[str, Any]) -> None:
             print(f"  - {item}")
 
     if result["decision"] == "stop":
-        suggestion = "存在硬阻塞，必须停止并请求用户确认。"
+        suggestion = "存在硬阻塞；停止触发阻塞的动作，并按当前上级规则处理。"
     elif result["decision"] == "warn_and_continue":
-        suggestion = "可以继续推进，但需要记录 warning 并使用保守默认值。"
+        suggestion = "检查通过但有 warning；仅在当前已有授权范围内继续，默认不写日志。"
     else:
-        suggestion = "可以继续推进。"
+        suggestion = "检查通过；仅在当前已有授权范围内继续。"
     print(f"建议：{suggestion}")
 
 

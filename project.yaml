@@ -1,8 +1,8 @@
 project:
   id: personal-control-hub
   name: personal-control-hub
-  status: restart_skeleton
-  stage: round_005_mcp_infrastructure
+  status: active
+  stage: phase_1_round_1_1_registry_runtime_validation
   owner: user
   primary_language: zh-CN
   created_or_restarted_on: "2026-06-07"

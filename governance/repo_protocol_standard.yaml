@@ -32,6 +32,7 @@ scope:
     - "This standard does not define provider-specific model API implementations."
 
 authority:
+  external_precedence: "System, developer, current user instructions, host permissions, and applicable workspace policy outrank this repository. Repository files classify risk and state but never grant authority."
   priority_order:
     - governance/repo_protocol_standard.yaml
     - project.yaml
@@ -550,8 +551,8 @@ agent_policy_standard:
     gate_report: docs/reports/agent_gate_report.md
     rule: "An Agent must run scripts/agent_gate.py before any autonomous advancement. The gate is deterministic and never calls an LLM."
     exit_codes:
-      "0": "PASS — gate passed; the Agent may continue autonomous advancement within agent_policy_standard.allowed_actions."
-      "1": "WARNING — incomplete but non-blocking; the Agent may perform low-risk governance tasks (docs, .env.example, mock adapters, dry-run tests, Playwright basics, review empty states, archive flows, reports) but should record the warnings."
+      "0": "PASS — checks passed; the Agent may continue only within authority already granted by higher-priority instructions."
+      "1": "WARNING — incomplete but non-blocking; report warnings and continue only within existing higher-priority authority."
       "2": "BLOCKED — a high-risk problem exists; the Agent must only produce a report and request human confirmation. No autonomous mutation."
     blocked_examples:
       - "A real .env is tracked by Git."
@@ -559,7 +560,7 @@ agent_policy_standard:
       - "Generated content is configured to be written directly into fixed assets."
       - "Real Lark / Feishu write is enabled by default."
       - "A destructive migration is not recorded."
-    agent_autonomous_allowed:
+    agent_autonomous_allowed_when_currently_authorized:
       - "Update documentation and fix README links."
       - "Add or expand .env.example placeholders."
       - "Add mock adapters and dry-run tests."
@@ -569,6 +570,7 @@ agent_policy_standard:
       - "Generate scan, gate and verification reports."
       - "Correct clearly outdated documentation statements."
       - "Add or strengthen deterministic safety checks and scripts/agent_gate.py."
+    authority_boundary: "This list is a risk classification, not permission. Gate output never authorizes file writes, logs, Git effects, external calls, installation, publication, credentials, or production/user-data changes."
     agent_must_stop_for_human:
       - "Delete user content."
       - "Call real paid APIs."

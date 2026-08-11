@@ -34,9 +34,9 @@
 ## 边界
 
 - 不得自行安装 MCP。
-- 不得把 playwright 等 L3 MCP 的 default start 解释为允许高风险动作。
+- 不得把任何登记、配置或运行时状态解释为动作授权。
 - 不得覆盖用户 `.cursor/mcp.json`。
-- 审计结果可写入 `docs/reports/`（L1，须记 automation_log）。
+- 默认只在回复中给出审计结果；只有当前任务分别授权报告写入与日志记录时，才写 `docs/reports/` 和 `automation_log`。
 
 ## 验证
 

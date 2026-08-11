@@ -1,5 +1,7 @@
 # MCP 配置审计报告
 
+> 历史记录：本文仅描述 2026-06-07 当时的审计与计划，不是当前配置或权限入口。当前事实见 `docs/MCP_SETUP.md`；现有 `.cursor/mcp.json` 受保护且只含 filesystem。
+
 > 审计时间：2026-06-07  
 > 仓库路径：`/Users/alalapi/PycharmProjects/personal-control-hub`  
 > 审计类型：仓库级 MCP 配置治理（Round 配置补全）

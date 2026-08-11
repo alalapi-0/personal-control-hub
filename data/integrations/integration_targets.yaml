@@ -76,7 +76,7 @@ integrations:
     write_back_allowed: false
     requires_user_confirmation: true
     approval_level: L2
-    notes: "Playwright 部分为 L3；MCP 可 default start，但真实浏览器动作仍需审批。"
+    notes: "Playwright 部分为 L3 且默认 disabled；真实浏览器动作需当前显式授权。"
 
   - id: codex_prompt_queue
     name: Codex execution prompt queue

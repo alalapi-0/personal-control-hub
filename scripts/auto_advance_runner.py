@@ -8,7 +8,6 @@ import json
 import re
 import subprocess
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -19,10 +18,6 @@ except ImportError:  # pragma: no cover
 
 
 ROOT = Path(__file__).resolve().parents[1]
-LOG_FILE = ROOT / "data/logs/auto_advance_log.jsonl"
-CODEX_QUEUE = ROOT / "data/codex_queue/next_round_prompt.md"
-CURSOR_QUEUE = ROOT / "data/codex_queue/next_cursor_prompt.md"
-
 SENSITIVE_PATTERNS = [
     re.compile(r"^\.env$"),
     re.compile(r"^\.env\."),
@@ -128,12 +123,6 @@ def _decide(hard: list[str], soft: list[str]) -> str:
     return "continue"
 
 
-def _append_log(entry: dict[str, Any]) -> None:
-    LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with LOG_FILE.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(entry, ensure_ascii=False) + "\n")
-
-
 def _run_checks() -> dict[str, Any]:
     hard_blockers: list[str] = []
     soft_warnings: list[str] = []
@@ -142,28 +131,24 @@ def _run_checks() -> dict[str, Any]:
     env_result = _parse_json_from_output(env_out)
     if env_result is None:
         hard_blockers.append("check_environment.py 未能输出有效 JSON")
-    elif code != 0:
-        hard_blockers.extend(env_result.get("hard_blockers", []))
 
     code, gate_out = _run_script("scripts/agent_gate.py", ["--json"])
     gate_result = _parse_json_from_output(gate_out)
     if gate_result is None:
         hard_blockers.append("agent_gate.py 未能输出有效 JSON")
-    elif gate_result.get("decision") == "stop":
-        hard_blockers.extend(gate_result.get("hard_blockers", []))
-    if gate_result:
-        soft_warnings.extend(gate_result.get("soft_warnings", []))
 
     code, consistency_out = _run_script("scripts/round_consistency_check.py", ["--json"])
     consistency_result = _parse_json_from_output(consistency_out)
     if consistency_result is None:
         hard_blockers.append("round_consistency_check.py 未能输出有效 JSON")
-    elif consistency_result.get("hard_blockers"):
-        hard_blockers.extend(consistency_result.get("hard_blockers", []))
-    if consistency_result:
-        soft_warnings.extend(consistency_result.get("warnings", []))
 
-    hard, soft = _collect_hard_and_soft(env_result, gate_result, consistency_result)
+    hard, soft = _collect_hard_and_soft(
+        env_result,
+        gate_result,
+        consistency_result,
+        extra_hard=hard_blockers,
+        extra_soft=soft_warnings,
+    )
     context = _get_round_context()
     decision = _decide(hard, soft)
 
@@ -175,7 +160,9 @@ def _run_checks() -> dict[str, Any]:
         "gate_result": gate_result,
         "consistency_result": consistency_result,
         "context": context,
-        "can_continue": decision in {"continue", "warn_and_continue"},
+        "checks_passed": decision in {"continue", "warn_and_continue"},
+        "can_continue": False,
+        "authority_granted": False,
     }
 
 
@@ -187,7 +174,8 @@ def _print_check_summary(result: dict[str, Any]) -> None:
     print(f"下一轮次：{ctx.get('next_round')}")
     print(f"硬阻塞：{len(result['hard_blockers'])}")
     print(f"软警告：{len(result['soft_warnings'])}")
-    print(f"可继续：{'是' if result['can_continue'] else '否'}")
+    print(f"检查通过：{'是' if result['checks_passed'] else '否'}")
+    print("动作授权：未授予（runner 只报告检查结果）")
     if result["hard_blockers"]:
         print("\n硬阻塞：")
         for item in result["hard_blockers"]:
@@ -201,17 +189,6 @@ def _print_check_summary(result: dict[str, Any]) -> None:
 def mode_check() -> dict[str, Any]:
     result = _run_checks()
     _print_check_summary(result)
-    _append_log({
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "mode": "check",
-        "decision": result["decision"],
-        "hard_blockers": result["hard_blockers"],
-        "soft_warnings": result["soft_warnings"],
-        "current_round": result["context"].get("current_round"),
-        "next_round": result["context"].get("next_round"),
-        "git_commit": None,
-        "git_push_status": None,
-    })
     return result
 
 
@@ -263,7 +240,7 @@ def _generate_prompt(round_item: dict[str, Any], executor: str) -> str:
         "python scripts/auto_advance_runner.py --mode finalize-round",
         "```",
         "",
-        "无硬阻塞时默认继续；软阻塞只记录 warning。",
+        "该命令只做验证，不提交、不推送。是否继续及任何写操作仍取决于当前上级授权。",
     ])
     return "\n".join(lines) + "\n"
 
@@ -273,20 +250,9 @@ def mode_prepare_next() -> dict[str, Any]:
     context = check_result["context"]
     next_round_id = context.get("next_round")
 
-    if not check_result["can_continue"]:
+    if not check_result["checks_passed"]:
         print("=== Auto Advance Runner: prepare-next ===")
-        print("存在硬阻塞，无法生成下一轮 prompt。")
-        _append_log({
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "mode": "prepare-next",
-            "decision": "stop",
-            "hard_blockers": check_result["hard_blockers"],
-            "soft_warnings": check_result["soft_warnings"],
-            "current_round": context.get("current_round"),
-            "next_round": next_round_id,
-            "git_commit": None,
-            "git_push_status": "skipped_due_to_blocker",
-        })
+        print("存在硬阻塞，无法预览下一轮 prompt。")
         return {"decision": "stop", "prompts_written": False}
 
     round_item = _find_round_task(next_round_id)
@@ -294,27 +260,14 @@ def mode_prepare_next() -> dict[str, Any]:
         print(f"未找到 next_round 任务：{next_round_id}")
         return {"decision": "stop", "prompts_written": False}
 
-    CODEX_QUEUE.parent.mkdir(parents=True, exist_ok=True)
-    CODEX_QUEUE.write_text(_generate_prompt(round_item, "Codex"), encoding="utf-8")
-    CURSOR_QUEUE.write_text(_generate_prompt(round_item, "Cursor"), encoding="utf-8")
-
     print("=== Auto Advance Runner: prepare-next ===")
-    print(f"已生成：{CODEX_QUEUE.relative_to(ROOT)}")
-    print(f"已生成：{CURSOR_QUEUE.relative_to(ROOT)}")
+    print("只读预览；未写入队列文件。")
     print(f"下一轮：{next_round_id} — {round_item.get('name')}")
-
-    _append_log({
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "mode": "prepare-next",
-        "decision": check_result["decision"],
-        "hard_blockers": check_result["hard_blockers"],
-        "soft_warnings": check_result["soft_warnings"],
-        "current_round": context.get("current_round"),
-        "next_round": next_round_id,
-        "git_commit": None,
-        "git_push_status": None,
-    })
-    return {"decision": check_result["decision"], "prompts_written": True}
+    print("\n--- Codex prompt preview ---\n")
+    print(_generate_prompt(round_item, "Codex"), end="")
+    print("\n--- Cursor prompt preview ---\n")
+    print(_generate_prompt(round_item, "Cursor"), end="")
+    return {"decision": check_result["decision"], "prompts_written": False, "previewed": True}
 
 
 def _git_status_porcelain() -> tuple[int, str]:
@@ -378,15 +331,6 @@ def _scan_unstaged_sensitive(hard_blockers: list[str]) -> None:
             hard_blockers.append(f"工作区存在疑似敏感文件：{rel}")
 
 
-def _commit_message(context: dict[str, Any]) -> str:
-    round_id = context.get("current_round", "UNKNOWN")
-    name = context.get("current_round_name", "")
-    dotted = str(round_id).replace("ROUND-", "").replace("-", ".")
-    if name:
-        return f"Restart Round {dotted}: {name.lower()}"
-    return f"Round {round_id}: update"
-
-
 def mode_finalize_round() -> dict[str, Any]:
     hard_blockers: list[str] = []
     soft_warnings: list[str] = []
@@ -403,7 +347,7 @@ def mode_finalize_round() -> dict[str, Any]:
 
     in_repo_code, _ = _run_script_command(["git", "rev-parse", "--is-inside-work-tree"])
     if in_repo_code != 0:
-        hard_blockers.append("当前目录不在 git 仓库中，无法 commit/push")
+        hard_blockers.append("当前目录不在 git 仓库中，无法完成 Git 状态验证")
 
     merge_code, merge_out = _run_script_command(["git", "diff", "--name-only", "--diff-filter=U"])
     if merge_code == 0 and merge_out.strip():
@@ -412,19 +356,13 @@ def mode_finalize_round() -> dict[str, Any]:
     _scan_unstaged_sensitive(hard_blockers)
     _scan_staged_sensitive(hard_blockers)
 
-    remote_code, remote_out = _run_script_command(["git", "remote"])
-    if remote_code != 0 or not remote_out.strip():
-        soft_warnings.append("未配置 git remote；push 可能失败")
-
-    git_commit = None
-    git_push_status = None
     decision = _decide(hard_blockers, soft_warnings)
 
     print("=== Auto Advance Runner: finalize-round ===")
     print(f"决策：{decision}")
 
     if decision == "stop":
-        print("存在硬阻塞，不 commit、不 push。")
+        print("存在硬阻塞。该模式始终不 commit、不 push。")
         if hard_blockers:
             for item in hard_blockers:
                 print(f"  - {item}")
@@ -434,53 +372,15 @@ def mode_finalize_round() -> dict[str, Any]:
             hard_blockers.append(f"git status 失败：{status_out}")
             decision = "stop"
         elif not status_out.strip():
-            soft_warnings.append("工作区无变更，跳过 commit")
-            git_push_status = "skipped_no_changes"
+            soft_warnings.append("工作区无变更")
         else:
-            add_code, add_out = _run_script_command(["git", "add", "."])
-            if add_code != 0:
-                hard_blockers.append(f"git add 失败：{add_out}")
-                decision = "stop"
-            else:
-                _scan_staged_sensitive(hard_blockers)
-                if hard_blockers:
-                    decision = "stop"
-                else:
-                    message = _commit_message(context)
-                    commit_code, commit_out = _run_script_command(
-                        ["git", "commit", "-m", message]
-                    )
-                    if commit_code != 0:
-                        hard_blockers.append(f"git commit 失败：{commit_out}")
-                        decision = "stop"
-                    else:
-                        git_commit = message
-                        push_code, push_out = _run_script_command(["git", "push"])
-                        if push_code != 0:
-                            hard_blockers.append(f"git push 失败：{push_out}")
-                            git_push_status = "failed"
-                            decision = "stop"
-                        else:
-                            git_push_status = "success"
-
-    _append_log({
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "mode": "finalize-round",
-        "decision": decision,
-        "hard_blockers": hard_blockers,
-        "soft_warnings": soft_warnings,
-        "current_round": context.get("current_round"),
-        "next_round": context.get("next_round"),
-        "git_commit": git_commit,
-        "git_push_status": git_push_status,
-    })
-
-    print(f"git_commit: {git_commit or '无'}")
-    print(f"git_push_status: {git_push_status or '无'}")
+            print("检测到工作区变更；仅报告，不暂存、不提交、不推送。")
+    print("git_commit: not_attempted")
+    print("git_push_status: not_attempted_runner_is_read_only")
     return {
         "decision": decision,
-        "git_commit": git_commit,
-        "git_push_status": git_push_status,
+        "git_commit": None,
+        "git_push_status": "not_attempted_runner_is_read_only",
         "hard_blockers": hard_blockers,
     }
 
@@ -497,7 +397,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.mode == "check":
         result = mode_check()
-        return 0 if result["can_continue"] else 1
+        return 0 if result["checks_passed"] else 1
     if args.mode == "prepare-next":
         result = mode_prepare_next()
         return 0 if result.get("decision") != "stop" else 1
