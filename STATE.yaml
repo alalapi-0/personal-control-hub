@@ -43,11 +43,11 @@ storage_governance:
   external_norm: "~/Documents/StorageGovernance/STORAGE_GOVERNANCE.md"
   hub_access: read_only_pointer
   last_accepted_milestone:
-    id: B010
+    id: B011
     status: accepted_post_clean
     accepted_on: "2026-08-29"
-    released_local_bytes: 29106176
-    cumulative_accepted_release_bytes: 10161479680
+    released_local_bytes: 157114368
+    cumulative_accepted_release_bytes: 10318594048
     source_state: "~/Documents/StorageGovernance/STATE.yaml"
   cleanup_authority: consumed_and_closed
 
