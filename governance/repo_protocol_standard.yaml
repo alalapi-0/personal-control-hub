@@ -1,8 +1,22 @@
+personal_control_hub_v2_override:
+  status: active
+  effective_on: "2026-08-29"
+  purpose: "防止旧的跨仓长协议继续成为本仓库默认上下文或当前状态权威。"
+  authority_order:
+    - STATE.yaml
+    - AGENTS.md
+    - project.yaml
+    - governance/agent_policy.yaml
+    - task_routed_protocol
+  rule: "本文件保留为历史可迁移参考，只在协议溯源或跨仓标准任务中按需读取；其旧项目专属内容不适用于 personal-control-hub。"
+  current_state: STATE.yaml
+  context_router: AGENTS.md
+
 protocol:
   name: agent_readable_repo_protocol
   version: "0.3.0"
-  status: draft
-  purpose: "Provide a portable governance standard for AI-agent-readable repositories."
+  status: legacy_reference
+  purpose: "Historical portable governance reference; not the default control plane for personal-control-hub."
   portability: portable_to_other_repositories
   last_updated: "2026-05-30"
   maintained_by:

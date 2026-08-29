@@ -1,0 +1,42 @@
+schema_version: "1.0"
+
+metadata:
+  role: project_governance_adapter
+  reader: "处理 StorageGovernance 登记、状态同步或存储任务的 Agent。"
+  purpose: "只定义 hub 与存储治理之间的路由和边界，不复制存储治理规则。"
+  update_triggers:
+    - storage_governance_authority_path_change
+    - storage_governance_state_contract_change
+    - hub_registry_contract_change
+
+project:
+  id: storage_governance
+  root_path: "~/Documents/StorageGovernance"
+
+authority:
+  sole_norm: "~/Documents/StorageGovernance/STORAGE_GOVERNANCE.md"
+  content_copied_into_hub: false
+  hub_may_override_norm: false
+  rule: "实际执行存储治理时，以外部唯一规范为准；hub 只保存指针和摘要状态。"
+
+routing:
+  registry_or_summary_task:
+    read:
+      - STATE.yaml
+      - data/registry/external_projects.yaml
+      - governance/adapters/storage_governance.yaml
+    external_norm_required: false
+  storage_execution_task:
+    read:
+      - STATE.yaml
+      - governance/adapters/storage_governance.yaml
+      - "~/Documents/StorageGovernance/STORAGE_GOVERNANCE.md"
+    external_norm_required: true
+
+boundaries:
+  hub_access: read_only
+  external_project_writes_from_hub: false
+  norm_copy_forbidden: true
+  large_history_default_load_forbidden: true
+  deletion_authority: "Only the active storage-governance contract and current user authority may authorize deletion."
+  current_cleanup_intent: "After hub upgrade, resume independently verified deletion of already migrated local data."

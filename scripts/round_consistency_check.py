@@ -19,8 +19,7 @@ except ImportError:  # pragma: no cover
 ROOT = Path(__file__).resolve().parents[1]
 
 FILES = {
-    "round_state": "governance/round_state.yaml",
-    "current_status": "data/state/current_status.yaml",
+    "state": "STATE.yaml",
     "roadmap": "docs/02_master_roadmap.md",
     "round_tasks": "data/roadmap/round_tasks.yaml",
     "round_dependencies": "data/roadmap/round_dependencies.yaml",
@@ -77,52 +76,46 @@ def run_check() -> dict[str, Any]:
     hard_blockers: list[str] = []
     warnings: list[str] = []
 
-    round_state = _load_yaml(FILES["round_state"], hard_blockers) or {}
-    current_status_data = _load_yaml(FILES["current_status"], hard_blockers) or {}
+    state = _load_yaml(FILES["state"], hard_blockers) or {}
     round_tasks_data = _load_yaml(FILES["round_tasks"], hard_blockers) or {}
     round_deps_data = _load_yaml(FILES["round_dependencies"], hard_blockers) or {}
 
-    current_status = current_status_data.get("status", current_status_data)
-    if not isinstance(current_status, dict):
-        current_status = {}
+    state_meta = state.get("metadata", {}) if isinstance(state, dict) else {}
+    state_project = state.get("project", {}) if isinstance(state, dict) else {}
+    state_round = state.get("current_round", {}) if isinstance(state, dict) else {}
+    if not isinstance(state_meta, dict) or state_meta.get("authority") != "canonical":
+        hard_blockers.append("STATE.yaml 必须声明 metadata.authority=canonical")
+    if not isinstance(state_project, dict):
+        state_project = {}
+    if not isinstance(state_round, dict):
+        state_round = {}
 
-    current_round = round_state.get("current_round")
-    next_round = round_state.get("next_round")
-    current_phase = round_state.get("current_phase")
-    last_completed = round_state.get("last_completed_round")
-    completed_rounds = round_state.get("completed_rounds", [])
-    active_rounds = round_state.get("active_rounds", [])
-
-    status_round = current_status.get("current_round")
-    status_phase = current_status.get("current_phase")
-    status_next = current_status.get("next_round") or current_status.get("roadmap", {}).get("next_round")
+    current_round = state_round.get("id")
+    next_round = state_round.get("next_round")
+    current_phase = state_project.get("phase")
+    last_completed = state_round.get("last_completed_round")
 
     rounds = _get_rounds(round_tasks_data)
     round_ids = {str(item.get("id")) for item in rounds if item.get("id")}
+    completed_rounds = {
+        str(item.get("id"))
+        for item in rounds
+        if item.get("id") and str(item.get("status", "")).startswith("completed")
+    }
+    active_rounds = {
+        str(item.get("id")) for item in rounds if item.get("id") and item.get("status") == "active"
+    }
 
     if current_round and current_round not in round_ids:
         hard_blockers.append(f"current_round {current_round} 不在 round_tasks 中")
     if next_round and next_round not in round_ids:
         hard_blockers.append(f"next_round {next_round} 不在 round_tasks 中")
 
-    if status_round and current_round and status_round != current_round:
-        hard_blockers.append(
-            f"current_status.current_round ({status_round}) 与 round_state ({current_round}) 不一致"
-        )
-    if status_phase and current_phase and status_phase != current_phase:
-        hard_blockers.append(
-            f"current_status.current_phase ({status_phase}) 与 round_state ({current_phase}) 不一致"
-        )
-    if status_next and next_round and status_next != next_round:
-        warnings.append(
-            f"current_status next_round ({status_next}) 与 round_state ({next_round}) 不一致"
-        )
+    if current_round and current_round not in active_rounds:
+        hard_blockers.append(f"round_tasks 中当前轮次 {current_round} 不是 active")
 
-    if current_round and isinstance(active_rounds, list) and current_round not in active_rounds:
-        hard_blockers.append(f"active_rounds 未包含 current_round {current_round}")
-
-    if last_completed and isinstance(completed_rounds, list) and last_completed not in completed_rounds:
-        hard_blockers.append(f"last_completed_round {last_completed} 不在 completed_rounds 中")
+    if last_completed and last_completed not in completed_rounds:
+        hard_blockers.append(f"last_completed_round {last_completed} 在 round_tasks 中不是 completed")
 
     current_round_item = _find_round(rounds, current_round) if current_round else None
     if current_round_item and current_round_item.get("phase") and current_phase:
@@ -145,7 +138,7 @@ def run_check() -> dict[str, Any]:
     roadmap_path = ROOT / FILES["roadmap"]
     if roadmap_path.is_file() and current_round:
         roadmap_text = roadmap_path.read_text(encoding="utf-8")
-        round_name = round_state.get("current_round_name") or current_status.get("current_round_name")
+        round_name = state_round.get("name")
         if not _roadmap_mentions_round(roadmap_text, str(current_round), round_name):
             hard_blockers.append(f"master roadmap 未提及当前轮次 {current_round}")
 

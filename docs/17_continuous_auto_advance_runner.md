@@ -16,6 +16,7 @@
 6. 在本轮 Agent 完成后执行只读验证与风险报告（finalize-round）
 7. 硬阻塞出现时停止
 
+当前状态权威：`STATE.yaml`
 权威策略：`data/gates/auto_advance_policy.yaml`  
 推进 prompt：`prompts/continuous_auto_advance_prompt.md`
 
@@ -108,6 +109,6 @@ runner 不写日志、状态或 prompt 文件。`check_environment.py` 也默认
 2. decision 为 continue 或 warn_and_continue → 执行当前 round
 3. decision 为 stop → 停止并报告
 4. 完成 round → `python scripts/auto_advance_runner.py --mode finalize-round` 做只读复核
-5. 可选 `prepare-next` 预览下一轮；是否推进仍取决于当前授权与权威状态
+5. 可选 `prepare-next` 预览下一轮；是否推进仍取决于当前授权与 `STATE.yaml`
 
 详见 `prompts/continuous_auto_advance_prompt.md` 与 `AGENTS.md`。

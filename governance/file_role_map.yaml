@@ -1,13 +1,21 @@
 file_roles:
   root:
+    STATE.yaml:
+      role: canonical_current_state
+      authority: highest
+      update_policy: "仅在 accepted milestone、治理轮次、阻塞或唯一下一步改变时更新。"
+    NORTH_STAR.md:
+      role: long_term_direction
+      authority: high
+      update_policy: "长期目标、系统边界、权威模型或正式集成方向改变时更新。"
     README.md:
       role: human_entry
       authority: high
       update_policy: "项目定位、启动方式或验证入口变化时更新。"
     AGENTS.md:
-      role: agent_entry
+      role: conditional_context_router
       authority: high
-      update_policy: "Agent 必读顺序、权限或验证命令变化时更新。"
+      update_policy: "默认启动包、任务路由或执行边界变化时更新；与 STATE.yaml 合计不得超过 8192 bytes。"
     project.yaml:
       role: project_identity
       authority: high
@@ -18,8 +26,8 @@ file_roles:
       update_policy: "CLI 子命令扩展时更新。"
   governance:
     governance/round_state.yaml:
-      role: current_round_state
-      authority: high
+      role: legacy_round_history_and_compatibility_snapshot
+      authority: low
     governance/agent_policy.yaml:
       role: permissions_and_guardrails
       authority: high
@@ -27,15 +35,18 @@ file_roles:
       role: file_authority_map
       authority: high
     governance/repo_protocol_standard.yaml:
-      role: portable_repo_protocol
-      authority: highest
+      role: legacy_portable_repo_protocol_reference
+      authority: low
+    governance/adapters/storage_governance.yaml:
+      role: storage_governance_pointer_adapter
+      authority: high
   docs:
     docs/00_start_here.md:
-      role: human_and_agent_start
-      authority: high
+      role: human_navigation
+      authority: medium
     docs/01_project_ultimate_goal.md:
-      role: ultimate_goal_and_boundaries
-      authority: high
+      role: legacy_north_star_pointer
+      authority: low
     docs/02_master_roadmap.md:
       role: roadmap
       authority: high
@@ -96,7 +107,8 @@ file_roles:
     data/integrations/integration_targets.yaml:
       role: integration_target_catalog
     data/state/current_status.yaml:
-      role: lightweight_current_state
+      role: legacy_status_projection
+      authority: low
     data/logs/automation_log.jsonl:
       role: append_only_automation_log
     data/logs/project_decision_log.jsonl:

@@ -1,6 +1,6 @@
 # Master Roadmap
 
-当前权威状态：Phase 1 / ROUND-1-1（Registry Runtime Validation）。以下 Round 0.x 内容是历史计划与完成记录；历史 runner 的 commit/push 描述不再是当前执行语义。
+当前权威状态只读 `STATE.yaml`。本文是按需路线与历史材料；表格中旧的 `governance/round_state.yaml` / `data/state/current_status.yaml` 路径均按 v2 解释为 `STATE.yaml`，不再形成第二份当前状态。
 
 ## Restart Phase（重启阶段）
 

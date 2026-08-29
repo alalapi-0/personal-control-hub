@@ -1,3 +1,10 @@
+metadata:
+  role: legacy_status_projection
+  authority: non_canonical
+  canonical_current_state: STATE.yaml
+  read_when: "兼容旧展示字段时按需读取，不得作为当前状态权威。"
+  last_updated: "2026-08-29"
+
 status:
   project_id: personal-control-hub
   current_round: ROUND-1-1
@@ -5,9 +12,9 @@ status:
   current_phase: Phase 1
   repo_state: GitHub 已同步；ROUND-0-9 push 验证完成；ROUND-1 registry MVP 完成
   next_focus: 注册外部项目后运行 registry 运行时验证（ROUND-1-1）
-  last_operation_summary: 治理闭环校正当前轮次、MCP 四层状态与只读 runner；受保护 mcp.json 未改写
+  last_operation_summary: v2 控制面以 STATE.yaml 为唯一当前状态；本文件降级为兼容投影
   health: bootstrapping
-  last_updated: "2026-08-12"
+  last_updated: "2026-08-29"
   git:
     repository_detected: true
     remote_configured: true
@@ -15,7 +22,7 @@ status:
     default_branch: main
     note: "公开仓库已创建并同步至 origin/main。"
   external_projects:
-    registered_count: 0
+    registered_count: 1
     writes_performed: false
     registry_schema_version: "1.0"
     check_script: scripts/check_registry.py

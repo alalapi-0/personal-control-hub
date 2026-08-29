@@ -38,8 +38,7 @@ UI 当前不是第一优先级。Restart Phase 和 Phase 1 的重点仍是治理
 
 数据来源：
 
-- `governance/round_state.yaml`
-- `data/state/current_status.yaml`
+- `STATE.yaml`
 - `data/gates/auto_advance_policy.yaml`
 - `data/logs/automation_log.jsonl`
 - `data/programs/active_programs.yaml`
@@ -149,7 +148,7 @@ UI 当前不是第一优先级。Restart Phase 和 Phase 1 的重点仍是治理
 - `docs/02_master_roadmap.md`
 - `data/roadmap/round_tasks.yaml`
 - `data/roadmap/round_dependencies.yaml`
-- `governance/round_state.yaml`
+- `STATE.yaml`
 
 允许操作：
 

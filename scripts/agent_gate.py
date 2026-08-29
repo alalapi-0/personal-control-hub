@@ -21,18 +21,24 @@ ROOT = Path(__file__).resolve().parents[1]
 CORE_FILES = [
     "README.md",
     "AGENTS.md",
+    "STATE.yaml",
+    "NORTH_STAR.md",
     "project.yaml",
     "docs/00_start_here.md",
     "docs/01_project_ultimate_goal.md",
     "docs/02_master_roadmap.md",
     "governance/agent_policy.yaml",
     "governance/round_state.yaml",
+    "governance/adapters/storage_governance.yaml",
     "data/mcp/mcp_capability_registry.yaml",
     "data/mcp/mcp_approval_policy.yaml",
     "data/mcp/mcp_integration_roadmap.yaml",
     "prompts/codex_project_driver.md",
     "prompts/cursor_project_driver.md",
 ]
+
+DEFAULT_BOOT_FILES = ["AGENTS.md", "STATE.yaml"]
+DEFAULT_BOOT_LIMIT_BYTES = 8192
 
 REQUIRED_ROUND_FIELDS = [
     "id",
@@ -160,6 +166,21 @@ def _check_core_files(hard_blockers: list[str]) -> None:
     missing = [relative for relative in CORE_FILES if not (ROOT / relative).is_file()]
     if missing:
         hard_blockers.extend(f"核心文件缺失：{relative}" for relative in missing)
+
+
+def _check_default_boot(hard_blockers: list[str]) -> None:
+    paths = [ROOT / relative for relative in DEFAULT_BOOT_FILES]
+    if any(not path.is_file() for path in paths):
+        return
+    total = sum(path.stat().st_size for path in paths)
+    if total > DEFAULT_BOOT_LIMIT_BYTES:
+        hard_blockers.append(
+            f"默认启动包 {total} bytes，超过 {DEFAULT_BOOT_LIMIT_BYTES} bytes"
+        )
+    state = _load_yaml("STATE.yaml", hard_blockers)
+    metadata = state.get("metadata", {}) if isinstance(state, dict) else {}
+    if not isinstance(metadata, dict) or metadata.get("authority") != "canonical":
+        hard_blockers.append("STATE.yaml 必须是唯一 canonical current state")
 
 
 def _get_rounds(data: Any) -> list[dict[str, Any]]:
@@ -295,6 +316,7 @@ def run_gate(requested_round: str | None = None) -> dict[str, Any]:
     soft_warnings: list[str] = []
 
     _check_core_files(hard_blockers)
+    _check_default_boot(hard_blockers)
     rounds = _check_round_tasks(hard_blockers, soft_warnings)
     _check_policy(hard_blockers)
     _check_mcp_registry(hard_blockers)

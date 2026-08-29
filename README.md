@@ -1,92 +1,38 @@
 # personal-control-hub
 
-personal-control-hub 是个人项目 OS 和多项目总控入口。
+`personal-control-hub` 是本地优先的个人项目管理与治理控制面。它维护项目名单、当前状态、治理协议、里程碑证据和下一步路由；通过路径索引外部项目，但不复制或默认修改外部项目。
 
-GitHub: https://github.com/alalapi-0/personal-control-hub它负责管理项目、想法、任务、日志、优先级和行动建议，通过本地路径索引外部仓库，但不复制、不默认修改外部项目本体。
+2026-08-29 起，仓库采用 v2 轻量控制面：保留既有 Git 历史、脚本和资料，停止把长协议、完整路线图和历史报告作为每轮默认上下文。
 
-本仓库定位为项目控制层、索引层、计划层、调度层、通知层和多项目治理层。它不是大模型底座、完整 Agent 平台、浏览器自动操作平台、SaaS dashboard、业务仓库 monorepo 或全量扫描系统。
+## 当前入口
 
-## 当前启动方式
+- Agent 默认启动：`AGENTS.md` + `STATE.yaml`（合计不超过 8KB）
+- 长期方向：`NORTH_STAR.md`
+- 项目注册表：`data/registry/external_projects.yaml`
+- 条件治理协议：`governance/adapters/`
+- 人类架构说明：`docs/03_architecture.md`
+- 历史路线与报告：按需读取 `docs/02_master_roadmap.md`、`docs/reports/`、`docs/archive/`
 
-1. 先读 `docs/00_start_here.md`、`project.yaml`、`AGENTS.md`。
-2. 用 `data/registry/external_projects.yaml` 登记外部项目，只写本地路径和只读扫描策略。
-3. 用 `data/programs/active_programs.yaml` 维护现实目标与 active programs。
-4. 用 `scripts/check_repo.py` 验证核心骨架是否完整。
-5. 用 `scripts/agent_gate.py` 检查自动推进 gate。
-6. 用 `scripts/check_environment.py` 检查运行环境。
-7. 用 `scripts/auto_advance_runner.py --mode check` 检查是否可持续推进。
-8. 用 `scripts/bootstrap.py --dry-run` 查看缺失目录和占位文件，不覆盖已有内容。
+## 当前受管项目
+
+首个登记项目是 `StorageGovernance`。本仓库只保存便携路径和权威文件指针；存储治理的唯一规范仍在其项目目录内，本仓库不会复制规范内容，也不会从这里写入业务仓库。
+
+## Git 版本控制
+
+既有远端：<https://github.com/alalapi-0/personal-control-hub>。
+
+在当前或已记录的所有者授权有效时，每个 accepted 子项目里程碑或治理轮形成一个作用域明确的 commit，并正常 push 当前跟踪分支。runner 永远只做检查；禁止自动合并 `main`、强推、改远端、提交秘密或把多个无关项目混入同一提交。
+
+## 验证
 
 ```bash
-python scripts/check_repo.py
-python scripts/check_environment.py
-python scripts/agent_gate.py
-python scripts/auto_advance_runner.py --mode check
-python scripts/bootstrap.py --dry-run
-python hub.py mcp list
-python hub.py mcp policy
+python3 scripts/check_repo.py
+python3 scripts/check_registry.py
+python3 scripts/check_environment.py
+python3 scripts/round_consistency_check.py
+python3 scripts/agent_gate.py
+python3 scripts/auto_advance_runner.py --mode finalize-round
+pytest -q
 ```
 
-如果根目录后续出现历史 `bootstrap.py`，保留为兼容入口；本轮新增的标准入口是 `scripts/bootstrap.py`。
-
-## 工作环境与工具分工
-
-当前现实环境以中国大陆本地工作为主：本地优先、Cursor 优先、Codex 关键执行、Feishu/Lark 后续通知入口。外部项目可以分散在不同本地路径，不强制同一平台，不依赖单一云服务。
-
-- Cursor 是日常主力项目推进环境，用于常规编辑、检索、任务推进和本仓库的日常治理。
-- Codex 用于更高质量的代码执行、审查、复杂修改和关键轮次推进。
-- ChatGPT 用于规划、分析、Prompt 生成和外部讨论。
-- 第三方 Agent 工具暂非主力，只作为后续可接入对象。
-- Feishu/Lark 本轮只做策略和占位，不调用真实 API，不写 token，不真实发消息。
-
-## 本轮边界
-
-- 不删除历史文件。
-- 不调用真实 Feishu/Lark API。
-- 不调用真实付费 LLM API。
-- 不写入 token、secret、cookie、API key。
-- 不修改外部项目本体。
-- 不自动 git push、checkout、reset。
-
-## Roadmap 与自动推进（当前 ROUND-1-1）
-
-当前轮次：**ROUND-1-1 — Registry Runtime Validation**，阶段为 **Phase 1**。权威当前状态位于 `governance/round_state.yaml` 与 `data/state/current_status.yaml`。
-
-Round 0.6 把路线图扩写为 Restart Phase、Phase 1 本地项目总控闭环、Phase 2 UI/Web Console、Phase 3 半自动项目管理、Phase 4 高级自动化研究期。机器可读路线位于 `data/roadmap/round_tasks.yaml`，依赖图位于 `data/roadmap/round_dependencies.yaml`。
-
-自动推进 gate 位于 `scripts/agent_gate.py` 与 `data/gates/auto_advance_policy.yaml`。持续推进入口位于 `scripts/auto_advance_runner.py`（支持 `check`、`prepare-next`、`finalize-round`）。运行环境见 `docs/16_runtime_environment.md`，runner 说明见 `docs/17_continuous_auto_advance_runner.md`。
-
-三个 runner 模式默认都只读：`check` 检查，`prepare-next` 向标准输出预览 prompt，`finalize-round` 验证并报告风险。gate 的 `continue` 不是写入或外部动作授权；记录、状态更新和 Git 交付由当前上级授权控制。
-
-UI/Web Console 当前不是第一优先级，但已纳入 `docs/14_ui_console_plan.md` 和 Round 9-11.5 路线。
-
-## MCP 工作区（Round 0.5）
-
-Cursor 是 MCP 宿主；本仓库登记能力矩阵与 L0-L3 审批策略，**本轮不安装、不调用真实 MCP**。
-
-- 战略：`docs/11_mcp_infrastructure_strategy.md`
-- 审批：`docs/12_external_tool_approval_model.md`
-- 配置：`docs/13_cursor_mcp_workspace_setup.md`、`.cursor/mcp.example.json`
-- 数据：`data/mcp/mcp_capability_registry.yaml` 等四个 YAML
-- 只读 CLI：`python3 hub.py mcp list`、`python3 hub.py mcp policy`
-
-六个 MCP（chrome-devtools、context7、filesystem、github、playwright、stitch）均已登记，registry 中 `enabled_in_project` 默认 false。受保护的当前项目配置只包含 `filesystem`；实际运行时可用性未验证。登记、项目配置、运行时可用和具体动作授权必须分别判断。
-
-## 主要目录
-
-- `governance/`: Agent 策略、Round 状态、文件角色和 repo protocol。
-- `docs/`: 人类可读总纲、路线图、架构、协议、MCP 策略、报告和归档说明。
-- `data/`: 外部项目注册表、active programs、任务、调度、集成、**MCP 登记**、状态和日志。
-- `data/mcp/`: MCP 能力矩阵、审批策略、路线图与示例服务器配置。
-- `data/roadmap/`: 机器可读 round tasks 与依赖关系。
-- `data/gates/`: 自动推进策略与 gate checklist。
-- `data/runtime/`: 运行环境 requirements、toolchain 状态与验证命令。
-- `prompts/`: Codex/Cursor 驱动提示词、MCP 审计、持续推进 prompt。
-- `.cursor/`: Cursor MCP 示例与用户受保护的项目配置（不得覆盖已有 `mcp.json`）。
-- `scripts/`: 骨架检查、环境检查、轮次一致性检查、auto advance runner 与启动辅助脚本。
-- `src/hub/`: hub 服务与只读 MCP CLI。
-- `tests/`: 后续自动化测试占位。
-
-## 当前最小可执行路径
-
-历史 Round 0/0.5 建立治理骨架与 MCP 登记；当前在 ROUND-1-1 验证 registry 运行时一致性。任何写入或外部动作必须具有当前上级授权；真实 MCP、飞书、付费模型、远程控制和 GitHub 写入还需相应显式授权。
+`continue` / `warn_and_continue` 只是检查结果，不扩大当前权限。真实飞书、付费 API、外部项目写入、登录、发布、删除和其他高风险动作仍按当前指令与治理门禁处理。

@@ -5,10 +5,11 @@
 ## 启动前必读
 
 1. `AGENTS.md`
-2. `governance/agent_policy.yaml`
-3. `data/mcp/mcp_capability_registry.yaml`
-4. `data/mcp/mcp_approval_policy.yaml`
-5. `docs/13_cursor_mcp_workspace_setup.md`
+2. `STATE.yaml`
+3. `governance/agent_policy.yaml`
+4. `data/mcp/mcp_capability_registry.yaml`
+5. `data/mcp/mcp_approval_policy.yaml`
+6. 只有配置任务才读 `docs/13_cursor_mcp_workspace_setup.md`
 
 ## 核心规则
 
@@ -45,7 +46,7 @@
 - 覆盖 `.cursor/mcp.json`
 - 读取 `.env`、私钥、cookie
 - 修改外部项目
-- 自动 git push
+- 未获所有者授权的 git push
 - 真实 Feishu/付费 API
 
 ## 验证命令

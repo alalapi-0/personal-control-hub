@@ -5,6 +5,14 @@ policy:
   default_mode: local_first_read_mostly
   current_round: ROUND-1-1
 
+authority_model:
+  canonical_current_state: STATE.yaml
+  default_context_router: AGENTS.md
+  legacy_state_files:
+    - governance/round_state.yaml
+    - data/state/current_status.yaml
+  legacy_protocol_reference: governance/repo_protocol_standard.yaml
+
 allowed_without_confirmation:
   - "读取本仓库文档、YAML、脚本和测试。"
   - "运行本仓库本地验证脚本。"
@@ -21,7 +29,7 @@ requires_user_confirmation:
   - "删除文件。"
   - "覆盖已有用户内容。"
   - "覆盖用户已有 .cursor/mcp.json。"
-  - "推送 GitHub。"
+  - "没有当前或已记录所有者授权时推送 GitHub。"
   - "调用真实付费 API。"
   - "调用真实 Feishu/Lark API。"
   - "调用真实外部 MCP 服务（L2+）。"
@@ -81,7 +89,7 @@ auto_advance_policy:
     - "没有 hard blocker 不要因偏好不完美而停下。"
     - "可用保守默认值时使用保守默认值。"
     - "只有 hard blocker 才请求用户。"
-    - "只有当前任务授权时才更新 round_state、current_status 或日志。"
+    - "只有当前任务授权且当前事实改变时才更新 STATE.yaml；兼容状态文件不再作为权威。"
     - "finalize-round 只做验证和风险报告，永不暂存、commit 或 push。"
     - "prepare-next 只向标准输出预览下一轮 prompt，不写队列文件。"
     - "涉及代码修改必须运行最小验证。"
@@ -91,7 +99,7 @@ auto_advance_policy:
     - "真实 API key、密码、cookie。"
     - "写入外部项目。"
     - "删除文件或覆盖用户内容。"
-    - "git push、发布内容、登录账号、支付或购买。"
+    - "未获当前或已记录所有者授权的 git push、发布内容、登录账号、支付或购买。"
     - "改变 P0/P1 战略优先级。"
     - "MCP L2/L3 未获确认。"
   soft_blocker_examples:
@@ -154,3 +162,16 @@ task_state_policy:
   completed_means: "Agent 声称完成并提供证据。"
   accepted_means: "用户或明确 Gate 验收通过。"
   rule: "completed 与 accepted 必须分离记录。"
+
+git_delivery_policy:
+  owner_directive_recorded_on: "2026-08-29"
+  authorized_unit: accepted_milestone_or_governance_round
+  commit_scope: one_task_scoped_commit
+  push_scope: current_tracking_branch_only
+  requires_clean_validation: true
+  requires_independent_review_for_control_plane: true
+  automatic_main_merge: false
+  force_push: false
+  remote_change: false
+  secret_bearing_commit: false
+  runner_may_commit_or_push: false

@@ -1,5 +1,5 @@
-canonical_protocol:
+legacy_protocol_pointer:
   path: governance/repo_protocol_standard.yaml
-  status: compatibility_pointer
-  note: "Root-level file exists for discoverability. The canonical protocol remains governance/repo_protocol_standard.yaml."
-  last_updated: "2026-06-07"
+  status: legacy_reference_pointer
+  note: "仅供历史与跨仓迁移溯源；personal-control-hub 当前控制面见 AGENTS.md、STATE.yaml 和 project.yaml。"
+  last_updated: "2026-08-29"

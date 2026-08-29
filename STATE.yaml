@@ -1,0 +1,51 @@
+schema_version: "1.0"
+
+metadata:
+  role: canonical_current_state
+  authority: canonical
+  reader: "进入仓库的 Agent、所有者和状态展示工具。"
+  purpose: "只保存当前阶段、当前工作、阻塞与唯一下一步；不保存历史叙事。"
+  update_triggers:
+    - accepted_milestone
+    - governance_round_transition
+    - blocker_change
+    - unique_next_action_change
+  last_updated: "2026-08-29"
+
+project:
+  id: personal-control-hub
+  phase: Phase 1
+  health: active
+
+current_round:
+  id: ROUND-1-1
+  name: Control Plane v2 and Registry Runtime Validation
+  status: active
+  governance_revision: HUB-GOV-2026-08-29-01
+  last_completed_round: ROUND-1
+  next_round: ROUND-1-5
+
+current_work:
+  objective: "原地升级轻量项目控制面，并把 StorageGovernance 纳入注册表与当前存储治理目标。"
+  status: active
+  blocker: null
+  next_action: "把 hub 路由写回存储治理唯一规范，然后恢复 B006 删除门。"
+
+registry:
+  authority: data/registry/external_projects.yaml
+  registered_count: 1
+  active_project_ids:
+    - storage_governance
+
+storage_governance:
+  relation: active_governance_program
+  adapter: governance/adapters/storage_governance.yaml
+  external_norm: "~/Documents/StorageGovernance/STORAGE_GOVERNANCE.md"
+  hub_access: read_only_pointer
+  next_after_hub_upgrade: "恢复 B006 复核；删除已验证迁移成功且获批的本机数据。"
+
+git_delivery:
+  remote: origin
+  tracking_branch: origin/agent/governance-closure-20260812
+  policy: one_scoped_commit_and_push_per_accepted_milestone_or_governance_round
+  automatic_main_merge: false

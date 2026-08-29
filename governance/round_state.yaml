@@ -1,3 +1,10 @@
+metadata:
+  role: legacy_round_history_and_compatibility_snapshot
+  authority: non_canonical
+  canonical_current_state: STATE.yaml
+  read_when: "历史轮次溯源或兼容旧脚本时按需读取。"
+  frozen_on: "2026-08-29"
+
 current_phase: Phase 1
 current_round: ROUND-1-1
 current_round_name: Registry Runtime Validation

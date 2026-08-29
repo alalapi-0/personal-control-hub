@@ -2,12 +2,12 @@ project:
   id: personal-control-hub
   name: personal-control-hub
   status: active
-  stage: phase_1_round_1_1_registry_runtime_validation
+  stage: phase_1_control_plane_v2
   owner: user
   primary_language: zh-CN
   created_or_restarted_on: "2026-06-07"
   identity:
-    short_description: "个人项目 OS 和多项目总控入口。"
+    short_description: "本地优先、低上下文成本的个人项目注册与治理控制面。"
     role:
       - project_control_layer
       - project_index_layer
@@ -35,13 +35,22 @@ project:
     cloud_dependency_policy: "不依赖单一云服务。"
     external_projects_policy: "外部项目通过本地路径接入，不复制、不默认写入。"
   governance:
-    protocol_file: governance/repo_protocol_standard.yaml
+    canonical_current_state: STATE.yaml
+    context_router: AGENTS.md
+    north_star: NORTH_STAR.md
+    project_registry: data/registry/external_projects.yaml
+    adapter_directory: governance/adapters
+    legacy_protocol_reference: governance/repo_protocol_standard.yaml
     agent_policy_file: governance/agent_policy.yaml
-    round_state_file: governance/round_state.yaml
+    legacy_round_state_file: governance/round_state.yaml
+    legacy_status_projection: data/state/current_status.yaml
     file_role_map_file: governance/file_role_map.yaml
   entry_points:
-    human_start: docs/00_start_here.md
+    human_start: README.md
     agent_start: AGENTS.md
+    current_state: STATE.yaml
+    long_term_direction: NORTH_STAR.md
+    storage_governance_adapter: governance/adapters/storage_governance.yaml
     roadmap: docs/02_master_roadmap.md
     audit_report: docs/reports/restart_audit_report.md
     check_script: scripts/check_repo.py
@@ -51,4 +60,13 @@ project:
     mcp_setup: docs/13_cursor_mcp_workspace_setup.md
     hub_cli: hub.py
   compatibility:
-    root_repo_protocol_standard_yaml: "当前根目录未发现 repo_protocol_standard.yaml；标准文件保留在 governance/repo_protocol_standard.yaml。若未来新增根目录副本，以 governance/ 为权威。"
+    legacy_protocol: "governance/repo_protocol_standard.yaml 保留为历史可迁移参考；本仓库当前控制面以 AGENTS.md、STATE.yaml、project.yaml 和按任务策略为准。"
+    legacy_state: "governance/round_state.yaml 与 data/state/current_status.yaml 保留为兼容/历史材料，不与 STATE.yaml 竞争。"
+  git_delivery:
+    owner_directive_recorded_on: "2026-08-29"
+    unit: accepted_milestone_or_governance_round
+    commit_policy: one_scoped_commit
+    push_policy: current_tracking_branch_only
+    automatic_main_merge: false
+    force_push: false
+    secrets_allowed: false

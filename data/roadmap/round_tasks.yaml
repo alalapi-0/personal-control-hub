@@ -1,9 +1,14 @@
+v2_state_override:
+  effective_on: "2026-08-29"
+  canonical_current_state: STATE.yaml
+  rule: "轮次条目中的旧 round_state/current_status 路径仅为历史兼容名称；任何当前状态更新都写 STATE.yaml。"
+
 roadmap:
   version: "0.7.0"
   status: draft
   last_updated: "2026-06-07"
   authority: docs/02_master_roadmap.md
-  principle: "新需求优先进入 master roadmap、round_state、round_tasks 与 auto_advance_policy；已完成轮次只追加 note，不重写历史。can_auto_advance 仅为计划元数据，不授予任何写入、日志、Git 或外部动作权限。"
+  principle: "新需求先更新 STATE.yaml 的当前工作，并仅在需要未来排序时修改 master roadmap/round_tasks；已完成轮次只追加 note，不重写历史。can_auto_advance 仅为计划元数据，不授予任何写入、日志、Git 或外部动作权限。"
 
 rounds:
   - id: ROUND-0

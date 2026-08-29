@@ -67,12 +67,18 @@ def _parse_json_from_output(output: str) -> dict[str, Any] | None:
 
 
 def _get_round_context() -> dict[str, Any]:
-    round_state = _load_yaml("governance/round_state.yaml") or {}
+    state = _load_yaml("STATE.yaml") or {}
+    project = state.get("project", {}) if isinstance(state, dict) else {}
+    current_round = state.get("current_round", {}) if isinstance(state, dict) else {}
+    if not isinstance(project, dict):
+        project = {}
+    if not isinstance(current_round, dict):
+        current_round = {}
     return {
-        "current_round": round_state.get("current_round"),
-        "current_round_name": round_state.get("current_round_name"),
-        "next_round": round_state.get("next_round"),
-        "current_phase": round_state.get("current_phase"),
+        "current_round": current_round.get("id"),
+        "current_round_name": current_round.get("name"),
+        "next_round": current_round.get("next_round"),
+        "current_phase": project.get("phase"),
     }
 
 

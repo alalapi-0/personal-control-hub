@@ -30,7 +30,7 @@ Hard blocker 是不能自动越过的边界。一旦出现，Agent 必须停止�
 - 需要真实 API key、真实密码、真实 cookie。
 - 写入外部项目。
 - 删除文件或覆盖用户内容。
-- git push。
+- 未获当前或已记录所有者授权的 git push。
 - 发布内容。
 - 登录账号。
 - 支付或购买。
@@ -127,10 +127,9 @@ python scripts/agent_gate.py --round ROUND-1
 
 不要绕过 gate 或 runner。push 失败、merge conflict、敏感文件检测必须 stop。
 
-只有当前任务明确授权记录时才更新：
+只有当前任务明确授权且当前事实改变时才更新：
 
-- `governance/round_state.yaml`
-- `data/state/current_status.yaml`
+- `STATE.yaml`（唯一当前状态权威）
 - `data/logs/automation_log.jsonl`
 - `data/logs/auto_advance_log.jsonl`（runner 默认不追加）
 
@@ -163,7 +162,7 @@ python scripts/round_consistency_check.py
 - 需要支付、购买或发布。
 - 需要删除文件或覆盖用户内容。
 - 需要修改外部项目。
-- 需要 git push、checkout/reset 等高风险 git 操作。
+- 需要未获当前或已记录所有者授权的 git push，或 checkout/reset 等未授权 Git 操作。
 - 需要真实 Feishu/Lark API 或真实外部写入。
 - 需要 MCP L2/L3 但未获确认。
 - 需要改变 P0/P1 战略优先级。

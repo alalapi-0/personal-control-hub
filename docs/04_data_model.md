@@ -2,6 +2,10 @@
 
 本仓库第一阶段使用本地文件作为数据层，不引入数据库。
 
+## Current State
+
+当前状态唯一权威为根目录 `STATE.yaml`。它只保存当前阶段、轮次、当前工作、阻塞和唯一下一步。`governance/round_state.yaml` 与 `data/state/current_status.yaml` 是兼容/历史材料，不得写成第二份当前真相。
+
 ## External Project
 
 字段来源：`data/registry/external_projects.yaml`。
@@ -18,6 +22,8 @@
 - `priority_source`: 人类、规则或 proposal。
 - `watch_paths`: 允许关注的入口路径。
 - `notes`: 说明。
+
+可选治理字段包括 `authority_files`、`hub_adapter`、`access_profile`、`norm_copy_forbidden` 与 `external_write_allowed`。这些字段只描述路由和边界，不授予外部写权限。
 
 ## Active Program
 
