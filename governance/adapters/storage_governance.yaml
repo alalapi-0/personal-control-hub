@@ -39,4 +39,4 @@ boundaries:
   norm_copy_forbidden: true
   large_history_default_load_forbidden: true
   deletion_authority: "Only the active storage-governance contract and current user authority may authorize deletion."
-  current_cleanup_intent: "After hub upgrade, resume independently verified deletion of already migrated local data."
+  consumed_cleanup_authority_reuse: forbidden

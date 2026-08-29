@@ -21,15 +21,15 @@ current_round:
   id: ROUND-1-1
   name: Control Plane v2 and Registry Runtime Validation
   status: active
-  governance_revision: HUB-GOV-2026-08-29-01
+  governance_revision: HUB-GOV-2026-08-29-02
   last_completed_round: ROUND-1
   next_round: ROUND-1-5
 
 current_work:
-  objective: "原地升级轻量项目控制面，并把 StorageGovernance 纳入注册表与当前存储治理目标。"
+  objective: "以轻量注册表承接 StorageGovernance 的已接受里程碑，并维持跨项目只读路由。"
   status: active
   blocker: null
-  next_action: "把 hub 路由写回存储治理唯一规范，然后恢复 B006 删除门。"
+  next_action: "由 StorageGovernance 选择下一个不涉及离线视频盘且不受 B005 阻塞的独立批次；Hub 只读接收下一份 accepted 摘要。"
 
 registry:
   authority: data/registry/external_projects.yaml
@@ -42,7 +42,14 @@ storage_governance:
   adapter: governance/adapters/storage_governance.yaml
   external_norm: "~/Documents/StorageGovernance/STORAGE_GOVERNANCE.md"
   hub_access: read_only_pointer
-  next_after_hub_upgrade: "恢复 B006 复核；删除已验证迁移成功且获批的本机数据。"
+  last_accepted_milestone:
+    id: B006
+    status: accepted_post_clean
+    accepted_on: "2026-08-29"
+    released_local_bytes: 277823488
+    cumulative_accepted_release_bytes: 10132373504
+    source_state: "~/Documents/StorageGovernance/STATE.yaml"
+  cleanup_authority: consumed_and_closed
 
 git_delivery:
   remote: origin
