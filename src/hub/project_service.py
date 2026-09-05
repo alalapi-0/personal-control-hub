@@ -236,7 +236,7 @@ class ProjectService:
             "schema_version": "1.0", "project_id": project_id, "name": declared["name"],
             "declared": {key: copy.deepcopy(declared.get(key)) for key in (
                 "enabled", "summary_enabled", "project_type", "priority_source",
-                "current_state_status", "access_profile")},
+                "current_state_status", "access_profile", "hub_connection_exception")},
             "business": business_view,
             "operational": {"facts": latest_facts, "latest_attempt": copy.deepcopy(latest_ref),
                             "last_success": copy.deepcopy(success_ref)},

@@ -83,6 +83,15 @@ class RefreshCliTests(unittest.TestCase):
         }
         bundle["content_hash"] = content_hash(bundle)
         self.write("authority-bundle-v2.json", bundle)
+        # A distinct plan identity keeps both historical authorities readable.
+        current_bundle = copy.deepcopy(bundle)
+        current_plan = current_bundle["source_plan"]
+        current_plan["id"] = "hub-source-plan-v3"
+        current_plan["content_hash"] = content_hash({
+            k: v for k, v in current_plan.items() if k != "content_hash"})
+        current_bundle["content_hash"] = content_hash({
+            k: v for k, v in current_bundle.items() if k != "content_hash"})
+        self.write("authority-bundle-v3.json", current_bundle)
         relations = {
             "schema_version": "1.0",
             "kind": "connection_relation_proposals",
@@ -102,7 +111,7 @@ class RefreshCliTests(unittest.TestCase):
             "content_hash": "",
         }
         relations["content_hash"] = relation_hash(relations)
-        self.write("relation-proposals-v2.json", relations)
+        self.write("relation-proposals-v3.json", relations)
         return bundle
 
     def test_full_refresh_retry_and_offline_rebuild(self):
@@ -182,7 +191,7 @@ class RefreshCliTests(unittest.TestCase):
         code, validated = self.invoke("validate")
         self.assertEqual(code, 0, validated)
         self.assertEqual(
-            ["drifted", "matched"],
+            ["drifted", "matched", "matched"],
             [status["state"] for status in validated["current_authorities"]],
         )
         code, history = self.invoke("history")

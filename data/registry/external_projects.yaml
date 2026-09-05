@@ -754,6 +754,11 @@ projects:
   supporting_authority_paths:
   - "/Users/alalapi/Desktop/youtube_hq_downloader/README.md"
 - id: desktop-magnet
+  hub_connection_exception:
+    status: AUTHORIZED_EXCEPTION
+    authority_ref: owner-turn:01a071cc-f2c6-76c2-bc43-f300db610b0b/01a073d2-9296-7743-84f8-17cec1f9bffc#source-absence-exceptions
+    reason: 所有者批准无当前状态源的可见管理例外；保留登记和未知业务状态，不扩大读取或写入权限。
+    decision_ref: docs/reports/ui_design_governance/unit-08/owner-decision.json
   name: Desktop Magnet
   root_path: "/Volumes/AI_WORK_SSD/Projects/desktop-magnet"
   enabled: true
@@ -777,6 +782,11 @@ projects:
   supporting_authority_paths:
   - "/Users/alalapi/Desktop/magnet/README.md"
 - id: pycharm-misc-project
+  hub_connection_exception:
+    status: AUTHORIZED_EXCEPTION
+    authority_ref: owner-turn:01a071cc-f2c6-76c2-bc43-f300db610b0b/01a073d2-9296-7743-84f8-17cec1f9bffc#source-absence-exceptions
+    reason: 所有者批准无当前状态源的可见管理例外；保留登记和未知业务状态，不扩大读取或写入权限。
+    decision_ref: docs/reports/ui_design_governance/unit-08/owner-decision.json
   name: PyCharm Misc Project
   root_path: "/Volumes/AI_WORK_SSD/Projects/pycharm-misc-project"
   enabled: true
@@ -798,6 +808,11 @@ projects:
   current_state_status: no_rules_or_current_state_declared
   supporting_authority_paths: []
 - id: desktop-downloads-scripts
+  hub_connection_exception:
+    status: AUTHORIZED_EXCEPTION
+    authority_ref: owner-turn:01a071cc-f2c6-76c2-bc43-f300db610b0b/01a073d2-9296-7743-84f8-17cec1f9bffc#source-absence-exceptions
+    reason: 所有者批准无当前状态源的可见管理例外；保留登记和未知业务状态，不扩大读取或写入权限。
+    decision_ref: docs/reports/ui_design_governance/unit-08/owner-decision.json
   name: Desktop Downloads Scripts
   root_path: "/Volumes/AI_WORK_SSD/Projects/desktop-downloads-scripts"
   enabled: true

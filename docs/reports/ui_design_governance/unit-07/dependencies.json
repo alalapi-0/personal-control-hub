@@ -24,11 +24,12 @@
     "probes": 0
   },
   "source_absence": {
-    "state": "owner_exception_or_named_source_pending",
+    "state": "owner_exception_approved",
     "question": "accept3visible no-current-source management exceptions, or provide named source",
     "question_sent": true,
-    "answer_received": false,
-    "acceptance": "not promoted to finalconnection acceptance"
+    "answer_received": true,
+    "acceptance": "AUTHORIZED_EXCEPTION only; unknown business state and UI UNVERIFIED preserved",
+    "decision_ref": "../unit-08/owner-decision.json"
   },
   "product": {
     "hub_ui": "awaits owner Figma choice before implementation",

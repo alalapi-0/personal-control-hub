@@ -68,10 +68,35 @@ class ProjectServiceTests(unittest.TestCase):
             "history": [], "effective": {}, "queues": {}, "reason": None,
         }
 
-    def test_production_defaults_select_both_bundle_versions_and_v2_relations(self) -> None:
+    def test_production_defaults_select_historical_bundles_and_current_relations(self) -> None:
         service = ProjectService(self.root)
         self.assertEqual(DEFAULT_BUNDLES, service.bundle_paths)
         self.assertEqual(DEFAULT_RELATIONS, service.relations_path)
+
+    def test_declared_exception_preserves_unknown_business_without_refresh(self) -> None:
+        registry = self.fixture.registry
+        project = next(p for p in registry["projects"] if p["id"] == "desktop-magnet")
+        preimage = copy.deepcopy(project)
+        exception = {"status": "AUTHORIZED_EXCEPTION", "authority_ref": "owner-turn:fixture",
+                     "reason": "Visible no-current-source exception"}
+        project["hub_connection_exception"] = exception
+        path = self.root / "data/registry/external_projects.yaml"
+        path.write_text(yaml.safe_dump(registry, sort_keys=False), encoding="utf-8")
+        before = path.read_bytes()
+        with mock.patch("hub.project_service.SourceResolver.refresh",
+                        side_effect=AssertionError("query must not refresh")):
+            listing = self.service.list_projects(design_snapshot=None)
+            detail = self.service.get_project("desktop-magnet", design_snapshot=None)
+        row = next(p for p in listing["projects"] if p["project_id"] == "desktop-magnet")
+        self.assertEqual(row, detail)
+        self.assertEqual(exception, row["declared"]["hub_connection_exception"])
+        self.assertEqual("unknown", row["business"]["normalized_status"])
+        self.assertIsNone(row["operational"]["latest_attempt"])
+        self.assertEqual(before, path.read_bytes())
+        self.assertEqual(preimage, {k: v for k, v in project.items()
+                                   if k != "hub_connection_exception"})
+        row["declared"]["hub_connection_exception"]["reason"] = "client mutation"
+        self.assertEqual("Visible no-current-source exception", exception["reason"])
 
     def test_initial_list_represents_all_24_without_refresh_or_store_creation(self) -> None:
         ledger_path = self.data / "connection_refresh.sqlite3"

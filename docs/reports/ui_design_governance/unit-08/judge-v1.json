@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "reviewer": "/root/tc5_judge",
+  "review_kind": "fresh read-only review of TC8; prior TC5 verdict not reused",
+  "candidate_hash": "564425250a0899103e1a2b764cb7e21c58a117ca3fc516a1205929a5b42741f7",
+  "contract": "HUB-GOV-2026-09-06-TC8",
+  "contract_version": 1,
+  "verdict": "PASS",
+  "identity": "all19 file hashes and STATE semantic fields independently matched",
+  "findings": [
+    "Exactly three approved exceptions tied to exact quote and stable owner turn; registry preimage reproduced after removing declarations",
+    "All24 members, Manga restrictions, permissions, sources, access profiles and business fields preserved",
+    "Storage program changes only dependent registry hash",
+    "Manifestv4/sourceplanv3 preserve prior project semantics and historical authority",
+    "Each exception preserves unknown/no source/exit2/UI UNVERIFIED, distinct in API list/detail",
+    "Protected and historical hashes unchanged; ledger573440 bytes,108events,98results,5requests; zero external effects",
+    "Figma/Manga unresolved; final Goal acceptance false"
+  ],
+  "independent_checks": [
+    {
+      "command": "python3 docs/reports/ui_design_governance/unit-08/verify.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p test_hub*.py",
+      "exit": 0,
+      "tests": 185
+    },
+    {
+      "command": "pytest -q -p no:cacheprovider tests/test_control_plane_v2.py",
+      "exit": 0,
+      "tests": 11
+    },
+    {
+      "commands": [
+        "python3 scripts/check_repo.py",
+        "python3 scripts/check_registry.py",
+        "python3 scripts/round_consistency_check.py",
+        "python3 scripts/hub_refresh.py validate",
+        "python3 scripts/hub_connections.py validate data/design_governance/manifest-v4.json data/design_governance/connection-exceptions-v1.json",
+        "git diff --check"
+      ],
+      "all_exit": 0
+    }
+  ],
+  "ledger_sha256": "29e1101d1926d7d5a8d4b1eb5b650469b4d8625bd0f08c351a70ab71c03424f1",
+  "delivery_condition": "Governor approval then scoped current tracking branch normal push and exactremote verification; preserve unrelated dirty files"
+}

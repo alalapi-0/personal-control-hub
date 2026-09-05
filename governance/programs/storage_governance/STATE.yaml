@@ -136,7 +136,7 @@ parent_hub:
   - self_adapter_scan
   bounded_management_repair_effect: consumed
   project_effect_authority_source: this_state_only
-  project_registry_sha256_current: b41fb0df37556b31c196f179cd1f3b64f6919acc958590d2f97b2ef91e7600bd
+  project_registry_sha256_current: 16d10340d9c094c55886d5c9b9efaf3bccd18691534a07f967d8103ac4ad419a
 authorities:
   storage_execution: closed
   control_plane_repair: closed

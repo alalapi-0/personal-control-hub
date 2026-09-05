@@ -11,7 +11,7 @@ metadata:
   - registry_or_route_change
   - blocker_change
   - unique_next_action_change
-last_updated: '2026-09-05T22:35:24+08:00'
+last_updated: '2026-09-05T23:12:35+00:00'
 project:
   id: personal-control-hub
   phase: Phase 1
@@ -28,11 +28,11 @@ current_round:
 current_work:
   objective: 完成日常 Hub、真实接入、设计闭环与管理材料归并。
   status: ACCEPTED_PENDING_GIT_DELIVERY
-  unit: HUB-07-OPERATIONAL-READINESS
+  unit: HUB-08-SOURCE-EXCEPTIONS
   spec: docs/design/ui_governance_execution.md
-  evidence: docs/reports/ui_design_governance/unit-07/
-  blocker: Figma 需重连；Manga 读取范围与3个无状态源项目例外待所有者决定。
-  next_action: 提交并推送 TC7，核对远端后等待 Figma 与所有者范围决定。
+  evidence: docs/reports/ui_design_governance/unit-08/
+  blocker: Figma 需重连；Manga 读取范围或可见例外待所有者确认。
+  next_action: 提交并推送 TC8，核对远端；等待 Figma 重连及 Manga 范围确认。
 registry:
   authority: data/registry/external_projects.yaml
   registered_count: 24
