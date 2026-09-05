@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "kind": "operational_dependency_evidence",
+  "frozen_total": 24,
+  "source_resolved": 20,
+  "verified_no_current_source": [
+    "desktop-downloads-scripts",
+    "desktop-magnet",
+    "pycharm-misc-project"
+  ],
+  "authority_blocked": [
+    "manga-localizer"
+  ],
+  "figma": {
+    "state": "UNAUTHORIZED",
+    "fingerprint": "oauth_token_invalid_grant",
+    "basis": "one current-goal whoami probe; unchanged dependency preserved by execution-spec section0",
+    "recovery": "owner reconnects existing Figma plugin, then targeted whoami verification and2-3editableHubdirections for owner choice",
+    "retry_policy": "no unchanged retry or workaround"
+  },
+  "manga": {
+    "state": "owner_scope_decision_pending",
+    "recovery": "explicit owner authorized named read-only scope or explicit visible management exception; never infer from prior storage exclusion",
+    "probes": 0
+  },
+  "source_absence": {
+    "state": "owner_exception_or_named_source_pending",
+    "question": "accept3visible no-current-source management exceptions, or provide named source",
+    "question_sent": true,
+    "answer_received": false,
+    "acceptance": "not promoted to finalconnection acceptance"
+  },
+  "product": {
+    "hub_ui": "awaits owner Figma choice before implementation",
+    "design_workflow": "emptyrealstore initialized; actualcandidate/choice/history/export still required",
+    "final_handoff": "only after completeproduct/allconnection acceptance"
+  },
+  "remaining_independent_readiness_work": "none afterTC7acceptance; no synthetic successor units"
+}

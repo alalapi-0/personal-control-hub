@@ -11,7 +11,7 @@ metadata:
   - registry_or_route_change
   - blocker_change
   - unique_next_action_change
-last_updated: '2026-09-05T22:21:19+08:00'
+last_updated: '2026-09-05T22:35:24+08:00'
 project:
   id: personal-control-hub
   phase: Phase 1
@@ -28,11 +28,11 @@ current_round:
 current_work:
   objective: 完成日常 Hub、真实接入、设计闭环与管理材料归并。
   status: ACCEPTED_PENDING_GIT_DELIVERY
-  unit: HUB-06-MANAGEMENT-CONSOLIDATION
+  unit: HUB-07-OPERATIONAL-READINESS
   spec: docs/design/ui_governance_execution.md
-  evidence: docs/reports/ui_design_governance/unit-06/
-  blocker: Figma 需重连；Manga 读取范围待所有者决定，仅挂起对应依赖。
-  next_action: 提交并推送 TC6，核对远端后刷新获准连接。
+  evidence: docs/reports/ui_design_governance/unit-07/
+  blocker: Figma 需重连；Manga 读取范围与3个无状态源项目例外待所有者决定。
+  next_action: 提交并推送 TC7，核对远端后等待 Figma 与所有者范围决定。
 registry:
   authority: data/registry/external_projects.yaml
   registered_count: 24
@@ -64,3 +64,14 @@ git_delivery:
   tracking_branch: origin/agent/governance-closure-20260812
   automatic_main_merge: false
   force_push: false
+task_health:
+  first_250k_rebaseline: completed
+  status: WATCH
+  native_goal_tokens: 1066751
+  native_goal_seconds: 2184
+  telemetry_scope: native cumulative Goal; no cost or active/idle breakdown inferred
+  material_progress: TC4-TC6 accepted and pushed
+  risk: transient review-role capacity; resolved when TC6Judge finished
+  action: collect review roles before next dispatch
+  next_checkpoint: TC7 candidate freeze; no repeat solely above250k
+  cooldown: 75000moretokens or30active minutes plus eligible condition

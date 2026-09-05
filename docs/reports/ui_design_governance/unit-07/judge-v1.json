@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "role": "fresh_read_only_judge",
+  "agent": "/root/tc7_judge",
+  "candidate_hash": "3c8d74ede9b3ca6b60a6afd5c262f311c1cdff6ca943bb1a5d67ce14947fc641",
+  "contract": "HUB-GOV-2026-09-05-TC7 v1",
+  "verdict": "PASS",
+  "findings": [],
+  "independent_checks": [
+    "semantic hash,12files,STATEsemantic,9protected and7authority hashes match",
+    "baselineSTATE matchesb0c25ef; ledgerpreimage verified",
+    "prior82events/74results/4requests exactprefix of108events/98results/5requests",
+    "one24-IDrequest:20resolved,3verifiedabsence,1Manga block; replay0rows/0reads",
+    "24APIlist/detail parity at108; provenance/unknown states/designavailable; ledgerunchanged",
+    "realemptydesignstore revision1;0facts/events;reopen/initializereplay identical",
+    "verify.py/API/refresh-designvalidate/repo/registry/round/diff PASS",
+    "TC6 184Hub+11controltests validreuse: no src/tests changes, onlyprotectedscriptdiff",
+    "historicalexecution guardsManga paths/processlaunch/externalwritableopen; recorded0; onlylocaldesignstoretemp/lock writes"
+  ],
+  "acceptance_exclusions": [
+    "Figma reconnect",
+    "Manga scope",
+    "3sourceabsenceownerdecisions",
+    "finalconnection acceptance",
+    "UI acceptance",
+    "Goal completion"
+  ]
+}
