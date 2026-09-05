@@ -17,6 +17,7 @@ import test_hub_sources as source_fixtures
 from hub.connection_records import content_hash
 from hub.connection_refresh import GENESIS_HASH, LedgerBusyError, PrecommitFaultError, RefreshLedger
 from hub.connection_relations import relation_hash
+from hub.connection_manager_cli import DEFAULT_BUNDLES, DEFAULT_RELATIONS
 from hub.project_service import ProjectService
 from hub.service_contract import ServiceError
 
@@ -54,7 +55,11 @@ class ProjectServiceTests(unittest.TestCase):
         relations["content_hash"] = relation_hash(relations)
         (self.data / "relation-proposals-v1.json").write_text(
             json.dumps(relations), encoding="utf-8")
-        self.service = ProjectService(self.root)
+        self.service = ProjectService(
+            self.root,
+            bundle_paths=["data/design_governance/authority-bundle-v1.json"],
+            relations_path="data/design_governance/relation-proposals-v1.json",
+        )
         self.design_snapshot = {
             "available": True, "store_revision": 3, "store_classification": "mock",
             "facts": [{"kind": "candidate", "id": "fixture-candidate", "revision": 1,
@@ -62,6 +67,11 @@ class ProjectServiceTests(unittest.TestCase):
                            {"project_id": "declared-00", "pages": ["review"]}]}}],
             "history": [], "effective": {}, "queues": {}, "reason": None,
         }
+
+    def test_production_defaults_select_both_bundle_versions_and_v2_relations(self) -> None:
+        service = ProjectService(self.root)
+        self.assertEqual(DEFAULT_BUNDLES, service.bundle_paths)
+        self.assertEqual(DEFAULT_RELATIONS, service.relations_path)
 
     def test_initial_list_represents_all_24_without_refresh_or_store_creation(self) -> None:
         ledger_path = self.data / "connection_refresh.sqlite3"

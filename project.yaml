@@ -50,6 +50,7 @@ project:
     agent_start: AGENTS.md
     current_state: STATE.yaml
     long_term_direction: NORTH_STAR.md
+    storage_governance_state: governance/programs/storage_governance/STATE.yaml
     storage_governance_adapter: governance/adapters/storage_governance.yaml
     storage_governance_goal_prompt: prompts/storage_governance_goal_mode.md
     storage_governance_goal_parameters: data/programs/storage_governance_goal.yaml

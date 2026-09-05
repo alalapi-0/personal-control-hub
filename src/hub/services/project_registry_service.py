@@ -234,7 +234,7 @@ def validate_registry(registry: dict[str, Any] | None = None) -> dict[str, Any]:
     if not isinstance(storage_contract, dict):
         hard_blockers.append("storage_governance_contract 必须为对象")
     else:
-        if storage_contract.get("sole_execution_state") != "~/Documents/StorageGovernance/STATE.yaml":
+        if storage_contract.get("sole_execution_state") != "~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STATE.yaml":
             hard_blockers.append("storage_governance_contract.sole_execution_state 指针无效")
         manifest_path = storage_contract.get("frozen_manifest")
         manifest_hash = storage_contract.get("frozen_manifest_sha256")

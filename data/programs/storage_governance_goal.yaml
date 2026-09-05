@@ -24,9 +24,9 @@ authority_graph:
   parameters: "/Users/alalapi/PycharmProjects/personal-control-hub/data/programs/storage_governance_goal.yaml"
   project_registry: "/Users/alalapi/PycharmProjects/personal-control-hub/data/registry/external_projects.yaml"
   hub_adapter: "/Users/alalapi/PycharmProjects/personal-control-hub/governance/adapters/storage_governance.yaml"
-  storage_router: "/Users/alalapi/Documents/StorageGovernance/AGENTS.md"
-  storage_current_state: "/Users/alalapi/Documents/StorageGovernance/STATE.yaml"
-  storage_norm: "/Users/alalapi/Documents/StorageGovernance/STORAGE_GOVERNANCE.md"
+  storage_router: "/Users/alalapi/PycharmProjects/personal-control-hub/governance/programs/storage_governance/AGENTS.md"
+  storage_current_state: "/Users/alalapi/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STATE.yaml"
+  storage_norm: "/Users/alalapi/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STORAGE_GOVERNANCE.md"
   hub_current_state: "/Users/alalapi/PycharmProjects/personal-control-hub/STATE.yaml"
   each_turn_read_order:
   - parameters
@@ -56,7 +56,7 @@ control_planes:
     - compact_hub_current_state
     - directly_required_management_consistency_tests_and_docs
   storage_governance:
-    root_path: "/Users/alalapi/Documents/StorageGovernance"
+    root_path: "/Users/alalapi/PycharmProjects/personal-control-hub/governance/programs/storage_governance"
     location_policy: internal_control_plane
     migration_excluded: true
     cleanup_excluded: true

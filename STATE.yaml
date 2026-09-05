@@ -11,7 +11,7 @@ metadata:
   - registry_or_route_change
   - blocker_change
   - unique_next_action_change
-last_updated: '2026-09-05T22:03:07+08:00'
+last_updated: '2026-09-05T22:21:19+08:00'
 project:
   id: personal-control-hub
   phase: Phase 1
@@ -27,83 +27,37 @@ current_round:
   next_round: ROUND-1-5
 current_work:
   objective: 完成日常 Hub、真实接入、设计闭环与管理材料归并。
-  status: ACTIVE
-  unit: HUB-04-LOCAL-SERVICE
+  status: ACCEPTED_PENDING_GIT_DELIVERY
+  unit: HUB-06-MANAGEMENT-CONSOLIDATION
   spec: docs/design/ui_governance_execution.md
-  evidence: docs/reports/ui_design_governance/unit-04/
+  evidence: docs/reports/ui_design_governance/unit-06/
   blocker: Figma 需重连；Manga 读取范围待所有者决定，仅挂起对应依赖。
-  next_action: 推送已验收 TC4，再归并管理材料。
+  next_action: 提交并推送 TC6，核对远端后刷新获准连接。
 registry:
   authority: data/registry/external_projects.yaml
   registered_count: 24
   enabled_count: 23
   execution_candidate_count: 21
   special_record_count: 3
-  storage_effect_authority: external_storage_state_only
-  frozen_manifest: "/Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_04_r1/PROJECT_MANIFEST_v1.yaml"
+  storage_effect_authority: governance_program_state_only
+  frozen_manifest: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_04_r1/PROJECT_MANIFEST_v1.yaml
   frozen_manifest_sha256: fafae757b2b8cbc297d6be7976d2a6f49a7735734b27293792fa0b52dc6bfacd
-  authority_pointer_audit: "/Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/AUTHORITY_POINTER_AUDIT.yaml"
+  authority_pointer_audit: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/AUTHORITY_POINTER_AUDIT.yaml
   exclusions:
     manga-localizer: accepted_exclusion_record_only
     personal-control-hub: protected_internal_control_plane
     storage_governance: protected_governance_program
 storage_governance:
-  relation: active_governance_program
+  relation: managed_governance_program
   adapter: governance/adapters/storage_governance.yaml
-  external_router: "~/Documents/StorageGovernance/AGENTS.md"
-  external_norm: "~/Documents/StorageGovernance/STORAGE_GOVERNANCE.md"
-  external_state: "~/Documents/StorageGovernance/STATE.yaml"
-  execution_state_authority: external_state_only
-  hub_access: registry_pointer_and_compact_summary
-  hub_location_policy: internal_disk_only_and_migration_excluded
+  authority_root: governance/programs/storage_governance
+  sole_execution_state: governance/programs/storage_governance/STATE.yaml
+  management_evidence: docs/reports/ui_design_governance/unit-06/
+  hub_access: pointer_only
   goal_package:
     prompt: prompts/storage_governance_goal_mode.md
     parameters: data/programs/storage_governance_goal.yaml
     project_registry: data/registry/external_projects.yaml
-    activation: active
-    authority: owner_resume_01a069c2-4ba9-7161-bb4e-eae56f5e5977
-    epoch: dev_projects_2026_09_04_r1
-    contract: SG-GOV-2026-09-04-ROOT-MIGRATION
-  compact_execution_summary:
-    state: COMPLETE_WITH_OWNER_REMOVAL
-    active_project: none_paused
-    active_projects: 0
-    active_writers: 0
-    pending_projects: 0
-    terminal_records: 22
-    project_effects_allowed: false
-    current_project_effect_authority: closed
-    storage_execution_authority: completed_with_owner_removal
-    epoch_capability_authority: granted
-    last_terminal_project: root-migration-batch
-    last_terminal_disposition: 20_cleaned_0_owner_exempt_1_removed_1_existing_external_registered
-  management_finding: mpv-clip-workbench 已登记为外盘现有 Git 项目；light_novel 与 zarathustra-adaptation 已完成外盘复制、Git 同步、旧源清理和软链替换；SubPlz 已按业主确认移除本机与外置盘资产并从 Hub registry 删除。
-  owner_global_configuration_preservation: external_state_owner_boundary_addendum
-  source: "~/Documents/StorageGovernance/STATE.yaml"
-  scope: exact_root_migration_and_github_sync
-  active_project_state: complete_with_owner_removal
-  post_effect_evidence: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_04_r1/POST_MIGRATION_VERIFICATION.yaml
-  last_accepted_milestone:
-    id: storage_restart_2026_09_01_r2_closure
-    status: complete_terminal_reconciliation
-    accepted_on: '2026-09-02'
-    epoch_released_local_bytes: 882577408
-    cumulative_accepted_release_bytes: 26992914432
-    terminal_counts:
-      accepted: 1
-      deferred: 29
-      protected: 14
-      ineligible: 1
-    source_state: "~/Documents/StorageGovernance/STATE.yaml"
-  bounded_management_repair_effect: consumed
-control_plane_review:
-  revision: 7
-  state: ACCEPTED
-  phase: COMPLETE
-  contract: SG-GOV-2026-09-03-TC2
-  fresh_judge: PASS
-  governor_decision: APPROVE
-  review_authority: "~/Documents/StorageGovernance/STATE.yaml.control_plane_review"
 git_delivery:
   current_goal_authority: owner_20260905_resume_accepted_units
   remote: origin

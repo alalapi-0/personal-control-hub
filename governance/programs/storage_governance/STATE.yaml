@@ -1,0 +1,258 @@
+---
+schema_version: 3
+metadata:
+  canonical: true
+  authority: sole_execution_current_state
+  normative_authority: STORAGE_GOVERNANCE.md
+  router: AGENTS.md
+  purpose: 保存已关闭存储执行、冻结范围、终态证据和后续授权入口；历史版本只能取证。
+  readers:
+  - root_agent
+  - reviewer
+  - personal_control_hub_adapter
+  update_triggers:
+  - goal_activation
+  - project_manifest_freeze
+  - material_project_state_change
+  - project_terminal_transition
+  - authority_change
+  - rollback_or_post_effect_result
+  - final_reconciliation
+  updated_at: '2026-09-05T22:11:33+08:00'
+  protocol_revision: 322
+  activation_entry:
+    native_goal_thread_id: 01a069c2-4ba9-7161-bb4e-eae56f5e5977
+    state: closed_historical_activation
+    prior_authority_reusable: false
+execution_control:
+  state: COMPLETE_WITH_OWNER_REMOVAL
+  mode: COMPLETED_AFTER_OWNER_REQUESTED_REMOVAL
+  control_plane_review_state: ACCEPTED
+  reason: 20 个项目已完成外盘复制、远端同步/非 Git 验收和本地源软链替换；SubPlz 已确认不是业主项目，本机与外置副本/运行时均已清除，上游
+    GitHub 未触碰。
+  native_goal: not_asserted_by_file
+  auto_resume: false
+  control_plane_effects_active: false
+  storage_effects_active: false
+  project_effects_allowed: false
+  project_effect_enablement_requires:
+  - current_project_exact_scope_and_current_epoch_authority
+  - protected_inputs_unchanged_and_no_uncontrolled_writer
+  - live_dual_identity_guard_and_registered_targets
+  - Root_explicit_standard_enum_scoped_activation
+  active_projects: 0
+  active_batches: 0
+  active_writers: 0
+  active_writer: null
+  next_actions: 0
+  destructive_or_significant_effect_additionally_requires:
+  - ordinary_authorized_local_generated_cleanup_Root_exact_scope_and_basic_checks_not_independent_review
+  - truly_new_sensitive_boundary_or_significant_unauthorized_effect_requires_current_authority_and_proportionate_risk_lane
+  native_task_observation: last turn completed; see consolidation baseline
+goal:
+  objective: migrate_all_registered_projects_except_manga_localizer_and_personal_control_hub_and_register_mpv_clip_workbench
+  status: COMPLETE_WITH_OWNER_REMOVAL
+  execution_state: COMPLETE_WITH_OWNER_REMOVAL
+  phase: COMPLETED_SCOPED_ROOT_MIGRATION
+  completion_basis: scoped_root_migration_complete_with_subplz_removed
+task_contract:
+  version: SG-GOV-2026-09-04-ROOT-MIGRATION
+  status: COMPLETE_WITH_OWNER_REMOVAL
+  risk_lane: GOVERNED
+  path: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_04_r1/OWNER_RESUME_CONTRACT.yaml
+  sha256: bf45efb1a9b9ade4cf527750a2b7b3c8545af5130822a58c02205a4350fdd96b
+  predecessor_contracts: TC1_immutable_history_no_old_cleanup010_replay
+  single_contract_no_nested_contracts: true
+inventory_epoch:
+  id: dev_projects_2026_09_04_r1
+  state: FROZEN_CLOSED
+  predecessor: storage_restart_2026_09_01_r2
+  project_manifest: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_04_r1/PROJECT_MANIFEST_v1.yaml
+  project_manifest_sha256: fafae757b2b8cbc297d6be7976d2a6f49a7735734b27293792fa0b52dc6bfacd
+  project_manifest_bytes: 4924
+  manifest_revision: 1
+  authority_pointer_audit: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/AUTHORITY_POINTER_AUDIT.yaml
+  cutoff: '2026-09-04T08:20:00+08:00'
+  capture_count: 1
+  capture_limit: 1
+  discovery: actual_git_repositories_explicit_non_git_development_directories_and_evidenced_associated_paths
+  traversal: same_filesystem_no_symlink_follow
+  minimum_project_bytes: 0
+  frozen_project_record_count: 25
+  execution_candidate_count: 22
+  special_record_count: 3
+special_records:
+  manga_localizer:
+    project_id: manga-localizer
+    disposition: accepted
+    reason: completed_exclusion_record_only
+    current_goal_inspected: null
+    current_goal_verified: false
+    current_goal_mutated: false
+    historical_evidence: /Volumes/AI_WORK_SSD/_governance/evidence/storage_restart_2026_09_01_r2/SGR2_001_TC2_ACCEPTANCE_TRANSITION.yaml
+    scope_deviation: One Audio discovery agent ran an overbroad filename-only search
+      from Home; excluded metadata traversal unknown; no matched contents read, no
+      targeted Manga inspection/validation/mutation; stopped and no rescan.
+  personal_control_hub:
+    project_id: personal-control-hub
+    disposition: protected
+    location_policy: internal_disk_only
+    migration: forbidden
+    cleanup: forbidden
+    recursive_discovery: forbidden
+    bounded_management_repairs: current_goal_authorized
+  storage_governance:
+    project_id: storage_governance
+    disposition: protected
+    role: sole_execution_control_plane
+    migration: forbidden
+    cleanup: forbidden
+disk_identity:
+  expected_mount_point: /Volumes/AI_WORK_SSD
+  volume_uuid: B88461B8-E414-4CB9-B4BC-C16944730946
+  container_uuid: 2F9D579B-BD0B-411D-9BE7-17560BF0B14C
+  filesystem: APFS
+  expected_writable: true
+  encrypted: false
+  owners_enabled: false
+  identity_guard: /Users/alalapi/.config/storage-governance/guard.sh
+  guard_sha256_at_activation: 71b298fffc47211b8e74ec6e1bd7cc76c6b0d64251af827eab0ed0df5d9c5ec1
+  storage_map: /Volumes/AI_WORK_SSD/_governance/STORAGE_MAP.yaml
+  storage_map_sha256_at_activation: 7fec340ad095f0dbd11559d4827ae2080e8ff3cc3cddb0c62775ed57dca2e291
+  apfs_container_free_bytes_at_activation: 2007745294336
+  last_live_check: correct_volume_container_mount_filesystem_writable_single_mount_and_free_space_passed
+  storage_map_sha256_current: 6ff554a4dda2f985bd8d71cce6e171573aa654e8bde1f6408f55ff79376f893b
+parent_hub:
+  id: personal-control-hub
+  path: /Users/alalapi/PycharmProjects/personal-control-hub
+  current_state: /Users/alalapi/PycharmProjects/personal-control-hub/STATE.yaml
+  registry: /Users/alalapi/PycharmProjects/personal-control-hub/data/registry/external_projects.yaml
+  adapter: /Users/alalapi/PycharmProjects/personal-control-hub/governance/adapters/storage_governance.yaml
+  location_policy: internal_disk_only
+  excluded_from:
+  - inventory_recursion
+  - migration
+  - cleanup
+  - self_adapter_scan
+  bounded_management_repair_effect: consumed
+  project_effect_authority_source: this_state_only
+  project_registry_sha256_current: b41fb0df37556b31c196f179cd1f3b64f6919acc958590d2f97b2ef91e7600bd
+authorities:
+  storage_execution: closed
+  control_plane_repair: closed
+  implementation: closed
+  isolated_validation: closed
+  fixture_cleanup: closed
+  bounded_state_sync: closed
+  hub_sync: closed
+  migration: closed
+  cleanup: closed
+  source_deletion: closed
+  process_control: closed
+  bounded_hub_management_repair_effect: closed
+  current_project_effect: closed
+  rollback_effect: closed
+  network: closed
+  git_commit: closed
+  git_push: closed
+  publication: closed
+protected:
+- credentials_and_login_state
+- codex_cursor_browser_sessions_and_active_databases
+- unowned_unrelated_private_data_not_ordinary_owned_project_history
+- active_databases_sqlite_wal_shm_and_current_recovery_state
+- source_code_user_dirty_work_git_history_and_current_recovery_state
+- existing_external_drive_contents_outside_registered_targets
+- personal_control_hub_migration_cleanup_and_recursive_self_governance
+- storage_governance_control_plane_migration_and_cleanup
+- manga_localizer_entire_tree_and_associated_app_runtime_model_paths
+- offline_video_disk
+- owner_authorized_global_Codex_Cursor_permission_configuration_changes_no_revert_or_write_by_this_goal
+owner_boundary_addendum:
+  evidence: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/OWNER_GLOBAL_PERMISSION_PRESERVATION_20260903.json
+  sha256: 8c3dfee5ffb3f0b58391f478afbca116577e890bc852e4c732f602e30d4f8624
+  global_Codex_Cursor_configuration: excluded_from_storage_goal_writes_reads_and_rollback_during_owner_authorized_update
+  manga_scope: unchanged_record_only_no_project_or_associated_path_access
+  owner_update_completed_preserve_without_reverification: true
+  additional_excluded_path: /Users/alalapi/.cursor/skills/three-role-governance/SKILL.md
+next_action:
+  id: ROOT_MIGRATION_COMPLETE_WITH_SUBPLZ_REMOVAL
+  requires_user: false
+  description: 本轮外置盘根迁移、GitHub 同步、旧源清理和路径映射已完成；SubPlz 已按业主确认清除本机与外置盘副本，上游 GitHub 未触碰。mpv-clip-workbench
+    已关联，manga-localizer、personal-control-hub 与治理目录保持保护边界。
+control_plane_review:
+  state: ACCEPTED
+  revision: 7
+  contract: SG-GOV-2026-09-03-TC2
+  candidate:
+    path: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/RELEASE_FIRST_CONTROL_CANDIDATE_V1.json
+    sha256: 8ab6fe83d1cfb8e34558cb163ad7df49e6a58f6e4c53e2c3ff089035a18efa17
+  judge_review:
+    path: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/RELEASE_FIRST_CONTROL_JUDGE_V1.json
+    sha256: 49c84c41a38286effa5850c8d10021b3cb08c2ea1d98217f96d8ccedb23479e6
+  governor_decision:
+    path: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/RELEASE_FIRST_CONTROL_GOVERNOR_V1.json
+    sha256: 50c6369cbb1e00bed92d21bbdad34c2b80693f2c50fd20ff0e33c2461b15517b
+  acceptance_transition: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/RELEASE_FIRST_CONTROL_ACCEPTANCE_TRANSITION_V1.json
+authorization_scope:
+  state: closed
+  source: owner_resume_01a069c2-4ba9-7161-bb4e-eae56f5e5977
+  epoch: dev_projects_2026_09_04_r1
+  allowed_effects: []
+  remaining_epoch_capability_authority: closed
+  prior_authority_reusable: false
+  resume_rule: A new explicit owner instruction and current scope registration are
+    required; the Hub management-consolidation Goal grants no storage or business
+    effects.
+current_project:
+  id: null
+  state: closed
+  active_batch: null
+  active_writer: null
+current_batch:
+  id: null
+  state: closed
+  active_writer: null
+  effect_authority: closed
+  source_deletion: closed
+  prior_effects_consumed: true
+closure:
+  state: COMPLETE_WITH_OWNER_REMOVAL
+  all_scoped_projects_terminal: true
+  completion_allowed: true
+  governance_lock_released: true
+  final_report: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_04_r1/POST_MIGRATION_VERIFICATION.yaml
+  pending_projects: 0
+  active_projects: 0
+  active_batches: 0
+  active_writers: 0
+  removed_projects:
+  - subplz
+  unconsumed_effect_authority: none
+project_accounting:
+  scope: 2026-09-04 owner-scoped root migration only
+  pending_projects: 0
+  active_projects: 0
+  remaining_execution_candidates: 0
+  cleaned_local_source_roots: 20
+  existing_external_projects_linked: 1
+  removed_projects:
+  - subplz
+  released_bytes: null
+  external_added_bytes: null
+  bytes_reason: Post-migration evidence explicitly reports no pre-clean allocated-byte
+    ledger; old mixed-epoch numbers remain historical and are not totals for this
+    scope.
+history_ref:
+  path: docs/reports/ui_design_governance/unit-06/baseline.json
+  source_key: /Users/alalapi/Documents/StorageGovernance/STATE.yaml
+  source_sha256: 7ce9233e41dbb3fde5073fac9ece4e9dc3af33b6d8b807854065617cc2f501f8
+  role: immutable_non_executable_preimage_with_full_prior_history
+  rule: Earlier terminal projects, accounting, findings, pauses and approvals are
+    preserved here and at their original evidence pointers; none grants current effects.
+management_cutover:
+  contract: HUB-GOV-2026-09-05-TC6
+  authority_root: governance/programs/storage_governance
+  version: 1
+  evidence: docs/reports/ui_design_governance/unit-06/
+  storage_effects_resumed: false

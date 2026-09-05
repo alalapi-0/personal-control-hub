@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "unit": "TC6",
+  "old_source_links": [
+    {
+      "path": "/Users/alalapi/Documents/StorageGovernance/AGENTS.md",
+      "type": "symlink",
+      "target": "/Users/alalapi/PycharmProjects/personal-control-hub/governance/programs/storage_governance/AGENTS.md",
+      "target_sha256": "aa13b2e30790ef250de19ff11ba1f747f9fe83804c19cc9e4184a2bc7ef79565"
+    },
+    {
+      "path": "/Users/alalapi/Documents/StorageGovernance/STATE.yaml",
+      "type": "symlink",
+      "target": "/Users/alalapi/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STATE.yaml",
+      "target_sha256": "388b73f2a9b4fee33381e91f5079a085b5762a901905ccd180deaa18ada419ec"
+    },
+    {
+      "path": "/Users/alalapi/Documents/StorageGovernance/STORAGE_GOVERNANCE.md",
+      "type": "symlink",
+      "target": "/Users/alalapi/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STORAGE_GOVERNANCE.md",
+      "target_sha256": "fd2408a758f3f8ef6de8366e12bd5755551eb2a6b772a96a63399db12f2b767d"
+    }
+  ],
+  "workspace_pointer": "- `personal-control-hub` historical inventory: [Hub archive](/Users/alalapi/PycharmProjects/personal-control-hub/docs/archive/workspace_hub_inventory_20260812.md). Current authority: `/Users/alalapi/PycharmProjects/personal-control-hub/STATE.yaml`.\n",
+  "workspace_other_sections_sha256": "04307ebbe902eb267aafa80c2d5316ac9c79bd16da27898d547ed20f4a718cc0",
+  "external_task_observation": "01a069c2-4ba9-7161-bb4e-eae56f5e5977 latest turn completed (fresh native read before cutover); exact source versions stable",
+  "new_consumer_readback": "SOURCE_RESOLVED, raw_status COMPLETE_WITH_OWNER_REMOVAL, new contained path",
+  "scope": "three management source links and one Hub-only workspace paragraph; no storage/business/config effect"
+}

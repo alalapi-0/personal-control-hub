@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from .connection_manager_cli import (
-    DEFAULT_BUNDLE, DEFAULT_RELATIONS, ADAPTER_PATH, current_authority_status,
+    DEFAULT_BUNDLES, DEFAULT_RELATIONS, ADAPTER_PATH, current_authority_status,
     load_bundles, load_json, load_relations, result_validator,
 )
 from .connection_records import RecordError
@@ -45,7 +45,7 @@ class ProjectService:
                  ledger_path: Path | str | None = None,
                  relations_path: str | None = None) -> None:
         self.root = Path(root).absolute()
-        self.bundle_paths = list(bundle_paths) if bundle_paths is not None else [DEFAULT_BUNDLE]
+        self.bundle_paths = list(bundle_paths) if bundle_paths is not None else list(DEFAULT_BUNDLES)
         self.ledger_path = ledger_path
         self.relations_path = relations_path or DEFAULT_RELATIONS
 

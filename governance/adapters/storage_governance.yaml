@@ -12,20 +12,22 @@ metadata:
   - hub_management_boundary_change
 project:
   id: storage_governance
-  root_path: "~/Documents/StorageGovernance"
+  root_path: ~/PycharmProjects/personal-control-hub/governance/programs/storage_governance
 authority:
   activation_prompt: prompts/storage_governance_goal_mode.md
   stable_parameters: data/programs/storage_governance_goal.yaml
   project_registry: data/registry/external_projects.yaml
-  sole_execution_state: "~/Documents/StorageGovernance/STATE.yaml"
-  sole_norm: "~/Documents/StorageGovernance/STORAGE_GOVERNANCE.md"
-  content_copied_into_hub: false
+  sole_execution_state: ~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STATE.yaml
+  sole_norm: ~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STORAGE_GOVERNANCE.md
   hub_may_override_norm: false
   parameter_or_registry_is_current_state: false
-  rule: Hub 持有唯一 activation Prompt、稳定参数、项目身份清单、指针和小型摘要；外部 STATE 与 norm 分别拥有执行状态和稳定政策。
+  rule: Hub 内本治理目录共同持有 router、唯一执行 STATE 与稳定 norm；Hub 根 STATE 只保存管理入口。存储权限独立且不可从 registry
+    或 Hub Goal 推断。
   rules_after_owner_amendment: Read sole STATE owner amendment and current contract;
     owner release-first criteria supersede legacy strict storage acceptance; stable
     parameters do not grant effects.
+  authority_location: hub_owned_co_located_program
+  competing_copy_allowed: false
 routing:
   registry_or_summary_task:
     read:
@@ -33,7 +35,7 @@ routing:
     - data/registry/external_projects.yaml
     - governance/adapters/storage_governance.yaml
     external_norm_required: false
-    rule: Hub STATE 只保存 compact 摘要；普通项目的动态 disposition 只从外部 manifest/STATE 读取。
+    rule: Hub 根 STATE 只保存管理入口；动态 disposition 从专用唯一 STATE 读取。
   goal_preparation_or_activation_task:
     read:
     - STATE.yaml
@@ -41,19 +43,19 @@ routing:
     - data/registry/external_projects.yaml
     - governance/adapters/storage_governance.yaml
     - prompts/storage_governance_goal_mode.md
-    - "~/Documents/StorageGovernance/AGENTS.md"
-    - "~/Documents/StorageGovernance/STATE.yaml"
+    - ~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/AGENTS.md
+    - ~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STATE.yaml
     rule: 只有用户当前提交唯一 Prompt，或 Root 另获当前明确授权后创建 native Goal，才可 activation。
   storage_execution_task:
     each_turn_read_order:
     - data/programs/storage_governance_goal.yaml
     - data/registry/external_projects.yaml
     - governance/adapters/storage_governance.yaml
-    - "~/Documents/StorageGovernance/AGENTS.md"
-    - "~/Documents/StorageGovernance/STATE.yaml"
+    - ~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/AGENTS.md
+    - ~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STATE.yaml
     - current_project_AGENTS_and_current_state_if_present
     conditional_read:
-    - 只按外部 STATE.next_action 与当前项目路由读取 STORAGE_GOVERNANCE.md 相关条款和项目必要文件。
+    - 只按专用 STATE.next_action 与当前项目路由读取 STORAGE_GOVERNANCE.md 相关条款和项目必要文件。
     activation_prompt_reread: forbidden
     external_norm_required_for_effect: true
 boundaries:
@@ -71,11 +73,10 @@ boundaries:
   hub_migration: forbidden
   hub_cleanup: forbidden
   hub_recursive_self_governance: forbidden
-  norm_copy_forbidden: true
-  storage_state_copy_forbidden: true
   large_history_default_load_forbidden: true
-  no_execution_cycle: 已激活续轮不得返回 Hub Prompt；每轮沿固定读取顺序进入外部唯一 STATE，再只处理其唯一当前项目。
+  no_execution_cycle: 已激活续轮不得返回 Hub Prompt；每轮沿固定读取顺序进入专用唯一 STATE，再只处理其唯一当前项目。
   deletion_authority: Current native Goal and current contract authorize capability;
     Root registers exact normalized scope and basic checks in sole StorageGovernance
     STATE. Ordinary generated-data cleanup does not require per-microbatch Judge/Governor.
   consumed_authority_reuse: forbidden
+  competing_authority_copy_forbidden: true

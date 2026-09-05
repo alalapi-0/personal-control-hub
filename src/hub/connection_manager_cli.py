@@ -18,7 +18,11 @@ from .connection_sources import (
 from .connections import load_registry_at
 
 DEFAULT_BUNDLE = "data/design_governance/authority-bundle-v1.json"
-DEFAULT_RELATIONS = "data/design_governance/relation-proposals-v1.json"
+DEFAULT_BUNDLES = [
+    DEFAULT_BUNDLE,
+    "data/design_governance/authority-bundle-v2.json",
+]
+DEFAULT_RELATIONS = "data/design_governance/relation-proposals-v2.json"
 ADAPTER_PATH = "data/design_governance/connection_adapters.json"
 BUNDLE_FIELDS = {"schema_version", "kind", "manifest", "adapters", "source_plan", "content_hash"}
 
@@ -102,7 +106,7 @@ def current_authority_status(root: Path, bundle: dict) -> dict:
 def run(args: argparse.Namespace, root: Path) -> tuple[dict, int]:
     if args.command == "relations":
         return load_relations(root, args.relations), 0
-    bundles, validators = load_bundles(root, args.bundle or [DEFAULT_BUNDLE])
+    bundles, validators = load_bundles(root, args.bundle or DEFAULT_BUNDLES)
     validate = result_validator(validators)
     active = bundles[-1]
     authority = validators[active["source_plan"]["content_hash"]].authority
@@ -112,7 +116,7 @@ def run(args: argparse.Namespace, root: Path) -> tuple[dict, int]:
         return {"schema_version": "1.0", "bundles": len(bundles),
                 "projects": len(active["manifest"]["entries"]), "current_authorities": statuses,
                 "relation_proposals": len(relations["collection"]["relations"])}, (
-                    0 if all(s["state"] == "matched" for s in statuses) else 2)
+                    0 if statuses[-1]["state"] == "matched" else 2)
     if args.command == "refresh":
         require(current_authority_status(root, active)["state"] == "matched", "current authority drift prevents refresh")
         adapters, _ = load_json(root, ADAPTER_PATH)

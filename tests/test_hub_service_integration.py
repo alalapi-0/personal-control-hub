@@ -86,7 +86,11 @@ class LocalServiceIntegrationTests(unittest.TestCase):
         self.addCleanup(self.stop)
 
     def start(self):
-        self.projects = ProjectService(self.root)
+        self.projects = ProjectService(
+            self.root,
+            bundle_paths=["data/design_governance/authority-bundle-v1.json"],
+            relations_path="data/design_governance/relation-proposals-v1.json",
+        )
         self.designs = DesignService(DesignStore(self.root, self.store.path, fixture=True))
         self.server = HubHTTPServer(self.projects, self.designs)
         self.thread = threading.Thread(target=self.server.serve_forever, kwargs={"poll_interval": 0.01})

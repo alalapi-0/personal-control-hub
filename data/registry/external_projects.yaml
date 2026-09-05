@@ -52,7 +52,7 @@ required_project_fields:
 - current_state_status
 - supporting_authority_paths
 storage_governance_contract:
-  sole_execution_state: "~/Documents/StorageGovernance/STATE.yaml"
+  sole_execution_state: "~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STATE.yaml"
   identity_source: this_registry
   dynamic_disposition_source: frozen_manifest_and_sole_execution_state
   ordinary_project_default: current_goal_authority_required
@@ -66,7 +66,7 @@ storage_governance_contract:
 projects:
 - id: storage_governance
   name: StorageGovernance
-  root_path: "~/Documents/StorageGovernance"
+  root_path: "~/PycharmProjects/personal-control-hub/governance/programs/storage_governance"
   enabled: true
   scan_enabled: true
   profile_enabled: true
@@ -83,7 +83,7 @@ projects:
   - STORAGE_GOVERNANCE.md
   hub_adapter: governance/adapters/storage_governance.yaml
   access_profile: named_control_plane_files_only
-  norm_copy_forbidden: true
+  competing_authority_copy_forbidden: true
   external_write_allowed: false
   storage_governance:
     scope: protected_governance_program
@@ -91,12 +91,12 @@ projects:
     cleanup_allowed: false
     bounded_control_plane_repairs_allowed: true
   rules_paths:
-  - "~/Documents/StorageGovernance/AGENTS.md"
+  - "~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/AGENTS.md"
   current_state_paths:
-  - "~/Documents/StorageGovernance/STATE.yaml"
+  - "~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STATE.yaml"
   current_state_status: sole_execution_current_state
   supporting_authority_paths:
-  - "~/Documents/StorageGovernance/STORAGE_GOVERNANCE.md"
+  - "~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STORAGE_GOVERNANCE.md"
 - id: personal-control-hub
   name: personal-control-hub
   root_path: "/Users/alalapi/PycharmProjects/personal-control-hub"

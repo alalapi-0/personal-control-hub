@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0",
+  "root_reproduced": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -W error::ResourceWarning -m unittest discover -s tests -p 'test_hub*.py'",
+      "exit": 0,
+      "tests": 184
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 pytest -q tests/test_control_plane_v2.py",
+      "exit": 0,
+      "tests": 11
+    },
+    {
+      "command": "python3 docs/reports/ui_design_governance/unit-06/verify.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 docs/reports/ui_design_governance/unit-04/readback.py",
+      "exit": 0,
+      "project_count": 24,
+      "external_source_reads": 0,
+      "manga_probes": 0
+    },
+    {
+      "command": "python3 scripts/check_repo.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/check_registry.py",
+      "exit": 0,
+      "hard_blockers": 0,
+      "warnings": 0
+    },
+    {
+      "command": "python3 scripts/round_consistency_check.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/hub_refresh.py validate",
+      "exit": 0,
+      "historical_bundle": "drifted registry (expected)",
+      "active_bundle": "matched"
+    },
+    {
+      "command": "/Users/alalapi/.config/storage-governance/guard.sh",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "resolved_verification_errors": [
+    {
+      "check": "new manifest construction",
+      "class": "invalid scope authority reference suffix",
+      "repair": "valid native owner-goal ID without custom suffix; no files written on failure"
+    },
+    {
+      "check": "verify.py old ledger prefix check",
+      "class": "used hash instead of event_hash",
+      "repair": "checked actual history schema and corrected field; no data mutation"
+    },
+    {
+      "check": "router delivery blob preparation",
+      "class": "HEAD route predates already-valid read-order change",
+      "repair": "scoped whole storage route row, keeping all workflow/global changes outside delivery"
+    }
+  ],
+  "protected_boundaries": "verify.py PASS; no business/Manga probes or effects",
+  "writer_result": "seven bounded source/test files; 62 tests and42 subtests PASS; Root reproduced complete184 Hub tests"
+}

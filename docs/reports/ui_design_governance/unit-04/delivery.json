@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "unit": "TC4",
+  "candidate": "82f5c7481315162104a979527a725c01407e6c95dbb5e16238a854666a097f24",
+  "status": "REMOTE_VERIFIED",
+  "commit": "a5e72b977d054743c79e25a0b3cbbc2f58d84c76",
+  "tree": "7c07394d58060520c294a6cbb4ef8b3e55832056",
+  "parent": "4c2852cdf9e20fbcb88abd83fd8d1b7d26ec2e1c",
+  "staged_paths": 29,
+  "staged_diff_sha256": "bb3f5257145b876173b2b02ba1fc5c7632e5017247385e82fb24c59260eb7557",
+  "sensitive_content_check": "PASS",
+  "remote": "origin",
+  "branch": "agent/governance-closure-20260812",
+  "push_exit_code": 0,
+  "remote_readback": "a5e72b977d054743c79e25a0b3cbbc2f58d84c76",
+  "verification": "git ls-remote --exit-code origin refs/heads/agent/governance-closure-20260812",
+  "unrelated_staged_paths": 0,
+  "acceptance_scope": "local service only, not UI/full connections/Goal"
+}

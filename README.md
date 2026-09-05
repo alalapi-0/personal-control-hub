@@ -15,9 +15,9 @@
 
 ## 当前受管项目
 
-项目注册表保存 24 条已冻结身份记录：21 个普通受管项目、`manga-localizer` 已完成排除记录，以及永久留内盘的 `personal-control-hub` 和 `StorageGovernance` 控制面。注册表只保存身份、路径和稳定边界；普通项目的动态 disposition、effect authority 与唯一下一项只在外部 `~/Documents/StorageGovernance/STATE.yaml`。
+项目注册表保存 24 条已冻结身份记录：21 个普通受管项目、`manga-localizer` 已完成排除记录，以及永久留内盘的 `personal-control-hub` 和 `StorageGovernance` 控制面。注册表只保存身份、路径和稳定边界；普通项目的动态 disposition、effect authority 与唯一下一项只在专用 [`governance/programs/storage_governance/STATE.yaml`](governance/programs/storage_governance/STATE.yaml)。
 
-Hub 不从注册表获得业务项目写权限。当前建设范围、设计选择与管理材料归并规则见 [执行规范](docs/design/ui_governance_execution.md)；Hub 成品尚未完成，实际进度只看 `STATE.yaml`。原始存储执行状态仍在上述入口，后续归并另行完成权威切换。
+Hub 不从注册表获得业务项目写权限。当前建设范围、设计选择与管理材料归并规则见 [执行规范](docs/design/ui_governance_execution.md)；Hub 成品尚未完成，实际进度只看 `STATE.yaml`。存储管理材料已归并至上述专用目录；旧入口只保留指向同一文件的链接。
 
 ## Git 版本控制
 

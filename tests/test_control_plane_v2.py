@@ -30,10 +30,10 @@ def test_state_authority_is_unique_and_legacy_files_are_demoted():
 def test_storage_governance_registry_is_portable_and_pointer_only():
     registry = load_yaml("data/registry/external_projects.yaml")
     project = next(item for item in registry["projects"] if item["id"] == "storage_governance")
-    assert project["root_path"] == "~/Documents/StorageGovernance"
+    assert project["root_path"] == "~/PycharmProjects/personal-control-hub/governance/programs/storage_governance"
     assert project["authority_files"] == ["STATE.yaml", "STORAGE_GOVERNANCE.md"]
     assert project["external_write_allowed"] is False
-    assert project["norm_copy_forbidden"] is True
+    assert project["competing_authority_copy_forbidden"] is True
     assert "/Users/" not in str(project)
 
 
@@ -118,7 +118,7 @@ def test_registry_historical_manifest_and_current_hub_epoch_are_distinct_authori
     registry = load_yaml("data/registry/external_projects.yaml")
     hub_state = load_yaml("STATE.yaml")
     storage_state = yaml.safe_load(
-        Path("~/Documents/StorageGovernance/STATE.yaml").expanduser().read_text(encoding="utf-8")
+        Path("~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STATE.yaml").expanduser().read_text(encoding="utf-8")
     )
     registry_bytes = (ROOT / "data/registry/external_projects.yaml").read_bytes()
     assert hashlib.sha256(registry_bytes).hexdigest() == storage_state["parent_hub"][
@@ -147,17 +147,15 @@ def test_registry_historical_manifest_and_current_hub_epoch_are_distinct_authori
     assert {"subplz", "mpv-clip-workbench"} <= current_epoch_ids
     assert "subplz" not in current_registry_ids and "mpv-clip-workbench" in current_registry_ids
 
-    post_path = Path(hub_state["storage_governance"]["post_effect_evidence"])
+    post_path = Path(storage_state["closure"]["final_report"])
     post = yaml.safe_load(post_path.read_text(encoding="utf-8"))
     assert post["epoch"] == current_manifest["manifest"]["epoch_id"]
     assert set(post["removed_projects"]["subplz"].values()) == {"PASS"}
     assert post["mpv_clip_workbench"]["registry"] == "linked"
 
-    # Raw legacy fields remain for TC6 normalization; both authorities deny effects now.
-    compact = hub_state["storage_governance"]["compact_execution_summary"]
+    # Hub holds a pointer; only the program state owns execution.
+    assert "compact_execution_summary" not in hub_state["storage_governance"]
     execution = storage_state["execution_control"]
-    assert compact["project_effects_allowed"] is False
-    assert compact["active_projects"] == compact["active_writers"] == 0
     assert execution["project_effects_allowed"] is False
     assert execution["control_plane_effects_active"] is False
     assert execution["storage_effects_active"] is False
@@ -168,9 +166,10 @@ def test_storage_adapter_does_not_copy_or_override_norm():
     assert adapter["authority"]["activation_prompt"] == "prompts/storage_governance_goal_mode.md"
     assert adapter["authority"]["stable_parameters"] == "data/programs/storage_governance_goal.yaml"
     assert adapter["authority"]["project_registry"] == "data/registry/external_projects.yaml"
-    assert adapter["authority"]["sole_execution_state"] == "~/Documents/StorageGovernance/STATE.yaml"
-    assert adapter["authority"]["sole_norm"] == "~/Documents/StorageGovernance/STORAGE_GOVERNANCE.md"
-    assert adapter["authority"]["content_copied_into_hub"] is False
+    assert adapter["authority"]["sole_execution_state"] == "~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STATE.yaml"
+    assert adapter["authority"]["sole_norm"] == "~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STORAGE_GOVERNANCE.md"
+    assert adapter["authority"]["competing_copy_allowed"] is False
+    assert adapter["authority"]["authority_location"] == "hub_owned_co_located_program"
     assert adapter["authority"]["hub_may_override_norm"] is False
     assert adapter["boundaries"]["external_project_effects_from_hub_registry"] == "forbidden"
 
@@ -181,8 +180,8 @@ def test_storage_execution_route_reads_registry_before_sole_state():
         "data/programs/storage_governance_goal.yaml",
         "data/registry/external_projects.yaml",
         "governance/adapters/storage_governance.yaml",
-        "~/Documents/StorageGovernance/AGENTS.md",
-        "~/Documents/StorageGovernance/STATE.yaml",
+        "~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/AGENTS.md",
+        "~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STATE.yaml",
         "current_project_AGENTS_and_current_state_if_present",
     ]
 
@@ -214,9 +213,8 @@ def test_storage_goal_package_is_single_source_and_not_current_state():
     assert goal_package["prompt"] == "prompts/storage_governance_goal_mode.md"
     assert goal_package["parameters"] == "data/programs/storage_governance_goal.yaml"
     assert goal_package["project_registry"] == "data/registry/external_projects.yaml"
-    assert goal_package["activation"] == "active"
-    assert goal_package["authority"] == "owner_resume_01a069c2-4ba9-7161-bb4e-eae56f5e5977"
-    assert state["storage_governance"]["execution_state_authority"] == "external_state_only"
+    assert set(goal_package) == {"prompt", "parameters", "project_registry"}
+    assert state["storage_governance"]["sole_execution_state"] == "governance/programs/storage_governance/STATE.yaml"
 
 
 def test_release_first_parameters_remove_routine_history_proof_and_backup_gates():
@@ -239,15 +237,15 @@ def test_release_first_parameters_remove_routine_history_proof_and_backup_gates(
 def test_current_owner_resume_contract_shape_and_hub_pointer_agree():
     hub = load_yaml("STATE.yaml")
     state = yaml.safe_load(
-        Path("~/Documents/StorageGovernance/STATE.yaml").expanduser().read_text(encoding="utf-8")
+        Path("~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STATE.yaml").expanduser().read_text(encoding="utf-8")
     )
     binding = state["task_contract"]
     path = Path(binding["path"])
     assert hashlib.sha256(path.read_bytes()).hexdigest() == binding["sha256"]
     contract = yaml.safe_load(path.read_text(encoding="utf-8"))
-    goal_package = hub["storage_governance"]["goal_package"]
-    assert contract["contract"] == binding["version"] == goal_package["contract"]
-    assert contract["authority_source"] == goal_package["authority"]
+    assert (ROOT / hub["storage_governance"]["sole_execution_state"]).resolve() == (ROOT / "governance/programs/storage_governance/STATE.yaml").resolve()
+    assert contract["contract"] == binding["version"]
+    assert contract["authority_source"] == state["authorization_scope"]["source"]
     assert contract["objective"] == (
         "migrate_all_registered_projects_except_manga_localizer_and_personal_control_hub_to_ai_work_ssd"
     )

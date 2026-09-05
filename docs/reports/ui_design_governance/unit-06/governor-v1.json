@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "role": "read_only_governor",
+  "agent": "/root/tc4_governor",
+  "candidate_hash": "2c5fdbc323211af989a71950bb9740d5216e7fa6404c5fc2eac7272eba3cafe7",
+  "contract": "HUB-GOV-2026-09-05-TC6",
+  "version": 1,
+  "decision": "APPROVE",
+  "fresh_judge": "/root/tc6_judge PASS, no findings",
+  "independent_checks": "36fileidentities;verify.py;184Hub+11controltests;24API;repo/registry/round/currentauthority/guard PASS",
+  "accepted_scope": "one co-located storage authority;3oldlinks;alleffectsclosed;pointer-onlyHub;historyandotherworkpreserved",
+  "authorized_next_action": "Root stage exactTC6paths plusreviewmetadata andregisteredAGENTSdeliveryblob; scopedcommit andnormalpush verifiedtrackingbranch; verifyexactremotecommit",
+  "exclusions": [
+    "mainmerge",
+    "forcepush",
+    "remotechange",
+    "publication",
+    "deployment",
+    "storage/business effects",
+    "Figma action",
+    "Manga access",
+    "finalconnection acceptance",
+    "overallGoal completion"
+  ],
+  "metadata_identity_rule": "metadata-onlyacceptance/deliveryupdates excluded; semanticchange requiresfreshcandidate/review"
+}

@@ -1,29 +1,30 @@
+---
 file_roles:
   root:
     STATE.yaml:
       role: canonical_current_state
       authority: highest
-      update_policy: "仅在 accepted milestone、治理轮次、阻塞或唯一下一步改变时更新。"
+      update_policy: 仅在 accepted milestone、治理轮次、阻塞或唯一下一步改变时更新。
     NORTH_STAR.md:
       role: long_term_direction
       authority: high
-      update_policy: "长期目标、系统边界、权威模型或正式集成方向改变时更新。"
+      update_policy: 长期目标、系统边界、权威模型或正式集成方向改变时更新。
     README.md:
       role: human_entry
       authority: high
-      update_policy: "项目定位、启动方式或验证入口变化时更新。"
+      update_policy: 项目定位、启动方式或验证入口变化时更新。
     AGENTS.md:
       role: conditional_context_router
       authority: high
-      update_policy: "默认启动包、任务路由或执行边界变化时更新；与 STATE.yaml 合计不得超过 8192 bytes。"
+      update_policy: 默认启动包、任务路由或执行边界变化时更新；与 STATE.yaml 合计不得超过 8192 bytes。
     project.yaml:
       role: project_identity
       authority: high
-      update_policy: "项目身份、边界、工具分工或入口变化时更新。"
+      update_policy: 项目身份、边界、工具分工或入口变化时更新。
     hub.py:
       role: cli_entrypoint
       authority: medium
-      update_policy: "CLI 子命令扩展时更新。"
+      update_policy: CLI 子命令扩展时更新。
   governance:
     governance/round_state.yaml:
       role: legacy_round_history_and_compatibility_snapshot
@@ -39,6 +40,15 @@ file_roles:
       authority: low
     governance/adapters/storage_governance.yaml:
       role: storage_governance_pointer_adapter
+      authority: high
+    governance/programs/storage_governance/STATE.yaml:
+      role: sole_storage_execution_current_state
+      authority: high
+    governance/programs/storage_governance/AGENTS.md:
+      role: storage_program_router
+      authority: high
+    governance/programs/storage_governance/STORAGE_GOVERNANCE.md:
+      role: stable_storage_policy_and_history_index
       authority: high
   docs:
     docs/00_start_here.md:
@@ -95,7 +105,7 @@ file_roles:
   data:
     data/registry/external_projects.yaml:
       role: external_project_registry
-      write_policy: "只登记路径与读取策略，不写入外部项目。"
+      write_policy: 只登记路径与读取策略，不写入外部项目。
     data/programs/active_programs.yaml:
       role: active_program_registry
     data/programs/program_project_links.yaml:
@@ -103,7 +113,7 @@ file_roles:
     data/programs/storage_governance_goal.yaml:
       role: storage_governance_stable_goal_parameters
       authority: high
-      update_policy: "路径、外盘身份、所有者优先级、保护边界、验证或完成合同变化时更新；不得写当前进度或 next action。"
+      update_policy: 路径、外盘身份、所有者优先级、保护边界、验证或完成合同变化时更新；不得写当前进度或 next action。
     data/tasks/next_actions.yaml:
       role: next_action_catalog
     data/scheduler/scheduled_tasks.yaml:
@@ -148,7 +158,7 @@ file_roles:
     .cursor/mcp.example.json:
       role: cursor_mcp_example_config
       authority: medium
-      update_policy: "示例配置变更时更新；不得覆盖用户 mcp.json。"
+      update_policy: 示例配置变更时更新；不得覆盖用户 mcp.json。
   prompts:
     prompts/mcp_audit_prompt.md:
       role: mcp_audit_prompt
@@ -162,13 +172,14 @@ file_roles:
     prompts/storage_governance_goal_mode.md:
       role: sole_storage_governance_goal_activation_prompt
       authority: high
-      update_policy: "目标、授权边界、优先级、每轮读取入口或完成条件持久变化时更新。"
+      update_policy: 目标、授权边界、优先级、每轮读取入口或完成条件持久变化时更新。
   scripts:
     scripts/agent_gate.py:
       role: local_readonly_auto_advance_gate
       authority: high
-      update_policy: "自动推进规则或路线图必要字段变化时更新；脚本不得写文件或调用外部 API。"
+      update_policy: 自动推进规则或路线图必要字段变化时更新；脚本不得写文件或调用外部 API。
 historical_reference_docs:
-  pattern: "docs/[00-15]_*.md"
+  pattern: docs/[00-15]_*.md
   role: restart_reference_reports
-  policy: "编号 00-15 且无 _mcp_ / _external_tool_ / _cursor_mcp_ 后缀的为历史参考；MCP 执行入口为 docs/11_mcp_* 至 docs/13_cursor_mcp_*。"
+  policy: 编号 00-15 且无 _mcp_ / _external_tool_ / _cursor_mcp_ 后缀的为历史参考；MCP 执行入口为 docs/11_mcp_*
+    至 docs/13_cursor_mcp_*。

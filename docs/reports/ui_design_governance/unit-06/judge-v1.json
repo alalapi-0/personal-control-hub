@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "role": "fresh_read_only_judge",
+  "agent": "/root/tc6_judge",
+  "candidate_hash": "2c5fdbc323211af989a71950bb9740d5216e7fa6404c5fc2eac7272eba3cafe7",
+  "verdict": "PASS",
+  "checks": {
+    "semantic_identity": "PASS; compact sorted UTF-8 semantic hash;36 file hashes match",
+    "verify_py": "PASS",
+    "api_readback": "PASS;24 projections/list-detail equal/ledger unchanged/zero mutating calls",
+    "tests": "184 Hub tests and11 control-plane tests PASS",
+    "repository": "repo,registry,round,authority,diff,hostguard PASS",
+    "authority": "historicalv1 preserved drift-marked; activev2 matched",
+    "ledger": "acceptedhead78 preserved;79-82 one request with2 successful own-source refreshes",
+    "router_delivery": "plannedAGENTS blob differsbaselineHEAD onlystorage-governance route row"
+  },
+  "findings": [],
+  "boundary_observations": [
+    "Exactly3 oldsource symlinks resolve to3regularHubfiles; no competing editable source",
+    "All storage authorities closed;0activeprojects/batches/writers/pending;allowedeffects empty",
+    "HubSTATEpointeronly;fullpriorstatepreimage andhistoricalbundles preserved",
+    "Independentworkspacebytes,guard,STORAGE_MAP andglobalworktreechanges preserved",
+    "ZeroManga probes/externalbusinessreads",
+    "TC6commit/push awaitsGovernor;Judge didnot write/effect"
+  ]
+}

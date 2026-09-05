@@ -65,7 +65,11 @@ def permission(project: dict) -> tuple[str, str]:
     return "named_sources", "registry 当前启用并允许摘要；仅读取命名 current_state_paths。"
 
 
-def freeze_manifest(root: Path, revision: int = 1) -> dict:
+def freeze_manifest(
+    root: Path,
+    revision: int = 1,
+    authority_ref: str = "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa",
+) -> dict:
     registry, digest = load_registry_at(root)
     created = now()
     entries = []
@@ -77,7 +81,7 @@ def freeze_manifest(root: Path, revision: int = 1) -> dict:
                  "disposition": "protected" if mode == "no_access" else "unresolved",
                  "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。" if mode != "no_access" else reason,
                  "evidence_refs": [f"registry:projects/{pid}"],
-                 "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"}
+                 "authority_ref": authority_ref}
         entries.append({"project_id": pid, "scope": scope,
                         "permission": {"mode": mode, "basis": reason,
                                        "access_profile": project.get("access_profile", "registered_project_read")},

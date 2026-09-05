@@ -90,6 +90,20 @@ class HubConnectionTests(unittest.TestCase):
         self.assertEqual(24, len(manifest["entries"]))
         self.assertTrue(all("root_path" not in entry for entry in manifest["entries"]))
 
+    def test_manifest_authority_ref_is_versionable_and_default_is_backward_compatible(self) -> None:
+        self.fixture()
+        historical = freeze_manifest(self.root)
+        current_ref = "owner-goal-11111111-2222-3333-4444-555555555555"
+        current = freeze_manifest(self.root, revision=3, authority_ref=current_ref)
+        self.assertEqual(
+            {"owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"},
+            {entry["scope"]["authority_ref"] for entry in historical["entries"]},
+        )
+        self.assertEqual(
+            {current_ref},
+            {entry["scope"]["authority_ref"] for entry in current["entries"]},
+        )
+
     def test_manifest_rejects_duplicate_id_even_when_rehashed(self) -> None:
         _registry, _adapters, project_ids = self.fixture()
         manifest = freeze_manifest(self.root)
