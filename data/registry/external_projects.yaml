@@ -1,87 +1,853 @@
-schema_version: "1.0"
-
+---
+schema_version: '1.0'
 policy:
   read_only: true
   write_external_forbidden: true
   copy_forbidden: true
   auto_git_push_forbidden: true
+  project_registry_is_effect_authority: false
+  storage_effect_authority: 仅来自外部唯一 StorageGovernance/STATE.yaml 中登记的当前 Goal；本清单不授权写项目。
   priority_source_allowed:
-    - user
-    - rule
-    - proposal
+  - user
+  - rule
+  - proposal
   forbidden_scan_dirs:
-    - .git
-    - node_modules
-    - dist
-    - build
-    - target
-    - __pycache__
-    - .venv
-    - venv
-    - .idea
-    - .cache
-    - cache
-    - logs
-    - outputs
-    - tmp
+  - ".git"
+  - node_modules
+  - dist
+  - build
+  - target
+  - __pycache__
+  - ".venv"
+  - venv
+  - ".idea"
+  - ".cache"
+  - cache
+  - logs
+  - outputs
+  - tmp
   forbidden_files:
-    - .env
-    - .env.local
-    - .env.production
+  - ".env"
+  - ".env.local"
+  - ".env.production"
   default_watch_paths:
-    - README.md
-    - AGENTS.md
-    - project.yaml
-    - docs/ROADMAP.md
-
+  - README.md
+  - AGENTS.md
+  - STATE.yaml
+  - project.yaml
+  - docs/ROADMAP.md
 required_project_fields:
-  - id
-  - name
-  - root_path
-  - enabled
-  - scan_enabled
-  - profile_enabled
-  - summary_enabled
-  - project_type
-  - priority_source
-  - watch_paths
-
+- id
+- name
+- root_path
+- enabled
+- scan_enabled
+- profile_enabled
+- summary_enabled
+- project_type
+- priority_source
+- watch_paths
+- rules_paths
+- current_state_paths
+- current_state_status
+- supporting_authority_paths
+storage_governance_contract:
+  sole_execution_state: "~/Documents/StorageGovernance/STATE.yaml"
+  identity_source: this_registry
+  dynamic_disposition_source: frozen_manifest_and_sole_execution_state
+  ordinary_project_default: current_goal_authority_required
+  special_records:
+    manga-localizer: accepted_exclusion_record_only
+    personal-control-hub: protected_internal_control_plane
+    storage_governance: protected_governance_program
+  authority_pointer_audit: "/Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/AUTHORITY_POINTER_AUDIT.yaml"
+  frozen_manifest: "/Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/PROJECT_MANIFEST_v2.yaml"
+  frozen_manifest_sha256: 9c14a8d2e1c4ff366e050f2b3fa203f073397586d36893a306fe308b7e2aff33
 projects:
-  - id: storage_governance
-    name: StorageGovernance
-    root_path: "~/Documents/StorageGovernance"
-    enabled: true
-    scan_enabled: true
-    profile_enabled: true
-    summary_enabled: true
-    project_type: governance_program
-    priority_link: null
-    priority_source: user
-    watch_paths:
-      - STORAGE_GOVERNANCE.md
-    authority_files:
-      - STORAGE_GOVERNANCE.md
-    hub_adapter: governance/adapters/storage_governance.yaml
-    access_profile: read_only_pointer
-    norm_copy_forbidden: true
-    external_write_allowed: false
-    notes: "当前存储治理项目；其唯一规范留在项目目录，本注册表只保存便携路径和权威指针。"
-
-# Disabled example only. Do not write real private paths unless the user confirms.
-# projects:
-#   - id: example_project
-#     name: Example Project
-#     root_path: /path/to/local/project
-#     enabled: false
-#     scan_enabled: false
-#     profile_enabled: false
-#     summary_enabled: false
-#     project_type: unknown
-#     priority_link: null
-#     priority_source: user
-#     watch_paths:
-#       - README.md
-#       - AGENTS.md
-#       - project.yaml
-#       - docs/ROADMAP.md
-#     notes: "Disabled sample structure. Replace only after user confirmation."
+- id: storage_governance
+  name: StorageGovernance
+  root_path: "~/Documents/StorageGovernance"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: governance_program
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - AGENTS.md
+  - STATE.yaml
+  - STORAGE_GOVERNANCE.md
+  authority_files:
+  - STATE.yaml
+  - STORAGE_GOVERNANCE.md
+  hub_adapter: governance/adapters/storage_governance.yaml
+  access_profile: named_control_plane_files_only
+  norm_copy_forbidden: true
+  external_write_allowed: false
+  storage_governance:
+    scope: protected_governance_program
+    migration_allowed: false
+    cleanup_allowed: false
+    bounded_control_plane_repairs_allowed: true
+  rules_paths:
+  - "~/Documents/StorageGovernance/AGENTS.md"
+  current_state_paths:
+  - "~/Documents/StorageGovernance/STATE.yaml"
+  current_state_status: sole_execution_current_state
+  supporting_authority_paths:
+  - "~/Documents/StorageGovernance/STORAGE_GOVERNANCE.md"
+- id: personal-control-hub
+  name: personal-control-hub
+  root_path: "/Users/alalapi/PycharmProjects/personal-control-hub"
+  enabled: true
+  scan_enabled: false
+  profile_enabled: true
+  summary_enabled: true
+  project_type: internal_control_plane
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - AGENTS.md
+  - STATE.yaml
+  - project.yaml
+  - data/registry/external_projects.yaml
+  - governance/adapters/storage_governance.yaml
+  - data/programs/storage_governance_goal.yaml
+  access_profile: bounded_management_records_only
+  external_write_allowed: false
+  storage_governance:
+    scope: protected_internal_control_plane
+    recursive_discovery_allowed: false
+    migration_allowed: false
+    cleanup_allowed: false
+    bounded_management_repairs_allowed: true
+  rules_paths:
+  - "/Users/alalapi/PycharmProjects/personal-control-hub/AGENTS.md"
+  current_state_paths:
+  - "/Users/alalapi/PycharmProjects/personal-control-hub/STATE.yaml"
+  current_state_status: compact_hub_current_state_not_storage_execution_authority
+  supporting_authority_paths:
+  - "/Users/alalapi/PycharmProjects/personal-control-hub/project.yaml"
+  - "/Users/alalapi/PycharmProjects/personal-control-hub/data/programs/storage_governance_goal.yaml"
+  - "/Users/alalapi/PycharmProjects/personal-control-hub/data/registry/external_projects.yaml"
+  - "/Users/alalapi/PycharmProjects/personal-control-hub/governance/adapters/storage_governance.yaml"
+- id: manga-localizer
+  name: Manga Localizer
+  root_path: "/Users/alalapi/PycharmProjects/manga-localizer"
+  enabled: false
+  scan_enabled: false
+  profile_enabled: false
+  summary_enabled: true
+  project_type: completed_exclusion_record
+  priority_link:
+  priority_source: user
+  watch_paths: []
+  access_profile: no_current_goal_access
+  external_write_allowed: false
+  storage_governance:
+    scope: accepted_exclusion_record_only
+    inventory_allowed: false
+    inspection_allowed: false
+    validation_allowed: false
+    mutation_allowed: false
+  rules_paths: []
+  current_state_paths: []
+  current_state_status: accepted_exclusion_no_current_goal_access
+  supporting_authority_paths: []
+- id: universal-player
+  name: Universal Player
+  root_path: "/Volumes/AI_WORK_SSD/Projects/universal-player"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: swift_xcode_git_project
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - AGENTS.md
+  - Package.swift
+  - README.md
+  - Scripts
+  - ".agent/STATE.md"
+  - docs/PRODUCT_SPEC.md
+  - docs/ARCHITECTURE.md
+  - project.yml
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate
+    authority_source: sole_storage_execution_state
+  rules_paths:
+  - "/Users/alalapi/PycharmProjects/AGENTS.md"
+  - "/Users/alalapi/PycharmProjects/universal-player/AGENTS.md"
+  current_state_paths:
+  - "/Users/alalapi/PycharmProjects/universal-player/.agent/STATE.md"
+  current_state_status: declared_product_truth
+  supporting_authority_paths:
+  - "/Users/alalapi/PycharmProjects/universal-player/docs/PRODUCT_SPEC.md"
+  - "/Users/alalapi/PycharmProjects/universal-player/docs/ARCHITECTURE.md"
+  - "/Users/alalapi/PycharmProjects/universal-player/project.yml"
+- id: ai-anime-short-factory
+  name: AI Anime Short Factory
+  root_path: "/Volumes/AI_WORK_SSD/Projects/ai-anime-short-factory"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: python_node_git_project
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - AGENTS.md
+  - README.md
+  - package.json
+  - requirements.txt
+  - ".agent_runtime/agent-state.json"
+  - governance/repo_protocol_standard.yaml
+  - docs/product_final_state_spec.md
+  - CAPABILITIES.md
+  - PROJECT_STATUS.md
+  associated_paths:
+  - "/Users/alalapi/PycharmProjects/ai-anime-short-factory-external"
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate
+    authority_source: sole_storage_execution_state
+  rules_paths:
+  - "/Users/alalapi/PycharmProjects/AGENTS.md"
+  - "/Users/alalapi/PycharmProjects/ai-anime-short-factory/AGENTS.md"
+  current_state_paths:
+  - "/Users/alalapi/PycharmProjects/ai-anime-short-factory/.agent_runtime/agent-state.json"
+  current_state_status: declared_unique_runtime_state
+  supporting_authority_paths:
+  - "/Users/alalapi/PycharmProjects/ai-anime-short-factory/governance/repo_protocol_standard.yaml"
+  - "/Users/alalapi/PycharmProjects/ai-anime-short-factory/docs/product_final_state_spec.md"
+  - "/Users/alalapi/PycharmProjects/ai-anime-short-factory/CAPABILITIES.md"
+  - "/Users/alalapi/PycharmProjects/ai-anime-short-factory/PROJECT_STATUS.md"
+- id: ai-music-foundry
+  name: AI Music Foundry
+  root_path: "/Volumes/AI_WORK_SSD/Projects/ai-music-foundry"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: python_git_project
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - README.md
+  - pyproject.toml
+  - Makefile
+  - scripts
+  - docs/STATUS.md
+  - docs/FINAL_VISION.md
+  - docs/PRODUCT_SPEC.md
+  - docs/COMPOSITION_QUALITY_CONTRACT.md
+  - docs/ARCHITECTURE.md
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate
+    authority_source: sole_storage_execution_state
+  rules_paths:
+  - "/Users/alalapi/PycharmProjects/AGENTS.md"
+  current_state_paths:
+  - "/Users/alalapi/PycharmProjects/ai-music-foundry/docs/STATUS.md"
+  current_state_status: declared_exact_current_capability_and_gaps
+  supporting_authority_paths:
+  - "/Users/alalapi/PycharmProjects/ai-music-foundry/docs/FINAL_VISION.md"
+  - "/Users/alalapi/PycharmProjects/ai-music-foundry/docs/PRODUCT_SPEC.md"
+  - "/Users/alalapi/PycharmProjects/ai-music-foundry/docs/COMPOSITION_QUALITY_CONTRACT.md"
+  - "/Users/alalapi/PycharmProjects/ai-music-foundry/docs/ARCHITECTURE.md"
+- id: novel-continuation-agent
+  name: Novel Continuation Agent
+  root_path: "/Volumes/AI_WORK_SSD/Projects/novel-continuation-agent"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: python_node_git_project
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - AGENTS.md
+  - project.yaml
+  - README.md
+  - package.json
+  - requirements.txt
+  - modules/story-video-adapter/AGENTS.md
+  - governance/round_state.yaml
+  - governance/repo_protocol_standard.yaml
+  - governance/agent_policy.yaml
+  - governance/file_role_map.yaml
+  - governance/novel_pipeline_contract.yaml
+  - docs/product_final_state_spec.md
+  associated_paths:
+  - "/Users/alalapi/NovelUniverseData"
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate_with_protected_associated_data
+    authority_source: sole_storage_execution_state
+  rules_paths:
+  - "/Users/alalapi/PycharmProjects/AGENTS.md"
+  - "/Users/alalapi/PycharmProjects/novel-continuation-agent/AGENTS.md"
+  - "/Users/alalapi/PycharmProjects/novel-continuation-agent/modules/story-video-adapter/AGENTS.md"
+  current_state_paths:
+  - "/Users/alalapi/PycharmProjects/novel-continuation-agent/governance/round_state.yaml"
+  current_state_status: declared_unique_current_and_next_round_state
+  supporting_authority_paths:
+  - "/Users/alalapi/PycharmProjects/novel-continuation-agent/governance/repo_protocol_standard.yaml"
+  - "/Users/alalapi/PycharmProjects/novel-continuation-agent/project.yaml"
+  - "/Users/alalapi/PycharmProjects/novel-continuation-agent/governance/agent_policy.yaml"
+  - "/Users/alalapi/PycharmProjects/novel-continuation-agent/governance/file_role_map.yaml"
+  - "/Users/alalapi/PycharmProjects/novel-continuation-agent/governance/novel_pipeline_contract.yaml"
+  - "/Users/alalapi/PycharmProjects/novel-continuation-agent/docs/product_final_state_spec.md"
+- id: story-faceless-utopia
+  name: Story Faceless Utopia
+  root_path: "/Volumes/AI_WORK_SSD/Projects/story-faceless-utopia"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: python_git_project
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - AGENTS.md
+  - project.yaml
+  - README.md
+  - pyproject.toml
+  - governance/project-contract.yaml
+  - governance/directory-roles.yaml
+  - governance/canon-policy.yaml
+  - governance/compatibility-matrix.yaml
+  - portable_world_package/package.manifest.json
+  - scripts/storage_runtime.py
+  - docs/storage_runtime.md
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate
+    authority_source: sole_storage_execution_state
+  rules_paths:
+  - "/Users/alalapi/PycharmProjects/AGENTS.md"
+  - "/Users/alalapi/PycharmProjects/story-faceless-utopia/AGENTS.md"
+  current_state_paths:
+  - "/Users/alalapi/PycharmProjects/story-faceless-utopia/README.md"
+  current_state_status: declared_readme_current_stage_status_summary
+  supporting_authority_paths:
+  - "/Users/alalapi/PycharmProjects/story-faceless-utopia/project.yaml"
+  - "/Users/alalapi/PycharmProjects/story-faceless-utopia/governance/project-contract.yaml"
+  - "/Users/alalapi/PycharmProjects/story-faceless-utopia/governance/directory-roles.yaml"
+  - "/Users/alalapi/PycharmProjects/story-faceless-utopia/governance/canon-policy.yaml"
+  - "/Users/alalapi/PycharmProjects/story-faceless-utopia/governance/compatibility-matrix.yaml"
+  - "/Users/alalapi/PycharmProjects/story-faceless-utopia/portable_world_package/package.manifest.json"
+- id: light-novel
+  name: Light Novel
+  root_path: "/Volumes/AI_WORK_SSD/Projects/light-novel"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: python_node_git_project
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - AGENTS.md
+  - project.yaml
+  - README.md
+  - package.json
+  - governance/round_state.yaml
+  - governance/repo_protocol_standard.yaml
+  - docs/product_final_state_spec.md
+  - docs/next_agent_execution_protocol.md
+  - docs/final_state_round_task_list.md
+  - scripts/local_scheduler_status.py
+  - scripts/check_orphan_workers.py
+  - scripts/check_final_translation_singleton.py
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate_with_protected_private_content
+    authority_source: sole_storage_execution_state
+  rules_paths:
+  - "/Users/alalapi/PycharmProjects/AGENTS.md"
+  - "/Users/alalapi/PycharmProjects/light_novel/AGENTS.md"
+  current_state_paths:
+  - "/Users/alalapi/PycharmProjects/light_novel/governance/round_state.yaml"
+  current_state_status: declared_current_round_state_plus_live_probe_precedence
+  supporting_authority_paths:
+  - "/Users/alalapi/PycharmProjects/light_novel/governance/repo_protocol_standard.yaml"
+  - "/Users/alalapi/PycharmProjects/light_novel/project.yaml"
+  - "/Users/alalapi/PycharmProjects/light_novel/docs/product_final_state_spec.md"
+  - "/Users/alalapi/PycharmProjects/light_novel/docs/next_agent_execution_protocol.md"
+  - "/Users/alalapi/PycharmProjects/light_novel/docs/final_state_round_task_list.md"
+  - "/Users/alalapi/PycharmProjects/light_novel/scripts/local_scheduler_status.py"
+  - "/Users/alalapi/PycharmProjects/light_novel/scripts/check_orphan_workers.py"
+  - "/Users/alalapi/PycharmProjects/light_novel/scripts/check_final_translation_singleton.py"
+- id: wechat-article-scheduler
+  name: WeChat Article Scheduler
+  root_path: "/Volumes/AI_WORK_SSD/Projects/wechat-article-scheduler"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: python_git_project
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - AGENTS.md
+  - project.yaml
+  - README.md
+  - pyproject.toml
+  - docs/index.md
+  - docs/architecture.md
+  - scripts/storage_runtime.py
+  - docs/storage_runtime.md
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate_with_credential_session_boundary
+    authority_source: sole_storage_execution_state
+  rules_paths:
+  - "/Users/alalapi/PycharmProjects/AGENTS.md"
+  - "/Users/alalapi/PycharmProjects/wechat-article-scheduler/AGENTS.md"
+  current_state_paths:
+  - "/Users/alalapi/PycharmProjects/wechat-article-scheduler/project.yaml"
+  current_state_status: declared_project_yaml_runtime_and_project_status
+  supporting_authority_paths:
+  - "/Users/alalapi/PycharmProjects/wechat-article-scheduler/project.yaml"
+  - "/Users/alalapi/PycharmProjects/wechat-article-scheduler/README.md"
+  - "/Users/alalapi/PycharmProjects/wechat-article-scheduler/docs/index.md"
+  - "/Users/alalapi/PycharmProjects/wechat-article-scheduler/docs/architecture.md"
+- id: resilient-personal-network
+  name: Resilient Personal Network
+  root_path: "/Volumes/AI_WORK_SSD/Projects/resilient-personal-network"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: network_operations_git_project
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - AGENTS.md
+  - README.md
+  - scripts
+  - templates
+  - docs/00_project_overview.md
+  - docs/02_architecture.md
+  - docs/storage_runtime.md
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate_with_credential_boundary
+    authority_source: sole_storage_execution_state
+  rules_paths:
+  - "/Users/alalapi/PycharmProjects/AGENTS.md"
+  - "/Users/alalapi/PycharmProjects/resilient-personal-network/AGENTS.md"
+  current_state_paths:
+  - "/Users/alalapi/PycharmProjects/resilient-personal-network/README.md"
+  current_state_status: declared_readme_repository_stage_only_remote_configuration_excluded
+  supporting_authority_paths:
+  - "/Users/alalapi/PycharmProjects/resilient-personal-network/README.md"
+  - "/Users/alalapi/PycharmProjects/resilient-personal-network/docs/00_project_overview.md"
+  - "/Users/alalapi/PycharmProjects/resilient-personal-network/docs/02_architecture.md"
+- id: pixel-world-asset-forge
+  name: Pixel World Asset Forge
+  root_path: "/Volumes/AI_WORK_SSD/Projects/pixel-world-asset-forge"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: python_node_git_project
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - AGENTS.md
+  - README.md
+  - pyproject.toml
+  - package.json
+  - scripts
+  - protocols/round_progression.yaml
+  - docs/SOURCE_OF_TRUTH.md
+  - agent_layer.yaml
+  - docs/AGENT_LAYER.md
+  - ROUND_PROGRESS.md
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate
+    authority_source: sole_storage_execution_state
+  rules_paths:
+  - "/Users/alalapi/PycharmProjects/AGENTS.md"
+  - "/Users/alalapi/PycharmProjects/pixel-world-asset-forge/AGENTS.md"
+  current_state_paths:
+  - "/Users/alalapi/PycharmProjects/pixel-world-asset-forge/protocols/round_progression.yaml"
+  current_state_status: declared_unique_current_and_next_round_state
+  supporting_authority_paths:
+  - "/Users/alalapi/PycharmProjects/pixel-world-asset-forge/docs/SOURCE_OF_TRUTH.md"
+  - "/Users/alalapi/PycharmProjects/pixel-world-asset-forge/agent_layer.yaml"
+  - "/Users/alalapi/PycharmProjects/pixel-world-asset-forge/docs/AGENT_LAYER.md"
+  - "/Users/alalapi/PycharmProjects/pixel-world-asset-forge/ROUND_PROGRESS.md"
+- id: desktop-jav-tools
+  name: Desktop JAV Python Tools
+  root_path: "/Volumes/AI_WORK_SSD/Projects/desktop-jav-tools"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: non_git_python_tool_directory
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - README.md
+  - extract_jav.py
+  - fetch_magnets.py
+  - storage_runtime.py
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate
+    authority_source: sole_storage_execution_state
+  rules_paths: []
+  current_state_paths:
+  - /Users/alalapi/Desktop/jav/README.md
+  current_state_status: declared_operational_readme_no_business_round
+  supporting_authority_paths:
+  - /Users/alalapi/Desktop/jav/extract_jav.py
+  - /Users/alalapi/Desktop/jav/fetch_magnets.py
+  - /Users/alalapi/Desktop/jav/storage_runtime.py
+- id: zarathustra-adaptation
+  name: Zarathustra Adaptation
+  root_path: "/Volumes/AI_WORK_SSD/Projects/zarathustra-adaptation"
+  github_remote: "https://github.com/alalapi-0/zarathustra-adaptation.git"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: python_git_project
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - AGENTS.md
+  - project.yaml
+  - README.md
+  - pyproject.toml
+  - scripts
+  - STATUS.md
+  - source/PROVENANCE.md
+  - framework/README.md
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate
+    authority_source: sole_storage_execution_state
+  rules_paths:
+  - "/Users/alalapi/PycharmProjects/AGENTS.md"
+  - "/Users/alalapi/PycharmProjects/zarathustra-adaptation/AGENTS.md"
+  current_state_paths:
+  - "/Users/alalapi/PycharmProjects/zarathustra-adaptation/STATUS.md"
+  current_state_status: declared_unique_product_current_state
+  supporting_authority_paths:
+  - "/Users/alalapi/PycharmProjects/zarathustra-adaptation/project.yaml"
+  - "/Users/alalapi/PycharmProjects/zarathustra-adaptation/source/PROVENANCE.md"
+  - "/Users/alalapi/PycharmProjects/zarathustra-adaptation/framework/README.md"
+  - "/Users/alalapi/PycharmProjects/zarathustra-adaptation/README.md"
+- id: computer-study-plan
+  name: Computer Study Plan
+  root_path: "/Volumes/AI_WORK_SSD/Projects/computer-study-plan"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: python_node_git_project
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - AGENTS.md
+  - README.md
+  - package.json
+  - scripts
+  - docs/PROJECT_STATE.md
+  - docs/WORKSPACE.md
+  - docs/PRODUCT_VISION.md
+  - docs/ROADMAP.md
+  - docs/MASTER_STUDY_ROADMAP.md
+  - docs/STAGE_PLAN.md
+  - docs/CODEX_LONG_TERM_PLAN.md
+  - docs/NEXT_ACTIONS.md
+  - docs/ARCHITECTURE.md
+  - progress.json
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate
+    authority_source: sole_storage_execution_state
+  rules_paths:
+  - "/Users/alalapi/PycharmProjects/AGENTS.md"
+  - "/Users/alalapi/PycharmProjects/computer_study_plan/AGENTS.md"
+  current_state_paths:
+  - "/Users/alalapi/PycharmProjects/computer_study_plan/docs/PROJECT_STATE.md"
+  current_state_status: declared_project_current_facts_with_progress_json_as_task_progress_truth
+  supporting_authority_paths:
+  - "/Users/alalapi/PycharmProjects/computer_study_plan/docs/WORKSPACE.md"
+  - "/Users/alalapi/PycharmProjects/computer_study_plan/docs/PRODUCT_VISION.md"
+  - "/Users/alalapi/PycharmProjects/computer_study_plan/docs/ROADMAP.md"
+  - "/Users/alalapi/PycharmProjects/computer_study_plan/docs/MASTER_STUDY_ROADMAP.md"
+  - "/Users/alalapi/PycharmProjects/computer_study_plan/docs/STAGE_PLAN.md"
+  - "/Users/alalapi/PycharmProjects/computer_study_plan/docs/CODEX_LONG_TERM_PLAN.md"
+  - "/Users/alalapi/PycharmProjects/computer_study_plan/docs/NEXT_ACTIONS.md"
+  - "/Users/alalapi/PycharmProjects/computer_study_plan/docs/ARCHITECTURE.md"
+  - "/Users/alalapi/PycharmProjects/computer_study_plan/progress.json"
+- id: desktop-tool
+  name: Desktop Tool
+  root_path: "/Volumes/AI_WORK_SSD/Projects/desktop-tool"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: non_git_python_userscript_directory
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - README.md
+  - html_crawler.py
+  - main.py
+  - metastudioxr-video-annotation.user.js
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate
+    authority_source: sole_storage_execution_state
+  rules_paths: []
+  current_state_paths:
+  - "/Users/alalapi/Desktop/tool/README.md"
+  current_state_status: declared_tool_and_storage_state
+  supporting_authority_paths:
+  - "/Users/alalapi/Desktop/tool/README.md"
+- id: audio-clone
+  name: Audio Clone
+  root_path: "/Volumes/AI_WORK_SSD/Projects/audio-clone"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: python_git_project
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - AGENTS.md
+  - README.md
+  - pyproject.toml
+  - Makefile
+  - scripts
+  - SAFETY.md
+  - docs/codex/project-tools.yaml
+  - docs/codex/capability-audit.json
+  - docs/codex/verification-matrix.json
+  - docs/storage-runtime.md
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate
+    authority_source: sole_storage_execution_state
+  rules_paths:
+  - "/Users/alalapi/audio_clone/AGENTS.md"
+  current_state_paths:
+  - "/Users/alalapi/audio_clone/docs/storage-runtime.md"
+  current_state_status: declared_storage_operation_state_no_business_round
+  supporting_authority_paths:
+  - "/Users/alalapi/audio_clone/SAFETY.md"
+  - "/Users/alalapi/audio_clone/README.md"
+  - "/Users/alalapi/audio_clone/docs/codex/project-tools.yaml"
+  - "/Users/alalapi/audio_clone/docs/codex/capability-audit.json"
+  - "/Users/alalapi/audio_clone/docs/codex/verification-matrix.json"
+- id: cognitive-asset-library
+  name: Cognitive Asset Library
+  root_path: "/Volumes/AI_WORK_SSD/Projects/cognitive-asset-library"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: python_git_project
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - AGENTS.md
+  - README.md
+  - pyproject.toml
+  - docs/roadmap.md
+  - NORTH_STAR.md
+  - docs/decisions/BLOCKERS.md
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate
+    authority_source: sole_storage_execution_state
+  rules_paths:
+  - "/Users/alalapi/PycharmProjects/AGENTS.md"
+  - "/Users/alalapi/PycharmProjects/cognitive_asset_library/AGENTS.md"
+  current_state_paths:
+  - "/Users/alalapi/PycharmProjects/cognitive_asset_library/docs/roadmap.md"
+  current_state_status: roadmap_and_AGENTS_phase_summary_in_sync
+  supporting_authority_paths:
+  - "/Users/alalapi/PycharmProjects/cognitive_asset_library/NORTH_STAR.md"
+  - "/Users/alalapi/PycharmProjects/cognitive_asset_library/README.md"
+  - "/Users/alalapi/PycharmProjects/cognitive_asset_library/docs/decisions/BLOCKERS.md"
+- id: pycharm-agent-workspace
+  name: PyCharm Agent Workspace
+  root_path: "/Volumes/AI_WORK_SSD/Projects/pycharm-agent-workspace"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: non_git_shared_development_tooling
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - README.md
+  - VERSION.yaml
+  - docs/AGENT_TOOLING_STANDARD.md
+  associated_paths:
+  - "/Users/alalapi/PycharmProjects/.agent"
+  access_profile: registered_project_read_with_protected_config
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate_with_protected_control_config
+    authority_source: sole_storage_execution_state
+  rules_paths:
+  - "/Users/alalapi/PycharmProjects/AGENTS.md"
+  current_state_paths:
+  - "/Users/alalapi/PycharmProjects/.agent_workspace/VERSION.yaml"
+  current_state_status: version_manifest_declares_current_draft_lifecycle_state
+  supporting_authority_paths:
+  - "/Users/alalapi/PycharmProjects/.agent_workspace/README.md"
+  - "/Users/alalapi/PycharmProjects/.agent_workspace/docs/AGENT_TOOLING_STANDARD.md"
+- id: youtube-hq-downloader
+  name: YouTube HQ Downloader
+  root_path: "/Volumes/AI_WORK_SSD/Projects/youtube-hq-downloader"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: non_git_python_project
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - README.md
+  - tests
+  - PROJECT_STATUS.md
+  access_profile: registered_project_read_with_credential_boundary
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate_with_credential_boundary
+    authority_source: sole_storage_execution_state
+  rules_paths: []
+  current_state_paths:
+  - "/Users/alalapi/Desktop/youtube_hq_downloader/PROJECT_STATUS.md"
+  current_state_status: project_status_document_not_explicitly_unique
+  supporting_authority_paths:
+  - "/Users/alalapi/Desktop/youtube_hq_downloader/README.md"
+- id: desktop-magnet
+  name: Desktop Magnet
+  root_path: "/Volumes/AI_WORK_SSD/Projects/desktop-magnet"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: non_git_python_project
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - README.md
+  - requirements.txt
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate
+    authority_source: sole_storage_execution_state
+  rules_paths: []
+  current_state_paths: []
+  current_state_status: no_rules_or_current_state_declared
+  supporting_authority_paths:
+  - "/Users/alalapi/Desktop/magnet/README.md"
+- id: pycharm-misc-project
+  name: PyCharm Misc Project
+  root_path: "/Volumes/AI_WORK_SSD/Projects/pycharm-misc-project"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: non_git_python_script_collection
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - "."
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate
+    authority_source: sole_storage_execution_state
+  rules_paths: []
+  current_state_paths: []
+  current_state_status: no_rules_or_current_state_declared
+  supporting_authority_paths: []
+- id: desktop-downloads-scripts
+  name: Desktop Downloads Scripts
+  root_path: "/Volumes/AI_WORK_SSD/Projects/desktop-downloads-scripts"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: non_git_python_script_collection
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - "."
+  access_profile: registered_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: project_candidate
+    authority_source: sole_storage_execution_state
+  rules_paths: []
+  current_state_paths: []
+  current_state_status: no_rules_or_current_state_declared
+  supporting_authority_paths: []
+- id: mpv-clip-workbench
+  name: MPV Clip Workbench
+  root_path: "/Volumes/AI_WORK_SSD/mpv-clip-workbench"
+  enabled: true
+  scan_enabled: true
+  profile_enabled: true
+  summary_enabled: true
+  project_type: cpp_cmake_git_project
+  priority_link:
+  priority_source: user
+  watch_paths:
+  - AGENTS.md
+  - PROJECT_STATE.md
+  - README.md
+  - CMakePresets.json
+  - apps
+  - modules
+  - contracts
+  - docs
+  access_profile: registered_external_project_read
+  external_write_allowed: false
+  storage_governance:
+    scope: owner_named_existing_external_project
+    root_migration: already_external_no_copy
+    authority_source: sole_storage_execution_state
+  rules_paths:
+  - "/Volumes/AI_WORK_SSD/mpv-clip-workbench/AGENTS.md"
+  current_state_paths:
+  - "/Volumes/AI_WORK_SSD/mpv-clip-workbench/PROJECT_STATE.md"
+  current_state_status: declared_project_state
+  supporting_authority_paths:
+  - "/Volumes/AI_WORK_SSD/mpv-clip-workbench/README.md"
+  - "/Volumes/AI_WORK_SSD/mpv-clip-workbench/docs/40-rounds/ROUND_INDEX.md"

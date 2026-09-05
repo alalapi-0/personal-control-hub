@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "id": "hub-foundation-candidate-v2",
+  "contract_id": "HUB-GOV-2026-09-05-TC1",
+  "created_at": "2026-09-05T04:12:09.190260+00:00",
+  "predecessor": "candidate-v1.json",
+  "repair_trigger": "judge-v1.json",
+  "file_hashes": {
+    "STATE.yaml": "24ea116fe125b8ebb44940f6c189187d4b8a3bbec76a53d5863565c927050c65",
+    "src/hub/connection_records.py": "e91e1945617ca42ea954a5856e57c0855ad7fca234a6dd816c1ebcdcaa5d370e",
+    "src/hub/connections.py": "75b770aae6926babc2e87f94933e5346f8a27862a63e3694b878fc1dbb8dbba0",
+    "src/hub/connection_cli.py": "fecfe0947a9caadde5584ec5140cebfb7eed8abf12a69cf1a9be0a0d9e8e680e",
+    "scripts/hub_connections.py": "8d381dc0e9093d6307b61d7ba0200df5a3fa23cbc7862b4fa7eb94664f8235c7",
+    "tests/test_hub_connections.py": "cadc0a27a6729c8b51571485c1dd1486e8ad96a9adf8b12546e4f2eb7be06ae5",
+    "docs/design/hub_connection_protocol.md": "d612f5b185ba43318305bc6c4a718481804f36695b053544da8fc0b63f08e057",
+    "data/design_governance/connection_adapters.json": "06df415a7ca906a1d779fa2867ab5dc18915ab2d8581bb65c7db85eeb6bcc5c6",
+    "data/design_governance/manifest-v1.json": "013b20150d1ef129ee4bdf6b3d8c3642b71d2189ba47289d7001b2ab53a6186e",
+    "data/design_governance/record-schema-v1.json": "f4163ec4b2f8cb5ce4daaeff65557cf0e17634d0d5029ec2d0702f1c92360e8e",
+    "docs/reports/ui_design_governance/unit-01/README.md": "7f3c856081b4488421bf4ee3f527f302aa99489670f170d30793f016c7d71191",
+    "docs/reports/ui_design_governance/unit-01/baseline.json": "849ebb5c05ed4a78accbf4302675d286e5586859b162162f3843a122929f41c3",
+    "docs/reports/ui_design_governance/unit-01/connections-v2.json": "d19b4e729b3e5e8a4c0f38eed22f54809bbbf3ce657d2d1329af0cf219f4f9f6",
+    "docs/reports/ui_design_governance/unit-01/connections.json": "15556a83dd3ad5765a350411b2028689fe8fc3391d7a72a91cdeb6ef2bb50860",
+    "docs/reports/ui_design_governance/unit-01/contract.md": "27732c1d9110cb3030e9b41ddb6453756bd5f426955ee1415b43e12f3f69a032",
+    "docs/reports/ui_design_governance/unit-01/preservation.json": "3e928e46f78734df50e7efa21336384adb13f36a81fd942244d0ce136df6cbd3",
+    "docs/reports/ui_design_governance/unit-01/real-smoke-v2.json": "e68d107d0e78f3f25dcd39190a03d50536e106f2d48ba55434b0f1c2ceba24d2",
+    "docs/reports/ui_design_governance/unit-01/real-smoke.json": "8a311622f85fa013c30562fe225fd092717f8d8d817a8facebc0797b80fa88e5",
+    "docs/reports/ui_design_governance/unit-01/source-discovery.md": "bb66983a41207fa6c14a85126374b479b4f034b6f14d25992ba127c254b50cef",
+    "docs/reports/ui_design_governance/unit-01/state-task.diff": "d8364f806b24c22912204f5459dbb712ff6367c10222c3ac70d00f6be737f4bc",
+    "docs/reports/ui_design_governance/unit-01/validation-v2.json": "d1deb91bb8014c59362b04f495ec653625d43129ff3c3533896a2573c0ef55ff",
+    "docs/reports/ui_design_governance/unit-01/validation.json": "a1f80d68bf1eb0696de196daa263f06cf69cad0289d0ace69a83d3130652fd14"
+  },
+  "content_hash": "22652f8bc4a2914fdc5751aa6f732b7114c50e41a671afc4f7974643b6db0de8",
+  "hash_algorithm": "SHA-256(UTF-8(json.dumps(file_hashes, sort_keys=True, separators=(',', ':'))))",
+  "review_envelope_exclusions": [
+    "candidate identity records",
+    "immutable Judge/Governor decision records"
+  ],
+  "status": "frozen_for_independent_review"
+}

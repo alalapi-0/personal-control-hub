@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "reviewer": "/root/refresh_judge_v3",
+  "contract": "HUB-GOV-2026-09-05-TC3",
+  "contract_version": 1,
+  "candidate": "TC3-candidate-v3",
+  "aggregate_sha256": "77f6d8d2d866aa5bb5acf40efc72fff30fbba8c5cd08ba2ea662fe210c370438",
+  "decision": "PASS",
+  "identity_verified": true,
+  "files_verified": 53,
+  "head": "99c0dffc7d446ec17751632ea312220a28a7159e",
+  "verification": {"related_tests": 133, "repository": "PASS", "round_consistency": "PASS", "diff_check": "PASS", "runner_agent_gate": "PASS_WITH_EXISTING_WARNINGS", "bundle_validation": "PASS", "readback_matches": true, "real_ledger_unchanged": true, "real_ledger_sha256": "4c4151df940117550d8c2665c5d35846727ffe1eb72f6e87882173c58f75a131", "requests": 3, "results": 72, "events": 78, "project_projections": 24},
+  "source_dispositions": {"SOURCE_RESOLVED": 20, "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED": 3, "BLOCKED_BY_AUTHORITY": 1},
+  "preserved": ["live authority guards", "source and inventory boundaries", "coherent concurrent history/rebuild", "true corruption detection", "last-success retention", "offline frozen validation", "idempotency", "proposed-only relations", "Manga zero observations"],
+  "ui_verification": "UNVERIFIED",
+  "scope_limitation": "Source layer only; no final UI, visual, desktop/mobile, console/network, connection or Goal acceptance.",
+  "review_mutations": 0,
+  "real_refreshes": 0,
+  "external_project_reads": 0,
+  "git_effects": 0
+}

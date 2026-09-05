@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "governor": "/root/tc4_governor",
+  "candidate": "524e5f34aea22992b7e16aa3c4311f796b57b88f31e1fc42b0f6141e668ed74b",
+  "contract_version": 1,
+  "decision": "APPROVE",
+  "fresh_judge": "/root/tc5_judge",
+  "judge_record": "judge-v1.json",
+  "delivery": "Exact TC5 plus review/state metadata commit/normal tracking-branch push/remote verification, then separate unchanged TC4 commit/push/verification; only then TC6",
+  "limits": "No UI/Figma/Manga/external business effects/final connections/Goal acceptance"
+}

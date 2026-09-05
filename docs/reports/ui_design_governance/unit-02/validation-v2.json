@@ -1,0 +1,298 @@
+{
+  "schema_version": "1.0",
+  "contract_id": "HUB-GOV-2026-09-05-TC2",
+  "candidate_revision": 2,
+  "observed_at": "2026-09-05 05:16:50 UTC",
+  "commands": [
+    {
+      "cmd": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_hub_*.py' -v",
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "59d0ca",
+        "wall_time_seconds": 2.816198875,
+        "exit_code": 0,
+        "original_token_count": 3480,
+        "output": "test_blocked_record_never_expands_or_resolves_its_root (test_hub_connections.HubConnectionTests.test_blocked_record_never_expands_or_resolves_its_root) ... ok\ntest_collection_accepts_complete_manifest_snapshot_evidence_graph (test_hub_connections.HubConnectionTests.test_collection_accepts_complete_manifest_snapshot_evidence_graph) ... ok\ntest_collection_rejects_evidence_snapshot_adapter_version_mismatch (test_hub_connections.HubConnectionTests.test_collection_rejects_evidence_snapshot_adapter_version_mismatch) ... ok\ntest_collection_rejects_evidence_snapshot_hash_mismatch (test_hub_connections.HubConnectionTests.test_collection_rejects_evidence_snapshot_hash_mismatch) ... ok\ntest_collection_rejects_forged_access_profile_and_source_index (test_hub_connections.HubConnectionTests.test_collection_rejects_forged_access_profile_and_source_index) ... ok\ntest_collection_rejects_forged_source_role_and_adapter_hash (test_hub_connections.HubConnectionTests.test_collection_rejects_forged_source_role_and_adapter_hash) ... ok\ntest_collection_rejects_snapshot_manifest_identity_mismatch (test_hub_connections.HubConnectionTests.test_collection_rejects_snapshot_manifest_identity_mismatch) ... ok\ntest_concrete_next_action_cannot_use_unknown_kind (test_hub_connections.HubConnectionTests.test_concrete_next_action_cannot_use_unknown_kind) ... ok\ntest_corrupt_yaml_is_invalid_and_keeps_source_fingerprint (test_hub_connections.HubConnectionTests.test_corrupt_yaml_is_invalid_and_keeps_source_fingerprint) ... ok\ntest_create_only_manifest_preserves_existing_file (test_hub_connections.HubConnectionTests.test_create_only_manifest_preserves_existing_file) ... ok\ntest_env_prefixed_source_is_forbidden (test_hub_connections.HubConnectionTests.test_env_prefixed_source_is_forbidden) ... ok\ntest_file_cannot_serve_as_authorized_project_root (test_hub_connections.HubConnectionTests.test_file_cannot_serve_as_authorized_project_root) ... ok\ntest_fresh_snapshot_has_fingerprint_and_matching_success_time (test_hub_connections.HubConnectionTests.test_fresh_snapshot_has_fingerprint_and_matching_success_time) ... ok\ntest_fresh_snapshot_rejects_blocked_status_and_failure_exit (test_hub_connections.HubConnectionTests.test_fresh_snapshot_rejects_blocked_status_and_failure_exit) ... ok\ntest_fresh_snapshot_requires_matching_success_time_and_no_error (test_hub_connections.HubConnectionTests.test_fresh_snapshot_requires_matching_success_time_and_no_error) ... ok\ntest_invalid_snapshot_cannot_claim_connected_and_verified (test_hub_connections.HubConnectionTests.test_invalid_snapshot_cannot_claim_connected_and_verified) ... ok\ntest_manifest_freezes_all_24_registry_ids_without_roots (test_hub_connections.HubConnectionTests.test_manifest_freezes_all_24_registry_ids_without_roots) ... ok\ntest_manifest_rejects_duplicate_id_even_when_rehashed (test_hub_connections.HubConnectionTests.test_manifest_rejects_duplicate_id_even_when_rehashed) ... ok\ntest_manifest_rejects_omitted_registry_id_even_when_rehashed (test_hub_connections.HubConnectionTests.test_manifest_rejects_omitted_registry_id_even_when_rehashed) ... ok\ntest_manifest_rejects_tampering_without_rehash (test_hub_connections.HubConnectionTests.test_manifest_rejects_tampering_without_rehash) ... ok\ntest_missing_named_source_is_explicit_unknown (test_hub_connections.HubConnectionTests.test_missing_named_source_is_explicit_unknown) ... ok\ntest_named_source_reference_cannot_point_to_etc_passwd (test_hub_connections.HubConnectionTests.test_named_source_reference_cannot_point_to_etc_passwd) ... ok\ntest_nested_records_reject_unknown_fields (test_hub_connections.HubConnectionTests.test_nested_records_reject_unknown_fields) ... ok\ntest_nonfresh_snapshots_cannot_claim_business_state (test_hub_connections.HubConnectionTests.test_nonfresh_snapshots_cannot_claim_business_state) ... ok\ntest_output_outside_task_scope_is_denied (test_hub_connections.HubConnectionTests.test_output_outside_task_scope_is_denied) ... ok\ntest_output_through_symlinked_allowed_directory_is_denied (test_hub_connections.HubConnectionTests.test_output_through_symlinked_allowed_directory_is_denied) ... ok\ntest_registry_drift_invalidates_frozen_manifest (test_hub_connections.HubConnectionTests.test_registry_drift_invalidates_frozen_manifest) ... ok\ntest_rehashed_manifest_cannot_upgrade_no_access_or_forge_source (test_hub_connections.HubConnectionTests.test_rehashed_manifest_cannot_upgrade_no_access_or_forge_source) ... ok\ntest_rehashed_manifest_cannot_upgrade_no_source_or_resolve_root (test_hub_connections.HubConnectionTests.test_rehashed_manifest_cannot_upgrade_no_source_or_resolve_root) ... ok\ntest_safe_yaml_rejects_python_object_tag_without_execution (test_hub_connections.HubConnectionTests.test_safe_yaml_rejects_python_object_tag_without_execution) ... ok\ntest_schema_rejects_missing_field_invalid_enum_and_naive_timestamp (test_hub_connections.HubConnectionTests.test_schema_rejects_missing_field_invalid_enum_and_naive_timestamp) ... ok\ntest_schema_v1_rejects_unintegrated_relation_and_design_refs (test_hub_connections.HubConnectionTests.test_schema_v1_rejects_unintegrated_relation_and_design_refs) ... ok\ntest_scope_and_entry_evidence_must_target_same_registry_project (test_hub_connections.HubConnectionTests.test_scope_and_entry_evidence_must_target_same_registry_project) ... ok\ntest_snapshot_and_evidence_reject_unknown_adapter_version (test_hub_connections.HubConnectionTests.test_snapshot_and_evidence_reject_unknown_adapter_version) ... ok\ntest_source_symlink_cannot_escape_authorized_root (test_hub_connections.HubConnectionTests.test_source_symlink_cannot_escape_authorized_root) ... ok\ntest_unavailable_project_root_is_distinct_from_missing_source (test_hub_connections.HubConnectionTests.test_unavailable_project_root_is_distinct_from_missing_source) ... ok\ntest_unknown_adapter_version_fails_closed (test_hub_connections.HubConnectionTests.test_unknown_adapter_version_fails_closed) ... ok\ntest_unrecognized_status_is_not_falsely_normalized (test_hub_connections.HubConnectionTests.test_unrecognized_status_is_not_falsely_normalized) ... ok\ntest_candidate_or_bound_baseline_drift_rejects_export (test_hub_design_exports.DesignExportTests.test_candidate_or_bound_baseline_drift_rejects_export) ... ok\ntest_current_unselected_candidate_exports_feedback_free_bundle_without_authority (test_hub_design_exports.DesignExportTests.test_current_unselected_candidate_exports_feedback_free_bundle_without_authority) ... ok\ntest_directory_fsync_failure_returns_verified_committed_outcome (test_hub_design_exports.DesignExportTests.test_directory_fsync_failure_returns_verified_committed_outcome) ... ok\ntest_existing_destination_is_never_overwritten (test_hub_design_exports.DesignExportTests.test_existing_destination_is_never_overwritten) ... ok\ntest_fifo_material_is_rejected_without_blocking (test_hub_design_exports.DesignExportTests.test_fifo_material_is_rejected_without_blocking) ... ok\ntest_injected_failure_publishes_nothing_and_cleans_temp (test_hub_design_exports.DesignExportTests.test_injected_failure_publishes_nothing_and_cleans_temp) ... ok\ntest_later_committed_baseline_id_wins_even_with_lower_revision (test_hub_design_exports.DesignExportTests.test_later_committed_baseline_id_wins_even_with_lower_revision) ... ok\ntest_missing_hash_mismatch_scope_and_binding_mismatch_are_explicit (test_hub_design_exports.DesignExportTests.test_missing_hash_mismatch_scope_and_binding_mismatch_are_explicit) ... ok\ntest_mixed_connected_classification_is_rejected (test_hub_design_exports.DesignExportTests.test_mixed_connected_classification_is_rejected) ... ok\ntest_path_traversal_and_output_classification_are_rejected (test_hub_design_exports.DesignExportTests.test_path_traversal_and_output_classification_are_rejected) ... ok\ntest_postpublication_cleanup_failure_does_not_hide_committed_export (test_hub_design_exports.DesignExportTests.test_postpublication_cleanup_failure_does_not_hide_committed_export) ... ok\ntest_postpublication_verification_failure_has_structured_committed_identity (test_hub_design_exports.DesignExportTests.test_postpublication_verification_failure_has_structured_committed_identity) ... ok\ntest_replacing_baseline_material_cannot_preserve_bound_candidate (test_hub_design_exports.DesignExportTests.test_replacing_baseline_material_cannot_preserve_bound_candidate) ... ok\ntest_selected_bundle_contains_verified_material_history_and_offline_figma (test_hub_design_exports.DesignExportTests.test_selected_bundle_contains_verified_material_history_and_offline_figma) ... ok\ntest_symlink_artifact_and_allowed_directory_escape_are_rejected (test_hub_design_exports.DesignExportTests.test_symlink_artifact_and_allowed_directory_escape_are_rejected) ... ok\ntest_two_project_family_exports_through_validated_store_after_restart (test_hub_design_exports.DesignExportTests.test_two_project_family_exports_through_validated_store_after_restart) ... ok\ntest_unbound_same_scope_figma_pointer_is_excluded (test_hub_design_exports.DesignExportTests.test_unbound_same_scope_figma_pointer_is_excluded) ... ok\ntest_artifact_family_scope_classification_boundaries (test_hub_designs.DesignStoreTests.test_artifact_family_scope_classification_boundaries) ... ok\ntest_baseline_material_digest_is_bound_into_candidate_identity (test_hub_designs.DesignStoreTests.test_baseline_material_digest_is_bound_into_candidate_identity) ... ok\ntest_candidate_binds_artifact_digest_scope_and_baseline_pages (test_hub_designs.DesignStoreTests.test_candidate_binds_artifact_digest_scope_and_baseline_pages) ... ok\ntest_cli_and_demo_preserve_uncertain_export_outcome (test_hub_designs.DesignStoreTests.test_cli_and_demo_preserve_uncertain_export_outcome) ... ok\ntest_cli_errors_are_json_nonzero_and_demo_rejects_existing_directory (test_hub_designs.DesignStoreTests.test_cli_errors_are_json_nonzero_and_demo_rejects_existing_directory) ... ok\ntest_closed_loop_restart_stale_reselect_withdraw_preserves_history (test_hub_designs.DesignStoreTests.test_closed_loop_restart_stale_reselect_withdraw_preserves_history) ... ok\ntest_committed_fact_order_not_revision_number_defines_latest_baseline (test_hub_designs.DesignStoreTests.test_committed_fact_order_not_revision_number_defines_latest_baseline) ... ok\ntest_corrupt_store_bad_reference_duplicate_identity_and_hash_change_reject (test_hub_designs.DesignStoreTests.test_corrupt_store_bad_reference_duplicate_identity_and_hash_change_reject) ... ok\ntest_dry_run_fixture_graph_is_isolated_and_mixed_graph_rejects (test_hub_designs.DesignStoreTests.test_dry_run_fixture_graph_is_isolated_and_mixed_graph_rejects) ... ok\ntest_duplicate_behavior_action_and_review_lane_ids_reject (test_hub_designs.DesignStoreTests.test_duplicate_behavior_action_and_review_lane_ids_reject) ... ok\ntest_expected_revision_failure_and_same_identity_different_request (test_hub_designs.DesignStoreTests.test_expected_revision_failure_and_same_identity_different_request) ... ok\ntest_expected_revision_requires_integer_without_mutation (test_hub_designs.DesignStoreTests.test_expected_revision_requires_integer_without_mutation) ... ok\ntest_failure_before_replace_preserves_old_store_and_cleans_temp (test_hub_designs.DesignStoreTests.test_failure_before_replace_preserves_old_store_and_cleans_temp) ... ok\ntest_idempotent_retry_precedes_stale_revision_and_payload_conflict (test_hub_designs.DesignStoreTests.test_idempotent_retry_precedes_stale_revision_and_payload_conflict) ... ok\ntest_initialize_directory_fsync_failure_publishes_one_canonical_initialize (test_hub_designs.DesignStoreTests.test_initialize_directory_fsync_failure_publishes_one_canonical_initialize) ... ok\ntest_later_same_scope_event_must_supersede_current (test_hub_designs.DesignStoreTests.test_later_same_scope_event_must_supersede_current) ... ok\ntest_lock_conflict_uses_persistent_nofollow_lock (test_hub_designs.DesignStoreTests.test_lock_conflict_uses_persistent_nofollow_lock) ... ok\ntest_nonregular_store_and_lock_fail_without_blocking (test_hub_designs.DesignStoreTests.test_nonregular_store_and_lock_fail_without_blocking) ... ok\ntest_post_replace_fsync_failure_is_explicit_committed_and_retry_is_idempotent (test_hub_designs.DesignStoreTests.test_post_replace_fsync_failure_is_explicit_committed_and_retry_is_idempotent) ... ok\ntest_post_replace_verification_failure_reports_committed_identity (test_hub_designs.DesignStoreTests.test_post_replace_verification_failure_reports_committed_identity) ... ok\ntest_real_decision_requires_separate_trusted_reference_and_fixture_never_counts_real (test_hub_designs.DesignStoreTests.test_real_decision_requires_separate_trusted_reference_and_fixture_never_counts_real) ... ok\ntest_real_subprocess_concurrent_writers_have_one_explicit_conflict (test_hub_designs.DesignStoreTests.test_real_subprocess_concurrent_writers_have_one_explicit_conflict) ... ok\ntest_receipts_are_bijective_and_initialize_receipt_is_canonical (test_hub_designs.DesignStoreTests.test_receipts_are_bijective_and_initialize_receipt_is_canonical) ... ok\ntest_reordering_facts_cannot_change_committed_baseline_order (test_hub_designs.DesignStoreTests.test_reordering_facts_cannot_change_committed_baseline_order) ... ok\ntest_store_and_allowed_root_symlink_escapes_reject (test_hub_designs.DesignStoreTests.test_store_and_allowed_root_symlink_escapes_reject) ... ok\ntest_traversal_and_demo_escape_create_no_external_directory (test_hub_designs.DesignStoreTests.test_traversal_and_demo_escape_create_no_external_directory) ... ok\ntest_two_project_family_graph_rebuilds_and_family_revision_drifts (test_hub_designs.DesignStoreTests.test_two_project_family_graph_rebuilds_and_family_revision_drifts) ... ok\ntest_unknown_version_and_extra_nested_field_are_rejected (test_hub_designs.DesignStoreTests.test_unknown_version_and_extra_nested_field_are_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 83 tests in 2.839s\n\nOK\n"
+      }
+    },
+    {
+      "cmd": "python3 scripts/check_repo.py",
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "38fa10",
+        "wall_time_seconds": 0.000001792,
+        "exit_code": 0,
+        "original_token_count": 44,
+        "output": "personal-control-hub skeleton check\nroot: /Users/alalapi/PycharmProjects/personal-control-hub\n\nFiles: OK\nDirectories: OK\nMCP registry: OK\nSecret marker scan: OK\n\nResult: PASS\n"
+      }
+    },
+    {
+      "cmd": "python3 scripts/round_consistency_check.py",
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "e001af",
+        "wall_time_seconds": 0.000002291,
+        "exit_code": 0,
+        "original_token_count": 30,
+        "output": "=== 轮次一致性检查 ===\n结果：ok\n当前轮次：ROUND-1-1\n下一轮次：ROUND-1-5\n警告：0\n硬阻塞：0\n"
+      }
+    },
+    {
+      "cmd": "git diff --check",
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "8250c9",
+        "wall_time_seconds": 0.000003125,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    }
+  ],
+  "earlier_attempts": [
+    {
+      "cmd": "PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python3 -m unittest discover -s tests -p 'test_hub_*.py' -v",
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "574ad8",
+        "wall_time_seconds": 2.88188625,
+        "exit_code": 0,
+        "original_token_count": 3346,
+        "output": "Warning: truncated output (original token count: 3346)\nTotal output lines: 85\n\ntest_blocked_record_never_expands_or_resolves_its_root (test_hub_connections.HubConnectionTests.test_blocked_record_never_expands_or_resolves_its_root) ... ok\ntest_collection_accepts_complete_manifest_snapshot_evidence_graph (test_hub_connections.HubConnectionTests.test_collection_accepts_complete_manifest_snapshot_evidence_graph) ... ok\ntest_collection_rejects_evidence_snapshot_adapter_version_mismatch (test_hub_connections.HubConnectionTests.test_collection_rejects_evidence_snapshot_adapter_version_mismatch) ... ok\ntest_collection_rejects_evidence_snapshot_hash_mismatch (test_hub_connections.HubConnectionTests.test_collection_rejects_evidence_snapshot_hash_mismatch) ... ok\ntest_collection_rejects_forged_access_profile_and_source_index (test_hub_connections.HubConnectionTests.test_collection_rejects_forged_access_profile_and_source_index) ... ok\ntest_collection_rejects_forged_source_role_and_adapter_hash (test_hub_connections.HubConnectionTests.test_collection_rejects_forged_source_role_and_adapter_hash) ... ok\ntest_collection_rejects_snapshot_manifest_identity_mismatch (test_hub_connections.HubConnectionTests.test_collection_rejects_snapshot_manifest_identity_mismatch) ... ok\ntest_concrete_next_action_cannot_use_unknown_kind (test_hub_connections.HubConnectionTests.test_concrete_next_action_cannot_use_unknown_kind) ... ok\ntest_corrupt_yaml_is_invalid_and_keeps_source_fingerprint (test_hub_connections.HubConnectionTests.test_corrupt_yaml_is_invalid_and_keeps_source_fingerprint) ... ok\ntest_create_only_manifest_preserves_existing_file (test_hub_connections.HubConnectionTests.test_create_only_manifest_preserves_existing_file) ... ok\ntest_env_prefixed_source_is_forbidden (test_hub_connections.HubConnectionTests.test_env_prefixed_source_is_forbidden) ... ok\ntest_file_cannot_serve_as_authorized_project_root (test_hub_connections.HubConnectionTests.test_file_cannot_serve_as_authorized_project_root) ... ok\ntest_fresh_snapshot_has_fingerprint_and_matching_success_time (test_hub_connections.HubConnectionTests.test_fresh_snapshot_has_fingerprint_and_matching_success_time) ... ok\ntest_fresh_snapshot_rejects_blocked_status_and_failure_exit (test_hub_connections.HubConnectionTests.test_fresh_snapshot_rejects_blocked_status_and_failure_exit) ... ok\ntest_fresh_snapshot_requires_matching_success_time_and_no_error (test_hub_connections.HubConnectionTests.test_fresh_snapshot_requires_matching_success_time_and_no_error) ... ok\ntest_invalid_snapshot_cannot_claim_connected_and_verified (test_hub_connections.HubConnectionTests.test_invalid_snapshot_cannot_claim_connected_and_verified) ... ok\ntest_manifest_freezes_all_24_registry_ids_without_roots (test_hub_connections.HubConnectionTests.test_manifest_freezes_all_24_registry_ids_without_roots) ... ok\ntest_manifest_rejects_duplicate_id_even_when_rehashed (test_hub_connections.HubConnectionTests.test_manifest_rejects_duplicate_id_even_when_rehashed) ... ok\ntest_manifest_rejects_omitted_registry_id_even_when_rehashed (test_hub_connections.HubConnectionTests.test_manifest_rejects_omitted_registry_id_even_when_rehashed) ... ok\ntest_manifest_rejects_tampering_without_rehash (test_hub_connections.HubConnectionTests.test_manifest_rejects_tampering_without_rehash) ... ok\ntest_missing_named_source_is_explicit_unknown (test_hub_connections.HubConnectionTests.test_missing_named_source_is_explicit_unknown) ... ok\ntest_named_source_reference_cannot_point_to_etc_passwd (test_hub_connections.HubConnectionTests.test_named_source_reference_cannot_point_to_etc_passwd) ... ok\ntest_nested_records_reject_unknown_fields (test_hub_connections.HubConnectionTests.test_nested_records_reject_unknown_fields) ... ok\ntest_nonfresh_snapshots_cannot_claim_business_state (test_hub_connections.HubConnectionTests.test_nonfresh_snapshots_cannot_claim_business_state) ... ok\ntest_output_outside_task_scope_is_denied (test_hub_connections.HubConnectionTests.test_output_outside_task_scope_is_denied) ... ok\ntest_output_through_symlinked_all…1346 tokens truncated…_reselect_withdraw_preserves_history (test_hub_designs.DesignStoreTests.test_closed_loop_restart_stale_reselect_withdraw_preserves_history) ... ok\ntest_committed_fact_order_not_revision_number_defines_latest_baseline (test_hub_designs.DesignStoreTests.test_committed_fact_order_not_revision_number_defines_latest_baseline) ... ok\ntest_corrupt_store_bad_reference_duplicate_identity_and_hash_change_reject (test_hub_designs.DesignStoreTests.test_corrupt_store_bad_reference_duplicate_identity_and_hash_change_reject) ... ok\ntest_dry_run_fixture_graph_is_isolated_and_mixed_graph_rejects (test_hub_designs.DesignStoreTests.test_dry_run_fixture_graph_is_isolated_and_mixed_graph_rejects) ... ok\ntest_duplicate_behavior_action_and_review_lane_ids_reject (test_hub_designs.DesignStoreTests.test_duplicate_behavior_action_and_review_lane_ids_reject) ... ok\ntest_expected_revision_failure_and_same_identity_different_request (test_hub_designs.DesignStoreTests.test_expected_revision_failure_and_same_identity_different_request) ... ok\ntest_expected_revision_requires_integer_without_mutation (test_hub_designs.DesignStoreTests.test_expected_revision_requires_integer_without_mutation) ... ok\ntest_failure_before_replace_preserves_old_store_and_cleans_temp (test_hub_designs.DesignStoreTests.test_failure_before_replace_preserves_old_store_and_cleans_temp) ... ok\ntest_idempotent_retry_precedes_stale_revision_and_payload_conflict (test_hub_designs.DesignStoreTests.test_idempotent_retry_precedes_stale_revision_and_payload_conflict) ... ok\ntest_initialize_directory_fsync_failure_publishes_one_canonical_initialize (test_hub_designs.DesignStoreTests.test_initialize_directory_fsync_failure_publishes_one_canonical_initialize) ... ok\ntest_later_same_scope_event_must_supersede_current (test_hub_designs.DesignStoreTests.test_later_same_scope_event_must_supersede_current) ... ok\ntest_lock_conflict_uses_persistent_nofollow_lock (test_hub_designs.DesignStoreTests.test_lock_conflict_uses_persistent_nofollow_lock) ... ok\ntest_nonregular_store_and_lock_fail_without_blocking (test_hub_designs.DesignStoreTests.test_nonregular_store_and_lock_fail_without_blocking) ... ok\ntest_post_replace_fsync_failure_is_explicit_committed_and_retry_is_idempotent (test_hub_designs.DesignStoreTests.test_post_replace_fsync_failure_is_explicit_committed_and_retry_is_idempotent) ... ok\ntest_post_replace_verification_failure_reports_committed_identity (test_hub_designs.DesignStoreTests.test_post_replace_verification_failure_reports_committed_identity) ... ok\ntest_real_decision_requires_separate_trusted_reference_and_fixture_never_counts_real (test_hub_designs.DesignStoreTests.test_real_decision_requires_separate_trusted_reference_and_fixture_never_counts_real) ... ok\ntest_real_subprocess_concurrent_writers_have_one_explicit_conflict (test_hub_designs.DesignStoreTests.test_real_subprocess_concurrent_writers_have_one_explicit_conflict) ... ok\ntest_receipts_are_bijective_and_initialize_receipt_is_canonical (test_hub_designs.DesignStoreTests.test_receipts_are_bijective_and_initialize_receipt_is_canonical) ... ok\ntest_reordering_facts_cannot_change_committed_baseline_order (test_hub_designs.DesignStoreTests.test_reordering_facts_cannot_change_committed_baseline_order) ... ok\ntest_store_and_allowed_root_symlink_escapes_reject (test_hub_designs.DesignStoreTests.test_store_and_allowed_root_symlink_escapes_reject) ... ok\ntest_traversal_and_demo_escape_create_no_external_directory (test_hub_designs.DesignStoreTests.test_traversal_and_demo_escape_create_no_external_directory) ... ok\ntest_two_project_family_graph_rebuilds_and_family_revision_drifts (test_hub_designs.DesignStoreTests.test_two_project_family_graph_rebuilds_and_family_revision_drifts) ... ok\ntest_unknown_version_and_extra_nested_field_are_rejected (test_hub_designs.DesignStoreTests.test_unknown_version_and_extra_nested_field_are_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 80 tests in 2.894s\n\nOK\n"
+      }
+    },
+    {
+      "cmd": "python3 scripts/check_repo.py",
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "d408cb",
+        "wall_time_seconds": 0.000001875,
+        "exit_code": 0,
+        "original_token_count": 44,
+        "output": "personal-control-hub skeleton check\nroot: /Users/alalapi/PycharmProjects/personal-control-hub\n\nFiles: OK\nDirectories: OK\nMCP registry: OK\nSecret marker scan: OK\n\nResult: PASS\n"
+      }
+    },
+    {
+      "cmd": "python3 scripts/check_round_state_consistency.py",
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "dceb59",
+        "wall_time_seconds": 0.000003375,
+        "exit_code": 2,
+        "original_token_count": 69,
+        "output": "/opt/homebrew/Cellar/python@3.14/3.14.5/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/alalapi/PycharmProjects/personal-control-hub/scripts/check_round_state_consistency.py': [Errno 2] No such file or directory\n"
+      }
+    },
+    {
+      "cmd": "python3 scripts/check_registry.py",
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "9b4580",
+        "wall_time_seconds": 0.000007417,
+        "exit_code": 1,
+        "original_token_count": 70,
+        "output": "=== External Project Registry Check ===\n项目数：24\n已启用：23\n结果：fail\n硬阻塞：2\n警告：0\n\n硬阻塞：\n  - mpv-clip-workbench: 项目内 authority 未进入 watch_paths：docs/40-rounds/ROUND_INDEX.md\n  - mpv-clip-workbench: storage_governance.scope 无效\n"
+      }
+    },
+    {
+      "cmd": "git diff --check",
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "950eb4",
+        "wall_time_seconds": 0.000002417,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    }
+  ],
+  "runtime": {
+    "fixture_proofs": {
+      "fixture-demo": {
+        "reopen_commands": [
+          {
+            "argv": [
+              "/opt/homebrew/opt/python@3.14/bin/python3.14",
+              "scripts/hub_designs.py",
+              "validate",
+              "--fixture",
+              "--store",
+              "docs/reports/ui_design_governance/unit-02/fixture-demo/fixture-store.json"
+            ],
+            "exit_code": 0,
+            "result": {
+              "classification": "synthetic_fixture",
+              "revision": 11,
+              "valid": true
+            }
+          },
+          {
+            "argv": [
+              "/opt/homebrew/opt/python@3.14/bin/python3.14",
+              "scripts/hub_designs.py",
+              "history",
+              "--fixture",
+              "--store",
+              "docs/reports/ui_design_governance/unit-02/fixture-demo/fixture-store.json"
+            ],
+            "exit_code": 0,
+            "result": {
+              "store_revision": 11,
+              "history_count": 4,
+              "real_selection_count": 0
+            }
+          }
+        ],
+        "store_revision": 11,
+        "history_count": 4,
+        "real_selection_count": 0,
+        "queues": {
+          "selected": 0,
+          "changes_requested": 0,
+          "deferred": 0,
+          "withdrawn": 1,
+          "stale": 0
+        },
+        "prefix_rebuild": {
+          "7": {
+            "selected": 1,
+            "changes_requested": 0,
+            "deferred": 0,
+            "withdrawn": 0,
+            "stale": 0
+          },
+          "8": {
+            "selected": 0,
+            "changes_requested": 0,
+            "deferred": 0,
+            "withdrawn": 0,
+            "stale": 1
+          }
+        },
+        "zip_sha256": "5a5791863ca5225a8c89bc35ffb9f6085311ae6c29a2480768f06e57b5f7c3e8",
+        "materials": [
+          {
+            "id": "fixture-baseline-preview",
+            "sha256": "92eae5392854dca32b03faaceb7c4bb22ea6e237d9a7499150d5d1d17df0ac5b",
+            "bytes": 45
+          },
+          {
+            "id": "fixture-candidate-preview",
+            "sha256": "3aa9c15b088717a0ebd7dd4797c3f4c852a1adfbf8ac18d41daee8c5cfc7c45f",
+            "bytes": 46
+          }
+        ],
+        "bound_baseline_count": 1,
+        "exported_event_count": 2
+      },
+      "fixture-demo-v2": {
+        "reopen_commands": [
+          {
+            "argv": [
+              "/opt/homebrew/opt/python@3.14/bin/python3.14",
+              "scripts/hub_designs.py",
+              "validate",
+              "--fixture",
+              "--store",
+              "docs/reports/ui_design_governance/unit-02/fixture-demo-v2/fixture-store.json"
+            ],
+            "exit_code": 0,
+            "result": {
+              "classification": "synthetic_fixture",
+              "revision": 11,
+              "valid": true
+            }
+          },
+          {
+            "argv": [
+              "/opt/homebrew/opt/python@3.14/bin/python3.14",
+              "scripts/hub_designs.py",
+              "history",
+              "--fixture",
+              "--store",
+              "docs/reports/ui_design_governance/unit-02/fixture-demo-v2/fixture-store.json"
+            ],
+            "exit_code": 0,
+            "result": {
+              "store_revision": 11,
+              "history_count": 4,
+              "real_selection_count": 0
+            }
+          }
+        ],
+        "store_revision": 11,
+        "history_count": 4,
+        "real_selection_count": 0,
+        "queues": {
+          "selected": 0,
+          "changes_requested": 0,
+          "deferred": 0,
+          "withdrawn": 1,
+          "stale": 0
+        },
+        "prefix_rebuild": {
+          "7": {
+            "selected": 1,
+            "changes_requested": 0,
+            "deferred": 0,
+            "withdrawn": 0,
+            "stale": 0
+          },
+          "8": {
+            "selected": 0,
+            "changes_requested": 0,
+            "deferred": 0,
+            "withdrawn": 0,
+            "stale": 1
+          }
+        },
+        "zip_sha256": "9399ffd287ab68a40ba6c5b1a2cd5fffd6d2e45c1bc25c211ab1914a953fcca4",
+        "materials": [
+          {
+            "id": "fixture-baseline-preview",
+            "sha256": "92eae5392854dca32b03faaceb7c4bb22ea6e237d9a7499150d5d1d17df0ac5b",
+            "bytes": 45
+          },
+          {
+            "id": "fixture-candidate-preview",
+            "sha256": "3aa9c15b088717a0ebd7dd4797c3f4c852a1adfbf8ac18d41daee8c5cfc7c45f",
+            "bytes": 46
+          }
+        ],
+        "bound_baseline_count": 1,
+        "exported_event_count": 2
+      }
+    },
+    "preservation": {
+      "protected_unchanged": 53,
+      "unexpected_changes": [],
+      "state_other_fields_unchanged": true,
+      "bootstrap_bytes": 7992
+    }
+  },
+  "demo_creation": {
+    "cmd": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/hub_designs.py demo --output-dir docs/reports/ui_design_governance/unit-02/fixture-demo-v2",
+    "exit_code": 0
+  },
+  "repair_review_lineage": {
+    "candidate": "candidate-v1.json",
+    "judge": "judge-v1.json",
+    "governor": "governor-v1.json"
+  },
+  "material_catalog_correction": {
+    "v1_omitted_existing_file": "docs/reports/ui_design_governance/unit-02/fixture-demo/candidate-preview.txt",
+    "v2_action": "Include both complete fixture output trees and independently verify every bundled material hash."
+  },
+  "limits": [
+    "All design decisions synthetic; no user choice or implementation authority.",
+    "No Figma/UI/full-connection/Goal acceptance.",
+    "No external project writes or Git effects.",
+    "Two pre-existing registry validation failures retained; incorrect consistency command invocation corrected to existing round_consistency_check.py."
+  ],
+  "root_integration": [
+    "Bound fact/event ordering to immutable request receipts.",
+    "Candidate/family latest=max revision within same ID; baseline latest=committed project/page observation.",
+    "CLI and demo preserve postpublication export outcomes with exit3.",
+    "Postpublication verification and cleanup failure regression tests."
+  ]
+}

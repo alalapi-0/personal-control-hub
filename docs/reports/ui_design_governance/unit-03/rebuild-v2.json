@@ -1,0 +1,558 @@
+{
+  "schema_version": "1.0",
+  "head": {
+    "sequence": 78,
+    "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8"
+  },
+  "authority_drift": false,
+  "projects": {
+    "ai-anime-short-factory": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 54,
+        "result_ref": "refresh-result:tc3-real-all-03:ai-anime-short-factory:6576822d743099472473c5dcc407b070a57f9d5261fddde19e2264275fbdcad7",
+        "result_hash": "6576822d743099472473c5dcc407b070a57f9d5261fddde19e2264275fbdcad7",
+        "observed_at": "2026-09-05T06:14:37+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 54,
+        "result_ref": "refresh-result:tc3-real-all-03:ai-anime-short-factory:6576822d743099472473c5dcc407b070a57f9d5261fddde19e2264275fbdcad7",
+        "result_hash": "6576822d743099472473c5dcc407b070a57f9d5261fddde19e2264275fbdcad7",
+        "observed_at": "2026-09-05T06:14:37+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "ai-music-foundry": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 55,
+        "result_ref": "refresh-result:tc3-real-all-03:ai-music-foundry:f22c78986adb80aeb013c3c491b238abe926fa7efa746742067e8f4946c34686",
+        "result_hash": "f22c78986adb80aeb013c3c491b238abe926fa7efa746742067e8f4946c34686",
+        "observed_at": "2026-09-05T06:14:37+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 55,
+        "result_ref": "refresh-result:tc3-real-all-03:ai-music-foundry:f22c78986adb80aeb013c3c491b238abe926fa7efa746742067e8f4946c34686",
+        "result_hash": "f22c78986adb80aeb013c3c491b238abe926fa7efa746742067e8f4946c34686",
+        "observed_at": "2026-09-05T06:14:37+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "audio-clone": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 56,
+        "result_ref": "refresh-result:tc3-real-all-03:audio-clone:be0e29b8c4addce1bd7e281e245db53f6daeea1ee26e5c9848bf954eee75e99f",
+        "result_hash": "be0e29b8c4addce1bd7e281e245db53f6daeea1ee26e5c9848bf954eee75e99f",
+        "observed_at": "2026-09-05T06:14:38+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 56,
+        "result_ref": "refresh-result:tc3-real-all-03:audio-clone:be0e29b8c4addce1bd7e281e245db53f6daeea1ee26e5c9848bf954eee75e99f",
+        "result_hash": "be0e29b8c4addce1bd7e281e245db53f6daeea1ee26e5c9848bf954eee75e99f",
+        "observed_at": "2026-09-05T06:14:38+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "cognitive-asset-library": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 57,
+        "result_ref": "refresh-result:tc3-real-all-03:cognitive-asset-library:a8b5021812b0a2d36704c6a5d892b8b92b199fbc35161d35d5b14f1ea4586464",
+        "result_hash": "a8b5021812b0a2d36704c6a5d892b8b92b199fbc35161d35d5b14f1ea4586464",
+        "observed_at": "2026-09-05T06:14:38+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 57,
+        "result_ref": "refresh-result:tc3-real-all-03:cognitive-asset-library:a8b5021812b0a2d36704c6a5d892b8b92b199fbc35161d35d5b14f1ea4586464",
+        "result_hash": "a8b5021812b0a2d36704c6a5d892b8b92b199fbc35161d35d5b14f1ea4586464",
+        "observed_at": "2026-09-05T06:14:38+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "computer-study-plan": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 58,
+        "result_ref": "refresh-result:tc3-real-all-03:computer-study-plan:97ec379bde5788f69eb6fe3c26e120222fb9d783ad326532f6a6c65d34154d02",
+        "result_hash": "97ec379bde5788f69eb6fe3c26e120222fb9d783ad326532f6a6c65d34154d02",
+        "observed_at": "2026-09-05T06:14:38+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 58,
+        "result_ref": "refresh-result:tc3-real-all-03:computer-study-plan:97ec379bde5788f69eb6fe3c26e120222fb9d783ad326532f6a6c65d34154d02",
+        "result_hash": "97ec379bde5788f69eb6fe3c26e120222fb9d783ad326532f6a6c65d34154d02",
+        "observed_at": "2026-09-05T06:14:38+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "desktop-downloads-scripts": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 59,
+        "result_ref": "refresh-result:tc3-real-all-03:desktop-downloads-scripts:fcc87febef84a69c711b7bf22b1103ee8d26129b77ec6b9876f28c651f7b2d7a",
+        "result_hash": "fcc87febef84a69c711b7bf22b1103ee8d26129b77ec6b9876f28c651f7b2d7a",
+        "observed_at": "2026-09-05T06:14:38+00:00",
+        "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 59,
+        "result_ref": "refresh-result:tc3-real-all-03:desktop-downloads-scripts:fcc87febef84a69c711b7bf22b1103ee8d26129b77ec6b9876f28c651f7b2d7a",
+        "result_hash": "fcc87febef84a69c711b7bf22b1103ee8d26129b77ec6b9876f28c651f7b2d7a",
+        "observed_at": "2026-09-05T06:14:38+00:00",
+        "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "desktop-jav-tools": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 60,
+        "result_ref": "refresh-result:tc3-real-all-03:desktop-jav-tools:4b3071bb7526480509a4b95546fbcd0e68e47c99cf516748595dacdc9277bdc1",
+        "result_hash": "4b3071bb7526480509a4b95546fbcd0e68e47c99cf516748595dacdc9277bdc1",
+        "observed_at": "2026-09-05T06:14:39+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 60,
+        "result_ref": "refresh-result:tc3-real-all-03:desktop-jav-tools:4b3071bb7526480509a4b95546fbcd0e68e47c99cf516748595dacdc9277bdc1",
+        "result_hash": "4b3071bb7526480509a4b95546fbcd0e68e47c99cf516748595dacdc9277bdc1",
+        "observed_at": "2026-09-05T06:14:39+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "desktop-magnet": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 61,
+        "result_ref": "refresh-result:tc3-real-all-03:desktop-magnet:2fbab5fd65f9929828793b19cc4969937871938bbe6459f7d26d7f33893d56b5",
+        "result_hash": "2fbab5fd65f9929828793b19cc4969937871938bbe6459f7d26d7f33893d56b5",
+        "observed_at": "2026-09-05T06:14:39+00:00",
+        "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 61,
+        "result_ref": "refresh-result:tc3-real-all-03:desktop-magnet:2fbab5fd65f9929828793b19cc4969937871938bbe6459f7d26d7f33893d56b5",
+        "result_hash": "2fbab5fd65f9929828793b19cc4969937871938bbe6459f7d26d7f33893d56b5",
+        "observed_at": "2026-09-05T06:14:39+00:00",
+        "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "desktop-tool": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 62,
+        "result_ref": "refresh-result:tc3-real-all-03:desktop-tool:4c33d08bbdf9a1584c92ba248a75378b9fa7b0232e809aeb2edd4811264e7248",
+        "result_hash": "4c33d08bbdf9a1584c92ba248a75378b9fa7b0232e809aeb2edd4811264e7248",
+        "observed_at": "2026-09-05T06:14:39+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 62,
+        "result_ref": "refresh-result:tc3-real-all-03:desktop-tool:4c33d08bbdf9a1584c92ba248a75378b9fa7b0232e809aeb2edd4811264e7248",
+        "result_hash": "4c33d08bbdf9a1584c92ba248a75378b9fa7b0232e809aeb2edd4811264e7248",
+        "observed_at": "2026-09-05T06:14:39+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "light-novel": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 63,
+        "result_ref": "refresh-result:tc3-real-all-03:light-novel:870d4ec37246d9ed76b7922b18f980288d95e953026cbd0c7749a41a69ea4252",
+        "result_hash": "870d4ec37246d9ed76b7922b18f980288d95e953026cbd0c7749a41a69ea4252",
+        "observed_at": "2026-09-05T06:14:39+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 63,
+        "result_ref": "refresh-result:tc3-real-all-03:light-novel:870d4ec37246d9ed76b7922b18f980288d95e953026cbd0c7749a41a69ea4252",
+        "result_hash": "870d4ec37246d9ed76b7922b18f980288d95e953026cbd0c7749a41a69ea4252",
+        "observed_at": "2026-09-05T06:14:39+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "manga-localizer": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 64,
+        "result_ref": "refresh-result:tc3-real-all-03:manga-localizer:14863468fef7a35e5d623acb40f50a3ad915ccc3284687c31d85a56c62745de4",
+        "result_hash": "14863468fef7a35e5d623acb40f50a3ad915ccc3284687c31d85a56c62745de4",
+        "observed_at": "2026-09-05T06:14:40+00:00",
+        "disposition": "BLOCKED_BY_AUTHORITY",
+        "success": false
+      },
+      "last_success": null,
+      "freshness": "unknown",
+      "stale_reason": "no successful source result has been recorded",
+      "authority_drift": false
+    },
+    "mpv-clip-workbench": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 65,
+        "result_ref": "refresh-result:tc3-real-all-03:mpv-clip-workbench:93a68ce2a50d5c90b67d024310ca11c7fe0530f7422e6537be83facc4447a119",
+        "result_hash": "93a68ce2a50d5c90b67d024310ca11c7fe0530f7422e6537be83facc4447a119",
+        "observed_at": "2026-09-05T06:14:40+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 65,
+        "result_ref": "refresh-result:tc3-real-all-03:mpv-clip-workbench:93a68ce2a50d5c90b67d024310ca11c7fe0530f7422e6537be83facc4447a119",
+        "result_hash": "93a68ce2a50d5c90b67d024310ca11c7fe0530f7422e6537be83facc4447a119",
+        "observed_at": "2026-09-05T06:14:40+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "novel-continuation-agent": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 66,
+        "result_ref": "refresh-result:tc3-real-all-03:novel-continuation-agent:80782f6981d10f27f117cb896144d3dc6f097eaf57a871f30d4e211e1ec54e11",
+        "result_hash": "80782f6981d10f27f117cb896144d3dc6f097eaf57a871f30d4e211e1ec54e11",
+        "observed_at": "2026-09-05T06:14:41+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 66,
+        "result_ref": "refresh-result:tc3-real-all-03:novel-continuation-agent:80782f6981d10f27f117cb896144d3dc6f097eaf57a871f30d4e211e1ec54e11",
+        "result_hash": "80782f6981d10f27f117cb896144d3dc6f097eaf57a871f30d4e211e1ec54e11",
+        "observed_at": "2026-09-05T06:14:41+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "personal-control-hub": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 67,
+        "result_ref": "refresh-result:tc3-real-all-03:personal-control-hub:0dd860dbf0abd429460a9845ceb4f7f271875ee9ce7acc92c2587bb1e71995d3",
+        "result_hash": "0dd860dbf0abd429460a9845ceb4f7f271875ee9ce7acc92c2587bb1e71995d3",
+        "observed_at": "2026-09-05T06:14:41+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 67,
+        "result_ref": "refresh-result:tc3-real-all-03:personal-control-hub:0dd860dbf0abd429460a9845ceb4f7f271875ee9ce7acc92c2587bb1e71995d3",
+        "result_hash": "0dd860dbf0abd429460a9845ceb4f7f271875ee9ce7acc92c2587bb1e71995d3",
+        "observed_at": "2026-09-05T06:14:41+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "pixel-world-asset-forge": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 68,
+        "result_ref": "refresh-result:tc3-real-all-03:pixel-world-asset-forge:843f271354f4979203b415e4130e981e1c2da9c13117114c2f0bda378d567fad",
+        "result_hash": "843f271354f4979203b415e4130e981e1c2da9c13117114c2f0bda378d567fad",
+        "observed_at": "2026-09-05T06:14:41+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 68,
+        "result_ref": "refresh-result:tc3-real-all-03:pixel-world-asset-forge:843f271354f4979203b415e4130e981e1c2da9c13117114c2f0bda378d567fad",
+        "result_hash": "843f271354f4979203b415e4130e981e1c2da9c13117114c2f0bda378d567fad",
+        "observed_at": "2026-09-05T06:14:41+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "pycharm-agent-workspace": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 69,
+        "result_ref": "refresh-result:tc3-real-all-03:pycharm-agent-workspace:c1639e04403f9d129dce92ef31c0b78dbda9675d9d2644edd550b410d1d7c694",
+        "result_hash": "c1639e04403f9d129dce92ef31c0b78dbda9675d9d2644edd550b410d1d7c694",
+        "observed_at": "2026-09-05T06:14:41+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 69,
+        "result_ref": "refresh-result:tc3-real-all-03:pycharm-agent-workspace:c1639e04403f9d129dce92ef31c0b78dbda9675d9d2644edd550b410d1d7c694",
+        "result_hash": "c1639e04403f9d129dce92ef31c0b78dbda9675d9d2644edd550b410d1d7c694",
+        "observed_at": "2026-09-05T06:14:41+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "pycharm-misc-project": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 70,
+        "result_ref": "refresh-result:tc3-real-all-03:pycharm-misc-project:6eef6fd8319ad40382a619d60d6b0ce6c8558cec2ecbc95bac8eed977d272cf0",
+        "result_hash": "6eef6fd8319ad40382a619d60d6b0ce6c8558cec2ecbc95bac8eed977d272cf0",
+        "observed_at": "2026-09-05T06:14:42+00:00",
+        "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 70,
+        "result_ref": "refresh-result:tc3-real-all-03:pycharm-misc-project:6eef6fd8319ad40382a619d60d6b0ce6c8558cec2ecbc95bac8eed977d272cf0",
+        "result_hash": "6eef6fd8319ad40382a619d60d6b0ce6c8558cec2ecbc95bac8eed977d272cf0",
+        "observed_at": "2026-09-05T06:14:42+00:00",
+        "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "resilient-personal-network": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 71,
+        "result_ref": "refresh-result:tc3-real-all-03:resilient-personal-network:32e534b809ee95050427451729539b7c7dfc66bc1960b12bcf398404dc655c31",
+        "result_hash": "32e534b809ee95050427451729539b7c7dfc66bc1960b12bcf398404dc655c31",
+        "observed_at": "2026-09-05T06:14:42+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 71,
+        "result_ref": "refresh-result:tc3-real-all-03:resilient-personal-network:32e534b809ee95050427451729539b7c7dfc66bc1960b12bcf398404dc655c31",
+        "result_hash": "32e534b809ee95050427451729539b7c7dfc66bc1960b12bcf398404dc655c31",
+        "observed_at": "2026-09-05T06:14:42+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "storage_governance": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 72,
+        "result_ref": "refresh-result:tc3-real-all-03:storage_governance:c4064f8f35f5f0c9863264477bf6be1cff5bca47e7900e8edec402c1ff395dfb",
+        "result_hash": "c4064f8f35f5f0c9863264477bf6be1cff5bca47e7900e8edec402c1ff395dfb",
+        "observed_at": "2026-09-05T06:14:42+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 72,
+        "result_ref": "refresh-result:tc3-real-all-03:storage_governance:c4064f8f35f5f0c9863264477bf6be1cff5bca47e7900e8edec402c1ff395dfb",
+        "result_hash": "c4064f8f35f5f0c9863264477bf6be1cff5bca47e7900e8edec402c1ff395dfb",
+        "observed_at": "2026-09-05T06:14:42+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "story-faceless-utopia": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 73,
+        "result_ref": "refresh-result:tc3-real-all-03:story-faceless-utopia:dfee5c761ff558da4cec4daa1dbd08ebecd4484fed5035dcba8deee3ac5d3f69",
+        "result_hash": "dfee5c761ff558da4cec4daa1dbd08ebecd4484fed5035dcba8deee3ac5d3f69",
+        "observed_at": "2026-09-05T06:14:43+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 73,
+        "result_ref": "refresh-result:tc3-real-all-03:story-faceless-utopia:dfee5c761ff558da4cec4daa1dbd08ebecd4484fed5035dcba8deee3ac5d3f69",
+        "result_hash": "dfee5c761ff558da4cec4daa1dbd08ebecd4484fed5035dcba8deee3ac5d3f69",
+        "observed_at": "2026-09-05T06:14:43+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "universal-player": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 74,
+        "result_ref": "refresh-result:tc3-real-all-03:universal-player:ca576450943aae1dd503d7b40ff296509e2f82c1499b4eadcdbde83393ad7b97",
+        "result_hash": "ca576450943aae1dd503d7b40ff296509e2f82c1499b4eadcdbde83393ad7b97",
+        "observed_at": "2026-09-05T06:14:43+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 74,
+        "result_ref": "refresh-result:tc3-real-all-03:universal-player:ca576450943aae1dd503d7b40ff296509e2f82c1499b4eadcdbde83393ad7b97",
+        "result_hash": "ca576450943aae1dd503d7b40ff296509e2f82c1499b4eadcdbde83393ad7b97",
+        "observed_at": "2026-09-05T06:14:43+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "wechat-article-scheduler": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 75,
+        "result_ref": "refresh-result:tc3-real-all-03:wechat-article-scheduler:6a413afdb264dae9ab49114840dd6640efde368117e1ba4d038683ecdde2f052",
+        "result_hash": "6a413afdb264dae9ab49114840dd6640efde368117e1ba4d038683ecdde2f052",
+        "observed_at": "2026-09-05T06:14:43+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 75,
+        "result_ref": "refresh-result:tc3-real-all-03:wechat-article-scheduler:6a413afdb264dae9ab49114840dd6640efde368117e1ba4d038683ecdde2f052",
+        "result_hash": "6a413afdb264dae9ab49114840dd6640efde368117e1ba4d038683ecdde2f052",
+        "observed_at": "2026-09-05T06:14:43+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "youtube-hq-downloader": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 76,
+        "result_ref": "refresh-result:tc3-real-all-03:youtube-hq-downloader:b0eeb61f1e41779b403ba59412efbf21c3506f3c8a4df59389c24173496ebf81",
+        "result_hash": "b0eeb61f1e41779b403ba59412efbf21c3506f3c8a4df59389c24173496ebf81",
+        "observed_at": "2026-09-05T06:14:43+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 76,
+        "result_ref": "refresh-result:tc3-real-all-03:youtube-hq-downloader:b0eeb61f1e41779b403ba59412efbf21c3506f3c8a4df59389c24173496ebf81",
+        "result_hash": "b0eeb61f1e41779b403ba59412efbf21c3506f3c8a4df59389c24173496ebf81",
+        "observed_at": "2026-09-05T06:14:43+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    },
+    "zarathustra-adaptation": {
+      "latest_attempt": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 77,
+        "result_ref": "refresh-result:tc3-real-all-03:zarathustra-adaptation:daaff39cee92e44c00e50923182141aecffe1cac97894f55564033cfa75b6a3c",
+        "result_hash": "daaff39cee92e44c00e50923182141aecffe1cac97894f55564033cfa75b6a3c",
+        "observed_at": "2026-09-05T06:14:44+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "last_success": {
+        "request_id": "tc3-real-all-03",
+        "event_sequence": 77,
+        "result_ref": "refresh-result:tc3-real-all-03:zarathustra-adaptation:daaff39cee92e44c00e50923182141aecffe1cac97894f55564033cfa75b6a3c",
+        "result_hash": "daaff39cee92e44c00e50923182141aecffe1cac97894f55564033cfa75b6a3c",
+        "observed_at": "2026-09-05T06:14:44+00:00",
+        "disposition": "SOURCE_RESOLVED",
+        "success": true
+      },
+      "freshness": "fresh",
+      "stale_reason": null,
+      "authority_drift": false
+    }
+  },
+  "current_authority": {
+    "state": "matched",
+    "changed_fields": []
+  }
+}

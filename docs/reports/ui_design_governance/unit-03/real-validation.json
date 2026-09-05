@@ -1,0 +1,302 @@
+{
+  "schema_version": "1.0",
+  "commands": [
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/hub_refresh.py",
+        "refresh",
+        "--request-id",
+        "tc3-real-all-01"
+      ],
+      "exit_code": 2,
+      "stderr": "",
+      "output": "docs/reports/ui_design_governance/unit-03/refresh-01.json"
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/hub_refresh.py",
+        "refresh",
+        "--request-id",
+        "tc3-real-all-02"
+      ],
+      "exit_code": 2,
+      "stderr": "",
+      "output": "docs/reports/ui_design_governance/unit-03/refresh-02.json"
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/hub_refresh.py",
+        "refresh",
+        "--request-id",
+        "tc3-real-all-02"
+      ],
+      "exit_code": 2,
+      "stderr": "",
+      "output": "docs/reports/ui_design_governance/unit-03/refresh-retry.json"
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/hub_refresh.py",
+        "history"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "output": "docs/reports/ui_design_governance/unit-03/history.json"
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/hub_refresh.py",
+        "rebuild"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "output": "docs/reports/ui_design_governance/unit-03/rebuild.json"
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/hub_refresh.py",
+        "relations"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "output": "docs/reports/ui_design_governance/unit-03/relations.json"
+    }
+  ],
+  "project_count": 24,
+  "source_dispositions": {
+    "BLOCKED_BY_AUTHORITY": 1,
+    "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED": 3,
+    "SOURCE_RESOLVED": 20
+  },
+  "requests": 2,
+  "immutable_events": 52,
+  "results": 48,
+  "retry_added_results": 0,
+  "offline_rebuild_matches": true,
+  "ui_verification": "UNVERIFIED",
+  "external_writes": 0,
+  "external_program_execution": 0,
+  "manga_access": "blocked before path resolution",
+  "relations_proposed": 2,
+  "ledger_sha256": "a7711df5cb5eb7d81965fa392dd1db00f567748047d3824ceb787870e36fdeed",
+  "per_project": [
+    {
+      "project_id": "ai-anime-short-factory",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "ai-music-foundry",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "audio-clone",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "cognitive-asset-library",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "computer-study-plan",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "desktop-downloads-scripts",
+      "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+      "business_state_kind": "unknown",
+      "source_refs": [],
+      "error_codes": []
+    },
+    {
+      "project_id": "desktop-jav-tools",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "desktop-magnet",
+      "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+      "business_state_kind": "unknown",
+      "source_refs": [],
+      "error_codes": []
+    },
+    {
+      "project_id": "desktop-tool",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "light-novel",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "unknown",
+      "source_refs": [
+        "current_state_paths[0]",
+        "derived:scheduler_tick",
+        "derived:scheduler_pause"
+      ],
+      "error_codes": [
+        "SOURCE_INVALID"
+      ]
+    },
+    {
+      "project_id": "manga-localizer",
+      "disposition": "BLOCKED_BY_AUTHORITY",
+      "business_state_kind": "unknown",
+      "source_refs": [],
+      "error_codes": []
+    },
+    {
+      "project_id": "mpv-clip-workbench",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "novel-continuation-agent",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "personal-control-hub",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "pixel-world-asset-forge",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "pycharm-agent-workspace",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "pycharm-misc-project",
+      "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+      "business_state_kind": "unknown",
+      "source_refs": [],
+      "error_codes": []
+    },
+    {
+      "project_id": "resilient-personal-network",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "storage_governance",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "story-faceless-utopia",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "universal-player",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "wechat-article-scheduler",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "youtube-hq-downloader",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    },
+    {
+      "project_id": "zarathustra-adaptation",
+      "disposition": "SOURCE_RESOLVED",
+      "business_state_kind": "v1_snapshot",
+      "source_refs": [
+        "current_state_paths[0]"
+      ],
+      "error_codes": []
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "hub-foundation-governor-v2",
+  "contract_id": "HUB-GOV-2026-09-05-TC1",
+  "candidate_id": "hub-foundation-candidate-v2",
+  "governor": "/root/hub_contract",
+  "decision": "REQUEST_REPAIR",
+  "authority": "Fresh Judge FAIL on exact candidate",
+  "contract_revision_required": false,
+  "required_repair": [
+    "Exact nested fields",
+    "Complete snapshot truth matrix",
+    "Evidence references target canonical same-project registry entry",
+    "Bind adapter identity, source role and named source semantics to adapter authority",
+    "Add negative tests, preserve lineage and freeze v3 for fresh Judge"
+  ]
+}

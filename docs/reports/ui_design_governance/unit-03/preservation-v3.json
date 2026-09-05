@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "non_state_preimages_unchanged": 82,
+  "protected_files_unchanged": 77,
+  "protected_state_outside_current_work_unchanged": true,
+  "bootstrap_bytes": 7969,
+  "active_workers": 0,
+  "git_effects": 0,
+  "external_writes": 0
+}

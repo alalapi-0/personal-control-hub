@@ -15,7 +15,9 @@
 
 ## 当前受管项目
 
-首个登记项目是 `StorageGovernance`。本仓库只保存便携路径和权威文件指针；存储治理的唯一规范仍在其项目目录内，本仓库不会复制规范内容，也不会从这里写入业务仓库。
+项目注册表保存 24 条已冻结身份记录：21 个普通受管项目、`manga-localizer` 已完成排除记录，以及永久留内盘的 `personal-control-hub` 和 `StorageGovernance` 控制面。注册表只保存身份、路径和稳定边界；普通项目的动态 disposition、effect authority 与唯一下一项只在外部 `~/Documents/StorageGovernance/STATE.yaml`。
+
+Hub 不从注册表获得业务项目写权限。当前建设范围、设计选择与管理材料归并规则见 [执行规范](docs/design/ui_governance_execution.md)；Hub 成品尚未完成，实际进度只看 `STATE.yaml`。原始存储执行状态仍在上述入口，后续归并另行完成权威切换。
 
 ## Git 版本控制
 
@@ -24,6 +26,8 @@
 在当前或已记录的所有者授权有效时，每个 accepted 子项目里程碑或治理轮形成一个作用域明确的 commit，并正常 push 当前跟踪分支。runner 永远只做检查；禁止自动合并 `main`、强推、改远端、提交秘密或把多个无关项目混入同一提交。
 
 ## 验证
+
+首次从 Git 检出后运行 `python3 scripts/bootstrap.py`，创建 Git 不保存的空目录；它不会覆盖已有文件。随后运行相关检查：
 
 ```bash
 python3 scripts/check_repo.py

@@ -1,0 +1,14 @@
+{
+  "reviewer": "/root/design_records_judge_v3",
+  "role": "fresh_read_only_judge",
+  "contract_id": "HUB-GOV-2026-09-05-TC2",
+  "contract_version": 1,
+  "candidate_id": "hub-design-records-candidate-v3",
+  "candidate_hash": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+  "decision": "PASS",
+  "identity_verification": "27/27 file hashes and aggregate independently matched",
+  "independent_reproduction": "Temporary synthetic Hub rejects unsorted pages/members in artifact, candidate, family and event scopes before persistence with unchanged bytes. Same canonical scope across candidate IDs rejects missing supersedes; correct lineage yields exactly one effective selection.",
+  "passing_evidence": {"hub_tests": 85, "repository": "PASS", "round_consistency": "PASS", "diff_check": "PASS", "protected_files_unchanged": 53, "state_only_allowed_fields": true, "bootstrap_bytes": 7992, "head": "99c0dffc7d446ec17751632ea312220a28a7159e", "both_fixtures": "revision 11; four synthetic events; zero real selections; valid ZIPs; two verified materials each; no implementation authority"},
+  "baseline_failure": "Two unchanged registry errors reproduced.",
+  "review_limits": "No candidate, Git, Figma, external-project or persistent evidence writes. No UI/full-connection/Goal acceptance claim."
+}

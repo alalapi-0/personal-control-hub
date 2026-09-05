@@ -100,6 +100,10 @@ file_roles:
       role: active_program_registry
     data/programs/program_project_links.yaml:
       role: program_project_link_proposals_and_confirmed_links
+    data/programs/storage_governance_goal.yaml:
+      role: storage_governance_stable_goal_parameters
+      authority: high
+      update_policy: "路径、外盘身份、所有者优先级、保护边界、验证或完成合同变化时更新；不得写当前进度或 next action。"
     data/tasks/next_actions.yaml:
       role: next_action_catalog
     data/scheduler/scheduled_tasks.yaml:
@@ -155,6 +159,10 @@ file_roles:
     prompts/auto_advance_agent_prompt.md:
       role: auto_advance_agent_prompt
       authority: high
+    prompts/storage_governance_goal_mode.md:
+      role: sole_storage_governance_goal_activation_prompt
+      authority: high
+      update_policy: "目标、授权边界、优先级、每轮读取入口或完成条件持久变化时更新。"
   scripts:
     scripts/agent_gate.py:
       role: local_readonly_auto_advance_gate

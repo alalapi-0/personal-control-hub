@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "reviewer": "/root/refresh_judge_v2",
+  "contract": "HUB-GOV-2026-09-05-TC3",
+  "candidate": "TC3-candidate-v2",
+  "aggregate_sha256": "3161b6e7166a924d4cf34a6d830309a1184cac121d8364e2ff439e2ad43cd250",
+  "decision": "FAIL",
+  "identity_verified": true,
+  "blocking_findings": [
+    {
+      "criterion": 8,
+      "location": "src/hub/connection_refresh.py:653",
+      "problem": "history() spans multiple SQLite snapshots because it does not start a read transaction; a normal concurrent commit can be misreported as LEDGER_CORRUPT.",
+      "reproduction": "Temporary ledger has one request. Reader fetches old event rows, another connection commits a valid second request, reader resumes and reports ledger head does not match immutable events. Immediate stable read returns healthy two requests/two events.",
+      "required_repair": "Pin one read transaction through schema/events/requests/results/per-request completions/final head; test both history and rebuild under deterministic concurrent commit. Return a coherent snapshot or explicit retryable concurrency error, never false corruption."
+    }
+  ],
+  "passed_checks": {"tests": 131, "repository": "PASS", "round_consistency": "PASS", "diff_check": "PASS", "runner_gate": "PASS_WITH_EXISTING_WARNINGS", "source_authority_repair": "PASS", "real_ledger_unchanged": true, "real_requests": 3, "real_events": 78, "real_results": 72, "each_request_dispositions": {"SOURCE_RESOLVED": 20, "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED": 3, "BLOCKED_BY_AUTHORITY": 1}, "ui_verification": "UNVERIFIED"},
+  "review_mutations": 0,
+  "external_project_reads": 0
+}

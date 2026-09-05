@@ -1,0 +1,13 @@
+{
+  "id": "hub-foundation-judge-v1",
+  "candidate_id": "hub-foundation-candidate-v1",
+  "candidate_hash": "fdd11db979d3df9e2f8c0c33f0e991b3e719f93c86794e97e4ad63904003068a",
+  "reviewer": "/root/foundation_judge_v1",
+  "decision": "FAIL",
+  "findings": [
+    "Stored-record validator trusted manifest permission and symbolic ref; forged no_access grant or /etc/passwd source path passed.",
+    "Unknown adapter versions and fresh snapshot paired with BLOCKED_BY_AUTHORITY passed."
+  ],
+  "verified_context": "19 file hashes and aggregate matched; original23 tests and true current49-record graph passed, but did not cover these gaps.",
+  "aggregate_algorithm": "hashlib.sha256(json.dumps(file_hashes, sort_keys=True, separators=(',', ':')).encode('utf-8')).hexdigest()"
+}

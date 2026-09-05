@@ -1,42 +1,81 @@
-schema_version: "1.0"
-
+---
+schema_version: '1.2'
 metadata:
   role: project_governance_adapter
-  reader: "处理 StorageGovernance 登记、状态同步或存储任务的 Agent。"
-  purpose: "只定义 hub 与存储治理之间的路由和边界，不复制存储治理规则。"
+  reader: 处理 StorageGovernance 项目登记、状态摘要或实际存储治理的 Agent。
+  purpose: 连接 Hub 的稳定参数与完整项目清单到 StorageGovernance 的唯一执行状态；不复制动态批次或规范。
   update_triggers:
-    - storage_governance_authority_path_change
-    - storage_governance_state_contract_change
-    - hub_registry_contract_change
-
+  - storage_governance_authority_path_change
+  - project_registry_or_discovery_contract_change
+  - storage_governance_state_contract_change
+  - storage_governance_activation_or_parameter_path_change
+  - hub_management_boundary_change
 project:
   id: storage_governance
   root_path: "~/Documents/StorageGovernance"
-
 authority:
+  activation_prompt: prompts/storage_governance_goal_mode.md
+  stable_parameters: data/programs/storage_governance_goal.yaml
+  project_registry: data/registry/external_projects.yaml
+  sole_execution_state: "~/Documents/StorageGovernance/STATE.yaml"
   sole_norm: "~/Documents/StorageGovernance/STORAGE_GOVERNANCE.md"
   content_copied_into_hub: false
   hub_may_override_norm: false
-  rule: "实际执行存储治理时，以外部唯一规范为准；hub 只保存指针和摘要状态。"
-
+  parameter_or_registry_is_current_state: false
+  rule: Hub 持有唯一 activation Prompt、稳定参数、项目身份清单、指针和小型摘要；外部 STATE 与 norm 分别拥有执行状态和稳定政策。
+  rules_after_owner_amendment: Read sole STATE owner amendment and current contract;
+    owner release-first criteria supersede legacy strict storage acceptance; stable
+    parameters do not grant effects.
 routing:
   registry_or_summary_task:
     read:
-      - STATE.yaml
-      - data/registry/external_projects.yaml
-      - governance/adapters/storage_governance.yaml
+    - STATE.yaml
+    - data/registry/external_projects.yaml
+    - governance/adapters/storage_governance.yaml
     external_norm_required: false
-  storage_execution_task:
+    rule: Hub STATE 只保存 compact 摘要；普通项目的动态 disposition 只从外部 manifest/STATE 读取。
+  goal_preparation_or_activation_task:
     read:
-      - STATE.yaml
-      - governance/adapters/storage_governance.yaml
-      - "~/Documents/StorageGovernance/STORAGE_GOVERNANCE.md"
-    external_norm_required: true
-
+    - STATE.yaml
+    - data/programs/storage_governance_goal.yaml
+    - data/registry/external_projects.yaml
+    - governance/adapters/storage_governance.yaml
+    - prompts/storage_governance_goal_mode.md
+    - "~/Documents/StorageGovernance/AGENTS.md"
+    - "~/Documents/StorageGovernance/STATE.yaml"
+    rule: 只有用户当前提交唯一 Prompt，或 Root 另获当前明确授权后创建 native Goal，才可 activation。
+  storage_execution_task:
+    each_turn_read_order:
+    - data/programs/storage_governance_goal.yaml
+    - data/registry/external_projects.yaml
+    - governance/adapters/storage_governance.yaml
+    - "~/Documents/StorageGovernance/AGENTS.md"
+    - "~/Documents/StorageGovernance/STATE.yaml"
+    - current_project_AGENTS_and_current_state_if_present
+    conditional_read:
+    - 只按外部 STATE.next_action 与当前项目路由读取 STORAGE_GOVERNANCE.md 相关条款和项目必要文件。
+    activation_prompt_reread: forbidden
+    external_norm_required_for_effect: true
 boundaries:
-  hub_access: read_only
-  external_project_writes_from_hub: false
+  hub_external_project_access_default: read_only
+  external_project_effects_from_hub_registry: forbidden
+  external_project_effect_authority_source: current_StorageGovernance_STATE_only
+  hub_current_goal_management_repairs:
+    allowed: true
+    scope:
+    - storage_parameters
+    - project_registry
+    - adapter_and_routes
+    - compact_current_state
+    - directly_required_tests_and_management_consistency_docs
+  hub_migration: forbidden
+  hub_cleanup: forbidden
+  hub_recursive_self_governance: forbidden
   norm_copy_forbidden: true
+  storage_state_copy_forbidden: true
   large_history_default_load_forbidden: true
-  deletion_authority: "Only the active storage-governance contract and current user authority may authorize deletion."
-  consumed_cleanup_authority_reuse: forbidden
+  no_execution_cycle: 已激活续轮不得返回 Hub Prompt；每轮沿固定读取顺序进入外部唯一 STATE，再只处理其唯一当前项目。
+  deletion_authority: Current native Goal and current contract authorize capability;
+    Root registers exact normalized scope and basic checks in sole StorageGovernance
+    STATE. Ordinary generated-data cleanup does not require per-microbatch Judge/Governor.
+  consumed_authority_reuse: forbidden

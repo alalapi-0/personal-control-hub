@@ -1,0 +1,383 @@
+{
+  "evidence_type": "read_only_ui_source_inventory",
+  "recorded_at": "2026-09-05T04:33:17.300280+00:00",
+  "collector": "/root/ui_sources",
+  "registrar": "/root",
+  "external_files_modified": false,
+  "applications_started": false,
+  "status": "source_observation_not_runtime_or_scope_approval",
+  "projects": [
+    {
+      "project_id": "personal-control-hub",
+      "proposed_ui_disposition": "in_scope",
+      "surface": "New Hub surface",
+      "source_refs": [
+        "docs/design/personal_control_hub_completion.md"
+      ],
+      "runtime_verified": false,
+      "notes": "Current product has no graphical interface; initial baseline is new_surface_spec."
+    },
+    {
+      "project_id": "manga-localizer",
+      "proposed_ui_disposition": "protected",
+      "surface": "Not probed",
+      "source_refs": [
+        "@hub/data/registry/external_projects.yaml"
+      ],
+      "runtime_verified": false,
+      "notes": "No filesystem access; owner scope response pending."
+    },
+    {
+      "project_id": "storage_governance",
+      "proposed_ui_disposition": "protected",
+      "surface": "Governance control plane",
+      "source_refs": [
+        "AGENTS.md:12"
+      ],
+      "runtime_verified": false,
+      "notes": "Separate execution STATE; this survey grants no storage actions."
+    },
+    {
+      "project_id": "universal-player",
+      "proposed_ui_disposition": "in_scope",
+      "surface": "SwiftUI media player",
+      "source_refs": [
+        "Sources/UniversalPlayerUI/UniversalPlayerView.swift:10",
+        "Sources/UniversalPlayerUI/PlayerViewModel.swift:161",
+        ".agent/STATE.md",
+        "Scripts/external-build"
+      ],
+      "runtime_verified": false,
+      "notes": "System fonts and SF Symbols. Default model reads real recent-media history; wrapper rejects DEBUG fresh-history flag. No safe runtime baseline yet."
+    },
+    {
+      "project_id": "computer-study-plan",
+      "proposed_ui_disposition": "in_scope",
+      "surface": "Linux single-course web workspace",
+      "source_refs": [
+        "progress.html:1683",
+        "progress_ui.css:1",
+        "docs/PROJECT_STATE.md:39",
+        "tests/ui/fixture_server.py:583",
+        "tests/ui/README.md"
+      ],
+      "runtime_verified": false,
+      "notes": "Warm black/copper #d49a70, purple accent, 22px radii. Fixture server initializes from real progress.json and serves repo files; do not run it unchanged. Preserve Linux/task-ID/evidence/unknown-progress semantics."
+    },
+    {
+      "project_id": "mpv-clip-workbench",
+      "proposed_ui_disposition": "in_scope",
+      "surface": "Qt/QML clip workbench",
+      "source_refs": [
+        "apps/desktop/qml/PlaybackShell.qml:8",
+        "apps/desktop/qml/Theme.qml:1",
+        "apps/desktop/AGENTS.md",
+        "tests/playback/run_desktop_cut_flow.py:52",
+        "scripts/run_desktop.sh",
+        "docs/10-product/BEGINNER_UX_DIRECTION.md:11"
+      ],
+      "runtime_verified": false,
+      "notes": "Cold black/blue #6ea8ff, PingFang/Menlo. Launcher bootstraps .local-runtime. Synthetic lavfi/temp runtime support observed but not run; old Main.qml smoke does not verify PlaybackShell. Keep business arithmetic/FFmpeg/libmpv outside QML."
+    },
+    {
+      "project_id": "ai-anime-short-factory",
+      "proposed_ui_disposition": "in_scope",
+      "surface": "Native HTML/CSS/JS Review Studio",
+      "source_refs": [
+        "AGENTS.md:17",
+        "review_app/server/app.py",
+        "review_app/static/off-frame-studio/"
+      ],
+      "runtime_verified": false,
+      "notes": "Project/shot/import/human review/freeze flows; no business data read."
+    },
+    {
+      "project_id": "ai-music-foundry",
+      "proposed_ui_disposition": "in_scope",
+      "surface": "FastAPI Review Studio",
+      "source_refs": [
+        "README.md:7",
+        "src/music_foundry/web/app.py",
+        "src/music_foundry/web/static/"
+      ],
+      "runtime_verified": false,
+      "notes": "Creative entry uses raw JSON textarea; complete A/B/decision/lock/local-revision workflow not established. external-uv launch not run."
+    },
+    {
+      "project_id": "novel-continuation-agent",
+      "proposed_ui_disposition": "in_scope",
+      "surface": "React TypeScript Vite Motion Novel OS",
+      "source_refs": [
+        "AGENTS.md:19",
+        "web/novel-os/src/App.tsx",
+        "web/novel-os/src/Pages.tsx",
+        "web/novel-os/src/styles.css",
+        "README.md:33"
+      ],
+      "runtime_verified": false,
+      "notes": "Nine pages plus retained old UI. R53/storage constraints; no app/database launch. API, permissions, provenance and review lifecycle remain functional authority."
+    },
+    {
+      "project_id": "story-faceless-utopia",
+      "proposed_ui_disposition": "in_scope",
+      "surface": "Production editorial review desk",
+      "source_refs": [
+        "README.md:120",
+        "README.md:129",
+        "scripts/storage_runtime.py:181",
+        "workbench/editorial_review/season-0-daily-v003/README.md:5",
+        "workbench/editorial_review/season-0-daily-v003/serve.py:43",
+        "workbench/editorial_review/season-0-daily-v003/index.html:7"
+      ],
+      "runtime_verified": false,
+      "notes": "Independent stdlib server with inline CSS/JS. Paper #f3eee4; 15px/1.55; serif/sans; 2px blue focus. Historical v003/v004 read-only; v005 review does not write Canon/production. No story/verdict/media read."
+    },
+    {
+      "project_id": "light-novel",
+      "proposed_ui_disposition": "in_scope",
+      "surface": "Four-page translation workbench",
+      "source_refs": [
+        "README.md:48",
+        "README.md:157",
+        "frontend/index.html",
+        "frontend/review.html",
+        "frontend/issues.html",
+        "frontend/export.html",
+        "AGENTS.md:133"
+      ],
+      "runtime_verified": false,
+      "notes": "Fifteen pages are future roadmap, not current product. dev:frontend loads .env; not run. Stitch references do not prove a shared design system."
+    },
+    {
+      "project_id": "wechat-article-scheduler",
+      "proposed_ui_disposition": "in_scope",
+      "surface": "Article planning local workbench",
+      "source_refs": [
+        "README.md:15",
+        "README.md:21",
+        "src/wechat_article_scheduler/web/app.py",
+        "src/wechat_article_scheduler/web/admin_template.html",
+        "src/wechat_article_scheduler/web/article_detail_template.html",
+        "src/wechat_article_scheduler/web/drafts_page_template.html"
+      ],
+      "runtime_verified": false,
+      "notes": "Upload/preview/schedule/queue/draft/trash/events. Documented isolated mock profile unverified. No articles/database/secrets or WeChat state read; real publication is manual."
+    },
+    {
+      "project_id": "resilient-personal-network",
+      "proposed_ui_disposition": "no_ui",
+      "surface": "Bash network operations",
+      "source_refs": [
+        "README.md:3"
+      ],
+      "runtime_verified": false,
+      "notes": "Explicitly not a web/app frontend; third-party clients are not this project UI."
+    },
+    {
+      "project_id": "pixel-world-asset-forge",
+      "proposed_ui_disposition": "in_scope",
+      "surface": "Asset review workbench",
+      "source_refs": [
+        "README.md:224",
+        "README.md:303",
+        "scripts/run_review_app.py:33"
+      ],
+      "runtime_verified": false,
+      "notes": "review_app.server.serve entry. Stitch reference is design guidance, not shared component evidence."
+    },
+    {
+      "project_id": "desktop-jav-tools",
+      "proposed_ui_disposition": "no_ui",
+      "surface": "OCR/batch CLI",
+      "source_refs": [
+        "README.md:8"
+      ],
+      "runtime_verified": false,
+      "notes": "Declared Python CLI entry list; no images, batch content or crawling."
+    },
+    {
+      "project_id": "zarathustra-adaptation",
+      "proposed_ui_disposition": "in_scope",
+      "surface": "Reader-first editorial workspace",
+      "source_refs": [
+        "README.md:24",
+        "scripts/external-python:254",
+        "workbench/editorial_review/README.md:35",
+        "workbench/editorial_review/serve.py:30",
+        "workbench/editorial_review/index.html:7"
+      ],
+      "runtime_verified": false,
+      "notes": "Independent stdlib server/local bundle.py/inline CSS and JS. Paper #f6f2e9; 16px/1.72; 44px controls; 3px warm focus. Block feedback and parent-version comparison differ from production verdicts. No text/reviews/compiled book read."
+    },
+    {
+      "project_id": "desktop-tool",
+      "proposed_ui_disposition": "deferred",
+      "surface": "CLI crawler and third-party userscript",
+      "source_refs": [
+        "README.md:19",
+        "metastudioxr-video-annotation.user.js:7"
+      ],
+      "runtime_verified": false,
+      "notes": "Userscript fills third-party annotation form from video time; no owned product shell. Third-party enhancement scope unresolved; annotation site not opened."
+    },
+    {
+      "project_id": "audio-clone",
+      "proposed_ui_disposition": "in_scope",
+      "surface": "PySide6 QtMultimedia sound workstation",
+      "source_refs": [
+        "README.md:3",
+        "README.md:17",
+        "src/audio_clone/desktop/main.py",
+        "src/audio_clone/desktop/window.py",
+        "src/audio_clone/desktop/waveform.py",
+        "src/audio_clone/app.py:286"
+      ],
+      "runtime_verified": false,
+      "notes": "Current README identifies native desktop; old Gradio retained. Do not infer current stack only from old AGENTS. No real voice/text/model/device access."
+    },
+    {
+      "project_id": "cognitive-asset-library",
+      "proposed_ui_disposition": "no_ui",
+      "surface": "CLI/filesystem knowledge pipeline",
+      "source_refs": [
+        "AGENTS.md:61",
+        "AGENTS.md:72"
+      ],
+      "runtime_verified": false,
+      "notes": "Explicitly forbids Web UI/backend/database servers; content styling is not product UI."
+    },
+    {
+      "project_id": "pycharm-agent-workspace",
+      "proposed_ui_disposition": "protected",
+      "surface": "Agent/MCP/environment governance",
+      "source_refs": [
+        "README.md:1"
+      ],
+      "runtime_verified": false,
+      "notes": "No business UI; global control plane and real environment config not inspected."
+    },
+    {
+      "project_id": "youtube-hq-downloader",
+      "proposed_ui_disposition": "no_ui",
+      "surface": "Download planning scripts",
+      "source_refs": [
+        "README.md:3"
+      ],
+      "runtime_verified": false,
+      "notes": "refresh_context/probe_best_plan/download_by_plan workflow. Browser authentication helper is not product UI; no sessions/tokens accessed."
+    },
+    {
+      "project_id": "desktop-magnet",
+      "proposed_ui_disposition": "no_ui",
+      "surface": "Text batch CLI",
+      "source_refs": [
+        "README.md:3",
+        "README.md:19"
+      ],
+      "runtime_verified": false,
+      "notes": "src/magnet_fetcher/cli.py entry; no inputs or outputs read."
+    },
+    {
+      "project_id": "pycharm-misc-project",
+      "proposed_ui_disposition": "no_ui",
+      "surface": "Four argparse/batch tools",
+      "source_refs": [
+        "fix_mojibake_names.py:116",
+        "collect_by_ext.py:38",
+        "transcribe_ja.py:5",
+        "pack_nwjs_game.py"
+      ],
+      "runtime_verified": false,
+      "notes": "Root-level entry inspection only. NW.js packager does not own the packaged game UI."
+    },
+    {
+      "project_id": "desktop-downloads-scripts",
+      "proposed_ui_disposition": "no_ui",
+      "surface": "PyCharm sample script",
+      "source_refs": [
+        "main.py:7"
+      ],
+      "runtime_verified": false,
+      "notes": "Root-level print_hi sample only."
+    }
+  ],
+  "figma_references": [
+    {
+      "project_id": "universal-player",
+      "file_key": "lURMGTfFpSzWQhVy0hBS3m",
+      "source_ref": ".agent/STATE.md",
+      "live_verified": false
+    },
+    {
+      "project_id": "computer-study-plan",
+      "file_key": "WtmY7TC867Wdp0qXY2b5uz",
+      "source_ref": "docs/PROJECT_STATE.md:39",
+      "live_verified": false
+    },
+    {
+      "project_id": "mpv-clip-workbench",
+      "file_key": "JXHe6V8OMEz9qt5rbRHuuz",
+      "source_ref": "docs/10-product/BEGINNER_UX_DIRECTION.md:11",
+      "live_verified": false
+    },
+    {
+      "project_id": "novel-continuation-agent",
+      "file_key": "9zSdt4kzc52DYkSfz6uige",
+      "source_ref": "AGENTS.md:19 (nodes 50:3–50:11)",
+      "live_verified": false
+    }
+  ],
+  "git_observations": [
+    {
+      "project_id": "universal-player",
+      "head": "bf0e6dfce882cff74799c300ff6c1c9b54615463",
+      "dirty": true
+    },
+    {
+      "project_id": "computer-study-plan",
+      "head": "c5b60820d79a687fb8b636c5f4ab39c789a52baa",
+      "dirty": true
+    },
+    {
+      "project_id": "mpv-clip-workbench",
+      "head": "24d5ef9f40dad3be96204bc7971110084f6b966f",
+      "dirty": true
+    }
+  ],
+  "relations": [
+    {
+      "project_ids": [
+        "story-faceless-utopia",
+        "novel-continuation-agent"
+      ],
+      "kind": "pipeline",
+      "evidence_status": "documented_contract_compatibility",
+      "decision_status": "proposal_not_new_owner_confirmation",
+      "source_refs": [
+        "story-faceless-utopia:README.md:120"
+      ],
+      "note": "world_package upstream-check/copied contracts/legacy compatibility; not a visual family or runtime interoperability acceptance."
+    },
+    {
+      "project_ids": [
+        "story-faceless-utopia",
+        "zarathustra-adaptation"
+      ],
+      "kind": "shared_visual_language",
+      "decision_status": "proposed",
+      "proposed_family": "editorial-paper",
+      "source_refs": [
+        "story-faceless-utopia:workbench/editorial_review/season-0-daily-v003/index.html:7",
+        "zarathustra-adaptation:workbench/editorial_review/index.html:7"
+      ],
+      "shared_implementation_found": false,
+      "note": "Similar paper/ink typography and review controls; independent servers/styles, distinct production verdict versus block feedback semantics. No source repository inferred."
+    }
+  ],
+  "limits": [
+    "No runtime verification or owner visual choice",
+    "No Code Connect/shared token/component library proven",
+    "no_ui conclusions use bounded source evidence, not exhaustive scans",
+    "All Git observations need fresh per-candidate fingerprints before implementation"
+  ]
+}

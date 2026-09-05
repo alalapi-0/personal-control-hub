@@ -126,6 +126,8 @@ git remote -v
 
 扫描结果可以生成 profile、snapshot、priority suggestion 和 next actions。LLM 只能提出 proposal，用户确认后才进入 confirmed link 或优先级变更。
 
-## StorageGovernance 首个登记项
+## StorageGovernance 与完整项目清单
 
-`storage_governance` 使用便携根路径 `~/Documents/StorageGovernance`，唯一规范为相对路径 `STORAGE_GOVERNANCE.md`，hub 适配器为 `governance/adapters/storage_governance.yaml`。hub 不复制规范内容，不从注册表获得删除或外部写入权限。
+`storage_governance` 使用便携根路径 `~/Documents/StorageGovernance`；唯一执行 current-state 为 `STATE.yaml`，稳定规范为 `STORAGE_GOVERNANCE.md`，Hub 适配器为 `governance/adapters/storage_governance.yaml`。Hub 不复制规范、执行状态或项目内容，也不从注册表获得删除或外部写入权限。
+
+注册表保存实际 Git 仓库、显式非 Git 开发目录和特殊控制/排除记录的稳定身份。普通项目的动态队列、disposition、证据和 effect authority 只由冻结 project manifest 与外部唯一执行状态持有。`manga-localizer` 必须关闭 inventory/scan/validation/mutation；`personal-control-hub` 必须关闭递归扫描、迁移和 cleanup，只允许当前授权覆盖的管理记录修复。

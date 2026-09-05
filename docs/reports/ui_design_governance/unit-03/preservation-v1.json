@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "protected_preimages_verified": 77,
+  "protected_drift": [],
+  "bootstrap_bytes": 7999,
+  "removed_task_generated_bytecode": [
+    "src/hub/__pycache__/connection_refresh.cpython-314.pyc",
+    "src/hub/__pycache__/connection_sources.cpython-314.pyc",
+    "tests/__pycache__/test_hub_refresh.cpython-314.pyc",
+    "tests/__pycache__/test_hub_sources.cpython-314.pyc"
+  ],
+  "active_workers": 0,
+  "root_writer": "01a06fae-2112-7cd2-8c83-d34d323fecaa"
+}

@@ -51,6 +51,8 @@ project:
     current_state: STATE.yaml
     long_term_direction: NORTH_STAR.md
     storage_governance_adapter: governance/adapters/storage_governance.yaml
+    storage_governance_goal_prompt: prompts/storage_governance_goal_mode.md
+    storage_governance_goal_parameters: data/programs/storage_governance_goal.yaml
     roadmap: docs/02_master_roadmap.md
     audit_report: docs/reports/restart_audit_report.md
     check_script: scripts/check_repo.py

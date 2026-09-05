@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "governor": "/root/hub_governor_tc3",
+  "contract": "HUB-GOV-2026-09-05-TC3",
+  "contract_version": 1,
+  "candidate": "TC3-candidate-v3",
+  "aggregate_sha256": "77f6d8d2d866aa5bb5acf40efc72fff30fbba8c5cd08ba2ea662fe210c370438",
+  "head": "99c0dffc7d446ec17751632ea312220a28a7159e",
+  "judge": "/root/refresh_judge_v3",
+  "judge_result": "PASS",
+  "decision": "APPROVE",
+  "independent_hash_verification": {"files": 53, "all_match": true},
+  "acceptance": {"related_tests": 133, "authority_drift_repair": "PASS", "coherent_history_repair": "PASS", "requests": 3, "results": 72, "events": 78, "project_projections": 24, "real_ledger_sha256": "4c4151df940117550d8c2665c5d35846727ffe1eb72f6e87882173c58f75a131", "source_dispositions": {"SOURCE_RESOLVED": 20, "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED": 3, "BLOCKED_BY_AUTHORITY": 1}},
+  "scope": "Durable source layer only; this decision grants no UI/Figma/final connection/owner-choice/Goal acceptance or external effect.",
+  "successor": {"id": "HUB-GOV-2026-09-05-TC4", "version": 1, "source": "docs/reports/ui_design_governance/unit-03/governor-v1.json#successor", "source_sha256": "bd157b919ba35ee21abd0bc96a717b7eaed71c8c70649b616c52cdb372c0d3df", "activation": "Root registers accepted TC2/TC3 identities, TC4 preimages, sole writer and canonical STATE transition.", "preservation": "Objective, boundaries, all13 acceptance criteria, writer ownership, evidence, recovery and zero external effects unchanged.", "grants": "Local loopback query/command service implementation and isolated fixture validation only; no UI/Figma/real owner decision/external project effect/Git/publication/non-loopback exposure."}
+}

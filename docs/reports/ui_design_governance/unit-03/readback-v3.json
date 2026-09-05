@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0",
+  "commands": [
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/hub_refresh.py",
+        "history"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "matches_frozen_evidence": "history-v2.json",
+      "head": {
+        "sequence": 78,
+        "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8"
+      }
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/hub_refresh.py",
+        "rebuild"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "matches_frozen_evidence": "rebuild-v2.json",
+      "head": {
+        "sequence": 78,
+        "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8"
+      }
+    }
+  ],
+  "ledger_sha256_before": "4c4151df940117550d8c2665c5d35846727ffe1eb72f6e87882173c58f75a131",
+  "ledger_sha256_after": "4c4151df940117550d8c2665c5d35846727ffe1eb72f6e87882173c58f75a131",
+  "real_ledger_unchanged": true,
+  "source_code_unchanged_from_v2": true,
+  "source_reads": 0,
+  "external_writes": 0
+}

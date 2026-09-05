@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "contract": "HUB-GOV-2026-09-05-TC3",
+  "checks": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "4c087e",
+        "wall_time_seconds": 4.521882333,
+        "exit_code": 0,
+        "original_token_count": 56,
+        "output": "............................................................................................................................\n----------------------------------------------------------------------\nRan 124 tests in 4.482s\n\nOK\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "cda596",
+        "wall_time_seconds": 0.000001875,
+        "exit_code": 0,
+        "original_token_count": 44,
+        "output": "personal-control-hub skeleton check\nroot: /Users/alalapi/PycharmProjects/personal-control-hub\n\nFiles: OK\nDirectories: OK\nMCP registry: OK\nSecret marker scan: OK\n\nResult: PASS\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "8496a2",
+        "wall_time_seconds": 0.00000175,
+        "exit_code": 0,
+        "original_token_count": 30,
+        "output": "=== 轮次一致性检查 ===\n结果：ok\n当前轮次：ROUND-1-1\n下一轮次：ROUND-1-5\n警告：0\n硬阻塞：0\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "781512",
+        "wall_time_seconds": 0.000003333,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    }
+  ],
+  "related_tests": 124,
+  "known_baseline_failures": [
+    "check_registry.py: two existing mpv-clip-workbench policy/authority errors",
+    "legacy control-plane tests: pre-existing SubPlz and storage-governance expectations"
+  ],
+  "git_effects": 0,
+  "external_writes": 0,
+  "real_evidence": "real-validation.json"
+}

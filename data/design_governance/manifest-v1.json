@@ -1,0 +1,871 @@
+{
+  "schema_version": "1.0",
+  "record_type": "connection_manifest",
+  "id": "hub-connections-v1",
+  "revision": 1,
+  "created_at": "2026-09-05T03:58:28+00:00",
+  "registry_ref": {
+    "path": "data/registry/external_projects.yaml",
+    "schema_version": "1.0",
+    "sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+  },
+  "entries": [
+    {
+      "project_id": "storage_governance",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-storage_governance-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "storage_governance",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/storage_governance"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "named_control_plane_files_only"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/storage_governance"
+      ]
+    },
+    {
+      "project_id": "personal-control-hub",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-personal-control-hub-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "personal-control-hub",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/personal-control-hub"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "bounded_management_records_only"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/personal-control-hub"
+      ]
+    },
+    {
+      "project_id": "manga-localizer",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-manga-localizer-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "manga-localizer",
+        "disposition": "protected",
+        "reason": "登记明确禁止当前访问；须所有者决定，不探测项目文件。",
+        "evidence_refs": [
+          "registry:projects/manga-localizer"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "no_access",
+        "basis": "登记明确禁止当前访问；须所有者决定，不探测项目文件。",
+        "access_profile": "no_current_goal_access"
+      },
+      "allowed_entries": [],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": "登记明确禁止当前访问；须所有者决定，不探测项目文件。",
+      "evidence_refs": [
+        "registry:projects/manga-localizer"
+      ]
+    },
+    {
+      "project_id": "universal-player",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-universal-player-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "universal-player",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/universal-player"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/universal-player"
+      ]
+    },
+    {
+      "project_id": "ai-anime-short-factory",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-ai-anime-short-factory-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "ai-anime-short-factory",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/ai-anime-short-factory"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/ai-anime-short-factory"
+      ]
+    },
+    {
+      "project_id": "ai-music-foundry",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-ai-music-foundry-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "ai-music-foundry",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/ai-music-foundry"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/ai-music-foundry"
+      ]
+    },
+    {
+      "project_id": "novel-continuation-agent",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-novel-continuation-agent-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "novel-continuation-agent",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/novel-continuation-agent"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/novel-continuation-agent"
+      ]
+    },
+    {
+      "project_id": "story-faceless-utopia",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-story-faceless-utopia-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "story-faceless-utopia",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/story-faceless-utopia"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/story-faceless-utopia"
+      ]
+    },
+    {
+      "project_id": "light-novel",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-light-novel-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "light-novel",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/light-novel"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/light-novel"
+      ]
+    },
+    {
+      "project_id": "wechat-article-scheduler",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-wechat-article-scheduler-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "wechat-article-scheduler",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/wechat-article-scheduler"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/wechat-article-scheduler"
+      ]
+    },
+    {
+      "project_id": "resilient-personal-network",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-resilient-personal-network-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "resilient-personal-network",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/resilient-personal-network"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/resilient-personal-network"
+      ]
+    },
+    {
+      "project_id": "pixel-world-asset-forge",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-pixel-world-asset-forge-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "pixel-world-asset-forge",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/pixel-world-asset-forge"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/pixel-world-asset-forge"
+      ]
+    },
+    {
+      "project_id": "desktop-jav-tools",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-desktop-jav-tools-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "desktop-jav-tools",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/desktop-jav-tools"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/desktop-jav-tools"
+      ]
+    },
+    {
+      "project_id": "zarathustra-adaptation",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-zarathustra-adaptation-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "zarathustra-adaptation",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/zarathustra-adaptation"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/zarathustra-adaptation"
+      ]
+    },
+    {
+      "project_id": "computer-study-plan",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-computer-study-plan-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "computer-study-plan",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/computer-study-plan"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/computer-study-plan"
+      ]
+    },
+    {
+      "project_id": "desktop-tool",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-desktop-tool-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "desktop-tool",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/desktop-tool"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/desktop-tool"
+      ]
+    },
+    {
+      "project_id": "audio-clone",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-audio-clone-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "audio-clone",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/audio-clone"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/audio-clone"
+      ]
+    },
+    {
+      "project_id": "cognitive-asset-library",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-cognitive-asset-library-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "cognitive-asset-library",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/cognitive-asset-library"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/cognitive-asset-library"
+      ]
+    },
+    {
+      "project_id": "pycharm-agent-workspace",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-pycharm-agent-workspace-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "pycharm-agent-workspace",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/pycharm-agent-workspace"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_project_read_with_protected_config"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/pycharm-agent-workspace"
+      ]
+    },
+    {
+      "project_id": "youtube-hq-downloader",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-youtube-hq-downloader-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "youtube-hq-downloader",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/youtube-hq-downloader"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_project_read_with_credential_boundary"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/youtube-hq-downloader"
+      ]
+    },
+    {
+      "project_id": "desktop-magnet",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-desktop-magnet-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "desktop-magnet",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/desktop-magnet"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "no_source",
+        "basis": "登记未声明当前状态来源；不能把路径存在或项目介绍当作业务状态。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": "登记未声明当前状态来源；不能把路径存在或项目介绍当作业务状态。",
+      "evidence_refs": [
+        "registry:projects/desktop-magnet"
+      ]
+    },
+    {
+      "project_id": "pycharm-misc-project",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-pycharm-misc-project-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "pycharm-misc-project",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/pycharm-misc-project"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "no_source",
+        "basis": "登记未声明当前状态来源；不能把路径存在或项目介绍当作业务状态。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": "登记未声明当前状态来源；不能把路径存在或项目介绍当作业务状态。",
+      "evidence_refs": [
+        "registry:projects/pycharm-misc-project"
+      ]
+    },
+    {
+      "project_id": "desktop-downloads-scripts",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-desktop-downloads-scripts-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "desktop-downloads-scripts",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/desktop-downloads-scripts"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "no_source",
+        "basis": "登记未声明当前状态来源；不能把路径存在或项目介绍当作业务状态。",
+        "access_profile": "registered_project_read"
+      },
+      "allowed_entries": [],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": "登记未声明当前状态来源；不能把路径存在或项目介绍当作业务状态。",
+      "evidence_refs": [
+        "registry:projects/desktop-downloads-scripts"
+      ]
+    },
+    {
+      "project_id": "mpv-clip-workbench",
+      "scope": {
+        "schema_version": "1.0",
+        "record_type": "scope",
+        "id": "scope-mpv-clip-workbench-v1",
+        "created_at": "2026-09-05T03:58:28+00:00",
+        "project_id": "mpv-clip-workbench",
+        "disposition": "unresolved",
+        "reason": "尚待允许范围内的 UI 勘察；管理接入与 UI 范围分别判定。",
+        "evidence_refs": [
+          "registry:projects/mpv-clip-workbench"
+        ],
+        "authority_ref": "owner-goal-01a06fae-2112-7cd2-8c83-d34d323fecaa"
+      },
+      "permission": {
+        "mode": "named_sources",
+        "basis": "registry 当前启用并允许摘要；仅读取命名 current_state_paths。",
+        "access_profile": "registered_external_project_read"
+      },
+      "allowed_entries": [
+        "current_state_paths[0]"
+      ],
+      "expected_capabilities": [
+        "identity",
+        "source",
+        "availability",
+        "status_or_explicit_unknown",
+        "next_action_or_explicit_unknown",
+        "bounded_refresh"
+      ],
+      "source_absence_reason": null,
+      "evidence_refs": [
+        "registry:projects/mpv-clip-workbench"
+      ]
+    }
+  ],
+  "content_hash": "21c5bf694f095d3aad979994260aaef65831a6e35453b7dde092bfd8fde552f7"
+}

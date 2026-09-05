@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0",
+  "candidate": "TC3-candidate-v2",
+  "commands": [
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/hub_refresh.py",
+        "refresh",
+        "--request-id",
+        "tc3-real-all-03"
+      ],
+      "exit_code": 2,
+      "stderr": "",
+      "elapsed_seconds": 6.731,
+      "output": "refresh-03.json"
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/hub_refresh.py",
+        "refresh",
+        "--request-id",
+        "tc3-real-all-03"
+      ],
+      "exit_code": 2,
+      "stderr": "",
+      "elapsed_seconds": 0.132,
+      "output": "refresh-03-retry.json"
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/hub_refresh.py",
+        "history"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "elapsed_seconds": 0.089,
+      "output": "history-v2.json"
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "scripts/hub_refresh.py",
+        "rebuild"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "elapsed_seconds": 0.09,
+      "output": "rebuild-v2.json"
+    }
+  ],
+  "project_count": 24,
+  "source_dispositions": {
+    "BLOCKED_BY_AUTHORITY": 1,
+    "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED": 3,
+    "SOURCE_RESOLVED": 20
+  },
+  "requests": 3,
+  "immutable_events": 78,
+  "results": 72,
+  "previous_48_results_unchanged": true,
+  "previous_52_events_unchanged": true,
+  "retry_added_results": 0,
+  "offline_rebuild_matches": true,
+  "ui_verification": "UNVERIFIED",
+  "external_writes": 0,
+  "external_program_execution": 0,
+  "manga_access": "blocked before path resolution",
+  "ledger_sha256": "4c4151df940117550d8c2665c5d35846727ffe1eb72f6e87882173c58f75a131"
+}

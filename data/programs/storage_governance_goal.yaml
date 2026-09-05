@@ -1,0 +1,251 @@
+---
+schema_version: '2.0'
+metadata:
+  role: storage_governance_goal_parameters
+  authority: stable_parameters_not_current_state
+  reader: 启动或续行存储治理 Goal 的 Root；每轮必须先读取本文件。
+  purpose: 保存稳定路径、外盘身份、项目发现、保护边界、串行执行和验收参数；不保存当前进度。
+  update_triggers:
+  - control_plane_or_authority_path_change
+  - project_registry_or_discovery_contract_change
+  - external_disk_identity_or_guard_change
+  - owner_scope_or_priority_change
+  - validation_or_completion_contract_change
+  - owner_release_first_risk_tolerance_amendment
+  forbidden_content:
+  - current_project
+  - current_batch
+  - progress
+  - attempt_count
+  - next_action
+  - effect_authority_state
+authority_graph:
+  activation_prompt: "/Users/alalapi/PycharmProjects/personal-control-hub/prompts/storage_governance_goal_mode.md"
+  parameters: "/Users/alalapi/PycharmProjects/personal-control-hub/data/programs/storage_governance_goal.yaml"
+  project_registry: "/Users/alalapi/PycharmProjects/personal-control-hub/data/registry/external_projects.yaml"
+  hub_adapter: "/Users/alalapi/PycharmProjects/personal-control-hub/governance/adapters/storage_governance.yaml"
+  storage_router: "/Users/alalapi/Documents/StorageGovernance/AGENTS.md"
+  storage_current_state: "/Users/alalapi/Documents/StorageGovernance/STATE.yaml"
+  storage_norm: "/Users/alalapi/Documents/StorageGovernance/STORAGE_GOVERNANCE.md"
+  hub_current_state: "/Users/alalapi/PycharmProjects/personal-control-hub/STATE.yaml"
+  each_turn_read_order:
+  - parameters
+  - project_registry
+  - hub_adapter
+  - storage_router
+  - storage_current_state
+  - current_project_rules_and_state_only
+  rules:
+  - 只有用户实际提交 activation_prompt，或 Root 另获当前明确授权后创建 native Goal，才产生新 Goal authority。
+  - 已激活续轮不得重新读取、重新提交或重新激活 activation_prompt。
+  - storage_current_state 是唯一存储执行 current-state；hub_current_state 只保存 Hub 自身状态、项目清单指针和小型摘要。
+  - project_registry 是项目身份与路径清单，不保存普通项目的动态批次状态或 effect authority。
+  - 本参数文件、注册表与静态 Prompt 都不是 current-state；旧 Goal 和已消费 authority 不可复用。
+control_planes:
+  personal_control_hub:
+    root_path: "/Users/alalapi/PycharmProjects/personal-control-hub"
+    location_policy: internal_disk_only
+    migration_excluded: true
+    cleanup_excluded: true
+    recursive_project_discovery_excluded: true
+    self_adapter_scan_excluded: true
+    allowed_current_goal_writes:
+    - storage_governance_parameters
+    - project_registry
+    - storage_governance_adapter_and_routes
+    - compact_hub_current_state
+    - directly_required_management_consistency_tests_and_docs
+  storage_governance:
+    root_path: "/Users/alalapi/Documents/StorageGovernance"
+    location_policy: internal_control_plane
+    migration_excluded: true
+    cleanup_excluded: true
+    allowed_current_goal_writes:
+    - router
+    - sole_current_state
+    - stable_norm
+explicit_exclusions:
+  manga_localizer:
+    project_id: manga-localizer
+    repo_path: "/Users/alalapi/PycharmProjects/manga-localizer"
+    disposition: accepted_exclusion_record_only
+    historical_acceptance_evidence: "/Volumes/AI_WORK_SSD/_governance/evidence/storage_restart_2026_09_01_r2/SGR2_001_TC2_ACCEPTANCE_TRANSITION.yaml"
+    inventory: forbidden
+    inspection: forbidden
+    validation: forbidden
+    mutation: forbidden
+    associated_app_or_runtime_scan: forbidden
+    rule: 仅在 Hub registry 与冻结 manifest 中保存已完成排除记录；本 Goal 不再访问该项目树或其关联安装、运行时和模型路径。
+external_storage:
+  mount_point: "/Volumes/AI_WORK_SSD"
+  volume_uuid: B88461B8-E414-4CB9-B4BC-C16944730946
+  container_uuid: 2F9D579B-BD0B-411D-9BE7-17560BF0B14C
+  filesystem: APFS
+  expected_writable: true
+  encrypted: false
+  owners_enabled: false
+  identity_guard: "/Users/alalapi/.config/storage-governance/guard.sh"
+  storage_map: "/Volumes/AI_WORK_SSD/_governance/STORAGE_MAP.yaml"
+  wrong_or_missing_disk_policy: fail_closed_without_internal_fallback
+  target_rule: 任何新目标、目录创建、复制、迁移、重建或真实运行前都必须先通过 identity_guard；目录存在不能替代身份验证。
+project_inventory:
+  epoch_capture_limit: 1
+  authority_source: actual_repositories_project_markers_and_evidenced_associated_paths
+  repository_discovery_root: "/Users/alalapi"
+  traversal: same_filesystem_no_symlink_follow
+  project_minimum_allocated_bytes: 0
+  project_detection:
+  - canonical_git_toplevel
+  - explicit_non_git_development_markers
+  - owner_or_repository_documented_shared_project_tooling
+  associated_path_inclusion_requires:
+  - repository_documentation_or_direct_management_evidence
+  - canonical_path_and_allocated_byte_baseline
+  - owning_project_id
+  freeze_requires:
+  - stable_unique_project_id
+  - canonical_root_path
+  - project_kind_and_markers
+  - applicable_agents_and_current_state_pointers
+  - git_root_branch_and_dirty_count_when_applicable
+  - associated_paths
+  - initial_terminal_or_queue_disposition
+  - immutable_manifest_path_hash_bytes_and_cutoff
+  exclusions:
+  - manga_localizer_entire_tree_and_associated_app_runtime_paths
+  - personal_control_hub_recursive_discovery_migration_and_cleanup
+  - storage_governance_control_plane_migration_and_cleanup
+  - credentials_sessions_active_databases_and_active_recovery_state
+  - unowned_or_unrelated_private_payloads_not_ordinary_owned_project_history
+  - source_code_user_dirty_work_git_history_and_current_recovery_state
+  - system_application_and_home_cache_paths_not_directly_associated_with_a_frozen_project
+  - historical_backup_and_vendor_import_repositories
+  - external_mounts_and_unregistered_roots
+  - offline_video_disk
+  nested_repository_rule: 测试 fixture、构建物、vendor、备份或产物中的嵌套 Git 根归属其 owning project
+    或明确记为非项目，不重复登记。
+execution:
+  concurrency:
+    active_projects: 1
+    active_batches: 1
+    writers: 1
+    next_actions: 1
+  queue_rule: feasible_internal_release_desc_then_execution_feasibility_then_risk
+  project_boundary_rule: 当前项目进入 accepted、protected、ineligible 或 deferred_with_fact_blocker_and_exact_recovery_event
+    后，才可选择下一项目。
+  project_autonomy:
+  - executing_agent_selects_exact_scope_parameters_and_target
+  - executing_agent_selects_migration_or_offline_rebuild_method
+  - executing_agent_selects_proportionate_validation_commands
+  - choices_must_come_from_live_repository_evidence_and_applicable_project_rules
+  anti_loop:
+  - one_bounded_project_capture_per_epoch
+  - frozen_manifest_new_discoveries_go_to_next_epoch
+  - no_rescan_of_terminal_paths_without_material_drift
+  - no_nested_batch_preflight_contract_or_review
+  - no_unchanged_failure_candidate_evidence_or_blocker_retry
+  - diagnose_and_change_method_after_two_no_progress_attempts
+  - one_stable_blocker_record_with_exact_recovery_event
+  - activated_turns_do_not_reopen_activation_prompt
+  - no_per_history_hash_graph_or_content_adjudication_as_routine_prerequisite
+  - no_custom_archive_reader_or_growing_test_suite_for_each_batch
+  - no_second_rollback_copy_or_proof_of_immediate_rebuild_for_disposable_generated_data
+  priorities:
+  - release_internal_storage_first
+  - usable_external_project_operation_second
+  - historical_data_preservation_not_a_default_goal
+  accepted_tradeoffs:
+  - intentional_loss_of_low_value_project_generated_history_without_recovery_guarantee
+  - future_repair_of_non_core_project_regressions
+  - reasonable_path_and_purpose_judgment_instead_of_exhaustive_content_proof
+  routine_scope_registration: Root registers normalized exact targets, purpose, exclusions,
+    baseline bytes and current authority in sole STATE; not an independent microbatch
+    review
+  review_cadence: one control_policy_revision_review; no new contract_Judge_Governor
+    for each ordinary local generated_data cleanup or basic_migration
+per_project_gates:
+  before_effect:
+  - read_current_project_rules_state_and_current_owner_amendment
+  - record_exact_normalized_targets_purpose_exclusions_and_allocated_byte_baseline
+  - confirm_no_uncontrolled_writer_or_active_exact_target_use
+  - exclude_source_code_dirty_work_git_credentials_sessions_and_active_databases
+  - verify_live_existing_dual_identity_guard_before_external_effects
+  disposable_generated_data_cleanup:
+  - reasonable_evidence_of_project_ownership_generated_use_and_low_current_value
+  - Root_exact_scope_registration_no_broad_root_or_link_following
+  - no_archive_hashgraph_xattr_parity_second_restore_copy_or_immediate_rebuild_proof_required
+  - intentional_permanent_loss_is_accepted
+  useful_data_migration:
+  - copy_success_file_count_and_logical_bytes
+  - executor_selected_representative_checks_not_universal_per_leaf_hash
+  - point_relevant_current_entry_to_guarded_external_root
+  - clear_exact_internal_source_after_basic_copy_checks_without_second_rollback_copy
+  project_level_validation:
+  - one_current_primary_entry_start_or_core_smoke_as_applicable
+  - check_main_heavy_paths_external_and_no_silent_internal_fallback
+  - reuse_unchanged_guard_evidence_test_only_changed_route_or_guard_behavior
+  - record_non_core_regressions_for_later_repair_without_blocking_space_release
+  - record_post_effect_source_absence_or_residue_actual_release_external_delta_and_maintenance
+  not_universal_prerequisites:
+  - complete_dev_test_build_matrix
+  - historical_command_or_baseline_replay
+  - OS_reboot
+  - full_reference_graph
+  - all_file_hashes_or_native_xattr_equivalence
+  - recovery_guarantee_for_discarded_history
+  existing_external_directory_policy: confirm actual intended use with basic checks;
+    existence alone is not operation evidence
+effects:
+  allowed_only_when_registered_by_current_native_goal:
+  - local_storage_configuration_and_path_routing
+  - bounded_project_and_management_consistency_repairs
+  - copy_or_migration_to_verified_external_ssd
+  - offline_rebuild_from_already_available_local_material
+  - proportionate_local_validation
+  - graceful_stop_start_of_specific_non_system_process_without_unsaved_work
+  - exact_cleanup_or_source_deletion_after_Root_scope_registration_and_basic_checks
+  - bounded_storage_map_state_manifest_and_evidence_updates
+  - exact_project_scoped_rollback
+  - bulk_exact_directory_discard_of_owned_low_value_generated_history_without_backup
+  forbidden_without_separate_current_authority:
+  - network_download_fetch_pull_clone_merge_rebase_or_paid_call
+  - git_commit_push_publication_force_push_or_history_rewrite
+  - deployment_release_or_external_service_write
+  - hub_migration_cleanup_recursive_self_governance_or_unrelated_product_change
+  - disk_format_partition_encrypt_ownership_or_mount_policy_change
+  - sudo_or_bulk_privilege_change
+  - credential_session_active_database_active_recovery_or_unowned_private_data_mutation
+  - offline_video_disk_connection_probe_or_mutation
+  - force_kill_system_process_or_codex_self_termination
+  - unregistered_root_target_or_internal_heavy_runtime_fallback
+completion:
+  frozen_project_terminal_states:
+  - accepted
+  - protected
+  - ineligible
+  - deferred_with_fact_blocker_and_exact_recovery_event
+  zero_conditions:
+  - pending_projects_or_items
+  - active_projects
+  - active_batches
+  - active_writers
+  - unconsumed_effect_authority
+  final_reconciliation:
+  - actual_internal_bytes_released_including_intentional_discard
+  - provable_external_allocated_bytes_added
+  - per_project_internal_residue_and_terminal_disposition
+  - primary_entry_smoke_result_known_non_core_regressions_and_maintenance_method
+  - real_blockers_and_exact_recovery_events
+  - storage_map_frozen_manifest_sole_state_and_live_filesystem
+  - all_agents_locks_and_effect_authorities_closed
+  independent_acceptance:
+  - fresh_judge_and_governor_on_control_policy_revision_and_exact_epoch_final_candidate
+  - ordinary_local_generated_cleanup_not_independently_reviewed_per_microbatch
+  deferred_requires: real_permission_credential_active_writer_external_capability_or_scope_ownership_blocker;
+    historical_reference_gaps_and_accepted_non_core_regressions_alone_do_not_qualify
+owner_risk_tolerance:
+  policy: release_first
+  authorized_generated_history_loss: true
+  data_safety_not_primary_objective: true
+  global_permission_configuration_preserved: true
+  priority_over_legacy_stricter_storage_clauses: true

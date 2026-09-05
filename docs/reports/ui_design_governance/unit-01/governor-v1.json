@@ -1,0 +1,15 @@
+{
+  "id": "hub-foundation-governor-v1",
+  "contract_id": "HUB-GOV-2026-09-05-TC1",
+  "candidate_id": "hub-foundation-candidate-v1",
+  "governor": "/root/hub_contract",
+  "decision": "REQUEST_REPAIR",
+  "authority": "Fresh Judge FAIL on exact candidate",
+  "contract_revision_required": false,
+  "required_repair": [
+    "Bind complete canonical registry, permission/profile and exact named paths",
+    "Reject permission expansion for no_access/no_source without any probes",
+    "Enforce adapter and availability/status/exit/UI semantics",
+    "Add targeted negative tests and freeze v2 with fresh Judge"
+  ]
+}
