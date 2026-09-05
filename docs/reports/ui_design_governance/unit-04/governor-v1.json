@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "governor": "/root/tc4_governor",
+  "candidate": "82f5c7481315162104a979527a725c01407e6c95dbb5e16238a854666a097f24",
+  "contract_version": 2,
+  "decision": "APPROVE",
+  "scope": "TC4 local-service capability only",
+  "fresh_judge": "/root/tc4_judge",
+  "judge_record": "judge-v1.json",
+  "git_delivery": "PENDING_TC5_PREDECESSOR_BASELINE",
+  "successor": "TC5 baseline reconciliation; separate approved TC5 commit/push then unchanged TC4 commit/push; TC6 management cutover afterward",
+  "overall_goal": "INCOMPLETE",
+  "external_project_effects": false,
+  "owner_choices_created": 0
+}

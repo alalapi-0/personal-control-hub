@@ -1,0 +1,26 @@
+--- STATE.yaml@accepted-TC3
++++ STATE.yaml@TC4-activation
+@@ -11,7 +11,7 @@
+   - registry_or_route_change
+   - blocker_change
+   - unique_next_action_change
+-last_updated: '2026-09-05T14:24:20+08:00'
++last_updated: '2026-09-05T14:33:53+08:00'
+ project:
+   id: personal-control-hub
+   phase: Phase 1
+@@ -28,11 +28,11 @@
+ current_work:
+   objective: 完成日常项目管理 Hub、全范围真实接入与 Figma 设计审核闭环。
+   status: ACTIVE
+-  unit: HUB-03-CONNECTION-REFRESH
++  unit: HUB-04-LOCAL-SERVICE
+   spec: docs/design/ui_governance_execution.md
+-  evidence: docs/reports/ui_design_governance/unit-03/
++  evidence: docs/reports/ui_design_governance/unit-04/
+   blocker: Figma 需重连；Manga 读取范围待所有者决定，仅挂起对应依赖。
+-  next_action: 完成来源与刷新记录的独立验收。
++  next_action: 打通本地项目查询、刷新与设计记录服务。
+ registry:
+   authority: data/registry/external_projects.yaml
+   registered_count: 24

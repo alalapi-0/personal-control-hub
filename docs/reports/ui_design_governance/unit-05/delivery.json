@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "unit": "TC5",
+  "candidate": "524e5f34aea22992b7e16aa3c4311f796b57b88f31e1fc42b0f6141e668ed74b",
+  "status": "REMOTE_VERIFIED",
+  "commit": "4c2852cdf9e20fbcb88abd83fd8d1b7d26ec2e1c",
+  "tree": "a19bec3cf16a9c911df1fa9ff62a9d030e15c8d3",
+  "staged_paths": 152,
+  "staged_diff_sha256": "473a5ff39e3eac93b18705ef189bfc7f0c7e172371937c50ce2ed97bc5514490",
+  "sensitive_content_check": "PASS",
+  "remote": "origin",
+  "branch": "agent/governance-closure-20260812",
+  "push_exit_code": 0,
+  "remote_readback": "4c2852cdf9e20fbcb88abd83fd8d1b7d26ec2e1c",
+  "verification": "git ls-remote --exit-code origin refs/heads/agent/governance-closure-20260812",
+  "unrelated_staged_paths": 0
+}

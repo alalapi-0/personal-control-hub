@@ -1,0 +1,13 @@
+{
+  "removed_generated_bytecode_only": [
+    {
+      "path": "src/hub/__pycache__/design_service.cpython-314.pyc",
+      "sha256": "c8b319872f403b6b5d402e375f58e67af9a6f9f1e4b8f771fffcef4129315951"
+    },
+    {
+      "path": "tests/__pycache__/test_hub_design_service.cpython-314.pyc",
+      "sha256": "6766b117de6602f491e08665e637a6640068d059950b6efd38d61a3900a34210"
+    }
+  ],
+  "unrelated_cleanup": false
+}

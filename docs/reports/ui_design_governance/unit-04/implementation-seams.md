@@ -1,0 +1,17 @@
+# Accepted API integration seams
+
+Reader: Root and bounded service implementers. Purpose: reuse read-only discovery by `/root/hub_service_seams`; update when accepted APIs change. This is integration guidance, not a second current-state record or fixed implementation-file contract.
+
+- Identity: `connections.load_registry_at(root)` returns registry and raw hash without probing project roots. Avoid legacy registry validation that checks external path existence.
+- Frozen authorities: `connection_manager_cli.load_bundles`, `result_validator`, `current_authority_status`. Historical validation needs every explicitly configured frozen bundle; refresh uses the active bundle.
+- Project facts: `RefreshLedger(..., read_only=True).history()` returns bodies; `.rebuild()` returns latest-attempt/last-success references, freshness, reason, drift and head. Each call now uses coherent history, but separate calls can have different heads. A DTO response must bind matching heads or use one validated snapshot; do not join mismatched reads silently.
+- Refresh: `connection_refresh.refresh(ledger, resolver, request_id, project_ids, expected_head=...)` handles bounded/resumable requests with per-project commits. List/detail reads must not refresh external sources implicitly.
+- Relations: `connection_manager_cli.load_relations` validates registry and independently pinned accepted inventory, then derives proposed/unknown views. It grants neither program-link nor design-selection authority.
+- Design facts: `DesignStore.read()` and `.projection(store)` expose one validated store version, immutable facts/events and current/stale decision projections. Read once per response, retain store revision and exact candidate identity.
+- Design commands: `.append_fact(..., expected_revision, request_id)` and `.append_decision(..., expected_revision, trusted_owner_reference)`. Existing store checks reference matching, not HTTP caller identity. The local service must derive owner-action provenance at a protected interaction boundary; it must never trust caller-supplied `trusted_owner`, source reference or approval flags.
+- Export: `DesignStore.export(candidate_id, candidate_revision, output_path)` uses exact bindings and create-only verified output. Server-owned destinations only; preserve committed-but-uncertain outcomes and idempotent receipts rather than presenting a generic retryable failure after publication.
+- Artifact serving needs a new registered-ID boundary: reuse existing safe bounded export-reader rules for ordinary files, paths, scope, classification and hash. No arbitrary path input, repository static mount, or active-content execution. Figma references remain verified links; previews use frozen local artifacts.
+
+Project list/detail should share one DTO builder: retain all registry IDs even without results; preserve unknown business state for operational-only observations; join relation/design references without changing their authority. Search/filter/order and error mapping must be deterministic. Root should define small library/service interfaces before disjoint implementation dispatch.
+
+No framework is established. Existing Python dependencies suffice for initial local service work; package.json currently only has MCP checks. User-selected Figma design remains a prerequisite for UI implementation. Host/Origin/CORS, mutation protection, loopback-only lifecycle and request-derived owner provenance require isolated tests; loopback alone is not owner intent.

@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "kind": "owner_pause_checkpoint",
+  "paused_at": "2026-09-05T15:21:29+08:00",
+  "authority": "owner explicitly paused current task and its background execution",
+  "thread_id": "01a06fae-2112-7cd2-8c83-d34d323fecaa",
+  "owner": "user",
+  "root": "/root",
+  "native_goal_observation": null,
+  "active_descendant_writers": 0,
+  "known_exec_sessions_completed": [
+    3519,
+    32791,
+    22072
+  ],
+  "background_test_servers_remaining": 0,
+  "automatic_resume_allowed": false,
+  "resume_requires": "explicit owner instruction",
+  "resume_action": "Freeze TC4 candidate with preservation evidence, then fresh Judge and Governor; no approval has been issued for TC4.",
+  "completed_evidence": {
+    "hub_tests": 181,
+    "tests_result": "PASS",
+    "real_read_only_api_projects": 24,
+    "list_detail_parity": true,
+    "external_source_reads_in_api_readback": 0
+  },
+  "pending_dependencies": [
+    "Figma reconnection",
+    "Manga read-scope owner decision",
+    "Figma design choice before UI implementation"
+  ],
+  "git_effects": 0,
+  "external_writes": 0,
+  "file_hashes": {
+    "STATE.yaml": "fe278ec8a71c71238bd078909075fd573f858275920630a4f172b6c00e4646af",
+    "src/hub/service_contract.py": "f06b00793aad42d07f2ba708a97090645412688dc72bbaece08bf33df5a43f52",
+    "src/hub/local_service.py": "e4304b74649e901afdc0ce01b73f5faeb5079696b65b53da8ca7b106562663e7",
+    "src/hub/project_service.py": "17865ec36a6b9ef7ac2f5859eef902b0671cd7aa799995f375042ec1a133f6a3",
+    "src/hub/design_service.py": "028dde8e8894082e156fe45d96292ef09b2c97888f547c9d96bb0cb7af94d119",
+    "scripts/hub_server.py": "9e0c70ab18a4fa4f8b0ac691d225db65df93928cd85fb42abde1db386bb9c794",
+    "tests/test_hub_local_service.py": "8aae2099acbae1df6c337d51ccd6d961b25e4dbb2997a33e58ac150d26306920",
+    "tests/test_hub_service_integration.py": "df23238eb2bbea061742bc5ea5e52c9cfa872dc16c0d993fbb5e28ae32320039",
+    "tests/test_hub_project_service.py": "87aa56ceb4319f7567b1b6b73ba2349b3f0cd0b4d9228dd72462c307d4a8340f",
+    "tests/test_hub_design_service.py": "9a381eed586ccd985544be271edb3bee20cf34d5fd6b7d69439d2d04d0a3e054",
+    "docs/design/hub_local_service_protocol.md": "d77dccfe59f4721d4b90f15cad5ad341edfc611639f632bd99a7046c3a645951",
+    "docs/reports/ui_design_governance/unit-04/validation-v1.json": "4d19effbb4bafd004dd1cf50b4fd73c589e16f2f22c8621f03128f3c1240b241",
+    "docs/reports/ui_design_governance/unit-04/real-readback-v1.json": "76d3f55447eea9aa6e2266ea2bafc88f326a3564123424b73088ab32e364fb10"
+  }
+}

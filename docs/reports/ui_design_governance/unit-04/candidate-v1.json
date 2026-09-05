@@ -1,0 +1,167 @@
+{
+  "schema_version": "1.0",
+  "id": "TC4-candidate-v1",
+  "semantic": {
+    "contract": "HUB-GOV-2026-09-05-TC4",
+    "version": 2,
+    "files": {
+      "docs/design/hub_local_service_protocol.md": "d77dccfe59f4721d4b90f15cad5ad341edfc611639f632bd99a7046c3a645951",
+      "docs/reports/ui_design_governance/unit-04/README.md": "b554ba5878ad8dfe9f83cab4f678dc305ea7e9fe20460b6842e055967d117ae4",
+      "docs/reports/ui_design_governance/unit-04/activation-validation.json": "4709693d5ed1da13c23f1d1e37896637701855ea0806dee17b9738f0d64d65d9",
+      "docs/reports/ui_design_governance/unit-04/baseline.json": "4f10e568b40cf10ff2f1d3a1772f5051cc246d440537a9fb4e76c53cc4d5a507",
+      "docs/reports/ui_design_governance/unit-04/cleanup-v1.json": "e2b77d73b7a898d00621cc3fc72c251fd400779a924957d8ee908f85d556d306",
+      "docs/reports/ui_design_governance/unit-04/contract.md": "ad1194a27f8164f990f8b3f24806692880722e46a59aac7299220378c5441a51",
+      "docs/reports/ui_design_governance/unit-04/implementation-seams.md": "ea3ae681b2d649da4e55786e2ac99de83858c6b7f90472c8197bc1f9895236b3",
+      "docs/reports/ui_design_governance/unit-04/pause-checkpoint.json": "b19e4693a8716d67cecc23b5cc4cf4b024fc428f46323f11b2a82c69084c5d1c",
+      "docs/reports/ui_design_governance/unit-04/readback.py": "16704cbc1ef7f09241d941235285af819112fc868b2accecd4112dd878d53f11",
+      "docs/reports/ui_design_governance/unit-04/real-readback-v1.json": "76d3f55447eea9aa6e2266ea2bafc88f326a3564123424b73088ab32e364fb10",
+      "docs/reports/ui_design_governance/unit-04/resume-baseline.json": "18af1dd6343220661d62ce23d0d15ae61c365b2265bb68a5b4f91ede14edfa04",
+      "docs/reports/ui_design_governance/unit-04/resume-validation.json": "a27959ceb1fbe978d06e6371dc1e76d019a7414cc1be0d8e879c2479eca3c6c5",
+      "docs/reports/ui_design_governance/unit-04/service-interfaces.md": "98110d9beeda295fd17949040699500ea4ddb7842a9fffa99b10b93fd42ec805",
+      "docs/reports/ui_design_governance/unit-04/state-task.diff": "fb58becaaea949fb26d7840d6ccc3184ce768d7fbf8c92eb6b602068fdfae1d1",
+      "docs/reports/ui_design_governance/unit-04/validation-v1.json": "4d19effbb4bafd004dd1cf50b4fd73c589e16f2f22c8621f03128f3c1240b241",
+      "scripts/hub_server.py": "9e0c70ab18a4fa4f8b0ac691d225db65df93928cd85fb42abde1db386bb9c794",
+      "src/hub/design_service.py": "028dde8e8894082e156fe45d96292ef09b2c97888f547c9d96bb0cb7af94d119",
+      "src/hub/local_service.py": "e4304b74649e901afdc0ce01b73f5faeb5079696b65b53da8ca7b106562663e7",
+      "src/hub/project_service.py": "17865ec36a6b9ef7ac2f5859eef902b0671cd7aa799995f375042ec1a133f6a3",
+      "src/hub/service_contract.py": "f06b00793aad42d07f2ba708a97090645412688dc72bbaece08bf33df5a43f52",
+      "tests/test_hub_design_service.py": "9a381eed586ccd985544be271edb3bee20cf34d5fd6b7d69439d2d04d0a3e054",
+      "tests/test_hub_local_service.py": "8aae2099acbae1df6c337d51ccd6d961b25e4dbb2997a33e58ac150d26306920",
+      "tests/test_hub_project_service.py": "87aa56ceb4319f7567b1b6b73ba2349b3f0cd0b4d9228dd72462c307d4a8340f",
+      "tests/test_hub_service_integration.py": "df23238eb2bbea061742bc5ea5e52c9cfa872dc16c0d993fbb5e28ae32320039"
+    },
+    "state_semantic": {
+      "schema_version": "1.1",
+      "metadata": {
+        "role": "canonical_current_state",
+        "authority": "canonical",
+        "reader": "进入 Hub 的 Agent、所有者和状态展示工具。",
+        "purpose": "只保存 Hub 当前管理工作、registry/外部状态指针、阻塞与唯一下一步；不复制外部项目执行状态。",
+        "update_triggers": [
+          "accepted_milestone",
+          "governance_round_transition",
+          "registry_or_route_change",
+          "blocker_change",
+          "unique_next_action_change"
+        ]
+      },
+      "project": {
+        "id": "personal-control-hub",
+        "phase": "Phase 1",
+        "health": "active",
+        "location_policy": "internal_disk_only",
+        "storage_migration_or_cleanup": "forbidden"
+      },
+      "current_round": {
+        "id": "ROUND-1-1",
+        "name": "Development Project Storage Governance Registry and Routing",
+        "status": "ACCEPTED",
+        "governance_revision": "HUB-GOV-2026-09-02-06-ACCEPTED",
+        "last_completed_round": "ROUND-1",
+        "next_round": "ROUND-1-5"
+      },
+      "current_work": {
+        "objective": "完成日常 Hub、真实接入、设计闭环与管理材料归并。",
+        "unit": "HUB-04-LOCAL-SERVICE",
+        "spec": "docs/design/ui_governance_execution.md",
+        "evidence": "docs/reports/ui_design_governance/unit-04/",
+        "blocker": "Figma 需重连；Manga 读取范围待所有者决定，仅挂起对应依赖。"
+      },
+      "registry": {
+        "authority": "data/registry/external_projects.yaml",
+        "registered_count": 24,
+        "enabled_count": 23,
+        "execution_candidate_count": 21,
+        "special_record_count": 3,
+        "storage_effect_authority": "external_storage_state_only",
+        "frozen_manifest": "/Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_04_r1/PROJECT_MANIFEST_v1.yaml",
+        "frozen_manifest_sha256": "fafae757b2b8cbc297d6be7976d2a6f49a7735734b27293792fa0b52dc6bfacd",
+        "authority_pointer_audit": "/Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/AUTHORITY_POINTER_AUDIT.yaml",
+        "exclusions": {
+          "manga-localizer": "accepted_exclusion_record_only",
+          "personal-control-hub": "protected_internal_control_plane",
+          "storage_governance": "protected_governance_program"
+        }
+      },
+      "storage_governance": {
+        "relation": "active_governance_program",
+        "adapter": "governance/adapters/storage_governance.yaml",
+        "external_router": "~/Documents/StorageGovernance/AGENTS.md",
+        "external_norm": "~/Documents/StorageGovernance/STORAGE_GOVERNANCE.md",
+        "external_state": "~/Documents/StorageGovernance/STATE.yaml",
+        "execution_state_authority": "external_state_only",
+        "hub_access": "registry_pointer_and_compact_summary",
+        "hub_location_policy": "internal_disk_only_and_migration_excluded",
+        "goal_package": {
+          "prompt": "prompts/storage_governance_goal_mode.md",
+          "parameters": "data/programs/storage_governance_goal.yaml",
+          "project_registry": "data/registry/external_projects.yaml",
+          "activation": "active",
+          "authority": "owner_resume_01a069c2-4ba9-7161-bb4e-eae56f5e5977",
+          "epoch": "dev_projects_2026_09_04_r1",
+          "contract": "SG-GOV-2026-09-04-ROOT-MIGRATION"
+        },
+        "compact_execution_summary": {
+          "state": "COMPLETE_WITH_OWNER_REMOVAL",
+          "active_project": "none_paused",
+          "active_projects": 0,
+          "active_writers": 0,
+          "pending_projects": 0,
+          "terminal_records": 22,
+          "project_effects_allowed": false,
+          "current_project_effect_authority": "closed",
+          "storage_execution_authority": "completed_with_owner_removal",
+          "epoch_capability_authority": "granted",
+          "last_terminal_project": "root-migration-batch",
+          "last_terminal_disposition": "20_cleaned_0_owner_exempt_1_removed_1_existing_external_registered"
+        },
+        "management_finding": "mpv-clip-workbench 已登记为外盘现有 Git 项目；light_novel 与 zarathustra-adaptation 已完成外盘复制、Git 同步、旧源清理和软链替换；SubPlz 已按业主确认移除本机与外置盘资产并从 Hub registry 删除。",
+        "owner_global_configuration_preservation": "external_state_owner_boundary_addendum",
+        "source": "~/Documents/StorageGovernance/STATE.yaml",
+        "scope": "exact_root_migration_and_github_sync",
+        "active_project_state": "complete_with_owner_removal",
+        "post_effect_evidence": "/Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_04_r1/POST_MIGRATION_VERIFICATION.yaml",
+        "last_accepted_milestone": {
+          "id": "storage_restart_2026_09_01_r2_closure",
+          "status": "complete_terminal_reconciliation",
+          "accepted_on": "2026-09-02",
+          "epoch_released_local_bytes": 882577408,
+          "cumulative_accepted_release_bytes": 26992914432,
+          "terminal_counts": {
+            "accepted": 1,
+            "deferred": 29,
+            "protected": 14,
+            "ineligible": 1
+          },
+          "source_state": "~/Documents/StorageGovernance/STATE.yaml"
+        },
+        "bounded_management_repair_effect": "consumed"
+      },
+      "control_plane_review": {
+        "revision": 7,
+        "state": "ACCEPTED",
+        "phase": "COMPLETE",
+        "contract": "SG-GOV-2026-09-03-TC2",
+        "fresh_judge": "PASS",
+        "governor_decision": "APPROVE",
+        "review_authority": "~/Documents/StorageGovernance/STATE.yaml.control_plane_review"
+      },
+      "git_delivery": {
+        "current_goal_authority": "owner_20260905_resume_accepted_units",
+        "remote": "origin",
+        "tracking_branch": "origin/agent/governance-closure-20260812",
+        "automatic_main_merge": false,
+        "force_push": false
+      }
+    },
+    "accepted_dependencies": {
+      "TC2": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+      "TC3": "77f6d8d2d866aa5bb5acf40efc72fff30fbba8c5cd08ba2ea662fe210c370438"
+    },
+    "protected_baseline": "resume-baseline.json",
+    "git_delivery_dependency": "Unsynchronized registry/adapter/params and accepted predecessor files require exact ownership reconciliation before a self-contained Git delivery.",
+    "scope": "TC4 local service capability only; no UI or final connection acceptance"
+  },
+  "sha256": "82f5c7481315162104a979527a725c01407e6c95dbb5e16238a854666a097f24",
+  "identity_rule": "sha256 compact sort_keys JSON of semantic only; excludes this envelope, Judge/Governor/delivery and current-work status/next_action/last_updated metadata"
+}

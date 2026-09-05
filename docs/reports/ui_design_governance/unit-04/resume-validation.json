@@ -1,0 +1,98 @@
+{
+  "schema_version": "1.0",
+  "kind": "TC4_resume_validation",
+  "checks": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -W error::ResourceWarning -m unittest discover -s tests -p test_hub*.py",
+      "exit_code": 0,
+      "tests": 181,
+      "duration_seconds": 22.248,
+      "evidence": "Root exec session 44382 final output"
+    },
+    {
+      "command": "python3 scripts/check_repo.py",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 scripts/round_consistency_check.py",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "pause_identity_matches": {
+    "src/hub/service_contract.py": true,
+    "src/hub/local_service.py": true,
+    "src/hub/project_service.py": true,
+    "src/hub/design_service.py": true,
+    "scripts/hub_server.py": true,
+    "tests/test_hub_local_service.py": true,
+    "tests/test_hub_service_integration.py": true,
+    "tests/test_hub_project_service.py": true,
+    "tests/test_hub_design_service.py": true,
+    "docs/design/hub_local_service_protocol.md": true,
+    "docs/reports/ui_design_governance/unit-04/validation-v1.json": true,
+    "docs/reports/ui_design_governance/unit-04/real-readback-v1.json": true
+  },
+  "protected_files": {
+    "count": 145,
+    "all_match": true,
+    "baseline": "resume-baseline.json"
+  },
+  "state_preservation": "all sections outside current_work/last_updated identical",
+  "bootstrap_bytes": 8054,
+  "readback": {
+    "background_server_remaining": false,
+    "design_available": false,
+    "design_revision": null,
+    "external_source_reads": 0,
+    "final_connections_accepted": false,
+    "head": {
+      "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+      "sequence": 78
+    },
+    "kind": "TC4_real_read_only_api_evidence",
+    "ledger_sha256_after": "4c4151df940117550d8c2665c5d35846727ffe1eb72f6e87882173c58f75a131",
+    "ledger_sha256_before": "4c4151df940117550d8c2665c5d35846727ffe1eb72f6e87882173c58f75a131",
+    "list_detail_equal": true,
+    "list_latency_ms": 66.71,
+    "manga_probes": 0,
+    "mutating_http_calls": 0,
+    "new_real_decisions": 0,
+    "project_count": 24,
+    "schema_version": "1.0",
+    "ui_implemented": false,
+    "project_ids": [
+      "ai-anime-short-factory",
+      "ai-music-foundry",
+      "audio-clone",
+      "cognitive-asset-library",
+      "computer-study-plan",
+      "desktop-downloads-scripts",
+      "desktop-jav-tools",
+      "desktop-magnet",
+      "desktop-tool",
+      "light-novel",
+      "manga-localizer",
+      "mpv-clip-workbench",
+      "novel-continuation-agent",
+      "personal-control-hub",
+      "pixel-world-asset-forge",
+      "pycharm-agent-workspace",
+      "pycharm-misc-project",
+      "resilient-personal-network",
+      "storage_governance",
+      "story-faceless-utopia",
+      "universal-player",
+      "wechat-article-scheduler",
+      "youtube-hq-downloader",
+      "zarathustra-adaptation"
+    ]
+  },
+  "ui_lanes": "NOT_APPLICABLE for TC4: no UI HTML; UI remains required for overall Goal",
+  "external_writes": 0,
+  "real_design_choices": 0,
+  "git_effects": 0
+}
