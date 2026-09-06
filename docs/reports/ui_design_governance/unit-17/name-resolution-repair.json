@@ -1,0 +1,13 @@
+{
+  "contract": "TC17 v2 amendment",
+  "changed": [
+    {
+      "path": "src/hub/web/hub.js",
+      "before": "1113c5337539c8053be5c6e73a64989c3376e05c2702505765288c883e3aef3c",
+      "after": "86a0acb8cc35c8d667b7b472a7af181141ef21b4915fe914ad275713f24a92d3"
+    }
+  ],
+  "preserved": 309,
+  "reason": "Readable project names on design deep links; no style or semantic change",
+  "validation": "hub-browser.json; node --test tests/test_hub_web_logic.mjs (10 pass); explicit ES module syntax check pass"
+}

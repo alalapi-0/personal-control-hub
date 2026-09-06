@@ -1,0 +1,77 @@
+{
+  "reader": {
+    "loading": {
+      "busy": "true",
+      "text": "正在读取课程真源…"
+    },
+    "error": {
+      "busy": "false",
+      "text": "课程资料暂时无法读取\n\nfixture/terminal.md · HTTP 503\n\n重新读取"
+    },
+    "recovery": "认识终端\n\n合成演示资料。终端用于输入命令并查看文字结果。\n\n先观察，再行动\npwd：显示当前位置。\nls：列出当前目录内容。\ncd：切换目录。\n\n本演示仅供阅读；命令执行、记录与存档均停用。"
+  },
+  "other": {
+    "initialFocus": true,
+    "validation": "请先写一条本次记录，再保存完成",
+    "restored": {
+      "id": "",
+      "text": "记录并完成",
+      "inert": false,
+      "hidden": "true"
+    },
+    "empty": {
+      "state": "empty",
+      "heading": "还没有学习动作记录",
+      "count": "0"
+    },
+    "reduced": {
+      "reduce": true,
+      "modalAnimation": "none"
+    },
+    "reducedNavigated": true,
+    "posts": []
+  },
+  "expected_error": "One injected synthetic HTTP 503; no genuine failure or business write",
+  "method": "Live exact source fixture, same-origin synthetic data",
+  "harness_repairs": [
+    "query-string-aware route glob",
+    "specific inline reader locator",
+    "stable animation filter permits blur(0px)"
+  ],
+  "unverified": [],
+  "navigation": [
+    {
+      "target": "home",
+      "view": "view-home"
+    },
+    {
+      "target": "route",
+      "view": "view-route"
+    },
+    {
+      "target": "review",
+      "view": "view-review"
+    },
+    {
+      "target": "knowledge",
+      "view": "view-knowledge"
+    },
+    {
+      "target": "growth",
+      "view": "view-growth"
+    }
+  ],
+  "focus_trap": {
+    "focusables": [
+      "readerClose",
+      "readerBody",
+      "recordNote",
+      "recordEvidence",
+      "recordSaveDone"
+    ],
+    "tab_from_last": "readerClose",
+    "shift_tab_from_first": "recordSaveDone",
+    "pass": true
+  },
+  "unverified_scope_note": "Only the exercised UI states passed; real business writes and external implementation are excluded, as described in observation.md."
+}

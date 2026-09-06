@@ -1,0 +1,14 @@
+{
+  "status": "APPROVE",
+  "governor": "/root/tc16_governor",
+  "contract": "TC17 v3",
+  "candidate_sha256": "51fcdd76e9d1a0e9c1597818f925e6b63f6761090a3396e481c6cb897e022000",
+  "fresh_judge": "/root/tc17_closure_judge",
+  "basis": "Store15/12facts/priorHubselection preserved;1owner-authorized CSPdefer;unselectedZIP313bb3ec4b5bcbe4e96e6dac7349bf90eab23b7292c0da7f5440af8a3f6f621e;Hub tests/UI lanes pass;337protected unchanged;ledger130;zero external/Figma/Cursor effects.",
+  "authorized_next": [
+    "Register TC17 acceptance, scoped commit, normal push and exact remote verification.",
+    "After both TC17 runtime bindings exist at verified remote commit, deliver unchanged accepted TC18 separately; historical store14 assertion is not current successor validation.",
+    "Create concise final handoff/state only, verify paths/commands/identities/remote, freeze and obtain fresh Judge PASS and Governor approval before Goal completion."
+  ],
+  "future_scope": "Other external project design/implementation is cancelled in this Goal and remains owner-planned future work; no Cursor operation."
+}

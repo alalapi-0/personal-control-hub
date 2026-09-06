@@ -10,7 +10,7 @@ metadata:
   - registry_or_route_change
   - blocker_change
   - unique_next_action_change
-last_updated: '2026-09-06T04:39:23.994862+00:00'
+last_updated: '2026-09-06T07:20:24.607231+00:00'
 project:
   id: personal-control-hub
   phase: Phase 1
@@ -25,14 +25,15 @@ current_round:
   last_completed_round: ROUND-1
   next_round: ROUND-1-5
 current_work:
-  objective: 完成日常 Hub、真实接入、设计闭环、材料归并，并统一全局工具凭据取用。
+  objective: 完成并交付Hub选稿页；学习计划保留原版，其他项目的后续设计由所有者自行交给Cursor。
   status: ACTIVE
-  unit: HUB-16-REAL-CONNECTIONS
+  unit: HUB-17-REPRESENTATIVE-DESIGN-LOOP
   spec: docs/design/ui_governance_execution.md
-  evidence: docs/reports/ui_design_governance/unit-16/
+  evidence: docs/reports/ui_design_governance/unit-17/
   blocker: null
-  next_action: TC16 已经 fresh Judge PASS / Governor APPROVE：20 项当前权限刷新、四个例外、head 130，24 项接口与桌面/手机一致。作用域交付后进入
-    TC17，以学习计划真实界面代码＋合成数据完成 Figma→Hub 比较、真实所有者选择与导出。
+  next_action: TC17 v3已获独立验收，提交并验证远端；随后交付原样TC18记录并完成最终Hub交接。
+  owner_scope_revision: docs/reports/ui_design_governance/unit-17/owner-decision.json
+  accepted_candidate: 51fcdd76e9d1a0e9c1597818f925e6b63f6761090a3396e481c6cb897e022000
 registry:
   authority: data/registry/external_projects.yaml
   registered_count: 24
@@ -47,6 +48,13 @@ registry:
     manga-localizer: accepted_exclusion_record_only
     personal-control-hub: protected_internal_control_plane
     storage_governance: protected_governance_program
+  ui_scope_resolution:
+    path: data/design_governance/scope-resolution-v1.json
+    candidate: 31948ccec7efa9d9901270ac54cad4c6423b5571d4b7418deff7b1f1716af89f
+    status: ACCEPTED_LOCAL_DELIVERY_HELD
+    evidence: docs/reports/ui_design_governance/unit-18/
+    meaning: Current stage-A UI scope:13 in_scope,8 no_ui,3 protected; manifest-v5
+      retains historical startup dispositions.
 storage_governance:
   relation: managed_governance_program
   adapter: governance/adapters/storage_governance.yaml
@@ -69,9 +77,13 @@ task_health:
   status: WATCH
   native_goal_tokens: 3125388
   native_goal_seconds: 7697
-  telemetry_scope: previous Goal cumulative snapshot; preserved history, not this Goal usage
-  material_progress: TC16 v2 accepted:20current-authorityrefresh+4exceptions,head130,24CLI/API/UIparity;freshJudgePASS/GovernorAPPROVE.
-  risk: TC16 management connection refresh, representative external UI workflow and final handoff remain
-  action: Deliver TC16 then execute prepared TC17 external design-loop contract; final handoff remains.
+  telemetry_scope: previous Goal cumulative snapshot; preserved history, not this
+    Goal usage
+  material_progress: Owner retained CSP original; one authorized defer event persisted/replayed,
+    unselected export validated, Hubdesktop/mobile/restart passed187+140subtests/10Node
+    checks.
+  risk: Only Hub selection-page closure/delivery; external design work cancelled by
+    owner.
+  action: Apply TC17 v3 closure; do not resume external projects or operate Cursor.
   next_checkpoint: next eligible Goal health boundary; preserve completed rebaseline/cooldown
   cooldown: 75000moretokens or30active minutes plus eligible condition

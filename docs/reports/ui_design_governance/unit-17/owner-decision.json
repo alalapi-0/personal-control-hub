@@ -1,0 +1,11 @@
+{
+  "kind": "owner_scope_revision_and_design_decision",
+  "thread_id": "01a07442-c275-7270-bd2e-98b50f277bd0",
+  "turn_id": "01a07589-d513-7a01-92f4-eefb9ba5f05b",
+  "quote": "学习计划的项目保留原版的设计，其他项目也不用继续推进了，只要先把hub的选稿页面做出来就行，后面其他项目的设计和推进我打算交给cursor去做",
+  "owner_reference": "owner-turn:01a07442-c275-7270-bd2e-98b50f277bd0/01a07589-d513-7a01-92f4-eefb9ba5f05b",
+  "delegated_actor": "Root via accepted local HTTP owner action; not a claim of personal owner UI click",
+  "decision_request_id": "tc17-defer-owner-01a07589-d513-7a01-92f4-eefb9ba5f05b",
+  "trusted_service_reference": "local-http://owner-action/tc17-defer-owner-01a07589-d513-7a01-92f4-eefb9ba5f05b",
+  "interpretation": "CSP external original retained; quiet-workbench deferred/unselected. Other external design work stops; only Hub selection page delivery remains. No Cursor operation."
+}

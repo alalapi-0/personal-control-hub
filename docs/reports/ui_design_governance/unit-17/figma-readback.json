@@ -1,0 +1,272 @@
+{
+  "file_key": "qHIMgQnOulj5TEEYk9Yaod",
+  "page_id": "0:1",
+  "sha256_self_test": true,
+  "scenes": [
+    {
+      "id": "11:2",
+      "name": "原版 · 真实代码 / 合成内容 · Desktop",
+      "width": 1440,
+      "height": 937,
+      "content_sha256": "db77f5d6cb3fd5ab98ecd609776b1a3b5a9dfd1734bb35227b914dfd809c24c3",
+      "nodes": 72,
+      "texts": 23,
+      "instances": 1,
+      "auto_layouts": 27,
+      "fonts": [
+        "{\"family\":\"Cousine\",\"style\":\"Bold\"}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Bold\",\"variationSettings\":{\"wght\":700}}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Regular\",\"variationSettings\":{\"wght\":400}}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Black\",\"variationSettings\":{\"wght\":900}}",
+        "{\"family\":\"Cousine\",\"style\":\"Regular\"}"
+      ],
+      "task_title_present": true,
+      "task_action_present": true,
+      "zero_progress_present": true
+    },
+    {
+      "id": "25:14",
+      "name": "原版 · 真实代码 / 合成内容 · Mobile",
+      "width": 390,
+      "height": 739,
+      "content_sha256": "d72bfac63a73a457aa238e8a20f66e1b94ecc576cb71aab181a95848aa191ecc",
+      "nodes": 88,
+      "texts": 30,
+      "instances": 2,
+      "auto_layouts": 35,
+      "fonts": [
+        "{\"family\":\"Cousine\",\"style\":\"Bold\"}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Bold\",\"variationSettings\":{\"wght\":700}}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Regular\",\"variationSettings\":{\"wght\":400}}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Black\",\"variationSettings\":{\"wght\":900}}",
+        "{\"family\":\"Cousine\",\"style\":\"Regular\"}"
+      ],
+      "task_title_present": true,
+      "task_action_present": true,
+      "zero_progress_present": true
+    },
+    {
+      "id": "13:13",
+      "name": "安静任务台 · 同内容 / 首页提案 · Desktop",
+      "width": 1440,
+      "height": 937,
+      "content_sha256": "453645b3f3231d610ff2b5d96b682e58ff9b4fa14a230ec6c4bee7332b2261fc",
+      "nodes": 40,
+      "texts": 22,
+      "instances": 3,
+      "auto_layouts": 18,
+      "fonts": [
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Bold\",\"variationSettings\":{\"wght\":700}}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Regular\",\"variationSettings\":{\"wght\":400}}",
+        "{\"family\":\"Cousine\",\"style\":\"Regular\"}"
+      ],
+      "task_title_present": true,
+      "task_action_present": true,
+      "zero_progress_present": true
+    },
+    {
+      "id": "17:10",
+      "name": "安静任务台 · 同内容 / 首页提案 · Mobile",
+      "width": 390,
+      "height": 739,
+      "content_sha256": "818b584ed5d7e73ef6250b3073008e66416f5c020d2e8f6a93598dc13618b390",
+      "nodes": 61,
+      "texts": 32,
+      "instances": 4,
+      "auto_layouts": 24,
+      "fonts": [
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Bold\",\"variationSettings\":{\"wght\":700}}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Regular\",\"variationSettings\":{\"wght\":400}}",
+        "{\"family\":\"Cousine\",\"style\":\"Regular\"}"
+      ],
+      "task_title_present": true,
+      "task_action_present": true,
+      "zero_progress_present": true
+    },
+    {
+      "id": "11:79",
+      "name": "Source / Primary action",
+      "width": 330,
+      "height": 60,
+      "content_sha256": "4530b5fb142e4954e7c44f93d3b6cdfda6106d312798f75d08117419511e8e2a",
+      "nodes": 5,
+      "texts": 2,
+      "instances": 0,
+      "auto_layouts": 3,
+      "fonts": [
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Bold\",\"variationSettings\":{\"wght\":700}}"
+      ],
+      "task_title_present": false,
+      "task_action_present": true,
+      "zero_progress_present": false
+    },
+    {
+      "id": "25:102",
+      "name": "Source / Mobile navigation",
+      "width": 361,
+      "height": 68,
+      "content_sha256": "1c2b977d45d7335bf4e1c2f404dd4406a3397f2b1648d449e106887404476195",
+      "nodes": 21,
+      "texts": 10,
+      "instances": 0,
+      "auto_layouts": 6,
+      "fonts": [
+        "{\"family\":\"Cousine\",\"style\":\"Regular\"}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Bold\",\"variationSettings\":{\"wght\":700}}"
+      ],
+      "task_title_present": false,
+      "task_action_present": false,
+      "zero_progress_present": false
+    },
+    {
+      "id": "32:60",
+      "name": "Source / Secondary action",
+      "width": 137,
+      "height": 44,
+      "content_sha256": "081726cfca181a359605c67f55698365062a6e0ff68891362ab6ee5f62b5d8e0",
+      "nodes": 2,
+      "texts": 1,
+      "instances": 0,
+      "auto_layouts": 1,
+      "fonts": [
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Regular\",\"variationSettings\":{\"wght\":400}}"
+      ],
+      "task_title_present": false,
+      "task_action_present": false,
+      "zero_progress_present": false
+    }
+  ],
+  "variables": [
+    {
+      "id": "VariableID:13:7",
+      "name": "Canvas",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "STROKE_COLOR"
+      ],
+      "valuesByMode": {
+        "13:0": {
+          "r": 0.08235294371843338,
+          "g": 0.0784313753247261,
+          "b": 0.08627451211214066,
+          "a": 1
+        }
+      }
+    },
+    {
+      "id": "VariableID:13:8",
+      "name": "Surface",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "STROKE_COLOR"
+      ],
+      "valuesByMode": {
+        "13:0": {
+          "r": 0.12941177189350128,
+          "g": 0.11764705926179886,
+          "b": 0.13725490868091583,
+          "a": 1
+        }
+      }
+    },
+    {
+      "id": "VariableID:13:9",
+      "name": "Text",
+      "type": "COLOR",
+      "scopes": [
+        "TEXT_FILL"
+      ],
+      "valuesByMode": {
+        "13:0": {
+          "r": 0.9686274528503418,
+          "g": 0.9411764740943909,
+          "b": 0.9098039269447327,
+          "a": 1
+        }
+      }
+    },
+    {
+      "id": "VariableID:13:10",
+      "name": "Muted",
+      "type": "COLOR",
+      "scopes": [
+        "TEXT_FILL"
+      ],
+      "valuesByMode": {
+        "13:0": {
+          "r": 0.7215686440467834,
+          "g": 0.6784313917160034,
+          "b": 0.7137255072593689,
+          "a": 1
+        }
+      }
+    },
+    {
+      "id": "VariableID:13:11",
+      "name": "Accent",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "STROKE_COLOR"
+      ],
+      "valuesByMode": {
+        "13:0": {
+          "r": 0.8470588326454163,
+          "g": 0.7333333492279053,
+          "b": 0.6509804129600525,
+          "a": 1
+        }
+      }
+    },
+    {
+      "id": "VariableID:13:12",
+      "name": "Border",
+      "type": "COLOR",
+      "scopes": [
+        "FRAME_FILL",
+        "SHAPE_FILL",
+        "STROKE_COLOR"
+      ],
+      "valuesByMode": {
+        "13:0": {
+          "r": 0.2862745225429535,
+          "g": 0.2549019753932953,
+          "b": 0.2980392277240753,
+          "a": 1
+        }
+      }
+    }
+  ],
+  "collections": [
+    {
+      "id": "VariableCollectionId:13:6",
+      "name": "学习光场 / Source",
+      "modes": [
+        {
+          "name": "Mode 1",
+          "modeId": "13:0"
+        }
+      ]
+    }
+  ],
+  "context_sha256": "329b7bab09af9e0107740f21d7c04cd45800d4fef4195d6d8575f3e9112041f8",
+  "capture_refs_removed": [
+    {
+      "id": "2:2",
+      "absent": true
+    },
+    {
+      "id": "18:10",
+      "absent": true
+    },
+    {
+      "id": "24:14",
+      "absent": true
+    }
+  ]
+}

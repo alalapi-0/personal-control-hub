@@ -1,0 +1,115 @@
+{
+  "errors": [],
+  "network": [
+    {
+      "url": "http://127.0.0.1:54664/",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/progress.html",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/progress_ui.css?v=20260814t",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/progress_data.js?v=20260814a",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/rounds_data.js?v=20260811a",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/progress_ui.js?v=20260814aa",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/rounds/round_00/final/command_cheatsheet.md?_=1788670013347",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/rounds/round_01/final/command_cheatsheet.md?_=1788670013348",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/rounds/round_02/final/command_cheatsheet.md?_=1788670013348",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/rounds/round_06/final/linux_automation_cheatsheet.md?_=1788670013348",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/plans/linux/README.md?_=1788670013348",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/api/health?_=1788670013349",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/api/feedback?_=1788670013358",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/api/events?_=1788670013358",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/progress.json?_=1788670013358",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/fixture/terminal.md?_=1788670013360",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/api/terminal?cwd=&_=1788670013367",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/api/saves?_=1788670013367",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "http://127.0.0.1:54664/fixture/terminal.md?_=1788670015526",
+      "status": 200,
+      "method": "GET"
+    }
+  ],
+  "learn": "学习光场 / LINUX FOUNDATIONS\nROUND 00 · TASK 01 / 03\n0 / 3 个任务\nTERMINAL 初见 / 示例练习\n认识终端\n\n阅读课程真源，整理一个最小结论，再用记录保存本次学习证据。\n\nMISSION / CURRENT TASK\n认识终端\nTerminal 初见 / 示例练习 / linux-foundations\n模块任务\n0 / 3\n1\n先读讲解，确认本任务要做出的最小产物。\n2\n本任务不需要终端；读完资料后整理一个最小结论。\n3\n点击“记录并完成”，在弹窗里写下本次记录后保存。\n读教程\n记录并完成\n\n阅读示例资料。\n\nLESSON / SOURCE\n认识终端\nfixture/terminal.md\n专注阅读\n认识终端\n\n合成演示资料。终端用于输入命令并查看文字结果。\n\n先观察，再行动\npwd：显示当前位置。\nls：列出当前目录内容。\ncd：切换目录。\n\n本演示仅供阅读；命令执行、记录与存档均停用。\n\nCURRENT TASK IS THE HORIZON\nTAB → FOCUS   /   ENTER → RUN",
+  "mobile": {
+    "overflow": false,
+    "width": 390,
+    "height": 739,
+    "font": "\"Noto Sans SC\", \"PingFang SC\", \"SF Pro Text\", -apple-system, \"system-ui\", \"Segoe UI\", system-ui, sans-serif",
+    "active": "home",
+    "task": "认识终端"
+  },
+  "mobileLearn": {
+    "overflow": false
+  },
+  "keyboardEnterNavigated": true,
+  "homeToLearnAndBack": true,
+  "synthetic": true
+}

@@ -1,0 +1,42 @@
+{
+  "status": "reviewable comparison awaiting actual owner; no TC17 acceptance/commit claimed",
+  "contract": "TC17 v2",
+  "candidate": {
+    "id": "csp-home-quiet-workbench",
+    "revision": 1,
+    "content_hash": "1a1f1a59897ae6200e9361e3c4c692c2f58499bd045df8f3abd2d994d8e453a1"
+  },
+  "files": {
+    "STATE.yaml": "1bbdce18f22aa65d1a1a0e3ab1b133830a36a3c3f59d11a15128014c790edd94",
+    "src/hub/web/hub.js": "86a0acb8cc35c8d667b7b472a7af181141ef21b4915fe914ad275713f24a92d3",
+    "data/design_governance/design-store.json": "ebe2b0f94a1542c9562cf61129b3cfa44231d2567ea4ab61056bebdb5acde230",
+    "docs/reports/ui_design_governance/unit-17/baseline-browser.json": "c38599ff0a1e8a48896e204ed2facd7cd65444e5b0f1f5b7f5acb3c6ab17bce7",
+    "docs/reports/ui_design_governance/unit-17/baseline-desktop.png": "a07f1acdd62313fc797bc64e1ae72ae09fcac15a23dcfb2e309829ecf93d961d",
+    "docs/reports/ui_design_governance/unit-17/baseline-learn-desktop.png": "49e2435f905b072d745ed6dfd69ae6c477662d062790edfcefaa6c4801c0bb4e",
+    "docs/reports/ui_design_governance/unit-17/baseline-mobile.png": "b9259c086074891c0d0b010d497e178969045226da1863ffaec0aa26d1279a84",
+    "docs/reports/ui_design_governance/unit-17/baseline-states.json": "f20f0898fbd427e74d715c1a4c4382d51a7bffdbc8f1d470b40dc699d18d7761",
+    "docs/reports/ui_design_governance/unit-17/baseline.json": "bb59891a4d3129cf40fb0e97678f2cda43340066e5c8e9cc32cb97742f14716e",
+    "docs/reports/ui_design_governance/unit-17/candidate-desktop.png": "c0b5a0a97eea700b120a2dc138218cbd267c2d50c39b186c435883d4e0326ee2",
+    "docs/reports/ui_design_governance/unit-17/candidate-mobile.png": "de7bc77a8c66ff02dd623b6cfd0f115c3dc4f5fdbe97c04b7408b1b564976476",
+    "docs/reports/ui_design_governance/unit-17/capture_server.py": "744b0f4a78db959a153111e56ad2e6489601c116bc7ccdf8698d4163e2ee840b",
+    "docs/reports/ui_design_governance/unit-17/contract.md": "6109934f19e635ecb7b3ff468f6693c3da7cbe97abf94536eb9d93648b84fe00",
+    "docs/reports/ui_design_governance/unit-17/figma-baseline-desktop.png": "d1e458a1fceccdc07cd692602425dc82dde6874a926582b63fbf3133e6a8b4c3",
+    "docs/reports/ui_design_governance/unit-17/figma-baseline-mobile.png": "dc054022fd94e6765769f93dd3ece32f28c283ba69ff4ba4522d16ee296434fd",
+    "docs/reports/ui_design_governance/unit-17/figma-readback.json": "1f7f616f9037023c147fa06a739a16b0efe32a4695d650aab54fd0b8279703e3",
+    "docs/reports/ui_design_governance/unit-17/figma.json": "868bdd5b5b1e5f4686f2f491376ffb97a1128c13b2dfb15db1ef6e92dcc112eb",
+    "docs/reports/ui_design_governance/unit-17/fixture_server.py": "2c63487b5a7ddd8f72f57ce6a796910745ac44e4fa598c41c584be1e0a7aa64b",
+    "docs/reports/ui_design_governance/unit-17/hub-browser.json": "76871422ffd9c2900a27c9fec44fea367bf70b5f9abee88d4ce92d43f152b678",
+    "docs/reports/ui_design_governance/unit-17/hub-compare-desktop.png": "d27644bac1330981ac129e821277bcca8635fbab639bba893e81703747e412a0",
+    "docs/reports/ui_design_governance/unit-17/hub-compare-mobile.png": "adc4c1e0161b940dda8faab5a6f7ce326695a411077f09311d09bffaac4ec8bc",
+    "docs/reports/ui_design_governance/unit-17/import.json": "7dd91dfdbe297e9c7d0ed6857c8ce7f3239310babb55ed721cb542a37719a524",
+    "docs/reports/ui_design_governance/unit-17/import_design.py": "d74c0cf99e2c24b879a64641d3ff3346d4391422746a2ab4a523fc8f400d5752",
+    "docs/reports/ui_design_governance/unit-17/name-resolution-repair.json": "752cef14b57020f664142a2fba9ab0bda872723e66d2af8058a0cfe255f5895f",
+    "docs/reports/ui_design_governance/unit-17/observation.md": "ce36e7abc9a8bb7a7bd495be9fb54098c761a00f6b459444051010ef3181b762",
+    "docs/reports/ui_design_governance/unit-17/original-overview-desktop.png": "2ff1df1bfff9964b544bda54c6d062d98f1a7a10118f53078bf995b39c913a61",
+    "docs/reports/ui_design_governance/unit-17/original-overview-mobile.png": "20bc8754fb652a5ea78ba45c2b9c5d4a1c016c17a00a16c9b49e5908a1fbf33a",
+    "docs/reports/ui_design_governance/unit-17/readback.js": "0d0a8f803b321d7d4eb481a0ef956549541b7794cc55b04196f3327f8f554055",
+    "docs/reports/ui_design_governance/unit-17/synthetic_data.py": "9f2d1c2cc18a8a4ca851e0d1f3d139e770525a942910a68668461f48333d9159",
+    "docs/reports/ui_design_governance/unit-17/validation.json": "2c7c1e9d922d41207dc60bbff19547801a5c600281828595ab6478828195e6b2"
+  },
+  "next": "Actual owner decision against the exact candidate; then restart/export, fresh Judge/Governor, Git and final handoff."
+}

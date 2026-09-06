@@ -1,0 +1,47 @@
+{
+  "status": "pre-selection verification; TC17 not yet accepted",
+  "store_revision": 14,
+  "old_facts_preserved": 6,
+  "old_events_preserved": 1,
+  "new_owner_events": 0,
+  "artifacts": [
+    {
+      "id": "csp-home-original-overview-desktop",
+      "sha256": "2ff1df1bfff9964b544bda54c6d062d98f1a7a10118f53078bf995b39c913a61",
+      "matches": true
+    },
+    {
+      "id": "csp-home-original-overview-mobile",
+      "sha256": "20bc8754fb652a5ea78ba45c2b9c5d4a1c016c17a00a16c9b49e5908a1fbf33a",
+      "matches": true
+    },
+    {
+      "id": "csp-home-quiet-overview-desktop",
+      "sha256": "c0b5a0a97eea700b120a2dc138218cbd267c2d50c39b186c435883d4e0326ee2",
+      "matches": true
+    },
+    {
+      "id": "csp-home-quiet-overview-mobile",
+      "sha256": "de7bc77a8c66ff02dd623b6cfd0f115c3dc4f5fdbe97c04b7408b1b564976476",
+      "matches": true
+    }
+  ],
+  "checks": {
+    "repo": "PASS",
+    "registry": "PASS",
+    "state_consistency": "PASS",
+    "node_logic": "10 PASS",
+    "es_module_syntax": "PASS",
+    "python_hub": "187 passed, 140 subtests passed in 26.78s",
+    "task_diff_whitespace": "PASS",
+    "regression": "Light Novel remains fresh operational-only business-unknown; Story Faceless Utopia relations show human names; browser return to comparison passed"
+  },
+  "remaining": [
+    "actual owner decision",
+    "decision persistence and selected export",
+    "fresh Judge and Governor",
+    "scoped Git delivery",
+    "overall final handoff"
+  ],
+  "agents": "All three dispatched agents completed; no active descendant writer."
+}

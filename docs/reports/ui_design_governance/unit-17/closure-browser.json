@@ -1,0 +1,114 @@
+{
+  "routes": [
+    {
+      "path": "#designs",
+      "name": true
+    },
+    {
+      "path": "#designs/computer-study-plan",
+      "name": true
+    },
+    {
+      "path": "#designs/computer-study-plan/csp-home-quiet-workbench",
+      "name": true
+    }
+  ],
+  "navigationFocus": "main",
+  "previews": [
+    {
+      "width": 390,
+      "height": 739,
+      "alt": "原始版本预览"
+    },
+    {
+      "width": 390,
+      "height": 739,
+      "alt": "安静任务台预览"
+    }
+  ],
+  "mobileOverflow": false,
+  "reduced": {
+    "matches": true,
+    "transition": "0s",
+    "animation": "0s"
+  },
+  "replay": {
+    "decision": {
+      "status": 200,
+      "body": {
+        "api_version": "1.0",
+        "data": {
+          "event_hash": "b25efe49e40b7db3aa3663fd3e856fb4492fb2eb5e010624c44743c9c66c0946",
+          "event_id": "tc17-owner-retain-original",
+          "outcome": "COMMITTED",
+          "receipt": {
+            "operation": "append_decision",
+            "payload_hash": "b4fbcc023752745fa1d124610eac068d2a2033c3c5d331dd53f81165b8cf6c55",
+            "request_id": "tc17-defer-owner-01a07589-d513-7a01-92f4-eefb9ba5f05b",
+            "result_hash": "b25efe49e40b7db3aa3663fd3e856fb4492fb2eb5e010624c44743c9c66c0946",
+            "result_id": "tc17-owner-retain-original",
+            "result_kind": "decision_event",
+            "result_revision": 15
+          },
+          "request_id": "tc17-defer-owner-01a07589-d513-7a01-92f4-eefb9ba5f05b",
+          "store_revision": 15
+        },
+        "ok": true
+      }
+    },
+    "exported": {
+      "status": 200,
+      "body": {
+        "api_version": "1.0",
+        "data": {
+          "candidate": {
+            "content_hash": "1a1f1a59897ae6200e9361e3c4c692c2f58499bd045df8f3abd2d994d8e453a1",
+            "id": "csp-home-quiet-workbench",
+            "revision": 1
+          },
+          "expected_sha256": "313bb3ec4b5bcbe4e96e6dac7349bf90eab23b7292c0da7f5440af8a3f6f621e",
+          "outcome": "COMMITTED",
+          "request_id": "ui-export-3aec346e-2bed-4e59-bb26-a2744fd070b3",
+          "sha256": "313bb3ec4b5bcbe4e96e6dac7349bf90eab23b7292c0da7f5440af8a3f6f621e",
+          "store_revision": 15
+        },
+        "ok": true
+      }
+    },
+    "download": {
+      "status": 200,
+      "bytes": 899851,
+      "sha256": "313bb3ec4b5bcbe4e96e6dac7349bf90eab23b7292c0da7f5440af8a3f6f621e"
+    },
+    "storeRevision": 15,
+    "historyCount": 2,
+    "queues": {
+      "changes_requested": 0,
+      "deferred": 1,
+      "selected": 1,
+      "stale": 0,
+      "withdrawn": 0
+    }
+  },
+  "errors": [],
+  "consoleErrors": [],
+  "badResponses": [],
+  "requests": {
+    "total": 48,
+    "external": [],
+    "methods": {
+      "GET": 46,
+      "POST": 2
+    }
+  },
+  "screenshots": [
+    "closure-desktop.png",
+    "closure-mobile.png"
+  ],
+  "restart": {
+    "oldSession": 6291,
+    "exit": 0,
+    "newSession": 90102,
+    "port": 63078
+  }
+}

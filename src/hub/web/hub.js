@@ -4,7 +4,7 @@ import {renderDesigns} from './designs.js';
 const main = document.querySelector('#main');
 const statuses = {active:'进行中',paused:'已暂停',blocked:'受阻',complete:'已完成',unknown:'来源未提供状态'};
 const types = {internal_control_plane:'管理',governance_program:'治理',code:'开发',creative:'创作',document:'文档'};
-let generation=0, lastProjects=[], pendingRefresh=null;
+let generation=0, lastProjects=[], pendingRefresh=null, projectDirectoryLoaded=false;
 const projectNames=new Map();
 try {pendingRefresh=validRefreshCommand(JSON.parse(localStorage.getItem('hub:refresh-pending')||'null'));} catch {}
 function time(value){if(!value)return '尚未读取';const d=new Date(value);return Number.isNaN(d.valueOf())?'时间未提供':d.toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}
@@ -68,6 +68,7 @@ function projectRow(p){const full=p.business.next_action||'下一步：来源未
 async function projectsPage(token){
   const data=await api('/api/projects');if(token!==generation)return;lastProjects=data.projects;
   for(const project of lastProjects)projectNames.set(project.project_id,project.name);
+  projectDirectoryLoaded=true;
   const list=el('div',{className:'project-list'}), count=el('p',{className:'muted'}), search=el('input',{type:'search',placeholder:'搜索项目…',maxLength:240,id:'search-projects'}), status=el('select',{id:'status-filter','aria-label':'项目状态'},el('option',{value:''},'全部状态'),...Object.entries(statuses).map(([value,label])=>el('option',{value},label)));
   const fresh=el('select',{id:'fresh-filter','aria-label':'来源筛选'},el('option',{value:''},'全部来源'),el('option',{value:'attention'},'需要关注'),el('option',{value:'fresh'},'已更新'));
   function filter(){const q=search.value.trim().toLocaleLowerCase();const rows=lastProjects.filter(p=>(!q||`${p.name} ${p.project_id}`.toLocaleLowerCase().includes(q))&&(!status.value||p.business.normalized_status===status.value)&&(!fresh.value||(fresh.value==='attention'?attention(p):p.freshness.state==='fresh')));count.textContent=`${rows.length} 个项目 · ${rows.filter(attention).length} 项来源需关注`;list.replaceChildren(...(rows.length?rows.map(projectRow):[el('div',{className:'empty'},el('h2',{},'没有匹配的项目'),el('p',{className:'muted'},'试试其他名称或清除筛选。'),button('清除筛选',()=>{search.value='';status.value='';fresh.value='';filter();}))]));}
@@ -81,6 +82,7 @@ async function projectDetail(id,token){
   if(relatedIds.some(projectId=>!projectNames.has(projectId))){
     const directory=await api('/api/projects');if(token!==generation)return;
     for(const project of directory.projects)projectNames.set(project.project_id,project.name);
+    projectDirectoryLoaded=true;
   }
   // Single detail supplies the exact ledger head used by its refresh command.
   lastProjects=[p];
@@ -101,7 +103,21 @@ async function route(focus=true){
   const token=++generation;const parts=location.hash.slice(1).split('/').map(p=>{try{return decodeURIComponent(p);}catch{return '';}});const kind=parts[0]||'projects';
   for(const name of ['projects','designs']){const nav=document.querySelector(`#nav-${name}`);if(name===kind)nav.setAttribute('aria-current','page');else nav.removeAttribute('aria-current');}
   main.setAttribute('aria-busy','true');main.replaceChildren(el('p',{role:'status'},'正在读取…'));
-  try{if(kind==='designs'){const names=Object.fromEntries(lastProjects.map(p=>[p.project_id,p.name]));const view=el('div');main.replaceChildren(view);await renderDesigns(view,{projectId:parts[1]||null,candidateId:parts[2]||null,projectNames:names});}else if(kind==='projects'&&parts[1])await projectDetail(parts[1],token);else await projectsPage(token);if(focus&&token===generation)main.focus();}
+  try{
+    if(kind==='designs'){
+      if(!projectDirectoryLoaded){
+        const directory=await api('/api/projects');if(token!==generation)return;
+        for(const project of directory.projects)projectNames.set(project.project_id,project.name);
+        projectDirectoryLoaded=true;
+      }
+      const names=Object.fromEntries(projectNames);
+      if(parts[1]&&!names[parts[1]])names[parts[1]]='项目名称暂不可用';
+      const view=el('div');main.replaceChildren(view);
+      await renderDesigns(view,{projectId:parts[1]||null,candidateId:parts[2]||null,projectNames:names});
+    }else if(kind==='projects'&&parts[1])await projectDetail(parts[1],token);
+    else await projectsPage(token);
+    if(focus&&token===generation)main.focus();
+  }
   catch(error){if(token!==generation)return;main.replaceChildren(el('section',{className:'empty'},el('h1',{},'暂时无法读取'),el('p',{},failure(error)),button('重新读取',()=>route(false)),diagnostic({code:error.code||'NETWORK_UNAVAILABLE',outcome:error.outcome})));}
   finally{if(token===generation)main.removeAttribute('aria-busy');}
 }

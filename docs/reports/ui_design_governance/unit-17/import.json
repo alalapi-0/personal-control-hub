@@ -1,0 +1,129 @@
+{
+  "status": "comparison-ready; actual owner selection pending",
+  "candidate": {
+    "id": "csp-home-quiet-workbench",
+    "revision": 1,
+    "content_hash": "1a1f1a59897ae6200e9361e3c4c692c2f58499bd045df8f3abd2d994d8e453a1"
+  },
+  "store_revision": 14,
+  "facts": 12,
+  "events": 1,
+  "receipts": [
+    {
+      "request_id": "tc17-import-csp-home-original-overview-desktop",
+      "payload_hash": "8146a121eb5680821f6dc9b39cdf8f516430de5622ec79269b0e433c179ed0dc",
+      "operation": "append_fact",
+      "result_revision": 9,
+      "result_id": "csp-home-original-overview-desktop",
+      "result_kind": "artifact_ref",
+      "result_hash": "f6b6c1db43868809767fb1b5cf97bb47d79349a749cdf6e09bc158eac07d227a"
+    },
+    {
+      "request_id": "tc17-import-csp-home-original-overview-mobile",
+      "payload_hash": "ee330ffe840f89489770750ec82c4424e1fb92cd6945fff67166fd7581de0f1b",
+      "operation": "append_fact",
+      "result_revision": 10,
+      "result_id": "csp-home-original-overview-mobile",
+      "result_kind": "artifact_ref",
+      "result_hash": "650812887ab74aab45c37185c2e8a480e9ac7f3964cb550a6ba6d7024fa68b67"
+    },
+    {
+      "request_id": "tc17-import-csp-home-quiet-overview-desktop",
+      "payload_hash": "0ae13802c060d3df3de1fd632cf7a2d73af9c117cf5c98b31db127d548f676bb",
+      "operation": "append_fact",
+      "result_revision": 11,
+      "result_id": "csp-home-quiet-overview-desktop",
+      "result_kind": "artifact_ref",
+      "result_hash": "cf55cfd384a0e911f58b099598503d5cee2f13d317fdde429837e5d0c0cf7032"
+    },
+    {
+      "request_id": "tc17-import-csp-home-quiet-overview-mobile",
+      "payload_hash": "a5799048849c98fdb870a4e61bdcaf689209e4dd8fdf3c4d7eac25a482e708a7",
+      "operation": "append_fact",
+      "result_revision": 12,
+      "result_id": "csp-home-quiet-overview-mobile",
+      "result_kind": "artifact_ref",
+      "result_hash": "a1faeadb4a46f4a7a034c6ef3cf309d2f4964c409fc78617a623b5619801700c"
+    },
+    {
+      "request_id": "tc17-import-csp-home-isolated-baseline",
+      "payload_hash": "bd683cd854e4621326e46e20eb49e337e4805c5ff290e7fe13f3fd94db9bc47e",
+      "operation": "append_fact",
+      "result_revision": 13,
+      "result_id": "csp-home-isolated-baseline",
+      "result_kind": "baseline",
+      "result_hash": "775770e26c511ac54cf7fd31f196c21c8d522843b133e4cf273acb27004302bc"
+    },
+    {
+      "request_id": "tc17-import-csp-home-quiet-workbench",
+      "payload_hash": "86859eb43c5478e8c95ad023228c0e97b2aa422d97a17f238bff9db3bada25bc",
+      "operation": "append_fact",
+      "result_revision": 14,
+      "result_id": "csp-home-quiet-workbench",
+      "result_kind": "candidate",
+      "result_hash": "b9c8bc07c4817200812f328e6d9cbe1a892fffcaf8609d4475c9cc683e103e3d"
+    }
+  ],
+  "preserved_protected": 310,
+  "store_sha256": "ebe2b0f94a1542c9562cf61129b3cfa44231d2567ea4ab61056bebdb5acde230",
+  "comparison_url": "http://127.0.0.1:63078/#designs/computer-study-plan/csp-home-quiet-workbench",
+  "replay": {
+    "store_unchanged": true,
+    "receipts": [
+      {
+        "operation": "append_fact",
+        "payload_hash": "8146a121eb5680821f6dc9b39cdf8f516430de5622ec79269b0e433c179ed0dc",
+        "request_id": "tc17-import-csp-home-original-overview-desktop",
+        "result_hash": "f6b6c1db43868809767fb1b5cf97bb47d79349a749cdf6e09bc158eac07d227a",
+        "result_id": "csp-home-original-overview-desktop",
+        "result_kind": "artifact_ref",
+        "result_revision": 9
+      },
+      {
+        "operation": "append_fact",
+        "payload_hash": "ee330ffe840f89489770750ec82c4424e1fb92cd6945fff67166fd7581de0f1b",
+        "request_id": "tc17-import-csp-home-original-overview-mobile",
+        "result_hash": "650812887ab74aab45c37185c2e8a480e9ac7f3964cb550a6ba6d7024fa68b67",
+        "result_id": "csp-home-original-overview-mobile",
+        "result_kind": "artifact_ref",
+        "result_revision": 10
+      },
+      {
+        "operation": "append_fact",
+        "payload_hash": "0ae13802c060d3df3de1fd632cf7a2d73af9c117cf5c98b31db127d548f676bb",
+        "request_id": "tc17-import-csp-home-quiet-overview-desktop",
+        "result_hash": "cf55cfd384a0e911f58b099598503d5cee2f13d317fdde429837e5d0c0cf7032",
+        "result_id": "csp-home-quiet-overview-desktop",
+        "result_kind": "artifact_ref",
+        "result_revision": 11
+      },
+      {
+        "operation": "append_fact",
+        "payload_hash": "a5799048849c98fdb870a4e61bdcaf689209e4dd8fdf3c4d7eac25a482e708a7",
+        "request_id": "tc17-import-csp-home-quiet-overview-mobile",
+        "result_hash": "a1faeadb4a46f4a7a034c6ef3cf309d2f4964c409fc78617a623b5619801700c",
+        "result_id": "csp-home-quiet-overview-mobile",
+        "result_kind": "artifact_ref",
+        "result_revision": 12
+      },
+      {
+        "operation": "append_fact",
+        "payload_hash": "bd683cd854e4621326e46e20eb49e337e4805c5ff290e7fe13f3fd94db9bc47e",
+        "request_id": "tc17-import-csp-home-isolated-baseline",
+        "result_hash": "775770e26c511ac54cf7fd31f196c21c8d522843b133e4cf273acb27004302bc",
+        "result_id": "csp-home-isolated-baseline",
+        "result_kind": "baseline",
+        "result_revision": 13
+      },
+      {
+        "operation": "append_fact",
+        "payload_hash": "86859eb43c5478e8c95ad023228c0e97b2aa422d97a17f238bff9db3bada25bc",
+        "request_id": "tc17-import-csp-home-quiet-workbench",
+        "result_hash": "b9c8bc07c4817200812f328e6d9cbe1a892fffcaf8609d4475c9cc683e103e3d",
+        "result_id": "csp-home-quiet-workbench",
+        "result_kind": "candidate",
+        "result_revision": 14
+      }
+    ]
+  }
+}
