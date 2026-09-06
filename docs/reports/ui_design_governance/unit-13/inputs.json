@@ -1,0 +1,81 @@
+{
+  "source_type": "new_surface_spec",
+  "existing_ui": false,
+  "nearest_surface": "python3 hub.py --help; read-only mcp/registry CLI; no graphical Hub",
+  "prior_delivery": "8820f001cba8c8cf0d4f00a0fbae7e37ea7cd85a",
+  "source_specs": {
+    "docs/design/personal_control_hub_completion.md": "7c129418569ad231e293dd09b4c0ba789762d0bd092273ec008117df6d3893d7",
+    "docs/design/design_review_workbench.md": "a5f13285c243fe81c70c491037895f2a8b63a4d7e340eeb3667a80d91a1d1113",
+    "docs/design/ui_governance_data_contract.md": "305a27893e22f1b83445c16b69205587bb665339b33d246c7f5730dfa7ebb46a"
+  },
+  "protected_file_hashes_from": "../unit-12/baseline.json",
+  "code_connect": "none found in scoped repository discovery",
+  "existing_fonts_tokens_components": "none found for Hub; net-new design choices",
+  "planned_directions": [
+    "清晰编辑台",
+    "专注画布",
+    "柔和工作室"
+  ],
+  "planned_minimal_components": [
+    "Button/Tab",
+    "Status",
+    "ProjectRow",
+    "DesignCard"
+  ],
+  "data_classification": "synthetic/mock; no real business or account data",
+  "discovery": {
+    "empty_file_verified": true,
+    "fonts": [
+      "Noto Sans SC Regular/Medium/Bold",
+      "Noto Serif SC Medium",
+      "Inter Regular/Medium"
+    ],
+    "library": "Simple Design System available; searched Button/Tag/Input/background/space/body",
+    "reuse": "reuse SDS spacing scale; reference button interaction anatomy; local CJK styles and direction palette aliases needed for deliberate alternative directions",
+    "no_existing_hub_design_system": true,
+    "image_content": false,
+    "step_2_checklist": {
+      "code_connect": "absent",
+      "existing_screens": "empty draft verified",
+      "library_search": "complete",
+      "variables": "SDS spacing available; local direction colors required",
+      "styles": "SDS Inter present; choose Noto Sans SC for CJK and optional Noto Serif SC heading for C"
+    }
+  },
+  "planned_tokens": {
+    "colors": [
+      "canvas",
+      "surface",
+      "text",
+      "muted",
+      "border",
+      "accent",
+      "tint",
+      "warning",
+      "success",
+      "on-accent"
+    ],
+    "spacing": [
+      4,
+      8,
+      12,
+      16,
+      24,
+      32,
+      40
+    ],
+    "radius": [
+      4,
+      8,
+      16
+    ],
+    "typography": [
+      "Caption 12/18",
+      "Body 14/22",
+      "Body 16/24",
+      "Title 28/40",
+      "Display 36/48",
+      "C Serif 36/48"
+    ]
+  }
+}

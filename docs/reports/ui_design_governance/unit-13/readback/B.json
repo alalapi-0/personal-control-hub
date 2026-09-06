@@ -1,0 +1,361 @@
+{
+  "schema": "hub-figma-semantic-v1",
+  "identity": "SHA-256 of rendered-node snapshot including bindings and reactions; hidden subtrees omitted; property order defined by readback-script.js",
+  "page": {
+    "id": "2:3",
+    "name": "B · 专注画布",
+    "childIds": [
+      "14:139",
+      "14:212",
+      "16:284",
+      "16:328",
+      "17:314",
+      "17:350",
+      "19:685",
+      "19:874",
+      "23:1038",
+      "23:1149",
+      "23:1541",
+      "23:1551"
+    ]
+  },
+  "summaries": [
+    {
+      "key": "B/overview/desktop",
+      "id": "14:139",
+      "name": "B/overview/desktop",
+      "type": "FRAME",
+      "width": 1440,
+      "height": 900,
+      "contentBytes": 474409,
+      "sha256": "eb6cdc7f4535a7cdd16161c8665276db9372c348f04c4f4f74b473d8c2e5513c",
+      "nodes": 53,
+      "texts": 34,
+      "instances": 9,
+      "imageFills": 0,
+      "scrolls": [
+        {
+          "id": "14:139",
+          "direction": "VERTICAL",
+          "h": 900
+        }
+      ],
+      "horizontalErrors": [],
+      "verticalErrors": [],
+      "textMinimum": 12,
+      "reactions": 6,
+      "horizontalErrorCount": 0,
+      "verticalErrorCount": 0
+    },
+    {
+      "key": "B/detail/desktop",
+      "id": "16:284",
+      "name": "B/detail/desktop",
+      "type": "FRAME",
+      "width": 1440,
+      "height": 900,
+      "contentBytes": 366255,
+      "sha256": "e4bd34eccdb6003e7465e478116c5bbf57ac5d1287d043e08d3c7c2bea078b87",
+      "nodes": 33,
+      "texts": 19,
+      "instances": 4,
+      "imageFills": 0,
+      "scrolls": [
+        {
+          "id": "16:284",
+          "direction": "VERTICAL",
+          "h": 900
+        }
+      ],
+      "horizontalErrors": [],
+      "verticalErrors": [],
+      "textMinimum": 12,
+      "reactions": 4,
+      "horizontalErrorCount": 0,
+      "verticalErrorCount": 0
+    },
+    {
+      "key": "B/designs/desktop",
+      "id": "17:314",
+      "name": "B/designs/desktop",
+      "type": "FRAME",
+      "width": 1440,
+      "height": 900,
+      "contentBytes": 275528,
+      "sha256": "52aaf22bde412a596595b61dcd3baa05bcf9bd7311f03577ecd9b2f15f661040",
+      "nodes": 24,
+      "texts": 16,
+      "instances": 5,
+      "imageFills": 0,
+      "scrolls": [
+        {
+          "id": "17:314",
+          "direction": "VERTICAL",
+          "h": 900
+        }
+      ],
+      "horizontalErrors": [],
+      "verticalErrors": [],
+      "textMinimum": 12,
+      "reactions": 4,
+      "horizontalErrorCount": 0,
+      "verticalErrorCount": 0
+    },
+    {
+      "key": "B/compare/desktop",
+      "id": "19:685",
+      "name": "B/compare/desktop",
+      "type": "FRAME",
+      "width": 1440,
+      "height": 900,
+      "contentBytes": 1938700,
+      "sha256": "bdfd8ed4fc60b35f34addb9459c4050b76e782d485ea4d7beca6daeea3cf4056",
+      "nodes": 111,
+      "texts": 62,
+      "instances": 26,
+      "imageFills": 0,
+      "scrolls": [
+        {
+          "id": "19:685",
+          "direction": "VERTICAL",
+          "h": 900
+        },
+        {
+          "id": "19:755",
+          "direction": "VERTICAL",
+          "h": 281.25
+        }
+      ],
+      "horizontalErrors": [],
+      "verticalErrors": [],
+      "textMinimum": 12,
+      "reactions": 22,
+      "horizontalErrorCount": 0,
+      "verticalErrorCount": 0
+    },
+    {
+      "key": "B/overview/mobile",
+      "id": "14:212",
+      "name": "B/overview/mobile",
+      "type": "FRAME",
+      "width": 390,
+      "height": 844,
+      "contentBytes": 378165,
+      "sha256": "50fcd6793137b3028c13347a44126bd22f7402e13ed2ea4bfe09d2d41c8836be",
+      "nodes": 40,
+      "texts": 26,
+      "instances": 8,
+      "imageFills": 0,
+      "scrolls": [
+        {
+          "id": "14:212",
+          "direction": "VERTICAL",
+          "h": 844
+        }
+      ],
+      "horizontalErrors": [],
+      "verticalErrors": [],
+      "textMinimum": 12,
+      "reactions": 5,
+      "horizontalErrorCount": 0,
+      "verticalErrorCount": 0
+    },
+    {
+      "key": "B/detail/mobile",
+      "id": "16:328",
+      "name": "B/detail/mobile",
+      "type": "FRAME",
+      "width": 390,
+      "height": 844,
+      "contentBytes": 365191,
+      "sha256": "b867e2813bf55f4337fb3b9a7217e8331b586d4b7e82b8e90c76b3e3fd644e83",
+      "nodes": 32,
+      "texts": 18,
+      "instances": 4,
+      "imageFills": 0,
+      "scrolls": [
+        {
+          "id": "16:328",
+          "direction": "VERTICAL",
+          "h": 844
+        }
+      ],
+      "horizontalErrors": [],
+      "verticalErrors": [],
+      "textMinimum": 12,
+      "reactions": 4,
+      "horizontalErrorCount": 0,
+      "verticalErrorCount": 0
+    },
+    {
+      "key": "B/designs/mobile",
+      "id": "17:350",
+      "name": "B/designs/mobile",
+      "type": "FRAME",
+      "width": 390,
+      "height": 844,
+      "contentBytes": 274479,
+      "sha256": "ef16fd76d3784b63bfd5d060fccdbd4cddd37364cf44fbc4709050c7113bdd7e",
+      "nodes": 23,
+      "texts": 15,
+      "instances": 5,
+      "imageFills": 0,
+      "scrolls": [
+        {
+          "id": "17:350",
+          "direction": "VERTICAL",
+          "h": 844
+        }
+      ],
+      "horizontalErrors": [],
+      "verticalErrors": [],
+      "textMinimum": 12,
+      "reactions": 4,
+      "horizontalErrorCount": 0,
+      "verticalErrorCount": 0
+    },
+    {
+      "key": "B/compare/mobile",
+      "id": "19:874",
+      "name": "B/compare/mobile",
+      "type": "FRAME",
+      "width": 390,
+      "height": 844,
+      "contentBytes": 1842058,
+      "sha256": "b99af22b87b2d8631b6945d84b4e8e8e19f6b229af1f7930faf2ac0d52910175",
+      "nodes": 93,
+      "texts": 50,
+      "instances": 25,
+      "imageFills": 0,
+      "scrolls": [
+        {
+          "id": "19:874",
+          "direction": "VERTICAL",
+          "h": 844
+        },
+        {
+          "id": "19:931",
+          "direction": "VERTICAL",
+          "h": 440
+        }
+      ],
+      "horizontalErrors": [],
+      "verticalErrors": [],
+      "textMinimum": 12,
+      "reactions": 21,
+      "horizontalErrorCount": 0,
+      "verticalErrorCount": 0
+    },
+    {
+      "key": "B/states/desktop",
+      "id": "23:1038",
+      "name": "B/states/desktop",
+      "type": "FRAME",
+      "width": 1440,
+      "height": 900,
+      "contentBytes": 894110,
+      "sha256": "e9dfa379e51ab6ef8e5c4877577b0119c41eaa85805bc07cd4a52f12adc823ed",
+      "nodes": 56,
+      "texts": 33,
+      "instances": 10,
+      "imageFills": 0,
+      "scrolls": [
+        {
+          "id": "23:1038",
+          "direction": "VERTICAL",
+          "h": 900
+        }
+      ],
+      "horizontalErrors": [],
+      "verticalErrors": [],
+      "textMinimum": 14,
+      "reactions": 8,
+      "horizontalErrorCount": 0,
+      "verticalErrorCount": 0
+    },
+    {
+      "key": "B/states/mobile",
+      "id": "23:1149",
+      "name": "B/states/mobile",
+      "type": "FRAME",
+      "width": 390,
+      "height": 844,
+      "contentBytes": 894030,
+      "sha256": "a3ce7a7051391d1da10cf90f3fc001584805df68143891b328a1b693ffdfe53a",
+      "nodes": 56,
+      "texts": 33,
+      "instances": 10,
+      "imageFills": 0,
+      "scrolls": [
+        {
+          "id": "23:1149",
+          "direction": "VERTICAL",
+          "h": 844
+        }
+      ],
+      "horizontalErrors": [],
+      "verticalErrors": [],
+      "textMinimum": 12,
+      "reactions": 8,
+      "horizontalErrorCount": 0,
+      "verticalErrorCount": 0
+    },
+    {
+      "key": "B/original/mobile",
+      "id": "23:1541",
+      "name": "B/original/mobile",
+      "type": "FRAME",
+      "width": 390,
+      "height": 844,
+      "contentBytes": 89448,
+      "sha256": "66e106ad5cac2ba807856a10b0ba37f9264f9ee3d1074ff6ea3dd21b49493f85",
+      "nodes": 6,
+      "texts": 4,
+      "instances": 1,
+      "imageFills": 0,
+      "scrolls": [
+        {
+          "id": "23:1541",
+          "direction": "VERTICAL",
+          "h": 844
+        }
+      ],
+      "horizontalErrors": [],
+      "verticalErrors": [],
+      "textMinimum": 14,
+      "reactions": 1,
+      "horizontalErrorCount": 0,
+      "verticalErrorCount": 0
+    },
+    {
+      "key": "B/text200/mobile",
+      "id": "23:1551",
+      "name": "B/text200/mobile",
+      "type": "FRAME",
+      "width": 390,
+      "height": 844,
+      "contentBytes": 604177,
+      "sha256": "f5c62092300dac2ffa82a900ca61a3abd4105b31e53bfd2992cc5ddc893021ae",
+      "nodes": 24,
+      "texts": 14,
+      "instances": 7,
+      "imageFills": 0,
+      "scrolls": [
+        {
+          "id": "23:1551",
+          "direction": "VERTICAL",
+          "h": 844
+        }
+      ],
+      "horizontalErrors": [],
+      "verticalErrors": [],
+      "textMinimum": 28,
+      "reactions": 7,
+      "horizontalErrorCount": 0,
+      "verticalErrorCount": 0
+    }
+  ],
+  "expectedCount": 228,
+  "mismatchCount": 0,
+  "mismatches": []
+}

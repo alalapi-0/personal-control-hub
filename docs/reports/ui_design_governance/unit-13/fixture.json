@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0",
+  "id": "hub-design-synthetic-v1",
+  "classification": "synthetic/mock",
+  "notice": "示例数据 · 用于比较界面方案",
+  "projects": [
+    {
+      "name": "Atlas 素材索引",
+      "type": "工具",
+      "status": "进行中",
+      "next": "核对导出字段与来源说明",
+      "time": "刚刚",
+      "source": "项目状态文件",
+      "available": true
+    },
+    {
+      "name": "Northstar Studio / 多语言创作工作台",
+      "type": "创作",
+      "status": "进行中",
+      "next": "选择第一版工作台布局",
+      "time": "8 分钟前",
+      "source": "项目状态文件",
+      "available": true
+    },
+    {
+      "name": "Frame 片段笔记",
+      "type": "工具",
+      "status": "已完成",
+      "next": "回看验收记录",
+      "time": "12 分钟前",
+      "source": "项目状态文件",
+      "available": true
+    },
+    {
+      "name": "Archive 资料整理",
+      "type": "资料",
+      "status": "未知",
+      "next": "连接资料盘后重试，保留上次快照",
+      "time": "昨天 18:20",
+      "source": "来源离线 · 上次成功快照",
+      "available": false
+    }
+  ],
+  "detail": {
+    "name": "Atlas 素材索引",
+    "raw_status": "active",
+    "status": "进行中",
+    "next": "核对导出字段与来源说明；完成后回看最近一次验证结果。",
+    "blocker": "无阻塞",
+    "relationship": "与 Frame 片段笔记共享审核模式，视觉方向尚未确认。",
+    "relationship_basis": "示例工作流：都需要比较版本并保留决定",
+    "source": "项目状态文件 · 只读摘要",
+    "updated": "今天 09:42",
+    "refresh": "4 项中 3 项已更新，1 项来源离线；上次内容已保留。"
+  },
+  "review": {
+    "project": "Personal Control Hub",
+    "page": "项目与设计",
+    "baseline": "当前无图形界面",
+    "baseline_type": "new_surface_spec",
+    "status": "待选择",
+    "revision": "v1",
+    "feedback": "希望保留完整来源说明和下一步；手机上也能清楚看见保存结果。",
+    "history": "暂无选择记录",
+    "authorization": "本次仅保存设计选择；实施授权单独记录。"
+  },
+  "states": [
+    "加载与保存中",
+    "没有项目",
+    "尚无方案",
+    "来源缺失",
+    "来源离线",
+    "Figma 离线",
+    "版本过期",
+    "无实施权限",
+    "项目被占用",
+    "保存冲突",
+    "保存失败",
+    "导出失败",
+    "撤回或改选"
+  ]
+}

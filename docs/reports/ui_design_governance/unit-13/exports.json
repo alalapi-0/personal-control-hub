@@ -1,0 +1,1000 @@
+{
+  "fileKey": "AjYCtyxV5mmXNqWPtJQRQ4",
+  "startedAt": "2026-09-06 02:11:20 UTC",
+  "exports": [
+    {
+      "key": "A/overview/desktop",
+      "id": "14:20",
+      "page": "A",
+      "kind": "viewport",
+      "w": 1440,
+      "h": 900,
+      "sha256": "4d91be63808ec3a90258b421f6397bb1e356ec38219c3d7993af2ec18057df73",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--overview--desktop.png",
+      "scale": 1,
+      "png_sha256": "e93db3bd22756786b1f2d37ff600aab972b25304089405b1fbacedfa85569272",
+      "png_size": [
+        1440,
+        900
+      ]
+    },
+    {
+      "key": "A/detail/desktop",
+      "id": "16:76",
+      "page": "A",
+      "kind": "viewport",
+      "w": 1440,
+      "h": 900,
+      "sha256": "22bc481bbe828b93a23046539e86d9ee53cebd6e63e46764c2c33d9cc06fd829",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--detail--desktop.png",
+      "scale": 1,
+      "png_sha256": "28028b13550de6bae7f6f9137e2392d86dd5e340f814a270751f2785646a9b08",
+      "png_size": [
+        1440,
+        900
+      ]
+    },
+    {
+      "key": "A/designs/desktop",
+      "id": "17:239",
+      "page": "A",
+      "kind": "viewport",
+      "w": 1440,
+      "h": 900,
+      "sha256": "e2bf91ed64836de4d7559c59f9224e1325cf5713fbbbc9e99edd0b86a330b946",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--designs--desktop.png",
+      "scale": 1,
+      "png_sha256": "9968bd38c8c6f909d7ffd5c96563cd1605d21e702f7e39fb6c9ae5846610b050",
+      "png_size": [
+        1440,
+        900
+      ]
+    },
+    {
+      "key": "A/compare/desktop",
+      "id": "19:170",
+      "page": "A",
+      "kind": "viewport",
+      "w": 1440,
+      "h": 900,
+      "sha256": "9dd49a6e31c2b074f38f2bc04d7a92532c35c4b8057df02958d947e6dfaab251",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--compare--desktop.png",
+      "scale": 1,
+      "png_sha256": "201361ec3d31e5b1a61daf4f489d8de66607df03804fe981582c719731c761f4",
+      "png_size": [
+        1440,
+        900
+      ]
+    },
+    {
+      "key": "A/overview/mobile",
+      "id": "14:83",
+      "page": "A",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "ef218b5bcccf0ab1082a0c694cf60bcda452926002395073ece8528b26fcd017",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--overview--mobile.png",
+      "scale": 1,
+      "png_sha256": "25e0ff9a599cbd8e62a7a4a9c5fdd517f24e4269e62af4a4f0ff21d3a4676517",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "A/detail/mobile",
+      "id": "16:241",
+      "page": "A",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "8cc269fada7600039755d4270a78f1536063b1948b4f10a8b804f312d026c9eb",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--detail--mobile.png",
+      "scale": 1,
+      "png_sha256": "a9c26a3526b79156c7889f13e4528796d32eb8e8a768e50a817a05eb1109eb63",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "A/designs/mobile",
+      "id": "17:279",
+      "page": "A",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "91ce443eb1998dcff66f05ad1dfdae431973a97a8595928f187af4016f9e20b8",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--designs--mobile.png",
+      "scale": 1,
+      "png_sha256": "37d96f4ded0c00788ce4be8062348e5221f87d38924b32552e4d2e08d17d8da1",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "A/compare/mobile",
+      "id": "19:522",
+      "page": "A",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "7b49f4989dfecf6fc328a04ef30e9900375a27e0d9fec042ade6fad827f8fb73",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--compare--mobile.png",
+      "scale": 1,
+      "png_sha256": "cd1716d339896ab7859aff507a26933b1373148fd47ccbcc76aa05be3e49e199",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "A/states/desktop",
+      "id": "23:809",
+      "page": "A",
+      "kind": "viewport",
+      "w": 1440,
+      "h": 900,
+      "sha256": "f4f3b5bb83d5deceba5660026e7036b45b1a0ca6b22cf8dc581723867ebed97b",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--states--desktop.png",
+      "scale": 1,
+      "png_sha256": "993fba7977bd41896cb401f93d46ba8aa981eb8f5da256ce33432d95aa1506fa",
+      "png_size": [
+        1440,
+        900
+      ]
+    },
+    {
+      "key": "A/states/mobile",
+      "id": "23:928",
+      "page": "A",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "91b314c3ee80f25e946f55d77beb18da8425d176ec6221fe75d4899f520b23e9",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--states--mobile.png",
+      "scale": 1,
+      "png_sha256": "cfa85d95f2cb5fefb32e9bc73fdf76355a63346a4d37714b50247c75b9f51c38",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "B/overview/desktop",
+      "id": "14:139",
+      "page": "B",
+      "kind": "viewport",
+      "w": 1440,
+      "h": 900,
+      "sha256": "eb6cdc7f4535a7cdd16161c8665276db9372c348f04c4f4f74b473d8c2e5513c",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--overview--desktop.png",
+      "scale": 1,
+      "png_sha256": "6c0c4a471e9e918f1a56ecf6d1da73544d4700198cc08278235e09bd962dd0a5",
+      "png_size": [
+        1440,
+        900
+      ]
+    },
+    {
+      "key": "B/detail/desktop",
+      "id": "16:284",
+      "page": "B",
+      "kind": "viewport",
+      "w": 1440,
+      "h": 900,
+      "sha256": "e4bd34eccdb6003e7465e478116c5bbf57ac5d1287d043e08d3c7c2bea078b87",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--detail--desktop.png",
+      "scale": 1,
+      "png_sha256": "f8a09c41e830ce7a181a53f4a0b6a50da8d79f7ace0f74a03a0edd6be6024dc0",
+      "png_size": [
+        1440,
+        900
+      ]
+    },
+    {
+      "key": "B/designs/desktop",
+      "id": "17:314",
+      "page": "B",
+      "kind": "viewport",
+      "w": 1440,
+      "h": 900,
+      "sha256": "52aaf22bde412a596595b61dcd3baa05bcf9bd7311f03577ecd9b2f15f661040",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--designs--desktop.png",
+      "scale": 1,
+      "png_sha256": "f0ea79adf48308eaeef6e5a6e261a63f3c697d6d0cdb61091dcac75fc8ae8653",
+      "png_size": [
+        1440,
+        900
+      ]
+    },
+    {
+      "key": "B/compare/desktop",
+      "id": "19:685",
+      "page": "B",
+      "kind": "viewport",
+      "w": 1440,
+      "h": 900,
+      "sha256": "bdfd8ed4fc60b35f34addb9459c4050b76e782d485ea4d7beca6daeea3cf4056",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--compare--desktop.png",
+      "scale": 1,
+      "png_sha256": "6ecfbc3258a46bcf30fd19f211175f78e6d3b22ba7ecb765877c598db68554ba",
+      "png_size": [
+        1440,
+        900
+      ]
+    },
+    {
+      "key": "B/overview/mobile",
+      "id": "14:212",
+      "page": "B",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "50fcd6793137b3028c13347a44126bd22f7402e13ed2ea4bfe09d2d41c8836be",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--overview--mobile.png",
+      "scale": 1,
+      "png_sha256": "36f091daa4e82ab66f74f362c248231386b6ffbbd42e4f5abcdfcfa145f6262c",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "B/detail/mobile",
+      "id": "16:328",
+      "page": "B",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "b867e2813bf55f4337fb3b9a7217e8331b586d4b7e82b8e90c76b3e3fd644e83",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--detail--mobile.png",
+      "scale": 1,
+      "png_sha256": "20560b33219aa065c5c9468c1db434130539c3f405e1d0448be5d4a184b9f97a",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "B/designs/mobile",
+      "id": "17:350",
+      "page": "B",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "ef16fd76d3784b63bfd5d060fccdbd4cddd37364cf44fbc4709050c7113bdd7e",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--designs--mobile.png",
+      "scale": 1,
+      "png_sha256": "1123ec299d806a086eb3b89069522934b921417ebe49fb3d2e0ebfea53e1085b",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "B/compare/mobile",
+      "id": "19:874",
+      "page": "B",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "b99af22b87b2d8631b6945d84b4e8e8e19f6b229af1f7930faf2ac0d52910175",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--compare--mobile.png",
+      "scale": 1,
+      "png_sha256": "022bdc4681e11b0d8ae2c8e84f676e22501b2d858c4c35e28b898d6a0aed8e2b",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "B/states/desktop",
+      "id": "23:1038",
+      "page": "B",
+      "kind": "viewport",
+      "w": 1440,
+      "h": 900,
+      "sha256": "e9dfa379e51ab6ef8e5c4877577b0119c41eaa85805bc07cd4a52f12adc823ed",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--states--desktop.png",
+      "scale": 1,
+      "png_sha256": "f8fe013289e62bacdfed1a4361aee93423fce7aee59c084154167fd12e168abb",
+      "png_size": [
+        1440,
+        900
+      ]
+    },
+    {
+      "key": "B/states/mobile",
+      "id": "23:1149",
+      "page": "B",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "a3ce7a7051391d1da10cf90f3fc001584805df68143891b328a1b693ffdfe53a",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--states--mobile.png",
+      "scale": 1,
+      "png_sha256": "e37863328b58f617a2c9fee4e1346c07eabf0d279e4bb66f6c2554315c51930c",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "C/overview/desktop",
+      "id": "14:268",
+      "page": "C",
+      "kind": "viewport",
+      "w": 1440,
+      "h": 900,
+      "sha256": "c701363ecd0a9013f2af95defab48fd000cab8099e23440cc7e2988359358c68",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--overview--desktop.png",
+      "scale": 1,
+      "png_sha256": "0b00108063319c98aa6a8c49dda9742b9f52570eb03df62a45323c655ae1dd72",
+      "png_size": [
+        1440,
+        900
+      ]
+    },
+    {
+      "key": "C/detail/desktop",
+      "id": "16:371",
+      "page": "C",
+      "kind": "viewport",
+      "w": 1440,
+      "h": 900,
+      "sha256": "d6b76e9ffc7b9faee6006e3efbaeb0374df87c08c46dcdfb164b4268d8ddcec1",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--detail--desktop.png",
+      "scale": 1,
+      "png_sha256": "729556236d2abcac58b943b4c8e04a487e2672c9c25b55213af31c9afcd15b61",
+      "png_size": [
+        1440,
+        900
+      ]
+    },
+    {
+      "key": "C/designs/desktop",
+      "id": "17:385",
+      "page": "C",
+      "kind": "viewport",
+      "w": 1440,
+      "h": 900,
+      "sha256": "9da3cdc09d99b7381ce2740547efd33489ad3092503d94ae80afe8641b877882",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--designs--desktop.png",
+      "scale": 1,
+      "png_sha256": "68a7d29813d69a3761d9c1e1562ac96ec260095f2ec932b0c54257c8ce97bc50",
+      "png_size": [
+        1440,
+        900
+      ]
+    },
+    {
+      "key": "C/compare/desktop",
+      "id": "19:1037",
+      "page": "C",
+      "kind": "viewport",
+      "w": 1440,
+      "h": 900,
+      "sha256": "619ffced53cde1c0e87e39c238ed524effcc5e4ebfacbedf1dfd140fe3cc85de",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--compare--desktop.png",
+      "scale": 1,
+      "png_sha256": "a89052d89f308b707e59b940ed20e188638bad3077fe3ed97255cbe91eefaf43",
+      "png_size": [
+        1440,
+        900
+      ]
+    },
+    {
+      "key": "C/overview/mobile",
+      "id": "14:325",
+      "page": "C",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "fdd21f4a8ab9d8f94955db8a94364a1c2041a5ae61f662cbc6e5d2dbeb5afb07",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--overview--mobile.png",
+      "scale": 1,
+      "png_sha256": "685f20bf7749dfb0333fe8654b5f5c0fc0da11bbe36bb8d5d27174d8427eeffc",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "C/detail/mobile",
+      "id": "16:415",
+      "page": "C",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "ce6a5bc9be33d3da784e317e41467613a2dc760b071afb32d61111b6b384c3c4",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--detail--mobile.png",
+      "scale": 1,
+      "png_sha256": "4e64292244526ae7f52bfa2b92cb48ddbbc506d3e6dfe6eabee4ab696417fb39",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "C/designs/mobile",
+      "id": "17:421",
+      "page": "C",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "c07ad2153a2b3c71395be4a4e3b4f9ac0e6095f75ff9a6c626bdefbf5d7fbdb3",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--designs--mobile.png",
+      "scale": 1,
+      "png_sha256": "52dba974f6ffd7572a985310ea629306e094ee4a276a80e3c3aed932ea188ee8",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "C/compare/mobile",
+      "id": "19:1212",
+      "page": "C",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "39c97894cd58b4503013917797c5fc396a2e1761b45e252b128a52d8cf69aa93",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--compare--mobile.png",
+      "scale": 1,
+      "png_sha256": "8dd4784c09ed29b938a28eabf8d94c11d98da94e11f67581f2c4f9d3d2d01ff3",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "C/states/desktop",
+      "id": "23:1259",
+      "page": "C",
+      "kind": "viewport",
+      "w": 1440,
+      "h": 900,
+      "sha256": "eb3e329f4f1e03299fb7fc1a3b29824cccd58876713e02c77670b9246ff7c384",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--states--desktop.png",
+      "scale": 1,
+      "png_sha256": "4ba27f6fd3e634d4b40eed00762873622a9449b210a7d0b5301431e14b786d28",
+      "png_size": [
+        1440,
+        900
+      ]
+    },
+    {
+      "key": "C/states/mobile",
+      "id": "23:1370",
+      "page": "C",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "448fa3a522d307bc4920c9636902f592ff250c6d14f3f57bc2eb5299126de7a1",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--states--mobile.png",
+      "scale": 1,
+      "png_sha256": "21bbfed3f296d1325950812073a17c93ae8cc531c9264b1744c720beabe13786",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "A/original/mobile",
+      "id": "23:1480",
+      "page": "A",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "30f34dbbcef3a6555dcfa7afece3cc774b1a8d7444968bdf360c271d30275fc4",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--original--mobile.png",
+      "scale": 1,
+      "png_sha256": "57666572d11069390fe8b407fcc790d694c49614e318ef28fa18a0d9b849420f",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "A/text200/mobile",
+      "id": "23:1490",
+      "page": "A",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "e69a87869c66b895b49690c0388992d2a3a9acaa5834b09808d280704d3f3268",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--text200--mobile.png",
+      "scale": 1,
+      "png_sha256": "5cfb6abdabfb16f9d621eb64e505b8e126bb106563caaf2137b5825a0234f205",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "B/original/mobile",
+      "id": "23:1541",
+      "page": "B",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "66e106ad5cac2ba807856a10b0ba37f9264f9ee3d1074ff6ea3dd21b49493f85",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--original--mobile.png",
+      "scale": 1,
+      "png_sha256": "c98d005c95ddfc1dd7eaef459e5753b045070d509f1b4922ec649c01bb07ea67",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "B/text200/mobile",
+      "id": "23:1551",
+      "page": "B",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "f5c62092300dac2ffa82a900ca61a3abd4105b31e53bfd2992cc5ddc893021ae",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--text200--mobile.png",
+      "scale": 1,
+      "png_sha256": "d5f09695ae7198185aff4ff203795cef8984c4c81e7b5c10e9a81582bc030428",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "C/original/mobile",
+      "id": "23:1602",
+      "page": "C",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "cc55d856a716c687c80dceae5ea17e84de4529b36695f360a8b73a09f0abc3a3",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--original--mobile.png",
+      "scale": 1,
+      "png_sha256": "7cf6a1acaaca22801ab8b779ef82e9a8cc84c1562491b0a1e9d68fe80ab40fc8",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "C/text200/mobile",
+      "id": "23:1612",
+      "page": "C",
+      "kind": "viewport",
+      "w": 390,
+      "h": 844,
+      "sha256": "5e36356c2f3758c0165c1b8d87664de0f3da700595ddbcead300dab18431b40a",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--text200--mobile.png",
+      "scale": 1,
+      "png_sha256": "5f306c56e4d54ee5b24406d9a01ecb451e1456dd387084f5cd25468ea51d49ea",
+      "png_size": [
+        390,
+        844
+      ]
+    },
+    {
+      "key": "A/overview/mobile/list",
+      "id": "14:117",
+      "page": "A",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 536,
+      "sha256": "df339f2886ceefc6ed6130fa23a0945671c790eadd44857fa43e3f5b97a81df3",
+      "temporaryCreated": "84:370",
+      "temporaryRemoved": "84:370",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--overview--mobile--list.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "3afaf863ae455b7686d883ce074f2c63c903c5b499541780f4587f9f02b5c896",
+      "png_size": [
+        342,
+        536
+      ]
+    },
+    {
+      "key": "A/detail/mobile/body",
+      "id": "16:258",
+      "page": "A",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 674,
+      "sha256": "9084ad71f5dec66d6a5ecea5ea61b3169f42f810d55a0bc3cc9bdaa1ae93b4a9",
+      "temporaryCreated": "84:391",
+      "temporaryRemoved": "84:391",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--detail--mobile--body.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "5cac044b7e98c6cf0587b57144b4a916b034cafeb55948d1be8e7ea014974b4f",
+      "png_size": [
+        342,
+        674
+      ]
+    },
+    {
+      "key": "A/compare/mobile/body",
+      "id": "19:577",
+      "page": "A",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 706,
+      "sha256": "405420b56aa2fc7bbffcf8b0afaf3887c414e1a683c75326ff121fa87aeb6978",
+      "temporaryCreated": "84:417",
+      "temporaryRemoved": "84:417",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--compare--mobile--body.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "49cdfc6cfad77a2a8c12b2996bba06cb4e1a1ad7787d39a286c4888b9b1c3e4e",
+      "png_size": [
+        342,
+        706
+      ]
+    },
+    {
+      "key": "A/compare/mobile/history",
+      "id": "19:654",
+      "page": "A",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 304,
+      "sha256": "10de49a54168b28dc99084786b145c79a00341a60eb72be7d2268f9a77d157e5",
+      "temporaryCreated": "84:487",
+      "temporaryRemoved": "84:487",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--compare--mobile--history.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "dc380d31125f828666a737e0807fa6d91fd133bca83ed27da01b7af16a3c6de7",
+      "png_size": [
+        342,
+        304
+      ]
+    },
+    {
+      "key": "A/states/desktop/grid",
+      "id": "23:831",
+      "page": "A",
+      "kind": "full-content-node",
+      "w": 1376,
+      "h": 1492,
+      "sha256": "3ad991fb5a351e467b60e4517febccd7785bd4645c0c058bdc3738636e5e4d02",
+      "temporaryCreated": "84:512",
+      "temporaryRemoved": "84:512",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--states--desktop--grid.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "99545af91c61653ea2d6fbbae1b7663f5ebc27f014b455ca22d731ffd0890837",
+      "png_size": [
+        1376,
+        1492
+      ]
+    },
+    {
+      "key": "A/states/mobile/grid",
+      "id": "23:945",
+      "page": "A",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 1712,
+      "sha256": "484834034d5a7e7acef4b7003102e9584f50f6e7135cd312d338f80baac7bffe",
+      "temporaryCreated": "84:581",
+      "temporaryRemoved": "84:581",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--states--mobile--grid.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "7614947a69d454acf32f0216b8a893463702c126aaa39b2aa6594fea8653f56d",
+      "png_size": [
+        342,
+        1712
+      ]
+    },
+    {
+      "key": "A/text200/mobile/content",
+      "id": "27:1075",
+      "page": "A",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 1544,
+      "sha256": "eb7845b00b577c2f8394f8bdc3be80fbd30d597f1eeb3de002c5ec79b8da657a",
+      "temporaryCreated": "85:370",
+      "temporaryRemoved": "85:370",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/A--text200--mobile--content.png",
+      "scale": 1,
+      "rendering": "isolated native clone using verified resolved canvas RGB; original descendants and inner clipping preserved",
+      "background": "#F5F6F8",
+      "png_sha256": "2af4f3e1b4b36c8482d0906e94f6374b3971ba62f66ad1428326121ce0777eca",
+      "png_size": [
+        342,
+        1544
+      ]
+    },
+    {
+      "key": "B/overview/mobile/list",
+      "id": "14:246",
+      "page": "B",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 548,
+      "sha256": "6bad635564512290fbd3bb22636cd674c68a1e8d6758a2ea670d33f1977fcaa5",
+      "temporaryCreated": "84:1049",
+      "temporaryRemoved": "84:1049",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--overview--mobile--list.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "aa50212acc760f99109a5f4e2dbc94786ec7d4a2c0c77c8122b4c7792b189df7",
+      "png_size": [
+        342,
+        548
+      ]
+    },
+    {
+      "key": "B/detail/mobile/body",
+      "id": "16:345",
+      "page": "B",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 674,
+      "sha256": "d4b35fd0732b00099e54a4b5a64df9dc7183068d47e13ce08fbd9779834b204b",
+      "temporaryCreated": "84:1070",
+      "temporaryRemoved": "84:1070",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--detail--mobile--body.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "2db4466f235e81c0af5db5c18a0235221cc0ea5ca031670055d67f34affbc24a",
+      "png_size": [
+        342,
+        674
+      ]
+    },
+    {
+      "key": "B/compare/mobile/body",
+      "id": "19:929",
+      "page": "B",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 706,
+      "sha256": "759beba402711facfbc1d8ebf3f3b71bf27aa6a8fbb6f404e41ede452ba83254",
+      "temporaryCreated": "84:1096",
+      "temporaryRemoved": "84:1096",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--compare--mobile--body.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "88a60b19fab7c6c54e35cd1a010e8dde0c20a5ff7a0d1d5d3df8818f3e8b7b93",
+      "png_size": [
+        342,
+        706
+      ]
+    },
+    {
+      "key": "B/compare/mobile/history",
+      "id": "19:1006",
+      "page": "B",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 304,
+      "sha256": "e9b4e8ddae4aceb672cbf179de01dd64c21536d061a147aaa8d3d7c634014d98",
+      "temporaryCreated": "84:1166",
+      "temporaryRemoved": "84:1166",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--compare--mobile--history.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "40e7d7b0018a52316aac69c3fee2bce30c23ee059e81c2eaac5810d2bc8139e8",
+      "png_size": [
+        342,
+        304
+      ]
+    },
+    {
+      "key": "B/states/desktop/grid",
+      "id": "23:1056",
+      "page": "B",
+      "kind": "full-content-node",
+      "w": 1376,
+      "h": 1492,
+      "sha256": "db879d6da8f90629eedf2bd18b51a0806c8facf19d9868db18009ff66c68f1b5",
+      "temporaryCreated": "84:1191",
+      "temporaryRemoved": "84:1191",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--states--desktop--grid.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "b673b6cc19db68e424a68f3d5b0659ca746de5295c244fd307359afd8a22a1e7",
+      "png_size": [
+        1376,
+        1492
+      ]
+    },
+    {
+      "key": "B/states/mobile/grid",
+      "id": "23:1166",
+      "page": "B",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 1712,
+      "sha256": "48f420c2255e9b8657e53e1d31231c97c045f4132323a8b6f46b0cfa030928c0",
+      "temporaryCreated": "84:1260",
+      "temporaryRemoved": "84:1260",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--states--mobile--grid.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "c8db13a91f940e51e83b78ee73374c85a8e874f5f9cccb0e7536f73abe796783",
+      "png_size": [
+        342,
+        1712
+      ]
+    },
+    {
+      "key": "B/text200/mobile/content",
+      "id": "27:1076",
+      "page": "B",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 1544,
+      "sha256": "b6b8cca6a382555213d5a150fc15795aecda48e45308f930f7e4645eb55c4131",
+      "temporaryCreated": "85:769",
+      "temporaryRemoved": "85:769",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/B--text200--mobile--content.png",
+      "scale": 1,
+      "rendering": "isolated native clone using verified resolved canvas RGB; original descendants and inner clipping preserved",
+      "background": "#EBEEF2",
+      "png_sha256": "8c9d610c4161a4fa2f3a10486b5ed26da3899ea5841eb8350de4ab19345ef9ec",
+      "png_size": [
+        342,
+        1544
+      ]
+    },
+    {
+      "key": "C/overview/mobile/list",
+      "id": "14:359",
+      "page": "C",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 548,
+      "sha256": "5b6a0904500b4724da353172dcd3a1cfe01aa17d9c19842670bbb456a2f7277c",
+      "temporaryCreated": "84:1722",
+      "temporaryRemoved": "84:1722",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--overview--mobile--list.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "1537dcbb0a8a88ba309bc085a0dbf74c6dc21cd77f59dd1b01a1a48be8e03b8d",
+      "png_size": [
+        342,
+        548
+      ]
+    },
+    {
+      "key": "C/detail/mobile/body",
+      "id": "16:432",
+      "page": "C",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 674,
+      "sha256": "1172d98b61f99d0985c62bdb59c1d7e9fc5055105d96503622e6c8912a80d91a",
+      "temporaryCreated": "84:1743",
+      "temporaryRemoved": "84:1743",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--detail--mobile--body.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "14b4bc5e883ada6b6f3b70071754ef6d0751c9a7c271b45ea5e46e8803dfba3e",
+      "png_size": [
+        342,
+        674
+      ]
+    },
+    {
+      "key": "C/compare/mobile/body",
+      "id": "19:1267",
+      "page": "C",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 706,
+      "sha256": "86ffdf0154443d57f0e19e3cc152bd14d5f9d9f38e728ebc62d8743a5c40e16a",
+      "temporaryCreated": "84:1769",
+      "temporaryRemoved": "84:1769",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--compare--mobile--body.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "318c9dad66e96f28c13a0df88d792ab301a6e630197628a5ed4a72d6bbfa8e73",
+      "png_size": [
+        342,
+        706
+      ]
+    },
+    {
+      "key": "C/compare/mobile/history",
+      "id": "19:1344",
+      "page": "C",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 304,
+      "sha256": "820287e8feb984de073aac250e9eae4cadbff0acf1959994311e2d62829d0ea8",
+      "temporaryCreated": "84:1839",
+      "temporaryRemoved": "84:1839",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--compare--mobile--history.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "8cf1b630206a74fa9af6f8c06adfde2737126b9979cd826766ba86e1940832e6",
+      "png_size": [
+        342,
+        304
+      ]
+    },
+    {
+      "key": "C/states/desktop/grid",
+      "id": "23:1277",
+      "page": "C",
+      "kind": "full-content-node",
+      "w": 1056,
+      "h": 1492,
+      "sha256": "18685b0cfe5795f543c0a7fffb7e5978c589585b9ee9439ca11796862f116066",
+      "temporaryCreated": "84:1864",
+      "temporaryRemoved": "84:1864",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--states--desktop--grid.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "5878bce0365ec3dd9331938601ea0df66103ae355fcf10360ebefee154a1a9ec",
+      "png_size": [
+        1056,
+        1492
+      ]
+    },
+    {
+      "key": "C/states/mobile/grid",
+      "id": "23:1387",
+      "page": "C",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 1712,
+      "sha256": "9658fbce2c7e68fd26f57141c484199a351d546cf608a8ce7e0fb09db35d58ca",
+      "temporaryCreated": "84:1933",
+      "temporaryRemoved": "84:1933",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--states--mobile--grid.png",
+      "scale": 1,
+      "rendering": "isolated native clone on matching canvas color; all original descendants and inner clipping preserved",
+      "png_sha256": "cc3ed1535585f60290fb54c4adfe7f67113c4cb9875fd87c0fbca35984ad4dfa",
+      "png_size": [
+        342,
+        1712
+      ]
+    },
+    {
+      "key": "C/text200/mobile/content",
+      "id": "27:1077",
+      "page": "C",
+      "kind": "full-content-node",
+      "w": 342,
+      "h": 1544,
+      "sha256": "55c05b1755255e68112b036a0a090b8743147ce603b8e35b7cd43b73eb39c4e9",
+      "temporaryCreated": "85:1162",
+      "temporaryRemoved": "85:1162",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/C--text200--mobile--content.png",
+      "scale": 1,
+      "rendering": "isolated native clone using verified resolved canvas RGB; original descendants and inner clipping preserved",
+      "background": "#F5F2EC",
+      "png_sha256": "100a0b0c83519760c1c64ecb0c63c9ad1cb1c9944dadea15638588c75c88b22f",
+      "png_size": [
+        342,
+        1544
+      ]
+    },
+    {
+      "key": "Foundations",
+      "id": "5:140",
+      "page": "foundations",
+      "kind": "foundation",
+      "w": 1000,
+      "h": 292,
+      "sha256": "a24a25d7cd96d6a2e4da434fa0b1774c80e9ffe035b586ee605b7f7957a34756",
+      "path": "docs/reports/ui_design_governance/unit-13/previews/Foundations.png",
+      "scale": 1,
+      "png_sha256": "6e85653aab66120fa79cf3030d1242a7ca7e5b030a96627a9ef77f615771740c",
+      "png_size": [
+        1000,
+        292
+      ]
+    }
+  ]
+}
