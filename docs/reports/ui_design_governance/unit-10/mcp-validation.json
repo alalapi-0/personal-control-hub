@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "actual_configured_command": true,
+  "initialize": true,
+  "tool_count": 2,
+  "tool_names": [
+    "get_figma_data",
+    "download_figma_images"
+  ],
+  "tools_called": 0,
+  "telemetry_disabled_only_in_probe": true,
+  "npm_offline": true,
+  "package_metadata_hashes": {
+    "package-lock.json": "4aaced763f440d1ed1a736c088669013358abe5021ab91173308e517b4b08364",
+    "node_modules/.package-lock.json": "6c0217f497c9d305db9f4bff77a9c29803b85b2cddc183c6e2019f9afb59904b",
+    "node_modules/figma-developer-mcp/package.json": "36d42840a63f86767b5082ed8eb57b915f81f40f58f3ee30524f71e54272332e",
+    "node_modules/figma-developer-mcp/dist/bin.js": "b5317c66a5eb3611fc76532e15a25d3b87315ce4af8adc5b1bcc83ee91cc9ebc"
+  },
+  "secret_output": false,
+  "process_closed": true,
+  "existing_package_unchanged": true
+}

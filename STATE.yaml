@@ -11,7 +11,7 @@ metadata:
   - registry_or_route_change
   - blocker_change
   - unique_next_action_change
-last_updated: '2026-09-05T23:59:36+00:00'
+last_updated: '2026-09-06T00:38:38.647920+00:00'
 project:
   id: personal-control-hub
   phase: Phase 1
@@ -26,13 +26,14 @@ current_round:
   last_completed_round: ROUND-1
   next_round: ROUND-1-5
 current_work:
-  objective: 完成日常 Hub、真实接入、设计闭环与管理材料归并。
+  objective: 完成日常 Hub、真实接入、设计闭环、材料归并，并统一全局工具凭据取用。
   status: ACCEPTED
-  unit: HUB-09-MANGA-EXCEPTION
+  unit: HUB-10-GLOBAL-TOOL-CREDENTIALS
   spec: docs/design/ui_governance_execution.md
-  evidence: docs/reports/ui_design_governance/unit-09/
+  evidence: docs/reports/ui_design_governance/unit-10/
   blocker: Figma 已获写入授权；官方插件 OAuth 仍需重新认证。
-  next_action: TC9 已通过独立验收；提交推送并核对远端后，开始所有者已选择的全局工具钥匙串与 Hub 索引工作；Figma OAuth 重连仍待完成。
+  next_action: TC10 已独立验收；提交推送并核对远端。Figma 已重新启用且允许所有动作，但当前任务调用被应用配置阻断；保留 API Key，待刷新插件状态后只读核验，再继续
+    Figma 选稿。
 registry:
   authority: data/registry/external_projects.yaml
   registered_count: 24

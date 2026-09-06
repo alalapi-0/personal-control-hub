@@ -1,0 +1,104 @@
+{
+  "schema_version": "1.0",
+  "lane": "GOVERNED",
+  "head": "99e2ef73247ebbafe39079fd9f4373ce7931e697",
+  "state_preimage": "---\nschema_version: '1.1'\nmetadata:\n  role: canonical_current_state\n  authority: canonical\n  reader: 进入 Hub 的 Agent、所有者和状态展示工具。\n  purpose: 只保存 Hub 当前管理工作、registry/外部状态指针、阻塞与唯一下一步；不复制外部项目执行状态。\n  update_triggers:\n  - accepted_milestone\n  - governance_round_transition\n  - registry_or_route_change\n  - blocker_change\n  - unique_next_action_change\nlast_updated: '2026-09-05T23:59:36+00:00'\nproject:\n  id: personal-control-hub\n  phase: Phase 1\n  health: active\n  location_policy: internal_disk_only\n  storage_migration_or_cleanup: forbidden\ncurrent_round:\n  id: ROUND-1-1\n  name: Development Project Storage Governance Registry and Routing\n  status: ACCEPTED\n  governance_revision: HUB-GOV-2026-09-02-06-ACCEPTED\n  last_completed_round: ROUND-1\n  next_round: ROUND-1-5\ncurrent_work:\n  objective: 完成日常 Hub、真实接入、设计闭环与管理材料归并。\n  status: ACCEPTED\n  unit: HUB-09-MANGA-EXCEPTION\n  spec: docs/design/ui_governance_execution.md\n  evidence: docs/reports/ui_design_governance/unit-09/\n  blocker: Figma 已获写入授权；官方插件 OAuth 仍需重新认证。\n  next_action: TC9 已通过独立验收；提交推送并核对远端后，开始所有者已选择的全局工具钥匙串与 Hub 索引工作；Figma OAuth 重连仍待完成。\nregistry:\n  authority: data/registry/external_projects.yaml\n  registered_count: 24\n  enabled_count: 23\n  execution_candidate_count: 21\n  special_record_count: 3\n  storage_effect_authority: governance_program_state_only\n  frozen_manifest: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_04_r1/PROJECT_MANIFEST_v1.yaml\n  frozen_manifest_sha256: fafae757b2b8cbc297d6be7976d2a6f49a7735734b27293792fa0b52dc6bfacd\n  authority_pointer_audit: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/AUTHORITY_POINTER_AUDIT.yaml\n  exclusions:\n    manga-localizer: accepted_exclusion_record_only\n    personal-control-hub: protected_internal_control_plane\n    storage_governance: protected_governance_program\nstorage_governance:\n  relation: managed_governance_program\n  adapter: governance/adapters/storage_governance.yaml\n  authority_root: governance/programs/storage_governance\n  sole_execution_state: governance/programs/storage_governance/STATE.yaml\n  management_evidence: docs/reports/ui_design_governance/unit-06/\n  hub_access: pointer_only\n  goal_package:\n    prompt: prompts/storage_governance_goal_mode.md\n    parameters: data/programs/storage_governance_goal.yaml\n    project_registry: data/registry/external_projects.yaml\ngit_delivery:\n  current_goal_authority: owner_20260905_resume_accepted_units\n  remote: origin\n  tracking_branch: origin/agent/governance-closure-20260812\n  automatic_main_merge: false\n  force_push: false\ntask_health:\n  first_250k_rebaseline: completed\n  status: WATCH\n  native_goal_tokens: 1066751\n  native_goal_seconds: 2184\n  telemetry_scope: native cumulative Goal; no cost or active/idle breakdown inferred\n  material_progress: TC4-TC6 accepted and pushed\n  risk: transient review-role capacity; resolved when TC6Judge finished\n  action: collect review roles before next dispatch\n  next_checkpoint: TC7 candidate freeze; no repeat solely above250k\n  cooldown: 75000moretokens or30active minutes plus eligible condition\n",
+  "claude_config_path": "/Users/alalapi/.claude/settings.json",
+  "claude_redacted_preimage": {
+    "mcpServers": {
+      "figma": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "figma-developer-mcp"
+        ],
+        "env": {
+          "FIGMA_API_KEY": "<REDACTED:KEYCHAIN_MIGRATION_SOURCE>"
+        }
+      }
+    },
+    "model": "claude-fable-5"
+  },
+  "protected_hub_hashes": {
+    "AGENTS.md": "e125d3a9c3a1c2961b3c9619f23ad2456d5645f2f41986c92c4a9ba00d9f7ca4",
+    "data/gates/auto_advance_policy.yaml": "47a48652d107e5e9e6e5251ca8e500862b2b00665d46187c2f3c9294f9766f6b",
+    "data/mcp/mcp_approval_policy.yaml": "54330d0612d652cd41152f40ab23fb1b935cf34e322476356fb118ec772e8aff",
+    "governance/agent_policy.yaml": "2b9f8ee1bdea519fafc7772f7b45999c1856a2baae64f84a21b7c64ac069b68a",
+    "prompts/codex_project_driver.md": "db43ba63d591314a7e0f8d8ebe0291c8a7f9139dd42cd3e0c77c5ec388293c70",
+    "prompts/cursor_project_driver.md": "28ae68bd3e1d84df876675cb2dc26c3848d15cb6b4d79216efd966e7e1cd3394",
+    "scripts/agent_gate.py": "3f534a7550833e8ae95c8a893c3e625f24f7957ea7aac3c0c1e4b0f7e75c8f95",
+    "scripts/auto_advance_runner.py": "1a93d285b3e3dd8399ecfd0efab548fb284d7ffb4d2e6905d7dcec94d543e815",
+    "docs/global_agent_governance_execution.md": "3c31b295653bf7d4e9b7a2fefe2d8f51830305c7b96225355fb2078af93d4484",
+    "docs/reports/ui_design_governance/figma-source-observation-v1.json": "dffb5182a8176731b9dd898d37a62942e34746dd24405a1e5178e5dd990b2ca8",
+    "docs/reports/ui_design_governance/unit-08/delivery.json": "749d9084d9bf57ebf57f780c11681770c074d7bf8d4bb280871e48189864c73f",
+    "data/design_governance/manifest-v1.json": "013b20150d1ef129ee4bdf6b3d8c3642b71d2189ba47289d7001b2ab53a6186e",
+    "data/design_governance/connection_adapters.json": "06df415a7ca906a1d779fa2867ab5dc18915ab2d8581bb65c7db85eeb6bcc5c6",
+    "data/design_governance/relation-proposals-v3.json": "11924a54d2c6577f66ccf2f0bef867e5027d588af6efd1215478c38872358a9e",
+    "data/design_governance/authority-bundle-v2.json": "96a9923d953a04a56e45f3670fb06e840ec1403b0cca567f99ccf6a1587724d3",
+    "data/design_governance/source-plan-v3.json": "681a5e51c17e8c15f37db7059645544e3c50cf3332759ea74251e7db285d5104",
+    "data/design_governance/connection-exceptions-v1.json": "19ae8fda54b241947ee19a89b351039812d92b94c186093633e391d73a259b1b",
+    "data/design_governance/source-plan-v2.json": "a143fc746b67dd21117bd377655255454d3e815c16d8538d52dd493f7d6c62f3",
+    "data/design_governance/authority-bundle-v3.json": "2dfb91d96c09ecbd5c1fb267891cab8a2a9ddeef90f8ff0ac7758c158a7b9cf8",
+    "data/design_governance/relation-proposals-v2.json": "133619fb61ac898ab44565a18583a298f0274bf264ce2054d4843890ac81b2ac",
+    "data/design_governance/source-plan-v1.json": "ea07f264044f1ed0ecfdf54b98f3f11c033c6fa61f8977807b8cedcbfc30b482",
+    "data/design_governance/relation-proposals-v1.json": "a33040083e6f0ba00baee75aeb4dd3b7b1a14bdc89749e39cee525962d43fa10",
+    "data/design_governance/record-schema-v1.json": "df8623a4ece99edb08cd65393be6f254bac482c6fe107e345c5c9ca898bccbd7",
+    "data/design_governance/manifest-v4.json": "ffe478e9510114f9ec2987f9c2f92ac93ffdfc56e4908f8c54d080551155d543",
+    "data/design_governance/authority-bundle-v1.json": "cf54b9a8fabc889f0c7400aec497e2ab5fad83f2d20b1ff312b18357a1491b1a",
+    "data/design_governance/manifest-v3.json": "7a7ff48360e891dbb3db0b23a3ea8c123b89c1e47bc5fa03b6634d0cd4b3c30e",
+    "data/design_governance/manifest-v2.json": "27801085d9809d594e982b51264d50408231f8dd34f71146974d686e0fbc1304",
+    "data/design_governance/design-store.json": "ff7f6659951a3c331488b999d927e992559ac512e41214c4a3145520910ec37f",
+    "data/design_governance/connection_refresh.sqlite3": "29e1101d1926d7d5a8d4b1eb5b650469b4d8625bd0f08c351a70ab71c03424f1",
+    "data/design_governance/authority-bundle-v4.json": "b002d806a8e4b622a5e2711b61e9d1a2bc83b70d85ff7cb0f161e699eb039d5b",
+    "data/design_governance/manifest-v5.json": "397b273295dd734a1209bb2c9f1a48c74553d8a88cafdfb4a6298a7dff9ebf9d",
+    "data/design_governance/source-plan-v4.json": "789465dc64dbdf9bb2507a3ff8b7faa5682a1fa5884a7bbcb9c45840766a4593",
+    "data/design_governance/relation-proposals-v4.json": "cad9a5dca92f484d9790d65197c3e0938f06d69815571789b8cd2d555f12b546",
+    "data/design_governance/connection-exceptions-v2.json": "04a24b120292813dfaa73a31b17347752e98a46b6034a862eacf43eb313a952c",
+    "docs/reports/ui_design_governance/unit-09/delivery.json": "a2f4e8ae51bdb20132d182702d23cb4bb6da3e4da346b70dfa054acc8aa1f6d3"
+  },
+  "preserved_global_file_hashes": {
+    "/Users/alalapi/.codex/config.toml": "c8d84dba0e8ecb2571128d7e6a480121bea3c4f9f25d01da591281e60899fb96",
+    "/Users/alalapi/.cursor/mcp.json": "a01b1a8d6b813ff6b3361a5762ca54619040805138217c14c1cdbe434d0321bd",
+    "/Users/alalapi/.claude.json": "62cc8ab1f3a88d826e0e269829e11a060ee018b5f9fdb1a1a61dfcb7d61b082a",
+    "/Users/alalapi/.codex/bin/with-stitch-keychain": "9414746f20bf423d6b50f0e450350ee6bc2cbc46f725a19e7255aaa4a18d4d6d",
+    "/Users/alalapi/.cursor/bin/with-stitch-keychain": "c629ce66b0ad869b285e7c7e188c3c64267e3fcb4031a1372cfc47de75385921",
+    "/Users/alalapi/.cursor/bin/with-github-gh-auth": "488ff4845701c984030ad5137e0c73971c12e6304d43338bd0ecb82f34903d7b",
+    "/Users/alalapi/.zprofile": "08b4ea725eb7db7deabec541d1cbe09aff5fe6e6963a4c29afe0d84327d7b588",
+    "/Users/alalapi/.zshrc": "04bb5a3ea66946f6ebe2fc89e9dcc3ff12b8c9b8e3da9bbc9f573fd93cd1ca24"
+  },
+  "ownership": "Root serially switched after remotely verified TC9; exact configured global tool inputs only; latest relevant native global governance task completed and unchanged; compare source bytes in memory before cutover",
+  "credential_values_or_hashes_saved": false,
+  "entry_gate": "PASS;0hard/10existingsoft",
+  "owner_turn": "01a07400-d059-7f90-a685-2e3250945f2d",
+  "owner_message": "01a07403-e994-7d11-854c-1799cc3d35e8",
+  "external_input_drift": {
+    "path": "/Users/alalapi/.codex/config.toml",
+    "original_sha256": "c8d84dba0e8ecb2571128d7e6a480121bea3c4f9f25d01da591281e60899fb96",
+    "observed_sha256": "28d8dfeea5173cdfcc837f75ce83413a234be108083f89e86943e319d5c6a47d",
+    "observed_mtime": 1788654788.149429,
+    "actor": "UNKNOWN",
+    "reliable_content_preimage": false,
+    "exact_semantic_preservation": "UNPROVEN",
+    "task_wrote_file": false,
+    "current_state_preserved": true,
+    "mcp_names": [
+      "node_repl",
+      "chrome-devtools",
+      "context7",
+      "playwright",
+      "openaiDeveloperDocs",
+      "stitch",
+      "computer-use"
+    ],
+    "auth_field_names": {
+      "node_repl": [],
+      "chrome-devtools": [],
+      "context7": [],
+      "playwright": [],
+      "openaiDeveloperDocs": [],
+      "stitch": [],
+      "computer-use": []
+    },
+    "failed_check": "Original full-file hash changed outside the recorded TC10 write set; retained old hash, no reset/rollback or actor inference"
+  }
+}

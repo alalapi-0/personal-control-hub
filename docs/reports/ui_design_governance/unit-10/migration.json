@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "credential_id": "figma-api",
+  "service": "com.openai.codex.mcp.figma-api-key",
+  "account": "alalapi",
+  "keychain_item_created": true,
+  "keychain_readback_equals_source": true,
+  "source_removed_after_shadow_validation": true,
+  "shadow_probe": {
+    "http_status": 200,
+    "authenticated_user_returned": true,
+    "secret_returned": false
+  },
+  "source_config": "/Users/alalapi/.claude/settings.json",
+  "noncredential_settings_preserved": true,
+  "postimage": {
+    "mcpServers": {
+      "figma": {
+        "command": "/usr/bin/python3",
+        "args": [
+          "/Users/alalapi/PycharmProjects/personal-control-hub/scripts/tool_credentials.py",
+          "run",
+          "figma-api",
+          "--",
+          "npx",
+          "-y",
+          "figma-developer-mcp"
+        ],
+        "env": {}
+      }
+    },
+    "model": "claude-fable-5"
+  },
+  "temporary_file_remaining": false,
+  "credential_value_or_fingerprint_recorded": false,
+  "existing_sessions_hot_reloaded": false,
+  "fresh_process_credential_route_verified": true,
+  "provider_writes": 0,
+  "observed_at": "2026-09-06T00:12:03+00:00"
+}

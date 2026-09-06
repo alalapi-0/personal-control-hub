@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "reviewer": "/root/tc5_judge",
+  "decision": "PASS",
+  "candidate_sha256": "bbe9b670a6128ac8791d5a2c49cf7f35a666c9318137a2002a65e622ab651c5e",
+  "contract_version": 2,
+  "independent_checks": [
+    "all16filehashes_and_STATEsemantics",
+    "35protectedHubhashes",
+    "19consumers_5credentialroutes_3plaintextmigrations",
+    "native_Claude_original_byte_reconstruction_and_secret_scan",
+    "six_isolated_transport_tests",
+    "actual_configured_MCP_initialize_and_tools_list",
+    "repository_state_and_diff_checks"
+  ],
+  "limits": [
+    "Claude_GitHub_auth_invalid401",
+    "Claude_Stitch_auth_UNVERIFIED",
+    "Codex_Figma_OAuth_requires_reauthentication",
+    "Codex_config_external_drift_preserved_actorUNKNOWN_prior_semanticsUNPROVEN",
+    "existing_session_adoptionUNVERIFIED"
+  ],
+  "provider_data_calls": 0,
+  "reviewer_writes": 0,
+  "overall_goal_complete": false
+}

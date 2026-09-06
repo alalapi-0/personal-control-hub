@@ -1,0 +1,128 @@
+{
+  "schema_version": "1.0",
+  "status": "completed",
+  "credential_checks": [
+    {
+      "server": "github",
+      "source_equal": true,
+      "http_status": 401,
+      "auth_status": "invalid",
+      "provider_data_calls": 0,
+      "value_returned": false,
+      "credential_id": "claude-github-token",
+      "service": "com.openai.codex.mcp.claude-github-token",
+      "account": "alalapi",
+      "keychain_created": true,
+      "native_readback_equal": true,
+      "baseline_http_status": 401
+    },
+    {
+      "server": "stitch",
+      "source_equal": true,
+      "http_status": 200,
+      "auth_status": "unverified",
+      "provider_data_calls": 0,
+      "value_returned": false,
+      "credential_id": "claude-stitch-api",
+      "service": "com.openai.codex.mcp.claude-stitch-api-key",
+      "account": "alalapi",
+      "keychain_created": true,
+      "native_readback_equal": true,
+      "baseline_http_status": 200
+    }
+  ],
+  "stitch_unauthenticated_control_http_status": 200,
+  "stitch_authentication_proven": false,
+  "source_config": "/Users/alalapi/.claude.json",
+  "existing_sessions_restarted": false,
+  "credential_values_or_hashes_saved": false,
+  "mcp_redacted_raw_preimage": "{\n    \"chrome-devtools\": {\n      \"type\": \"stdio\",\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n        \"chrome-devtools-mcp@latest\"\n      ],\n      \"env\": {}\n    },\n    \"playwright\": {\n      \"type\": \"stdio\",\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n        \"@playwright/mcp@latest\",\n        \"--isolated\"\n      ],\n      \"env\": {}\n    },\n    \"context7\": {\n      \"type\": \"stdio\",\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n        \"@upstash/context7-mcp@latest\"\n      ],\n      \"env\": {}\n    },\n    \"github\": {\n      \"type\": \"stdio\",\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n        \"@modelcontextprotocol/server-github\"\n      ],\n      \"env\": {\n        \"GITHUB_PERSONAL_ACCESS_TOKEN\": \"<REDACTED:GITHUB>\"\n      }\n    },\n    \"stitch\": {\n      \"type\": \"stdio\",\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n        \"@_davideast/stitch-mcp\",\n        \"proxy\"\n      ],\n      \"env\": {\n        \"STITCH_API_KEY\": \"<REDACTED:STITCH>\"\n      }\n    }\n  }",
+  "mcp_postimage": {
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ],
+      "env": {}
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest",
+        "--isolated"
+      ],
+      "env": {}
+    },
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
+      "env": {}
+    },
+    "github": {
+      "type": "stdio",
+      "command": "/usr/bin/python3",
+      "args": [
+        "/Users/alalapi/PycharmProjects/personal-control-hub/scripts/tool_credentials.py",
+        "run",
+        "claude-github-token",
+        "--",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {}
+    },
+    "stitch": {
+      "type": "stdio",
+      "command": "/usr/bin/python3",
+      "args": [
+        "/Users/alalapi/PycharmProjects/personal-control-hub/scripts/tool_credentials.py",
+        "run",
+        "claude-stitch-api",
+        "--",
+        "npx",
+        "-y",
+        "@_davideast/stitch-mcp",
+        "proxy"
+      ],
+      "env": {}
+    },
+    "figma": {
+      "command": "/usr/bin/python3",
+      "args": [
+        "/Users/alalapi/PycharmProjects/personal-control-hub/scripts/tool_credentials.py",
+        "run",
+        "figma-api",
+        "--",
+        "npx",
+        "-y",
+        "figma-developer-mcp",
+        "--stdio"
+      ],
+      "env": {}
+    }
+  },
+  "global_config_preimage_sha256": "62cc8ab1f3a88d826e0e269829e11a060ee018b5f9fdb1a1a61dfcb7d61b082a",
+  "global_config_postimage_sha256": "7f25f4ca0ed09ff4041f3b6442d59449985d953565f5425ffce57a3ee1e2c1e3",
+  "non_mcp_bytes_preserved": true,
+  "preexisting_mcp_count": 5,
+  "project_mappings_preserved": 8,
+  "source_mode": "0o600",
+  "observed_at": "2026-09-06T00:27:33.796374+00:00",
+  "plaintext_removed_after_shadow": true,
+  "temporary_file_remaining": false,
+  "legacy_declaration_removed_after_discovery_and_handshake": true,
+  "legacy_settings_postimage": {
+    "mcpServers": {},
+    "model": "claude-fable-5"
+  },
+  "legacy_settings_mode": "0o644"
+}
