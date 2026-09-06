@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "status": "WRITTEN_AND_EXACTLY_VERIFIED",
+  "before_sha256": "28d8dfeea5173cdfcc837f75ce83413a234be108083f89e86943e319d5c6a47d",
+  "after_sha256": "28636fe76af66c25c8c2dee614ec64aed43b25e1acf01d66d6c2504df5aa2311",
+  "target_before": false,
+  "target_after": true,
+  "only_boolean_token_changed": true,
+  "other_bytes_and_fields_preserved": true,
+  "mode_preserved": true,
+  "global_config_in_git": false,
+  "temporary_file_remaining": false,
+  "runtime_tools": "UNVERIFIED_NEXT_FRESH_TURN",
+  "oauth": "UNVERIFIED",
+  "remote_figma_calls": 0,
+  "credentials_or_permission_modes_changed": false,
+  "clients_restarted": false,
+  "observed_at": "2026-09-06T00:42:47.508194+00:00",
+  "root_checks": [
+  {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 docs/reports/ui_design_governance/unit-11/verify.py",
+    "exit_code": 0,
+    "result": "{\"status\": \"PASS\", \"only_boolean_changed\": true, \"protected_paths\": 54, \"keychain_and_credentials_unchanged\": true, \"remote_calls\": 0, \"fresh_runtime\": \"UNVERIFIED\", \"oauth\": \"UNVERIFIED\", \"overall_goal_complete\": false}"
+  },
+  {
+    "command": "python3 scripts/check_repo.py",
+    "exit_code": 0,
+    "result": "personal-control-hub skeleton check\nroot: /Users/alalapi/PycharmProjects/personal-control-hub\n\nFiles: OK\nDirectories: OK\nMCP registry: OK\nSecret marker scan: OK\n\nResult: PASS"
+  },
+  {
+    "command": "python3 scripts/round_consistency_check.py",
+    "exit_code": 0,
+    "result": "=== 轮次一致性检查 ===\n结果：ok\n当前轮次：ROUND-1-1\n下一轮次：ROUND-1-5\n警告：0\n硬阻塞：0"
+  },
+  {
+    "command": "git diff --check",
+    "exit_code": 0,
+    "result": ""
+  }
+]
+}

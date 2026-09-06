@@ -1,0 +1,16 @@
+{
+  "reviewer": "/root/tc4_judge",
+  "decision": "PASS",
+  "contract_version": 1,
+  "candidate_sha256": "a6f49a862e5bed2d5b31aa8af0c578e78c66f1cacf4973a714a6bf78cb5da48a",
+  "independent_findings": [
+    "Candidate identity, five file hashes and STATE semantics match",
+    "Current enabled=true; reversing only Boolean reproduces exact preimage SHA; all other bytes/fields, mode0600 and temporary-file absence verified",
+    "54 protected Hub/global paths match; accepted TC10 unchanged",
+    "Fresh-runtime loading and OAuth remain UNVERIFIED",
+    "Verifier, repository, round-consistency and diff checks passed",
+    "No reviewer writes, Figma/auth/UI calls, client restart, credential change, secret export or Git effect"
+  ],
+  "delivery_condition": "Governor approval then only registered Hub scope; global config stays outside Git",
+  "overall_goal_complete": false
+}

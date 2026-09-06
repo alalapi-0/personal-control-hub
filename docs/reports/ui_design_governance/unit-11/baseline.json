@@ -1,0 +1,291 @@
+{
+  "schema_version": "1.0",
+  "lane": "GOVERNED",
+  "source": "/Users/alalapi/.codex/config.toml",
+  "target_app": "connector_68df038e0ba48191908c8434991bbac2",
+  "before_sha256": "28d8dfeea5173cdfcc837f75ce83413a234be108083f89e86943e319d5c6a47d",
+  "before_mtime_ns": 1788654788149429102,
+  "mode": "0o600",
+  "redacted_structure": {
+    "model": "str",
+    "model_reasoning_effort": "str",
+    "service_tier": "str",
+    "default_permissions": "str",
+    "approval_policy": "str",
+    "approvals_reviewer": "str",
+    "notify": [
+      "array",
+      "str"
+    ],
+    "sandbox_mode": "str",
+    "permissions": {
+      "project-ui-test": {
+        "description": "str",
+        "extends": "str",
+        "filesystem": {
+          ":workspace_roots": {
+            ".git": "str"
+          }
+        },
+        "network": {
+          "enabled": "bool",
+          "domains": {
+            "localhost": "str",
+            "127.0.0.1": "str"
+          }
+        }
+      }
+    },
+    "agents": {
+      "default_subagent_reasoning_effort": "str",
+      "interrupt_message": "bool",
+      "max_concurrent_threads_per_session": "int"
+    },
+    "marketplaces": {
+      "openai-bundled": {
+        "source_type": "str",
+        "source": "str"
+      },
+      "openai-primary-runtime": {
+        "source_type": "str",
+        "source": "str"
+      }
+    },
+    "plugins": {
+      "chrome@openai-bundled": {
+        "enabled": "bool"
+      },
+      "computer-use@openai-bundled": {
+        "enabled": "bool"
+      },
+      "visualize@openai-bundled": {
+        "enabled": "bool"
+      },
+      "documents@openai-primary-runtime": {
+        "enabled": "bool"
+      },
+      "pdf@openai-primary-runtime": {
+        "enabled": "bool"
+      },
+      "spreadsheets@openai-primary-runtime": {
+        "enabled": "bool"
+      },
+      "presentations@openai-primary-runtime": {
+        "enabled": "bool"
+      },
+      "template-creator@openai-primary-runtime": {
+        "enabled": "bool"
+      },
+      "browser@openai-bundled": {
+        "enabled": "bool"
+      },
+      "codex-app-tools@openai-bundled": {
+        "enabled": "bool"
+      },
+      "sites@openai-bundled": {
+        "enabled": "bool"
+      },
+      "unified-computer-use@openai-bundled": {
+        "enabled": "bool"
+      }
+    },
+    "mcp_servers": {
+      "node_repl": {
+        "args": [
+          "array"
+        ],
+        "command": "str",
+        "startup_timeout_sec": "int",
+        "env": {
+          "NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS": "str",
+          "NODE_REPL_NODE_MODULE_DIRS": "str",
+          "NODE_REPL_NODE_PATH": "str",
+          "NODE_REPL_TRUSTED_CODE_PATHS": "str",
+          "CODEX_HOME": "str",
+          "BROWSER_USE_AVAILABLE_BACKENDS": "str",
+          "BROWSER_USE_TINYSKY_ENABLED": "str",
+          "NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER": "str",
+          "NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME": "str",
+          "NODE_REPL_INSTRUCTIONS_USE_CASE_COMPUTER_USE": "str",
+          "BROWSER_USE_CODEX_APP_BUILD_FLAVOR": "str",
+          "BROWSER_USE_CODEX_APP_VERSION": "str",
+          "NODE_REPL_TRUSTED_SERVICES": "str",
+          "SKY_CUA_SERVICE_PATH": "str",
+          "CODEX_CLI_PATH": "str"
+        }
+      },
+      "chrome-devtools": {
+        "command": "str",
+        "args": [
+          "array",
+          "str"
+        ]
+      },
+      "context7": {
+        "command": "str",
+        "args": [
+          "array",
+          "str"
+        ]
+      },
+      "playwright": {
+        "command": "str",
+        "args": [
+          "array",
+          "str"
+        ]
+      },
+      "openaiDeveloperDocs": {
+        "url": "str"
+      },
+      "stitch": {
+        "command": "str",
+        "args": [
+          "array",
+          "str"
+        ],
+        "enabled": "bool",
+        "enabled_tools": [
+          "array",
+          "str"
+        ]
+      },
+      "computer-use": {
+        "command": "str",
+        "args": [
+          "array",
+          "str"
+        ],
+        "cwd": "str",
+        "enabled": "bool"
+      }
+    },
+    "desktop": {
+      "followUpQueueMode": "str",
+      "enabled-reasoning-efforts": [
+        "array",
+        "str"
+      ],
+      "conversationDetailMode": "str",
+      "realtimeVoiceScreenContextEnabled": "bool",
+      "preventSleepWhileRunning": "bool",
+      "dock-icon-preference": "str",
+      "open-link-in-target-preference": "str"
+    },
+    "projects": {
+      "/Users/alalapi/PycharmProjects/novel-continuation-agent": {
+        "trust_level": "str"
+      },
+      "/Users/alalapi/PycharmProjects/ai-anime-short-factory": {
+        "trust_level": "str"
+      },
+      "/Users/alalapi/audio_clone": {
+        "trust_level": "str"
+      },
+      "/Users/alalapi/PycharmProjects/computer_study_plan": {
+        "trust_level": "str"
+      },
+      "/Users/alalapi/PycharmProjects/jp-sms-relay-keeper": {
+        "trust_level": "str"
+      },
+      "/Users/alalapi/PycharmProjects/resilient-personal-network": {
+        "trust_level": "str"
+      },
+      "/Users/alalapi/PycharmProjects/wechat-article-scheduler": {
+        "trust_level": "str"
+      },
+      "/Users/alalapi/Documents/Codex/2026-07-13/ba": {
+        "trust_level": "str"
+      },
+      "/Users/alalapi/PycharmProjects/light_novel": {
+        "trust_level": "str"
+      },
+      "/Users/alalapi/PycharmProjects": {
+        "trust_level": "str"
+      },
+      "/Users/alalapi/PycharmProjects/story-faceless-utopia": {
+        "trust_level": "str"
+      },
+      "/Users/alalapi/PycharmProjects/ai-music-foundry": {
+        "trust_level": "str"
+      },
+      "/Users/alalapi/PycharmProjects/manga-localizer": {
+        "trust_level": "str"
+      },
+      "/Users/alalapi/PycharmProjects/universal-player": {
+        "trust_level": "str"
+      },
+      "/Users/alalapi/PycharmProjects/zarathustra-adaptation": {
+        "trust_level": "str"
+      },
+      "/Volumes/AI_WORK_SSD/WineGames/亜人少女～異能少女との同棲生活～": {
+        "trust_level": "str"
+      },
+      "/Users/alalapi": {
+        "trust_level": "str"
+      },
+      "/Users/alalapi/PycharmProjects/personal-control-hub": {
+        "trust_level": "str"
+      }
+    },
+    "shell_environment_policy": {
+      "set": {
+        "NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S": "str"
+      }
+    },
+    "features": {
+      "js_repl": "bool"
+    },
+    "apps": {
+      "connector_76869538009648d5b282a4bb21c3d157": {
+        "tools": {
+          "github.create_pull_request": {
+            "approval_mode": "str"
+          },
+          "github.create_blob": {
+            "approval_mode": "str"
+          },
+          "github.create_tree": {
+            "approval_mode": "str"
+          },
+          "github.create_commit": {
+            "approval_mode": "str"
+          },
+          "github.update_ref": {
+            "approval_mode": "str"
+          },
+          "github.update_pull_request": {
+            "approval_mode": "str"
+          }
+        }
+      },
+      "connector_68df038e0ba48191908c8434991bbac2": {
+        "enabled": "bool"
+      }
+    }
+  },
+  "target_preimage": {
+    "enabled": false
+  },
+  "changed_token_byte_offset": 6666,
+  "entry_gate": "PASS;0hard/10existingsoft",
+  "head": "b48e98858ceca2dbe96d74a766f3c6469e0c0220",
+  "ownership": "Root exact named Figma enable Boolean only; user reported accidental disable; compare fresh whole-file bytes before write",
+  "prechange_runtime": {
+    "figma_tools_available": 0,
+    "backend_plugin_installed": true,
+    "backend_plugin_user_enabled": true,
+    "app_permission": "Allow all actions",
+    "previous_runtime_error": "MCP tool call blocked by app configuration"
+  },
+  "semantic_source": "https://learn.chatgpt.com/docs/config-file/config-reference#apps-id-enabled",
+  "state_preimage": "---\nschema_version: '1.1'\nmetadata:\n  role: canonical_current_state\n  authority: canonical\n  reader: 进入 Hub 的 Agent、所有者和状态展示工具。\n  purpose: 只保存 Hub 当前管理工作、registry/外部状态指针、阻塞与唯一下一步；不复制外部项目执行状态。\n  update_triggers:\n  - accepted_milestone\n  - governance_round_transition\n  - registry_or_route_change\n  - blocker_change\n  - unique_next_action_change\nlast_updated: '2026-09-06T00:39:52.716951+00:00'\nproject:\n  id: personal-control-hub\n  phase: Phase 1\n  health: active\n  location_policy: internal_disk_only\n  storage_migration_or_cleanup: forbidden\ncurrent_round:\n  id: ROUND-1-1\n  name: Development Project Storage Governance Registry and Routing\n  status: ACCEPTED\n  governance_revision: HUB-GOV-2026-09-02-06-ACCEPTED\n  last_completed_round: ROUND-1\n  next_round: ROUND-1-5\ncurrent_work:\n  objective: 完成日常 Hub、真实接入、设计闭环、材料归并，并统一全局工具凭据取用。\n  status: ACCEPTED\n  unit: HUB-10-GLOBAL-TOOL-CREDENTIALS\n  spec: docs/design/ui_governance_execution.md\n  evidence: docs/reports/ui_design_governance/unit-10/\n  blocker: Figma 已获写入授权；官方插件 OAuth 仍需重新认证。\n  next_action: TC10 已验收并推送 b48e988，远端已核对。Figma 已启用且允许所有动作，但本任务被应用配置阻断；下一新回合先只读核验插件加载与账号连接，保留\n    API Key，成功后继续 Figma 选稿。\nregistry:\n  authority: data/registry/external_projects.yaml\n  registered_count: 24\n  enabled_count: 23\n  execution_candidate_count: 21\n  special_record_count: 3\n  storage_effect_authority: governance_program_state_only\n  frozen_manifest: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_04_r1/PROJECT_MANIFEST_v1.yaml\n  frozen_manifest_sha256: fafae757b2b8cbc297d6be7976d2a6f49a7735734b27293792fa0b52dc6bfacd\n  authority_pointer_audit: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/AUTHORITY_POINTER_AUDIT.yaml\n  exclusions:\n    manga-localizer: accepted_exclusion_record_only\n    personal-control-hub: protected_internal_control_plane\n    storage_governance: protected_governance_program\nstorage_governance:\n  relation: managed_governance_program\n  adapter: governance/adapters/storage_governance.yaml\n  authority_root: governance/programs/storage_governance\n  sole_execution_state: governance/programs/storage_governance/STATE.yaml\n  management_evidence: docs/reports/ui_design_governance/unit-06/\n  hub_access: pointer_only\n  goal_package:\n    prompt: prompts/storage_governance_goal_mode.md\n    parameters: data/programs/storage_governance_goal.yaml\n    project_registry: data/registry/external_projects.yaml\ngit_delivery:\n  current_goal_authority: owner_20260905_resume_accepted_units\n  remote: origin\n  tracking_branch: origin/agent/governance-closure-20260812\n  automatic_main_merge: false\n  force_push: false\ntask_health:\n  first_250k_rebaseline: completed\n  status: WATCH\n  native_goal_tokens: 1066751\n  native_goal_seconds: 2184\n  telemetry_scope: native cumulative Goal; no cost or active/idle breakdown inferred\n  material_progress: TC4-TC6 accepted and pushed\n  risk: transient review-role capacity; resolved when TC6Judge finished\n  action: collect review roles before next dispatch\n  next_checkpoint: TC7 candidate freeze; no repeat solely above250k\n  cooldown: 75000moretokens or30active minutes plus eligible condition\n",
+  "protected_reference": "../unit-10/baseline.json",
+  "accepted_tc10_candidate": "../unit-10/candidate-v1.json",
+  "other_global_hashes": {
+    "/Users/alalapi/.claude.json": "7f25f4ca0ed09ff4041f3b6442d59449985d953565f5425ffce57a3ee1e2c1e3",
+    "/Users/alalapi/.claude/settings.json": "4d0fc2d09bc6480233f9de12662ab663e8463510360df5793c02cdc647301e5d",
+    "/Users/alalapi/.cursor/mcp.json": "a01b1a8d6b813ff6b3361a5762ca54619040805138217c14c1cdbe434d0321bd"
+  },
+  "secret_values_or_fingerprints_saved": false
+}
