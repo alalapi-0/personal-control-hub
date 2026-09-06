@@ -1,0 +1,164 @@
+{
+  "contract": "Final Hub closure",
+  "status": "PASS",
+  "owner_scope_revision": "unit-17/owner-decision.json",
+  "checked_at": "2026-09-06T07:25:25.564428+00:00",
+  "local_markdown_links_checked": [
+    "docs/reports/ui_design_governance/final",
+    "docs/reports/ui_design_governance/unit-17/owner-decision.json",
+    "docs/reports/ui_design_governance/unit-17/decision-receipt.json",
+    "STATE.yaml",
+    "data/registry/external_projects.yaml",
+    "docs/reports/ui_design_governance/unit-16/refresh-validation.json",
+    "data/design_governance/scope-resolution-v1.json",
+    "data/design_governance/design-store.json",
+    "docs/reports/ui_design_governance/unit-12/governor-v1.json",
+    "docs/reports/ui_design_governance/unit-13/governor.json",
+    "docs/reports/ui_design_governance/unit-14/governor.json",
+    "docs/reports/ui_design_governance/unit-15/governor.json",
+    "docs/reports/ui_design_governance/unit-16/governor.json",
+    "docs/reports/ui_design_governance/unit-17/closure-governor.json",
+    "docs/reports/ui_design_governance/unit-17/closure-validation.json",
+    "docs/reports/ui_design_governance/unit-18/governor.json",
+    "docs/reports/ui_design_governance/unit-06/consolidation-inventory.json",
+    "docs/reports/ui_design_governance/service/exports/real/ui-export-3aec346e-2bed-4e59-bb26-a2744fd070b3.zip",
+    "docs/reports/ui_design_governance/unit-17/verify_closure.py"
+  ],
+  "accepted_records": [
+    {
+      "path": "docs/reports/ui_design_governance/unit-06/governor-v1.json",
+      "sha256": "5a3bdb2f0e5b76a1e86d42e34e1e32c51773714fc82c4199c455dcb390ab6850"
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-12/governor-v1.json",
+      "sha256": "b2258bf246084624006ed74e06ed30526303a31aff07df6ca2ae25a2d86876bb"
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-13/governor.json",
+      "sha256": "536323379870c039a5b40d5324e3cd78bda281d397a76da030c8e988bf5f48fd"
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-14/governor.json",
+      "sha256": "22ce0b98c0c72615a88e8cb517234199ce0ab06467990162d62c70c52ea302f9"
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-15/governor.json",
+      "sha256": "b3895222a1d9745870d6739c2a1c9025c0403a0f6901693e9333fd2d36536989"
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-16/governor.json",
+      "sha256": "f102393066bd290fce824ce301456f5c415fd1572fb547d4298f047dfd895200"
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-17/closure-governor.json",
+      "sha256": "39b79c0d302b957700d687a421875ad7b3e7f8c923de8ebfb35a3fd5b17cd6b3"
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-18/governor.json",
+      "sha256": "5bda70cfa038a66987f3c83953254af7ac8f3fd01757f698f8a99f1ee48c760a"
+    }
+  ],
+  "verified_remote_commits": [
+    "9dba9d8bee1f83d2f278af6ea3b24e91710bcca2",
+    "0bbe0314ef34bac2966343af6129ff0243e65b6b"
+  ],
+  "protected_semantic_files": {
+    "data/design_governance/design-store.json": "df9ff333977cec6589610f74333039ccd04ff42c24e3782c00d8623264ffe6c0",
+    "docs/reports/ui_design_governance/service/exports/real/ui-export-3aec346e-2bed-4e59-bb26-a2744fd070b3.zip": "313bb3ec4b5bcbe4e96e6dac7349bf90eab23b7292c0da7f5440af8a3f6f621e",
+    "docs/reports/ui_design_governance/unit-17/baseline-browser.json": "c38599ff0a1e8a48896e204ed2facd7cd65444e5b0f1f5b7f5acb3c6ab17bce7",
+    "docs/reports/ui_design_governance/unit-17/baseline-desktop.png": "a07f1acdd62313fc797bc64e1ae72ae09fcac15a23dcfb2e309829ecf93d961d",
+    "docs/reports/ui_design_governance/unit-17/baseline-learn-desktop.png": "49e2435f905b072d745ed6dfd69ae6c477662d062790edfcefaa6c4801c0bb4e",
+    "docs/reports/ui_design_governance/unit-17/baseline-mobile.png": "b9259c086074891c0d0b010d497e178969045226da1863ffaec0aa26d1279a84",
+    "docs/reports/ui_design_governance/unit-17/baseline-states.json": "f20f0898fbd427e74d715c1a4c4382d51a7bffdbc8f1d470b40dc699d18d7761",
+    "docs/reports/ui_design_governance/unit-17/baseline.json": "bb59891a4d3129cf40fb0e97678f2cda43340066e5c8e9cc32cb97742f14716e",
+    "docs/reports/ui_design_governance/unit-17/candidate-desktop.png": "c0b5a0a97eea700b120a2dc138218cbd267c2d50c39b186c435883d4e0326ee2",
+    "docs/reports/ui_design_governance/unit-17/candidate-mobile.png": "de7bc77a8c66ff02dd623b6cfd0f115c3dc4f5fdbe97c04b7408b1b564976476",
+    "docs/reports/ui_design_governance/unit-17/capture_server.py": "744b0f4a78db959a153111e56ad2e6489601c116bc7ccdf8698d4163e2ee840b",
+    "docs/reports/ui_design_governance/unit-17/closure-baseline.json": "98704cc376bc7dbed97a3ec737d940f96461ecab942a84f5ac3aaab91a8cb96a",
+    "docs/reports/ui_design_governance/unit-17/closure-browser.js": "a9e20824c420fa337593b8cdd64d49946d59b9c730aa3550401477cd42a81f12",
+    "docs/reports/ui_design_governance/unit-17/closure-browser.json": "fe16c03e9013642504e159718073345d671a2743e590968ce64c02a20c735a24",
+    "docs/reports/ui_design_governance/unit-17/closure-contract-v3.md": "20afb73d6dc1dd5ca12ebf43fdec6888e5c2806e4e35abaf8643fee37c380e05",
+    "docs/reports/ui_design_governance/unit-17/closure-desktop.png": "ca905d40fee96b41f9a3fe97042f0dd3fdd94595261d95fc3c8747b811ed79f5",
+    "docs/reports/ui_design_governance/unit-17/closure-mobile.png": "2630c498fb2b9084250ca9b78f78d249b1921a91cafedd697cf2c58862ff2db4",
+    "docs/reports/ui_design_governance/unit-17/closure-validation.json": "500e030e29f6a719d4d1b6cf0d1cd0c291cccf5c702182ab03733aa503bbfa8a",
+    "docs/reports/ui_design_governance/unit-17/contract.md": "6109934f19e635ecb7b3ff468f6693c3da7cbe97abf94536eb9d93648b84fe00",
+    "docs/reports/ui_design_governance/unit-17/decision-command.json": "e31b36245e42d82b688998168ff97cd3535b720622592e35a94483acfd45c7e6",
+    "docs/reports/ui_design_governance/unit-17/decision-receipt.json": "b4da49d9c8f83cfb78c468728f260ae8f2a8f961e9fdadb48abcbc23b62cf48c",
+    "docs/reports/ui_design_governance/unit-17/export-receipt.json": "84356206c6db0669871fb439725af264af98498858457e8c7a8ac4484525a38b",
+    "docs/reports/ui_design_governance/unit-17/figma-baseline-desktop.png": "d1e458a1fceccdc07cd692602425dc82dde6874a926582b63fbf3133e6a8b4c3",
+    "docs/reports/ui_design_governance/unit-17/figma-baseline-mobile.png": "dc054022fd94e6765769f93dd3ece32f28c283ba69ff4ba4522d16ee296434fd",
+    "docs/reports/ui_design_governance/unit-17/figma-readback.json": "1f7f616f9037023c147fa06a739a16b0efe32a4695d650aab54fd0b8279703e3",
+    "docs/reports/ui_design_governance/unit-17/figma.json": "868bdd5b5b1e5f4686f2f491376ffb97a1128c13b2dfb15db1ef6e92dcc112eb",
+    "docs/reports/ui_design_governance/unit-17/fixture_server.py": "2c63487b5a7ddd8f72f57ce6a796910745ac44e4fa598c41c584be1e0a7aa64b",
+    "docs/reports/ui_design_governance/unit-17/hub-browser.json": "76871422ffd9c2900a27c9fec44fea367bf70b5f9abee88d4ce92d43f152b678",
+    "docs/reports/ui_design_governance/unit-17/hub-compare-desktop.png": "d27644bac1330981ac129e821277bcca8635fbab639bba893e81703747e412a0",
+    "docs/reports/ui_design_governance/unit-17/hub-compare-mobile.png": "adc4c1e0161b940dda8faab5a6f7ce326695a411077f09311d09bffaac4ec8bc",
+    "docs/reports/ui_design_governance/unit-17/import.json": "7dd91dfdbe297e9c7d0ed6857c8ce7f3239310babb55ed721cb542a37719a524",
+    "docs/reports/ui_design_governance/unit-17/import_design.py": "d74c0cf99e2c24b879a64641d3ff3346d4391422746a2ab4a523fc8f400d5752",
+    "docs/reports/ui_design_governance/unit-17/name-resolution-repair.json": "752cef14b57020f664142a2fba9ab0bda872723e66d2af8058a0cfe255f5895f",
+    "docs/reports/ui_design_governance/unit-17/observation.md": "ce36e7abc9a8bb7a7bd495be9fb54098c761a00f6b459444051010ef3181b762",
+    "docs/reports/ui_design_governance/unit-17/original-overview-desktop.png": "2ff1df1bfff9964b544bda54c6d062d98f1a7a10118f53078bf995b39c913a61",
+    "docs/reports/ui_design_governance/unit-17/original-overview-mobile.png": "20bc8754fb652a5ea78ba45c2b9c5d4a1c016c17a00a16c9b49e5908a1fbf33a",
+    "docs/reports/ui_design_governance/unit-17/owner-decision.json": "6204edc5a7c37c4c2472952f02f994d266d0341cb0d1bf1a3fdf64861bcec5d9",
+    "docs/reports/ui_design_governance/unit-17/readback.js": "0d0a8f803b321d7d4eb481a0ef956549541b7794cc55b04196f3327f8f554055",
+    "docs/reports/ui_design_governance/unit-17/review-ready.json": "57dfaf64416a0a68abf5373f20225596f6591650ab5de5c5591c3bfe13112ccf",
+    "docs/reports/ui_design_governance/unit-17/synthetic_data.py": "9f2d1c2cc18a8a4ca851e0d1f3d139e770525a942910a68668461f48333d9159",
+    "docs/reports/ui_design_governance/unit-17/validation.json": "2c7c1e9d922d41207dc60bbff19547801a5c600281828595ab6478828195e6b2",
+    "docs/reports/ui_design_governance/unit-17/verify_closure.py": "ff5ba03a09408783e520475906deeaf3f199da545a12621389b18e5e239394f5",
+    "src/hub/web/hub.js": "86a0acb8cc35c8d667b7b472a7af181141ef21b4915fe914ad275713f24a92d3",
+    "data/design_governance/scope-resolution-v1.json": "a745ce9b5df4c432449657edf0aae2ca0b06b4850911a4bb0dac655dfb376fb5",
+    "docs/reports/ui_design_governance/unit-18/baseline.json": "9e7ab209c4f6e73b51e981b393bab3c7927e999b83f8cc96fae6199d657669a0",
+    "docs/reports/ui_design_governance/unit-18/contract.md": "a092e6a68b4fe288bad8127c0c2d3fba4791b0dad2fff3f1c0b70cc4af1542ea",
+    "docs/reports/ui_design_governance/unit-18/validation.json": "0dc80de5280ff7f1c077df721092563121bd62e52e7bbb92c5ec7751298f6faa",
+    "docs/reports/ui_design_governance/unit-18/verify.py": "ce4b27b0c57a641c27b47bb3101981e9596170c9e0a266926852a26213195540"
+  },
+  "checks": [
+    {
+      "command": "python3 scripts/hub_server.py --help",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/hub_refresh.py refresh --help",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/hub_refresh.py validate",
+      "exit": 0
+    },
+    {
+      "command": "python3 -B scripts/hub_designs.py history --store data/design_governance/design-store.json",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/check_repo.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/round_consistency_check.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 -B docs/reports/ui_design_governance/unit-17/verify_closure.py",
+      "exit": 0
+    }
+  ],
+  "completion_reconciliation": {
+    "Figma_identity": "TC12 accepted/delivered",
+    "editable_Hub_options": "TC13 accepted/delivered",
+    "actual_Hub_choice_and_daily_UI": "TC14/15 accepted/delivered",
+    "real_project_management": "TC16 20current+4authorized exceptions,ledger130",
+    "design_page_and_decision_export": "TC17 v3 accepted/delivered,ownerdefer+unselectedarchive",
+    "UI_scope": "TC18 accepted/delivered,13/8/3scopeevidence",
+    "management_consolidation": "TC6 accepted/delivered,retainedexternaldependencies documented",
+    "external_design_iteration_and_implementation": "cancelled by latest owner instruction; not a remaining requirement",
+    "final_handoff": "candidate written and locally verified; independent review and final metadata delivery remain"
+  },
+  "resolved_document_command_issue": "Direct -m hub.design_cli from repo root shadows package with hub.py; final document uses existing scripts/hub_designs.py wrapper, successfully executed. No source changes.",
+  "warnings": [
+    "10 existing gate soft warnings,0hard",
+    "existing Node module-type warning",
+    "historicalbundles1-3 registry drift;active4matched"
+  ],
+  "new_external_source_or_Cursor_effects": 0,
+  "native_goal_status_at_entry": "blocked; latest owner revision removes blocker; complete only after final acceptance/delivery"
+}

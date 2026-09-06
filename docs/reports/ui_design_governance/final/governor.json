@@ -1,0 +1,11 @@
+{
+  "status": "APPROVE",
+  "governor": "/root/tc16_governor",
+  "contract": "Final Hub closure",
+  "candidate_sha256": "e5dd2cc73a1f4d731eb3b489b9d599b501712e59aed4516ba71bbf18862137d0",
+  "fresh_judge": "/root/hub_final_judge",
+  "basis": "5frozenfiles,embeddedSTATE,48protectedsemantics,8acceptedrecords,19links,store15/12facts/2decisions,ledger130,unselectedexportfalseauthority,validcommands,verifiedTC17/18remoteancestry; no defects.",
+  "authorized_next": "Only final acceptance/completion metadata, scopedhandoff/metadata commit, normalpush currenttrackingbranch, exactremoteverification, thennativeGoalcomplete underowner-revisedHub-onlyscope.",
+  "failure_rule": "If commit/push fails preserve candidate and keepGoal incomplete at exactrecovery point.",
+  "future_work": "No further product/external-source/Figma/external-project/Cursor work required."
+}

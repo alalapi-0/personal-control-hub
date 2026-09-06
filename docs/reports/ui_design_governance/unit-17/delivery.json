@@ -1,0 +1,10 @@
+{
+  "contract": "TC17 v3",
+  "candidate_sha256": "51fcdd76e9d1a0e9c1597818f925e6b63f6761090a3396e481c6cb897e022000",
+  "commit": "9dba9d8bee1f83d2f278af6ea3b24e91710bcca2",
+  "remote_ref": "refs/heads/agent/governance-closure-20260812",
+  "remote_commit": "9dba9d8bee1f83d2f278af6ea3b24e91710bcca2",
+  "push_exit": 0,
+  "remote_verified_at": "2026-09-06T07:21:46.633699+00:00",
+  "tc18_two_runtime_bindings_present_and_match": true
+}

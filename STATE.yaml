@@ -10,7 +10,7 @@ metadata:
   - registry_or_route_change
   - blocker_change
   - unique_next_action_change
-last_updated: '2026-09-06T07:21:46.637323+00:00'
+last_updated: '2026-09-06T07:30:20.519634+00:00'
 project:
   id: personal-control-hub
   phase: Phase 1
@@ -26,14 +26,15 @@ current_round:
   next_round: ROUND-1-5
 current_work:
   objective: 完成并交付Hub选稿页；学习计划保留原版，其他项目的后续设计由所有者自行交给Cursor。
-  status: ACTIVE
-  unit: HUB-17-REPRESENTATIVE-DESIGN-LOOP
+  status: ACCEPTED
+  unit: HUB-FINAL-SELECTION-HANDOFF
   spec: docs/design/ui_governance_execution.md
-  evidence: docs/reports/ui_design_governance/unit-17/
+  evidence: docs/reports/ui_design_governance/final/
   blocker: null
-  next_action: TC17已提交且远端核对为9dba9d8；TC18原样候选和两项运行证据核对通过，交付后完成Hub最终交接。
+  next_action: 无本轮后续设计任务；其他项目的设计与实施由所有者另行安排。
   owner_scope_revision: docs/reports/ui_design_governance/unit-17/owner-decision.json
-  accepted_candidate: 51fcdd76e9d1a0e9c1597818f925e6b63f6761090a3396e481c6cb897e022000
+  accepted_candidate: e5dd2cc73a1f4d731eb3b489b9d599b501712e59aed4516ba71bbf18862137d0
+  handoff: docs/reports/hub_selection_handoff.md
 registry:
   authority: data/registry/external_projects.yaml
   registered_count: 24
@@ -51,7 +52,7 @@ registry:
   ui_scope_resolution:
     path: data/design_governance/scope-resolution-v1.json
     candidate: 31948ccec7efa9d9901270ac54cad4c6423b5571d4b7418deff7b1f1716af89f
-    status: ACCEPTED_READY_FOR_DELIVERY
+    status: ACCEPTED_DELIVERED
     evidence: docs/reports/ui_design_governance/unit-18/
     meaning: Current stage-A UI scope:13 in_scope,8 no_ui,3 protected; manifest-v5
       retains historical startup dispositions.
@@ -74,16 +75,14 @@ git_delivery:
   force_push: false
 task_health:
   first_250k_rebaseline: completed
-  status: WATCH
+  status: CLOSED
   native_goal_tokens: 3125388
   native_goal_seconds: 7697
   telemetry_scope: previous Goal cumulative snapshot; preserved history, not this
     Goal usage
-  material_progress: Owner retained CSP original; one authorized defer event persisted/replayed,
-    unselected export validated, Hubdesktop/mobile/restart passed187+140subtests/10Node
-    checks.
-  risk: Only Hub selection-page closure/delivery; external design work cancelled by
-    owner.
-  action: Apply TC17 v3 closure; do not resume external projects or operate Cursor.
+  material_progress: TC17 and TC18 delivered to verified remote commits9dba9d8/0bbe031;
+    final handoff candidate prepared under owner-revised Hub-only scope.
+  risk: null
+  action: 本轮按所有者最新Hub选稿页范围完成验收；不继续其他项目，不操作Cursor。
   next_checkpoint: next eligible Goal health boundary; preserve completed rebaseline/cooldown
   cooldown: 75000moretokens or30active minutes plus eligible condition

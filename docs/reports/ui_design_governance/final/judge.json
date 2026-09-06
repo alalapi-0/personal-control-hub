@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "judge": "/root/hub_final_judge",
+  "contract": "Final Hub closure",
+  "candidate_sha256": "e5dd2cc73a1f4d731eb3b489b9d599b501712e59aed4516ba71bbf18862137d0",
+  "checks": {
+    "frozen_files": 5,
+    "embedded_state": "MATCH",
+    "protected_semantics": 48,
+    "accepted_records": 8,
+    "local_links": 19,
+    "store_revision": 15,
+    "facts": 12,
+    "events": 2,
+    "ledger_head": 130,
+    "remote_head": "0bbe0314ef34bac2966343af6129ff0243e65b6b",
+    "commands": "PASS",
+    "closure_check": "PASS"
+  },
+  "findings": [
+    "Handoff follows revised owner scope: Hub selection page only; study-plan original retained; otherprojectdesign cancelled, noCursoraction.",
+    "Unselected export has no real selection or implementation authority.",
+    "TC17/TC18 verified remote identities9dba9d8/0bbe031 match receipts.",
+    "TC18 historicalstore14 assertion is documented; verify_closure.py validates authorizedstore15 successor, not suppressed failure."
+  ],
+  "actionable_defects": []
+}
