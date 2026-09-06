@@ -1,0 +1,287 @@
+{
+  "status": "PASS",
+  "pre_head": {
+    "sequence": 108,
+    "hash": "246acf8f66a340a2a00ff4616b41b27a7beed87c0aacc1fafe6660d158e706ab"
+  },
+  "post_head": {
+    "sequence": 130,
+    "hash": "f61c071a68d0a22a9e1dc3924a8ad179e5e929465da153c2aeb6049e4ee3dfc1"
+  },
+  "request_id": "tc16-real-20-20260906",
+  "pre_counts": {
+    "requests": 5,
+    "events": 108,
+    "results": 98
+  },
+  "post_counts": {
+    "requests": 6,
+    "events": 130,
+    "results": 118
+  },
+  "old_history_preserved": true,
+  "replay_executed": true,
+  "replay_no_new_effects_or_reads": true,
+  "instrumentation_scope": "In-process CLI/service/projection/replay; HTTP child process separately read-only API checks",
+  "counters": {
+    "manga_path_operations": 0,
+    "resolver_calls": 0
+  },
+  "cli_service_http_24_list_and_details_agree": true,
+  "restart_readback": true,
+  "protected_files": 285,
+  "protected_changed": [],
+  "post_history_sha256": "6bcbee0672f95dd51adedd48eae0be467cda444f0e3a82c66b3af9b0700cc5eb",
+  "ledger_sha256": "edc126b0fe6a54d716ef4fc38e239bd1d467c36df7bd766e3ac79671dbc32450",
+  "coverage": [
+    {
+      "project_id": "ai-anime-short-factory",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "66dafcd4a4cd9bca36d87a8961bbb8ec80f6a9933ce70b82cae187e1c37d626b",
+      "dto_sha256": "c252c9cfac2fadf294a8f5fe392ad10e02438e09c8d09ca9a934266f77f77994"
+    },
+    {
+      "project_id": "ai-music-foundry",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "287fd16a479c95f3b7752f387aff1a67c7b56e3d192b384fc323836f2699f545",
+      "dto_sha256": "ee27e41fe88f5ab8196a718a437966fbc4b2b6fd60c168f5cb584e43f2cefdc5"
+    },
+    {
+      "project_id": "audio-clone",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "57420549e12b21bf4921dd1bc6654e297b18756e96f684e21648e3a3e992e3aa",
+      "dto_sha256": "2194e87fd43eab3f03ab445b9849dfcc1d6a60e17ac27224142127f1dcf82db8"
+    },
+    {
+      "project_id": "cognitive-asset-library",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "c4ef7ffb978300407390abb397cb99661bc236c7ab3448b66ae21e489a26ac80",
+      "dto_sha256": "b97e2cb8ca109be052dbc6683cfae23f5524d89257e3855cacba9630cadbaa13"
+    },
+    {
+      "project_id": "computer-study-plan",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "80f297e37ee60c4b700732bb0faff70ab7f34ebcadbd6306f6e6dde431bed5dd",
+      "dto_sha256": "d5f0a8645cfa3dcb9540bf10ecd516a50a18eea8e6a4496643ea507e3ed7e1c8"
+    },
+    {
+      "project_id": "desktop-downloads-scripts",
+      "outcome": "AUTHORIZED_EXCEPTION",
+      "freshness": "stale",
+      "source_availability": "unknown",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "3ff6f59a1ed1658e1c4a31a67888ef1a65a7656a78a1dd5a843b0949f028693c",
+      "dto_sha256": "00ba9fce4029978b002d3290b517654a0958fef6ce2596d11ed14b61c5e338f9"
+    },
+    {
+      "project_id": "desktop-jav-tools",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "776c5d2a790c58b74aa8005692636165e78ad77d7c841e2c585d259d17ab1af0",
+      "dto_sha256": "5c65930905ebda1cc51d57dc17a706052af41e6d3767eaf3c9eeea3792c216fd"
+    },
+    {
+      "project_id": "desktop-magnet",
+      "outcome": "AUTHORIZED_EXCEPTION",
+      "freshness": "stale",
+      "source_availability": "unknown",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "66e3ea3b7423e022293f4fa449a3ba0775a4b567067f380c7fef5a8646f3b212",
+      "dto_sha256": "51eb65294cd620c1a1c871abe01bf3a43710ca83cd4a4bb87f78b3fdb3d156e9"
+    },
+    {
+      "project_id": "desktop-tool",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "7aa30178850fb68d9ec26d788f4538bec14ff4eb9caae3ff035ce7d4f113b0b3",
+      "dto_sha256": "c4f17272c3c6aa2505619f59a13618335bee5249ca35fd6f9fc4c2c4de29bf9d"
+    },
+    {
+      "project_id": "light-novel",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "unknown",
+      "business_status": "unknown",
+      "error_codes": [
+        "SOURCE_INVALID"
+      ],
+      "result_hash": "50bd27999f629610cb22f78bd1c51ef54177c56fdf537b32187403cef17dd281",
+      "dto_sha256": "4b70fa3053edb41e06a919b4a67527e05aa520c3fe4196ca5ee471009eabe5c2"
+    },
+    {
+      "project_id": "manga-localizer",
+      "outcome": "AUTHORIZED_EXCEPTION",
+      "freshness": "unknown",
+      "source_availability": "unknown",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "79e9b6ada75dc628d3c9e950e1933d2e8abf688382b2beeaadc90095e9b747a3",
+      "dto_sha256": "82a426178a6308ab7a5b93c1e666a9256dbf4594e75e1be988cd1faf103bb202"
+    },
+    {
+      "project_id": "mpv-clip-workbench",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "complete",
+      "error_codes": [],
+      "result_hash": "17b60d98a8d02147737aa5c16ab8d5b1a9445938aaa5e092560241a63cbedfa9",
+      "dto_sha256": "c906b69d6eb06959bcf5767c4e929593c04133755467958e4fe5c1f34e016413"
+    },
+    {
+      "project_id": "novel-continuation-agent",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "active",
+      "error_codes": [],
+      "result_hash": "e4b9f4a2131ec8ada4918520c964650ddc8b466d2d3bcc826a7923db7dc9d5ef",
+      "dto_sha256": "c5c0a038f7817307a4276827f1f83950c1b75d82d5511a102604588765acd22d"
+    },
+    {
+      "project_id": "personal-control-hub",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "active",
+      "error_codes": [],
+      "result_hash": "c0e437882565e5063ce2649464e2771eb2c52e768c93aa131e632a960fe4124b",
+      "dto_sha256": "e1294ed0aeedb6f79fd41df99d6c69dcd061c235bd3703f6eb939487e0d6feb7"
+    },
+    {
+      "project_id": "pixel-world-asset-forge",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "56a8851747c10ca610afc258996356a5a2c8bf25ab23e74bbde67dc36d3a5780",
+      "dto_sha256": "9309edf70897214d62bbf350d0239d43b0fc95afffbd676d6656ccc04683bbb5"
+    },
+    {
+      "project_id": "pycharm-agent-workspace",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "d9f73fd2d3c2abe9a0c27a45adcdad96ae3f7c476cbaa72c7f69756756968950",
+      "dto_sha256": "53279b01507ab8f67fc99b3010fb55e1076f67573235b855c18cd566b1f07f3f"
+    },
+    {
+      "project_id": "pycharm-misc-project",
+      "outcome": "AUTHORIZED_EXCEPTION",
+      "freshness": "stale",
+      "source_availability": "unknown",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "4fbb316aecf0c787de53e5aaf277eeea70e38a28df5434fb64867fe922d0bb02",
+      "dto_sha256": "08814d46c1bc9fb78e757dbfc7e6b9755a67da9379003a95cef90a7ff1565983"
+    },
+    {
+      "project_id": "resilient-personal-network",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "031b40625f518d5c62d02ed8f072c33a6796bc9d864480d33d89693240171d8f",
+      "dto_sha256": "6c8a9a64d99106f86b1532912243099d196967e8e11e59f9aef043e00a5baaa4"
+    },
+    {
+      "project_id": "storage_governance",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "dfab0a00e06ff659927df5b3d81dd52931fa41891d6ab7effba72cd6e85a01c7",
+      "dto_sha256": "9713587d0c6c6767f649021f2d669d6f275e21bee5fe4dce6f2ded850a4a9b4d"
+    },
+    {
+      "project_id": "story-faceless-utopia",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "9617be4109cb6958dc4a75cf639915ad23585f1f49d075687f742cb9b086e2d1",
+      "dto_sha256": "96e49aea74a2f345714fee32e25057e54692a7105eb663ea0712aca791eea774"
+    },
+    {
+      "project_id": "universal-player",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "86c6a46487a58ee2fa79e077c132d874747cd12fdd3e6adb1c56c8349de51c2d",
+      "dto_sha256": "4d808f3017072ed415f209cb4cb6663f468c8e802717c2700ba49e6a15333885"
+    },
+    {
+      "project_id": "wechat-article-scheduler",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "active",
+      "error_codes": [],
+      "result_hash": "19cffa26caa047f0167d3c97572fc6273f8e76b49ac47406b9638859e42115f1",
+      "dto_sha256": "6f5d5e057c97388a84148010ff5ee9febcec9752a87e16146a9b29a7f1c47771"
+    },
+    {
+      "project_id": "youtube-hq-downloader",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "54e9374e954fa1e1e89b40999f2391f16dc5ff8d7d8f750d6318a5fc561bc424",
+      "dto_sha256": "a9f9d91d071b5e66b971a6a9cb695bf2a37d2fdf541d87c94b887c19f90e351b"
+    },
+    {
+      "project_id": "zarathustra-adaptation",
+      "outcome": "CURRENT_AUTHORITY_REFRESH",
+      "freshness": "fresh",
+      "source_availability": "fresh",
+      "business_status": "unknown",
+      "error_codes": [],
+      "result_hash": "0712003bfce0a499a7f83db1cc8ac721274d63edc3a9fd0a98da8205d2132145",
+      "dto_sha256": "97c0c30ed4039d9308767d71b6a4970055cb95da1bf868b63881d8849d5548a8"
+    }
+  ],
+  "original_execution_diagnosis": {
+    "fingerprint": "refresh_once.py postcommit resolver-order assertion; production refresh successful",
+    "cause": "Refresh processes sorted project IDs; harness compared registry input order.",
+    "original_counters": "Not persisted before assertion; no fabricated counter telemetry.",
+    "original_guard_evidence": "Recorded successful request/results under raising Manga-path guard and exact target membership assertions.",
+    "recovery": "Verified immutable Git preimage and exact committed request before identical replay; no new request."
+  }
+}

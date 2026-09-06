@@ -1,4 +1,3 @@
----
 schema_version: '1.1'
 metadata:
   role: canonical_current_state
@@ -11,7 +10,7 @@ metadata:
   - registry_or_route_change
   - blocker_change
   - unique_next_action_change
-last_updated: '2026-09-06T04:15:50+00:00'
+last_updated: '2026-09-06T04:39:23.994862+00:00'
 project:
   id: personal-control-hub
   phase: Phase 1
@@ -27,12 +26,13 @@ current_round:
   next_round: ROUND-1-5
 current_work:
   objective: 完成日常 Hub、真实接入、设计闭环、材料归并，并统一全局工具凭据取用。
-  status: ACCEPTED
-  unit: HUB-15-LOCAL-UI
+  status: ACTIVE
+  unit: HUB-16-REAL-CONNECTIONS
   spec: docs/design/ui_governance_execution.md
-  evidence: docs/reports/ui_design_governance/unit-15/
+  evidence: docs/reports/ui_design_governance/unit-16/
   blocker: null
-  next_action: 所有者已接受 TC15 v3 界面，fresh Judge PASS / Governor APPROVE；交付本单元后按 TC16 合同完成 20 项真实刷新与 4 个授权例外的全覆盖验收。
+  next_action: TC16 已经 fresh Judge PASS / Governor APPROVE：20 项当前权限刷新、四个例外、head 130，24 项接口与桌面/手机一致。作用域交付后进入
+    TC17，以学习计划真实界面代码＋合成数据完成 Figma→Hub 比较、真实所有者选择与导出。
 registry:
   authority: data/registry/external_projects.yaml
   registered_count: 24
@@ -69,11 +69,9 @@ task_health:
   status: WATCH
   native_goal_tokens: 3125388
   native_goal_seconds: 7697
-  telemetry_scope: previous Goal cumulative snapshot; preserved history, not this
-    Goal usage
-  material_progress: Owner accepted TC15 v3 soft material UI; fresh Judge PASS and Governor APPROVE;
-    local Hub, one imported selection and design recovery/export loop verified
+  telemetry_scope: previous Goal cumulative snapshot; preserved history, not this Goal usage
+  material_progress: TC16 v2 accepted:20current-authorityrefresh+4exceptions,head130,24CLI/API/UIparity;freshJudgePASS/GovernorAPPROVE.
   risk: TC16 management connection refresh, representative external UI workflow and final handoff remain
-  action: deliver TC15 and continue TC16 exact 20-project refresh plus four authorized exceptions
+  action: Deliver TC16 then execute prepared TC17 external design-loop contract; final handoff remains.
   next_checkpoint: next eligible Goal health boundary; preserve completed rebaseline/cooldown
   cooldown: 75000moretokens or30active minutes plus eligible condition

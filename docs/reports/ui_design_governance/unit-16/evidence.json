@@ -1,0 +1,26 @@
+{
+  "candidate_sha256": "78b4221f82d49dd48397fbb47f0e74d2111ddf15540c33f8d357f24e849ce3a0",
+  "files": {
+    "docs/reports/ui_design_governance/unit-16/baseline.json": "906f6ddf385289166eb2986b0eac603df7ac8ccde7f8e9e386a0769e44e89a66",
+    "docs/reports/ui_design_governance/unit-16/browser.js": "6cd5153c9f9be6b529180c38c4cc49aa93b4f216053a40c5854d5fb0a5100933",
+    "docs/reports/ui_design_governance/unit-16/browser.json": "dc5c96af137ebc110922f7ef85fade0e970f9a9d823b7a5d3bca7c7b4d956f38",
+    "docs/reports/ui_design_governance/unit-16/candidate-v1.json": "a2365c2a2539f96bf0d8806219c6281472a750f223d4d54d6d21219a001adf9f",
+    "docs/reports/ui_design_governance/unit-16/candidate.json": "89fc7aedf121b9eab4d2dadcde05b3fabdeb06df1434331cd3c70ff3e87159df",
+    "docs/reports/ui_design_governance/unit-16/contract.md": "cca5f1eadbb7bb9154494837a488e11f2822f6f1ea4d4ccf7dcd591657e5d2cb",
+    "docs/reports/ui_design_governance/unit-16/evidence-v1.json": "1aa4d62192965a73ccd244ba9bd37a77ffced33aaee48af11d0e3873db786843",
+    "docs/reports/ui_design_governance/unit-16/exception-mobile.png": "d6bc909a682f6c15d774f4004eaa5ee69e50b2b43d262d2ba7573d0045c843a3",
+    "docs/reports/ui_design_governance/unit-16/judge-v1.json": "7acb17cf98ff676cfe7de63a4389663d06effd6686c1b0125aa3588c62a7d323",
+    "docs/reports/ui_design_governance/unit-16/light-novel-desktop.png": "b7d5807d431f64389056fc723b5ff5fb9ce559813c91dc5138fcca2797500730",
+    "docs/reports/ui_design_governance/unit-16/light-novel-mobile.png": "9f88a39361e920b479e4955b516ce9d582d7d7752bb0bac4150eff152fa858ee",
+    "docs/reports/ui_design_governance/unit-16/projects-desktop.png": "1db4256a56c8defea1748fe539b3e870f053126c2b5469f433f9b10490fcda2e",
+    "docs/reports/ui_design_governance/unit-16/projects-mobile.png": "9f0fbe8cff55661ce7d188f2417600807d2792cd45247828894b056dcdfdd0a0",
+    "docs/reports/ui_design_governance/unit-16/refresh-validation.json": "a77b9a290ca9b26f0af0000db538dcb3dcf39ddd51e582898bed5bc301712222",
+    "docs/reports/ui_design_governance/unit-16/refresh.json": "f22b4b7f377494dbed1e10a630f742c002197bfd4979d4f57a6aa9732d9e0c8a",
+    "docs/reports/ui_design_governance/unit-16/refresh_once.py": "27bd100ab59799876bf2f022fb6ba5246299ae08483a7ab28ffe029ad80d713f",
+    "docs/reports/ui_design_governance/unit-16/story-faceless-utopia-desktop-v1.png": "bf483b7a7bf203a98dfa281240f360b5378b97bbfcef12f8c4f96cfe77a06cec",
+    "docs/reports/ui_design_governance/unit-16/story-faceless-utopia-desktop.png": "a1035e867e67ae0365dbb80e935a47d6748c93278d9346cc075958beab10c57c",
+    "docs/reports/ui_design_governance/unit-16/story-faceless-utopia-mobile.png": "d87f448073010c0a6c58025ef74ba47b685a0bd11468b1b7198dd5203d34e6fe",
+    "docs/reports/ui_design_governance/unit-16/validation.json": "f6e8374e9e895ce30fcb807cd5c57962c7b8affd08c871a10b6c32f2437c405e",
+    "docs/reports/ui_design_governance/unit-16/verify.py": "a70be3d54b2f665e90fc93f7145c7a37a3db9c787e334cf7d1ee132c09d80376"
+  }
+}

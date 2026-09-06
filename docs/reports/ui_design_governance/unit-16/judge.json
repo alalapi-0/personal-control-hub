@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "reviewer": "/root/tc16_judge_v2",
+  "contract": "TC16 v1",
+  "candidate_sha256": "78b4221f82d49dd48397fbb47f0e74d2111ddf15540c33f8d357f24e849ce3a0",
+  "independent_checks": {
+    "candidate_hash": "match",
+    "state_pre_acceptance_hash": "match",
+    "evidence_files": 21,
+    "protected_files": 285,
+    "protected_changed": [],
+    "read_only_verify": "PASS; head108→130,20+4,24CLI/service/HTTP,zeroresolver/Mangaops",
+    "ESmodule_syntax": "PASS",
+    "Node_tests": 10,
+    "diff": "only truthful relation/source presentation and readonly missing-name directory GET; no newmutation",
+    "deep_link_reload_names": [
+      "Novel Continuation Agent",
+      "Zarathustra Adaptation"
+    ],
+    "four_exception_refresh_controls": "disabled with scope notice",
+    "live_console_errors": 0
+  },
+  "effects": "Read-only; no replay/canonical refresh/external source/Manga/Git/write."
+}

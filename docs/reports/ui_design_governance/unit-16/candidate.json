@@ -1,0 +1,14 @@
+{
+  "contract": "TC16 v1",
+  "candidate_revision": 2,
+  "candidate_sha256": "78b4221f82d49dd48397fbb47f0e74d2111ddf15540c33f8d357f24e849ce3a0",
+  "files": {
+    "src/hub/web/hub.js": "1113c5337539c8053be5c6e73a64989c3376e05c2702505765288c883e3aef3c",
+    "data/design_governance/connection_refresh.sqlite3": "edc126b0fe6a54d716ef4fc38e239bd1d467c36df7bd766e3ac79671dbc32450"
+  },
+  "state_pre_acceptance_sha256": "28db829d7575ef5ffb90265126456faf0e7bf87b31f8eff1aa4882c1fb2623ef",
+  "frozen_at": "2026-09-06T04:35:33.140568+00:00",
+  "metadata_boundary": "Acceptance/decision/next-action metadata outside semantic runtime candidate.",
+  "supersedes": "367d1e6f96b072e59cc224ec67a3ae19fee6661776e68d340ea13ecfe1f2d172",
+  "repair": "Relation display names survive direct/reloaded detail routes."
+}
