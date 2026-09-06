@@ -1,0 +1,9 @@
+{
+  "agent": "/root/tc12_governor",
+  "decision": "APPROVE",
+  "candidate_sha256": "a0c70f35f896142e8224c3fd8149b81c9bdfef8530845446943948da740fba81",
+  "decided_at": "2026-09-06 03:24:29 UTC",
+  "basis": "V1 identity defect resolved across mapping/readback/export/embedded config, equality assertions and negative fixture pass. Fresh Judge PASS. Twenty editable frames, 25 native exports/31PNG, C structural equivalence, five distinct palettes, contrast, protected TC13 sources and repo checks meet contract.",
+  "authorized_delivery": "Root may record decision, commit only STATE.yaml plus frozen unit14 scope, normally push current tracking branch, verify exact remote SHA, then present five palettes and await owner selection.",
+  "limits": "C layout selected; palette PENDING. Runtime/persistence/integrations/frontend UNVERIFIED. No new Figma modifications or frontend implementation authorized by this decision."
+}

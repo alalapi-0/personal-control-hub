@@ -1,0 +1,2753 @@
+{
+  "page": {
+    "id": "90:14",
+    "name": "C · 五种配色 / TC14"
+  },
+  "primitive": {
+    "id": "VariableCollectionId:90:15",
+    "mode": "90:0"
+  },
+  "semantic": {
+    "id": "VariableCollectionId:90:16",
+    "mode": "90:1"
+  },
+  "protectedContext": {
+    "variables": [
+      {
+        "id": "VariableID:3:2",
+        "name": "A/canvas",
+        "values": {
+          "2:0": {
+            "r": 0.9607843160629272,
+            "g": 0.9647058844566345,
+            "b": 0.9725490212440491,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-a-canvas)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:3",
+        "name": "A/surface",
+        "values": {
+          "2:0": {
+            "r": 1,
+            "g": 1,
+            "b": 1,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-a-surface)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:4",
+        "name": "A/text",
+        "values": {
+          "2:0": {
+            "r": 0.0941176488995552,
+            "g": 0.14509804546833038,
+            "b": 0.19607843458652496,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-a-text)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:5",
+        "name": "A/muted",
+        "values": {
+          "2:0": {
+            "r": 0.32549020648002625,
+            "g": 0.38823530077934265,
+            "b": 0.4470588266849518,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-a-muted)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:6",
+        "name": "A/border",
+        "values": {
+          "2:0": {
+            "r": 0.8509804010391235,
+            "g": 0.8745098114013672,
+            "b": 0.8980392217636108,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-a-border)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:7",
+        "name": "A/accent",
+        "values": {
+          "2:0": {
+            "r": 0.13725490868091583,
+            "g": 0.364705890417099,
+            "b": 0.800000011920929,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-a-accent)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:8",
+        "name": "A/tint",
+        "values": {
+          "2:0": {
+            "r": 0.9176470637321472,
+            "g": 0.9450980424880981,
+            "b": 1,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-a-tint)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:9",
+        "name": "A/warning",
+        "values": {
+          "2:0": {
+            "r": 0.5686274766921997,
+            "g": 0.3294117748737335,
+            "b": 0,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-a-warning)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:10",
+        "name": "A/success",
+        "values": {
+          "2:0": {
+            "r": 0.1411764770746231,
+            "g": 0.4117647111415863,
+            "b": 0.29019609093666077,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-a-success)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:11",
+        "name": "A/onaccent",
+        "values": {
+          "2:0": {
+            "r": 1,
+            "g": 1,
+            "b": 1,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-a-onaccent)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:12",
+        "name": "B/canvas",
+        "values": {
+          "2:0": {
+            "r": 0.9215686321258545,
+            "g": 0.9333333373069763,
+            "b": 0.9490196108818054,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-b-canvas)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:13",
+        "name": "B/surface",
+        "values": {
+          "2:0": {
+            "r": 1,
+            "g": 1,
+            "b": 1,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-b-surface)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:14",
+        "name": "B/text",
+        "values": {
+          "2:0": {
+            "r": 0.0941176488995552,
+            "g": 0.14509804546833038,
+            "b": 0.18431372940540314,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-b-text)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:15",
+        "name": "B/muted",
+        "values": {
+          "2:0": {
+            "r": 0.33725491166114807,
+            "g": 0.3960784375667572,
+            "b": 0.4313725531101227,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-b-muted)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:16",
+        "name": "B/border",
+        "values": {
+          "2:0": {
+            "r": 0.8117647171020508,
+            "g": 0.8470588326454163,
+            "b": 0.8745098114013672,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-b-border)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:17",
+        "name": "B/accent",
+        "values": {
+          "2:0": {
+            "r": 0.05098039284348488,
+            "g": 0.38823530077934265,
+            "b": 0.45098039507865906,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-b-accent)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:18",
+        "name": "B/tint",
+        "values": {
+          "2:0": {
+            "r": 0.8823529481887817,
+            "g": 0.9450980424880981,
+            "b": 0.9529411792755127,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-b-tint)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:19",
+        "name": "B/warning",
+        "values": {
+          "2:0": {
+            "r": 0.5686274766921997,
+            "g": 0.3294117748737335,
+            "b": 0,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-b-warning)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:20",
+        "name": "B/success",
+        "values": {
+          "2:0": {
+            "r": 0.1411764770746231,
+            "g": 0.4117647111415863,
+            "b": 0.29019609093666077,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-b-success)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:21",
+        "name": "B/onaccent",
+        "values": {
+          "2:0": {
+            "r": 1,
+            "g": 1,
+            "b": 1,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-b-onaccent)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:22",
+        "name": "C/canvas",
+        "values": {
+          "2:0": {
+            "r": 0.9607843160629272,
+            "g": 0.9490196108818054,
+            "b": 0.9254902005195618,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-c-canvas)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:23",
+        "name": "C/surface",
+        "values": {
+          "2:0": {
+            "r": 1,
+            "g": 0.9960784316062927,
+            "b": 0.9803921580314636,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-c-surface)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:24",
+        "name": "C/text",
+        "values": {
+          "2:0": {
+            "r": 0.1725490242242813,
+            "g": 0.20000000298023224,
+            "b": 0.18039216101169586,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-c-text)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:25",
+        "name": "C/muted",
+        "values": {
+          "2:0": {
+            "r": 0.3843137323856354,
+            "g": 0.40392157435417175,
+            "b": 0.37254902720451355,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-c-muted)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:26",
+        "name": "C/border",
+        "values": {
+          "2:0": {
+            "r": 0.8588235378265381,
+            "g": 0.8666666746139526,
+            "b": 0.8235294222831726,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-c-border)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:27",
+        "name": "C/accent",
+        "values": {
+          "2:0": {
+            "r": 0.2862745225429535,
+            "g": 0.3764705955982208,
+            "b": 0.27843138575553894,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-c-accent)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:28",
+        "name": "C/tint",
+        "values": {
+          "2:0": {
+            "r": 0.9176470637321472,
+            "g": 0.9411764740943909,
+            "b": 0.8901960849761963,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-c-tint)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:29",
+        "name": "C/warning",
+        "values": {
+          "2:0": {
+            "r": 0.5686274766921997,
+            "g": 0.3294117748737335,
+            "b": 0,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-c-warning)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:30",
+        "name": "C/success",
+        "values": {
+          "2:0": {
+            "r": 0.1411764770746231,
+            "g": 0.4117647111415863,
+            "b": 0.29019609093666077,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-c-success)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:31",
+        "name": "C/onaccent",
+        "values": {
+          "2:0": {
+            "r": 1,
+            "g": 1,
+            "b": 1,
+            "a": 1
+          }
+        },
+        "scopes": [],
+        "codeSyntax": {
+          "WEB": "var(--hub-c-onaccent)"
+        },
+        "collection": "VariableCollectionId:2:5",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:32",
+        "name": "color/canvas",
+        "values": {
+          "2:1": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:2"
+          },
+          "2:2": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:12"
+          },
+          "2:3": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:22"
+          }
+        },
+        "scopes": [
+          "FRAME_FILL",
+          "SHAPE_FILL",
+          "TEXT_FILL",
+          "STROKE_COLOR"
+        ],
+        "codeSyntax": {
+          "WEB": "var(--hub-canvas)"
+        },
+        "collection": "VariableCollectionId:2:6",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:33",
+        "name": "color/surface",
+        "values": {
+          "2:1": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:3"
+          },
+          "2:2": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:13"
+          },
+          "2:3": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:23"
+          }
+        },
+        "scopes": [
+          "FRAME_FILL",
+          "SHAPE_FILL",
+          "TEXT_FILL",
+          "STROKE_COLOR"
+        ],
+        "codeSyntax": {
+          "WEB": "var(--hub-surface)"
+        },
+        "collection": "VariableCollectionId:2:6",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:34",
+        "name": "color/text",
+        "values": {
+          "2:1": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:4"
+          },
+          "2:2": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:14"
+          },
+          "2:3": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:24"
+          }
+        },
+        "scopes": [
+          "TEXT_FILL"
+        ],
+        "codeSyntax": {
+          "WEB": "var(--hub-text)"
+        },
+        "collection": "VariableCollectionId:2:6",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:35",
+        "name": "color/muted",
+        "values": {
+          "2:1": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:5"
+          },
+          "2:2": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:15"
+          },
+          "2:3": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:25"
+          }
+        },
+        "scopes": [
+          "TEXT_FILL"
+        ],
+        "codeSyntax": {
+          "WEB": "var(--hub-muted)"
+        },
+        "collection": "VariableCollectionId:2:6",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:36",
+        "name": "color/border",
+        "values": {
+          "2:1": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:6"
+          },
+          "2:2": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:16"
+          },
+          "2:3": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:26"
+          }
+        },
+        "scopes": [
+          "STROKE_COLOR"
+        ],
+        "codeSyntax": {
+          "WEB": "var(--hub-border)"
+        },
+        "collection": "VariableCollectionId:2:6",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:37",
+        "name": "color/accent",
+        "values": {
+          "2:1": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:7"
+          },
+          "2:2": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:17"
+          },
+          "2:3": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:27"
+          }
+        },
+        "scopes": [
+          "FRAME_FILL",
+          "SHAPE_FILL",
+          "TEXT_FILL",
+          "STROKE_COLOR"
+        ],
+        "codeSyntax": {
+          "WEB": "var(--hub-accent)"
+        },
+        "collection": "VariableCollectionId:2:6",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:38",
+        "name": "color/tint",
+        "values": {
+          "2:1": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:8"
+          },
+          "2:2": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:18"
+          },
+          "2:3": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:28"
+          }
+        },
+        "scopes": [
+          "FRAME_FILL",
+          "SHAPE_FILL",
+          "TEXT_FILL",
+          "STROKE_COLOR"
+        ],
+        "codeSyntax": {
+          "WEB": "var(--hub-tint)"
+        },
+        "collection": "VariableCollectionId:2:6",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:39",
+        "name": "color/warning",
+        "values": {
+          "2:1": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:9"
+          },
+          "2:2": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:19"
+          },
+          "2:3": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:29"
+          }
+        },
+        "scopes": [
+          "FRAME_FILL",
+          "SHAPE_FILL",
+          "TEXT_FILL",
+          "STROKE_COLOR"
+        ],
+        "codeSyntax": {
+          "WEB": "var(--hub-warning)"
+        },
+        "collection": "VariableCollectionId:2:6",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:40",
+        "name": "color/success",
+        "values": {
+          "2:1": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:10"
+          },
+          "2:2": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:20"
+          },
+          "2:3": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:30"
+          }
+        },
+        "scopes": [
+          "FRAME_FILL",
+          "SHAPE_FILL",
+          "TEXT_FILL",
+          "STROKE_COLOR"
+        ],
+        "codeSyntax": {
+          "WEB": "var(--hub-success)"
+        },
+        "collection": "VariableCollectionId:2:6",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:41",
+        "name": "color/onaccent",
+        "values": {
+          "2:1": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:11"
+          },
+          "2:2": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:21"
+          },
+          "2:3": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:3:31"
+          }
+        },
+        "scopes": [
+          "TEXT_FILL"
+        ],
+        "codeSyntax": {
+          "WEB": "var(--hub-onaccent)"
+        },
+        "collection": "VariableCollectionId:2:6",
+        "description": ""
+      },
+      {
+        "id": "VariableID:3:181",
+        "name": "radius",
+        "values": {
+          "3:0": 4,
+          "4:0": 8,
+          "4:1": 16
+        },
+        "scopes": [
+          "CORNER_RADIUS"
+        ],
+        "codeSyntax": {
+          "WEB": "var(--hub-radius)"
+        },
+        "collection": "VariableCollectionId:3:180",
+        "description": ""
+      }
+    ],
+    "collections": [
+      {
+        "id": "VariableCollectionId:2:5",
+        "name": "Hub / Primitives",
+        "modes": [
+          {
+            "name": "Value",
+            "modeId": "2:0"
+          }
+        ],
+        "variableIds": [
+          "VariableID:3:2",
+          "VariableID:3:3",
+          "VariableID:3:4",
+          "VariableID:3:5",
+          "VariableID:3:6",
+          "VariableID:3:7",
+          "VariableID:3:8",
+          "VariableID:3:9",
+          "VariableID:3:10",
+          "VariableID:3:11",
+          "VariableID:3:12",
+          "VariableID:3:13",
+          "VariableID:3:14",
+          "VariableID:3:15",
+          "VariableID:3:16",
+          "VariableID:3:17",
+          "VariableID:3:18",
+          "VariableID:3:19",
+          "VariableID:3:20",
+          "VariableID:3:21",
+          "VariableID:3:22",
+          "VariableID:3:23",
+          "VariableID:3:24",
+          "VariableID:3:25",
+          "VariableID:3:26",
+          "VariableID:3:27",
+          "VariableID:3:28",
+          "VariableID:3:29",
+          "VariableID:3:30",
+          "VariableID:3:31"
+        ]
+      },
+      {
+        "id": "VariableCollectionId:2:6",
+        "name": "Hub / Direction",
+        "modes": [
+          {
+            "name": "A · 清晰编辑台",
+            "modeId": "2:1"
+          },
+          {
+            "name": "B · 专注画布",
+            "modeId": "2:2"
+          },
+          {
+            "name": "C · 柔和工作室",
+            "modeId": "2:3"
+          }
+        ],
+        "variableIds": [
+          "VariableID:3:32",
+          "VariableID:3:33",
+          "VariableID:3:34",
+          "VariableID:3:35",
+          "VariableID:3:36",
+          "VariableID:3:37",
+          "VariableID:3:38",
+          "VariableID:3:39",
+          "VariableID:3:40",
+          "VariableID:3:41"
+        ]
+      },
+      {
+        "id": "VariableCollectionId:3:180",
+        "name": "Hub / Shape",
+        "modes": [
+          {
+            "name": "A",
+            "modeId": "3:0"
+          },
+          {
+            "name": "B",
+            "modeId": "4:0"
+          },
+          {
+            "name": "C",
+            "modeId": "4:1"
+          }
+        ],
+        "variableIds": [
+          "VariableID:3:181"
+        ]
+      }
+    ],
+    "styles": [
+      {
+        "id": "S:621a5ca9100c89b761c73282a26eba9e464ab90e,",
+        "name": "Hub / Caption",
+        "font": {
+          "family": "Noto Sans SC",
+          "style": "Regular",
+          "variationSettings": {
+            "wght": 400
+          }
+        },
+        "size": 12,
+        "lineHeight": {
+          "unit": "PIXELS",
+          "value": 18
+        },
+        "letterSpacing": {
+          "unit": "PERCENT",
+          "value": 0
+        }
+      },
+      {
+        "id": "S:712351028049c6de0972ede872aa5bca85262498,",
+        "name": "Hub / Body",
+        "font": {
+          "family": "Noto Sans SC",
+          "style": "Regular",
+          "variationSettings": {
+            "wght": 400
+          }
+        },
+        "size": 14,
+        "lineHeight": {
+          "unit": "PIXELS",
+          "value": 22
+        },
+        "letterSpacing": {
+          "unit": "PERCENT",
+          "value": 0
+        }
+      },
+      {
+        "id": "S:0e20260c849f08b2d29b341439a334a565274558,",
+        "name": "Hub / Body Large",
+        "font": {
+          "family": "Noto Sans SC",
+          "style": "Regular",
+          "variationSettings": {
+            "wght": 400
+          }
+        },
+        "size": 16,
+        "lineHeight": {
+          "unit": "PIXELS",
+          "value": 24
+        },
+        "letterSpacing": {
+          "unit": "PERCENT",
+          "value": 0
+        }
+      },
+      {
+        "id": "S:d54faa27694f50d711bf8d79aae25bbef947b614,",
+        "name": "Hub / Label",
+        "font": {
+          "family": "Noto Sans SC",
+          "style": "Medium",
+          "variationSettings": {
+            "wght": 500
+          }
+        },
+        "size": 14,
+        "lineHeight": {
+          "unit": "PIXELS",
+          "value": 22
+        },
+        "letterSpacing": {
+          "unit": "PERCENT",
+          "value": 0
+        }
+      },
+      {
+        "id": "S:756319230d1c0ecef47c1ac8d211864331eaa7ef,",
+        "name": "Hub / Title",
+        "font": {
+          "family": "Noto Sans SC",
+          "style": "Bold",
+          "variationSettings": {
+            "wght": 700
+          }
+        },
+        "size": 28,
+        "lineHeight": {
+          "unit": "PIXELS",
+          "value": 40
+        },
+        "letterSpacing": {
+          "unit": "PERCENT",
+          "value": 0
+        }
+      },
+      {
+        "id": "S:1b29f67f2807172eac0112de2177045e50ddb90e,",
+        "name": "Hub / Display",
+        "font": {
+          "family": "Noto Sans SC",
+          "style": "Bold",
+          "variationSettings": {
+            "wght": 700
+          }
+        },
+        "size": 36,
+        "lineHeight": {
+          "unit": "PIXELS",
+          "value": 48
+        },
+        "letterSpacing": {
+          "unit": "PERCENT",
+          "value": 0
+        }
+      },
+      {
+        "id": "S:02935df4cddd4698f9c41c12f916a6473bf077af,",
+        "name": "Hub / Serif",
+        "font": {
+          "family": "Noto Serif SC",
+          "style": "Medium",
+          "variationSettings": {
+            "wght": 500
+          }
+        },
+        "size": 36,
+        "lineHeight": {
+          "unit": "PIXELS",
+          "value": 48
+        },
+        "letterSpacing": {
+          "unit": "PERCENT",
+          "value": 0
+        }
+      }
+    ]
+  },
+  "protectedContextSha256": "c0aecca4693224b095f00fce040e2a1f1c9d6ab69c22169360e64a50bd5c2f74",
+  "createdNodeIds": [
+    "90:14",
+    "91:1467",
+    "91:1468",
+    "91:1469",
+    "91:1470",
+    "I91:1470;4185:3781",
+    "91:1471",
+    "I91:1471;4185:3805",
+    "91:1472",
+    "91:1473",
+    "91:1474",
+    "91:1475",
+    "91:1476",
+    "91:1477",
+    "91:1478",
+    "91:1479",
+    "I91:1479;4185:3793",
+    "91:1480",
+    "I91:1480;4185:3793",
+    "91:1481",
+    "91:1482",
+    "91:1483",
+    "I91:1483;9:26",
+    "I91:1483;9:27",
+    "I91:1483;9:28",
+    "I91:1483;9:29",
+    "91:1484",
+    "I91:1484;9:26",
+    "I91:1484;9:27",
+    "I91:1484;9:28",
+    "I91:1484;9:29",
+    "91:1485",
+    "I91:1485;9:26",
+    "I91:1485;9:27",
+    "I91:1485;9:28",
+    "I91:1485;9:29",
+    "91:1486",
+    "I91:1486;9:26",
+    "I91:1486;9:27",
+    "I91:1486;9:28",
+    "I91:1486;9:29",
+    "91:1487",
+    "91:1516",
+    "91:1517",
+    "91:1518",
+    "91:1519",
+    "I91:1519;4185:3781",
+    "91:1520",
+    "I91:1520;4185:3805",
+    "91:1521",
+    "91:1522",
+    "91:1523",
+    "91:1524",
+    "91:1525",
+    "91:1526",
+    "91:1527",
+    "I91:1527;4185:3793",
+    "91:1528",
+    "I91:1528;4185:3793",
+    "91:1529",
+    "91:1530",
+    "91:1531",
+    "I91:1531;9:31",
+    "I91:1531;9:32",
+    "I91:1531;9:33",
+    "I91:1531;9:34",
+    "91:1532",
+    "I91:1532;9:31",
+    "I91:1532;9:32",
+    "I91:1532;9:33",
+    "I91:1532;9:34",
+    "91:1533",
+    "I91:1533;9:31",
+    "I91:1533;9:32",
+    "I91:1533;9:33",
+    "I91:1533;9:34",
+    "91:1534",
+    "I91:1534;9:31",
+    "I91:1534;9:32",
+    "I91:1534;9:33",
+    "I91:1534;9:34",
+    "91:1535",
+    "91:1564",
+    "91:1565",
+    "91:1566",
+    "91:1567",
+    "I91:1567;4185:3805",
+    "91:1568",
+    "I91:1568;4185:3781",
+    "91:1569",
+    "91:1570",
+    "91:1571",
+    "91:1572",
+    "91:1573",
+    "I91:1573;4185:3793",
+    "91:1574",
+    "I91:1574;4185:3793",
+    "91:1575",
+    "I91:1575;4185:3781",
+    "91:1576",
+    "91:1577",
+    "I91:1577;4185:3793",
+    "91:1578",
+    "I91:1578;4185:3781",
+    "91:1579",
+    "I91:1579;4185:3793",
+    "91:1580",
+    "I91:1580;4185:3793",
+    "91:1581",
+    "91:1582",
+    "91:1583",
+    "91:1584",
+    "91:1585",
+    "91:1586",
+    "91:1587",
+    "91:1588",
+    "91:1589",
+    "91:1590",
+    "91:1591",
+    "91:1592",
+    "I91:1592;4185:3781",
+    "91:1593",
+    "I91:1593;4185:3805",
+    "91:1594",
+    "91:1595",
+    "91:1596",
+    "91:1597",
+    "91:1598",
+    "91:1599",
+    "91:1600",
+    "91:1601",
+    "I91:1601;4185:3793",
+    "91:1602",
+    "I91:1602;4185:3793",
+    "91:1603",
+    "91:1604",
+    "91:1605",
+    "I91:1605;9:26",
+    "I91:1605;9:27",
+    "I91:1605;9:28",
+    "I91:1605;9:29",
+    "91:1606",
+    "I91:1606;9:26",
+    "I91:1606;9:27",
+    "I91:1606;9:28",
+    "I91:1606;9:29",
+    "91:1607",
+    "I91:1607;9:26",
+    "I91:1607;9:27",
+    "I91:1607;9:28",
+    "I91:1607;9:29",
+    "91:1608",
+    "I91:1608;9:26",
+    "I91:1608;9:27",
+    "I91:1608;9:28",
+    "I91:1608;9:29",
+    "91:1609",
+    "91:1610",
+    "91:1611",
+    "91:1612",
+    "91:1613",
+    "91:1614",
+    "91:1615",
+    "I91:1615;4185:3781",
+    "91:1616",
+    "91:1617",
+    "I91:1617;4185:3793",
+    "91:1618",
+    "I91:1618;4185:3805",
+    "91:1619",
+    "91:1620",
+    "91:1621",
+    "I91:1621;4185:3805",
+    "91:1622",
+    "I91:1622;4185:3793",
+    "91:1623",
+    "I91:1623;4185:3805",
+    "91:1624",
+    "I91:1624;4185:3793",
+    "91:1625",
+    "I91:1625;4185:3793",
+    "91:1705",
+    "91:1706",
+    "I91:1706;4185:3781",
+    "91:1707",
+    "91:1708",
+    "91:1709",
+    "91:1710",
+    "91:1711",
+    "91:1712",
+    "91:1713",
+    "I91:1713;4185:3789",
+    "91:1714",
+    "91:1715",
+    "91:1716",
+    "91:1717",
+    "I91:1717;4185:3793",
+    "91:1718",
+    "91:1719",
+    "91:1720",
+    "91:1721",
+    "I91:1721;4185:3793",
+    "91:1722",
+    "91:1723",
+    "91:1724",
+    "91:1725",
+    "I91:1725;4185:3793",
+    "91:1726",
+    "91:1727",
+    "91:1728",
+    "91:1729",
+    "I91:1729;4185:3781",
+    "91:1730",
+    "91:1731",
+    "91:1732",
+    "91:1733",
+    "I91:1733;4185:3789",
+    "91:1734",
+    "91:1735",
+    "91:1736",
+    "91:1737",
+    "91:1738",
+    "91:1739",
+    "I91:1739;4185:3793",
+    "91:1740",
+    "91:1741",
+    "91:1742",
+    "91:1743",
+    "I91:1743;4185:3793",
+    "91:1744",
+    "91:1745",
+    "91:1746",
+    "91:1747",
+    "I91:1747;4185:3793",
+    "91:1748",
+    "91:1749",
+    "91:1750",
+    "91:1781",
+    "91:1782",
+    "91:1783",
+    "91:1784",
+    "I91:1784;4185:3781",
+    "91:1785",
+    "I91:1785;4185:3805",
+    "91:1786",
+    "91:1787",
+    "91:1788",
+    "91:1789",
+    "91:1790",
+    "91:1791",
+    "91:1792",
+    "91:1793",
+    "I91:1793;4185:3793",
+    "91:1794",
+    "I91:1794;4185:3793",
+    "91:1795",
+    "91:1796",
+    "91:1797",
+    "I91:1797;9:26",
+    "I91:1797;9:27",
+    "I91:1797;9:28",
+    "I91:1797;9:29",
+    "91:1798",
+    "I91:1798;9:26",
+    "I91:1798;9:27",
+    "I91:1798;9:28",
+    "I91:1798;9:29",
+    "91:1799",
+    "I91:1799;9:26",
+    "I91:1799;9:27",
+    "I91:1799;9:28",
+    "I91:1799;9:29",
+    "91:1800",
+    "I91:1800;9:26",
+    "I91:1800;9:27",
+    "I91:1800;9:28",
+    "I91:1800;9:29",
+    "91:1801",
+    "91:1830",
+    "91:1831",
+    "91:1832",
+    "91:1833",
+    "I91:1833;4185:3781",
+    "91:1834",
+    "I91:1834;4185:3805",
+    "91:1835",
+    "91:1836",
+    "91:1837",
+    "91:1838",
+    "91:1839",
+    "91:1840",
+    "91:1841",
+    "I91:1841;4185:3793",
+    "91:1842",
+    "I91:1842;4185:3793",
+    "91:1843",
+    "91:1844",
+    "91:1845",
+    "I91:1845;9:31",
+    "I91:1845;9:32",
+    "I91:1845;9:33",
+    "I91:1845;9:34",
+    "91:1846",
+    "I91:1846;9:31",
+    "I91:1846;9:32",
+    "I91:1846;9:33",
+    "I91:1846;9:34",
+    "91:1847",
+    "I91:1847;9:31",
+    "I91:1847;9:32",
+    "I91:1847;9:33",
+    "I91:1847;9:34",
+    "91:1848",
+    "I91:1848;9:31",
+    "I91:1848;9:32",
+    "I91:1848;9:33",
+    "I91:1848;9:34",
+    "91:1849",
+    "91:1878",
+    "91:1879",
+    "91:1880",
+    "91:1881",
+    "I91:1881;4185:3805",
+    "91:1882",
+    "I91:1882;4185:3781",
+    "91:1883",
+    "91:1884",
+    "91:1885",
+    "91:1886",
+    "91:1887",
+    "I91:1887;4185:3793",
+    "91:1888",
+    "I91:1888;4185:3793",
+    "91:1889",
+    "I91:1889;4185:3781",
+    "91:1890",
+    "91:1891",
+    "I91:1891;4185:3793",
+    "91:1892",
+    "I91:1892;4185:3781",
+    "91:1893",
+    "I91:1893;4185:3793",
+    "91:1894",
+    "I91:1894;4185:3793",
+    "91:1895",
+    "91:1896",
+    "91:1897",
+    "91:1898",
+    "91:1899",
+    "91:1900",
+    "91:1901",
+    "91:1902",
+    "91:1903",
+    "91:1904",
+    "91:1905",
+    "91:1906",
+    "I91:1906;4185:3781",
+    "91:1907",
+    "I91:1907;4185:3805",
+    "91:1908",
+    "91:1909",
+    "91:1910",
+    "91:1911",
+    "91:1912",
+    "91:1913",
+    "91:1914",
+    "91:1915",
+    "I91:1915;4185:3793",
+    "91:1916",
+    "I91:1916;4185:3793",
+    "91:1917",
+    "91:1918",
+    "91:1919",
+    "I91:1919;9:26",
+    "I91:1919;9:27",
+    "I91:1919;9:28",
+    "I91:1919;9:29",
+    "91:1920",
+    "I91:1920;9:26",
+    "I91:1920;9:27",
+    "I91:1920;9:28",
+    "I91:1920;9:29",
+    "91:1921",
+    "I91:1921;9:26",
+    "I91:1921;9:27",
+    "I91:1921;9:28",
+    "I91:1921;9:29",
+    "91:1922",
+    "I91:1922;9:26",
+    "I91:1922;9:27",
+    "I91:1922;9:28",
+    "I91:1922;9:29",
+    "91:1923",
+    "91:1924",
+    "91:1925",
+    "91:1926",
+    "91:1927",
+    "91:1928",
+    "91:1929",
+    "I91:1929;4185:3781",
+    "91:1930",
+    "91:1931",
+    "I91:1931;4185:3793",
+    "91:1932",
+    "I91:1932;4185:3805",
+    "91:1933",
+    "91:1934",
+    "91:1935",
+    "I91:1935;4185:3805",
+    "91:1936",
+    "I91:1936;4185:3793",
+    "91:1937",
+    "I91:1937;4185:3805",
+    "91:1938",
+    "I91:1938;4185:3793",
+    "91:1939",
+    "I91:1939;4185:3793",
+    "91:2019",
+    "91:2020",
+    "I91:2020;4185:3781",
+    "91:2021",
+    "91:2022",
+    "91:2023",
+    "91:2024",
+    "91:2025",
+    "91:2026",
+    "91:2027",
+    "I91:2027;4185:3789",
+    "91:2028",
+    "91:2029",
+    "91:2030",
+    "91:2031",
+    "I91:2031;4185:3793",
+    "91:2032",
+    "91:2033",
+    "91:2034",
+    "91:2035",
+    "I91:2035;4185:3793",
+    "91:2036",
+    "91:2037",
+    "91:2038",
+    "91:2039",
+    "I91:2039;4185:3793",
+    "91:2040",
+    "91:2041",
+    "91:2042",
+    "91:2043",
+    "I91:2043;4185:3781",
+    "91:2044",
+    "91:2045",
+    "91:2046",
+    "91:2047",
+    "I91:2047;4185:3789",
+    "91:2048",
+    "91:2049",
+    "91:2050",
+    "91:2051",
+    "91:2052",
+    "91:2053",
+    "I91:2053;4185:3793",
+    "91:2054",
+    "91:2055",
+    "91:2056",
+    "91:2057",
+    "I91:2057;4185:3793",
+    "91:2058",
+    "91:2059",
+    "91:2060",
+    "91:2061",
+    "I91:2061;4185:3793",
+    "91:2062",
+    "91:2063",
+    "91:2064",
+    "91:2095",
+    "91:2096",
+    "91:2097",
+    "91:2098",
+    "I91:2098;4185:3781",
+    "91:2099",
+    "I91:2099;4185:3805",
+    "91:2100",
+    "91:2101",
+    "91:2102",
+    "91:2103",
+    "91:2104",
+    "91:2105",
+    "91:2106",
+    "91:2107",
+    "I91:2107;4185:3793",
+    "91:2108",
+    "I91:2108;4185:3793",
+    "91:2109",
+    "91:2110",
+    "91:2111",
+    "I91:2111;9:26",
+    "I91:2111;9:27",
+    "I91:2111;9:28",
+    "I91:2111;9:29",
+    "91:2112",
+    "I91:2112;9:26",
+    "I91:2112;9:27",
+    "I91:2112;9:28",
+    "I91:2112;9:29",
+    "91:2113",
+    "I91:2113;9:26",
+    "I91:2113;9:27",
+    "I91:2113;9:28",
+    "I91:2113;9:29",
+    "91:2114",
+    "I91:2114;9:26",
+    "I91:2114;9:27",
+    "I91:2114;9:28",
+    "I91:2114;9:29",
+    "91:2115",
+    "91:2144",
+    "91:2145",
+    "91:2146",
+    "91:2147",
+    "I91:2147;4185:3781",
+    "91:2148",
+    "I91:2148;4185:3805",
+    "91:2149",
+    "91:2150",
+    "91:2151",
+    "91:2152",
+    "91:2153",
+    "91:2154",
+    "91:2155",
+    "I91:2155;4185:3793",
+    "91:2156",
+    "I91:2156;4185:3793",
+    "91:2157",
+    "91:2158",
+    "91:2159",
+    "I91:2159;9:31",
+    "I91:2159;9:32",
+    "I91:2159;9:33",
+    "I91:2159;9:34",
+    "91:2160",
+    "I91:2160;9:31",
+    "I91:2160;9:32",
+    "I91:2160;9:33",
+    "I91:2160;9:34",
+    "91:2161",
+    "I91:2161;9:31",
+    "I91:2161;9:32",
+    "I91:2161;9:33",
+    "I91:2161;9:34",
+    "91:2162",
+    "I91:2162;9:31",
+    "I91:2162;9:32",
+    "I91:2162;9:33",
+    "I91:2162;9:34",
+    "91:2163",
+    "91:2192",
+    "91:2193",
+    "91:2194",
+    "91:2195",
+    "I91:2195;4185:3805",
+    "91:2196",
+    "I91:2196;4185:3781",
+    "91:2197",
+    "91:2198",
+    "91:2199",
+    "91:2200",
+    "91:2201",
+    "I91:2201;4185:3793",
+    "91:2202",
+    "I91:2202;4185:3793",
+    "91:2203",
+    "I91:2203;4185:3781",
+    "91:2204",
+    "91:2205",
+    "I91:2205;4185:3793",
+    "91:2206",
+    "I91:2206;4185:3781",
+    "91:2207",
+    "I91:2207;4185:3793",
+    "91:2208",
+    "I91:2208;4185:3793",
+    "91:2209",
+    "91:2210",
+    "91:2211",
+    "91:2212",
+    "91:2213",
+    "91:2214",
+    "91:2215",
+    "91:2216",
+    "91:2217",
+    "91:2218",
+    "91:2219",
+    "91:2220",
+    "I91:2220;4185:3781",
+    "91:2221",
+    "I91:2221;4185:3805",
+    "91:2222",
+    "91:2223",
+    "91:2224",
+    "91:2225",
+    "91:2226",
+    "91:2227",
+    "91:2228",
+    "91:2229",
+    "I91:2229;4185:3793",
+    "91:2230",
+    "I91:2230;4185:3793",
+    "91:2231",
+    "91:2232",
+    "91:2233",
+    "I91:2233;9:26",
+    "I91:2233;9:27",
+    "I91:2233;9:28",
+    "I91:2233;9:29",
+    "91:2234",
+    "I91:2234;9:26",
+    "I91:2234;9:27",
+    "I91:2234;9:28",
+    "I91:2234;9:29",
+    "91:2235",
+    "I91:2235;9:26",
+    "I91:2235;9:27",
+    "I91:2235;9:28",
+    "I91:2235;9:29",
+    "91:2236",
+    "I91:2236;9:26",
+    "I91:2236;9:27",
+    "I91:2236;9:28",
+    "I91:2236;9:29",
+    "91:2237",
+    "91:2238",
+    "91:2239",
+    "91:2240",
+    "91:2241",
+    "91:2242",
+    "91:2243",
+    "I91:2243;4185:3781",
+    "91:2244",
+    "91:2245",
+    "I91:2245;4185:3793",
+    "91:2246",
+    "I91:2246;4185:3805",
+    "91:2247",
+    "91:2248",
+    "91:2249",
+    "I91:2249;4185:3805",
+    "91:2250",
+    "I91:2250;4185:3793",
+    "91:2251",
+    "I91:2251;4185:3805",
+    "91:2252",
+    "I91:2252;4185:3793",
+    "91:2253",
+    "I91:2253;4185:3793",
+    "91:2333",
+    "91:2334",
+    "I91:2334;4185:3781",
+    "91:2335",
+    "91:2336",
+    "91:2337",
+    "91:2338",
+    "91:2339",
+    "91:2340",
+    "91:2341",
+    "I91:2341;4185:3789",
+    "91:2342",
+    "91:2343",
+    "91:2344",
+    "91:2345",
+    "I91:2345;4185:3793",
+    "91:2346",
+    "91:2347",
+    "91:2348",
+    "91:2349",
+    "I91:2349;4185:3793",
+    "91:2350",
+    "91:2351",
+    "91:2352",
+    "91:2353",
+    "I91:2353;4185:3793",
+    "91:2354",
+    "91:2355",
+    "91:2356",
+    "91:2357",
+    "I91:2357;4185:3781",
+    "91:2358",
+    "91:2359",
+    "91:2360",
+    "91:2361",
+    "I91:2361;4185:3789",
+    "91:2362",
+    "91:2363",
+    "91:2364",
+    "91:2365",
+    "91:2366",
+    "91:2367",
+    "I91:2367;4185:3793",
+    "91:2368",
+    "91:2369",
+    "91:2370",
+    "91:2371",
+    "I91:2371;4185:3793",
+    "91:2372",
+    "91:2373",
+    "91:2374",
+    "91:2375",
+    "I91:2375;4185:3793",
+    "91:2376",
+    "91:2377",
+    "91:2378",
+    "91:2409",
+    "91:2410",
+    "91:2411",
+    "91:2412",
+    "I91:2412;4185:3781",
+    "91:2413",
+    "I91:2413;4185:3805",
+    "91:2414",
+    "91:2415",
+    "91:2416",
+    "91:2417",
+    "91:2418",
+    "91:2419",
+    "91:2420",
+    "91:2421",
+    "I91:2421;4185:3793",
+    "91:2422",
+    "I91:2422;4185:3793",
+    "91:2423",
+    "91:2424",
+    "91:2425",
+    "I91:2425;9:26",
+    "I91:2425;9:27",
+    "I91:2425;9:28",
+    "I91:2425;9:29",
+    "91:2426",
+    "I91:2426;9:26",
+    "I91:2426;9:27",
+    "I91:2426;9:28",
+    "I91:2426;9:29",
+    "91:2427",
+    "I91:2427;9:26",
+    "I91:2427;9:27",
+    "I91:2427;9:28",
+    "I91:2427;9:29",
+    "91:2428",
+    "I91:2428;9:26",
+    "I91:2428;9:27",
+    "I91:2428;9:28",
+    "I91:2428;9:29",
+    "91:2429",
+    "91:2458",
+    "91:2459",
+    "91:2460",
+    "91:2461",
+    "I91:2461;4185:3781",
+    "91:2462",
+    "I91:2462;4185:3805",
+    "91:2463",
+    "91:2464",
+    "91:2465",
+    "91:2466",
+    "91:2467",
+    "91:2468",
+    "91:2469",
+    "I91:2469;4185:3793",
+    "91:2470",
+    "I91:2470;4185:3793",
+    "91:2471",
+    "91:2472",
+    "91:2473",
+    "I91:2473;9:31",
+    "I91:2473;9:32",
+    "I91:2473;9:33",
+    "I91:2473;9:34",
+    "91:2474",
+    "I91:2474;9:31",
+    "I91:2474;9:32",
+    "I91:2474;9:33",
+    "I91:2474;9:34",
+    "91:2475",
+    "I91:2475;9:31",
+    "I91:2475;9:32",
+    "I91:2475;9:33",
+    "I91:2475;9:34",
+    "91:2476",
+    "I91:2476;9:31",
+    "I91:2476;9:32",
+    "I91:2476;9:33",
+    "I91:2476;9:34",
+    "91:2477",
+    "91:2506",
+    "91:2507",
+    "91:2508",
+    "91:2509",
+    "I91:2509;4185:3805",
+    "91:2510",
+    "I91:2510;4185:3781",
+    "91:2511",
+    "91:2512",
+    "91:2513",
+    "91:2514",
+    "91:2515",
+    "I91:2515;4185:3793",
+    "91:2516",
+    "I91:2516;4185:3793",
+    "91:2517",
+    "I91:2517;4185:3781",
+    "91:2518",
+    "91:2519",
+    "I91:2519;4185:3793",
+    "91:2520",
+    "I91:2520;4185:3781",
+    "91:2521",
+    "I91:2521;4185:3793",
+    "91:2522",
+    "I91:2522;4185:3793",
+    "91:2523",
+    "91:2524",
+    "91:2525",
+    "91:2526",
+    "91:2527",
+    "91:2528",
+    "91:2529",
+    "91:2530",
+    "91:2531",
+    "91:2532",
+    "91:2533",
+    "91:2534",
+    "I91:2534;4185:3781",
+    "91:2535",
+    "I91:2535;4185:3805",
+    "91:2536",
+    "91:2537",
+    "91:2538",
+    "91:2539",
+    "91:2540",
+    "91:2541",
+    "91:2542",
+    "91:2543",
+    "I91:2543;4185:3793",
+    "91:2544",
+    "I91:2544;4185:3793",
+    "91:2545",
+    "91:2546",
+    "91:2547",
+    "I91:2547;9:26",
+    "I91:2547;9:27",
+    "I91:2547;9:28",
+    "I91:2547;9:29",
+    "91:2548",
+    "I91:2548;9:26",
+    "I91:2548;9:27",
+    "I91:2548;9:28",
+    "I91:2548;9:29",
+    "91:2549",
+    "I91:2549;9:26",
+    "I91:2549;9:27",
+    "I91:2549;9:28",
+    "I91:2549;9:29",
+    "91:2550",
+    "I91:2550;9:26",
+    "I91:2550;9:27",
+    "I91:2550;9:28",
+    "I91:2550;9:29",
+    "91:2551",
+    "91:2552",
+    "91:2553",
+    "91:2554",
+    "91:2555",
+    "91:2556",
+    "91:2557",
+    "I91:2557;4185:3781",
+    "91:2558",
+    "91:2559",
+    "I91:2559;4185:3793",
+    "91:2560",
+    "I91:2560;4185:3805",
+    "91:2561",
+    "91:2562",
+    "91:2563",
+    "I91:2563;4185:3805",
+    "91:2564",
+    "I91:2564;4185:3793",
+    "91:2565",
+    "I91:2565;4185:3805",
+    "91:2566",
+    "I91:2566;4185:3793",
+    "91:2567",
+    "I91:2567;4185:3793",
+    "91:2647",
+    "91:2648",
+    "I91:2648;4185:3781",
+    "91:2649",
+    "91:2650",
+    "91:2651",
+    "91:2652",
+    "91:2653",
+    "91:2654",
+    "91:2655",
+    "I91:2655;4185:3789",
+    "91:2656",
+    "91:2657",
+    "91:2658",
+    "91:2659",
+    "I91:2659;4185:3793",
+    "91:2660",
+    "91:2661",
+    "91:2662",
+    "91:2663",
+    "I91:2663;4185:3793",
+    "91:2664",
+    "91:2665",
+    "91:2666",
+    "91:2667",
+    "I91:2667;4185:3793",
+    "91:2668",
+    "91:2669",
+    "91:2670",
+    "91:2671",
+    "I91:2671;4185:3781",
+    "91:2672",
+    "91:2673",
+    "91:2674",
+    "91:2675",
+    "I91:2675;4185:3789",
+    "91:2676",
+    "91:2677",
+    "91:2678",
+    "91:2679",
+    "91:2680",
+    "91:2681",
+    "I91:2681;4185:3793",
+    "91:2682",
+    "91:2683",
+    "91:2684",
+    "91:2685",
+    "I91:2685;4185:3793",
+    "91:2686",
+    "91:2687",
+    "91:2688",
+    "91:2689",
+    "I91:2689;4185:3793",
+    "91:2690",
+    "91:2691",
+    "91:2692",
+    "91:2723",
+    "91:2724",
+    "91:2725",
+    "91:2726",
+    "I91:2726;4185:3781",
+    "91:2727",
+    "I91:2727;4185:3805",
+    "91:2728",
+    "91:2729",
+    "91:2730",
+    "91:2731",
+    "91:2732",
+    "91:2733",
+    "91:2734",
+    "91:2735",
+    "I91:2735;4185:3793",
+    "91:2736",
+    "I91:2736;4185:3793",
+    "91:2737",
+    "91:2738",
+    "91:2739",
+    "I91:2739;9:26",
+    "I91:2739;9:27",
+    "I91:2739;9:28",
+    "I91:2739;9:29",
+    "91:2740",
+    "I91:2740;9:26",
+    "I91:2740;9:27",
+    "I91:2740;9:28",
+    "I91:2740;9:29",
+    "91:2741",
+    "I91:2741;9:26",
+    "I91:2741;9:27",
+    "I91:2741;9:28",
+    "I91:2741;9:29",
+    "91:2742",
+    "I91:2742;9:26",
+    "I91:2742;9:27",
+    "I91:2742;9:28",
+    "I91:2742;9:29",
+    "91:2743",
+    "91:2772",
+    "91:2773",
+    "91:2774",
+    "91:2775",
+    "I91:2775;4185:3781",
+    "91:2776",
+    "I91:2776;4185:3805",
+    "91:2777",
+    "91:2778",
+    "91:2779",
+    "91:2780",
+    "91:2781",
+    "91:2782",
+    "91:2783",
+    "I91:2783;4185:3793",
+    "91:2784",
+    "I91:2784;4185:3793",
+    "91:2785",
+    "91:2786",
+    "91:2787",
+    "I91:2787;9:31",
+    "I91:2787;9:32",
+    "I91:2787;9:33",
+    "I91:2787;9:34",
+    "91:2788",
+    "I91:2788;9:31",
+    "I91:2788;9:32",
+    "I91:2788;9:33",
+    "I91:2788;9:34",
+    "91:2789",
+    "I91:2789;9:31",
+    "I91:2789;9:32",
+    "I91:2789;9:33",
+    "I91:2789;9:34",
+    "91:2790",
+    "I91:2790;9:31",
+    "I91:2790;9:32",
+    "I91:2790;9:33",
+    "I91:2790;9:34",
+    "91:2791",
+    "91:2820",
+    "91:2821",
+    "91:2822",
+    "91:2823",
+    "I91:2823;4185:3805",
+    "91:2824",
+    "I91:2824;4185:3781",
+    "91:2825",
+    "91:2826",
+    "91:2827",
+    "91:2828",
+    "91:2829",
+    "I91:2829;4185:3793",
+    "91:2830",
+    "I91:2830;4185:3793",
+    "91:2831",
+    "I91:2831;4185:3781",
+    "91:2832",
+    "91:2833",
+    "I91:2833;4185:3793",
+    "91:2834",
+    "I91:2834;4185:3781",
+    "91:2835",
+    "I91:2835;4185:3793",
+    "91:2836",
+    "I91:2836;4185:3793",
+    "91:2837",
+    "91:2838",
+    "91:2839",
+    "91:2840",
+    "91:2841",
+    "91:2842",
+    "91:2843",
+    "91:2844",
+    "91:2845",
+    "91:2846",
+    "91:2847",
+    "91:2848",
+    "I91:2848;4185:3781",
+    "91:2849",
+    "I91:2849;4185:3805",
+    "91:2850",
+    "91:2851",
+    "91:2852",
+    "91:2853",
+    "91:2854",
+    "91:2855",
+    "91:2856",
+    "91:2857",
+    "I91:2857;4185:3793",
+    "91:2858",
+    "I91:2858;4185:3793",
+    "91:2859",
+    "91:2860",
+    "91:2861",
+    "I91:2861;9:26",
+    "I91:2861;9:27",
+    "I91:2861;9:28",
+    "I91:2861;9:29",
+    "91:2862",
+    "I91:2862;9:26",
+    "I91:2862;9:27",
+    "I91:2862;9:28",
+    "I91:2862;9:29",
+    "91:2863",
+    "I91:2863;9:26",
+    "I91:2863;9:27",
+    "I91:2863;9:28",
+    "I91:2863;9:29",
+    "91:2864",
+    "I91:2864;9:26",
+    "I91:2864;9:27",
+    "I91:2864;9:28",
+    "I91:2864;9:29",
+    "91:2865",
+    "91:2866",
+    "91:2867",
+    "91:2868",
+    "91:2869",
+    "91:2870",
+    "91:2871",
+    "I91:2871;4185:3781",
+    "91:2872",
+    "91:2873",
+    "I91:2873;4185:3793",
+    "91:2874",
+    "I91:2874;4185:3805",
+    "91:2875",
+    "91:2876",
+    "91:2877",
+    "I91:2877;4185:3805",
+    "91:2878",
+    "I91:2878;4185:3793",
+    "91:2879",
+    "I91:2879;4185:3805",
+    "91:2880",
+    "I91:2880;4185:3793",
+    "91:2881",
+    "I91:2881;4185:3793",
+    "91:2961",
+    "91:2962",
+    "I91:2962;4185:3781",
+    "91:2963",
+    "91:2964",
+    "91:2965",
+    "91:2966",
+    "91:2967",
+    "91:2968",
+    "91:2969",
+    "I91:2969;4185:3789",
+    "91:2970",
+    "91:2971",
+    "91:2972",
+    "91:2973",
+    "I91:2973;4185:3793",
+    "91:2974",
+    "91:2975",
+    "91:2976",
+    "91:2977",
+    "I91:2977;4185:3793",
+    "91:2978",
+    "91:2979",
+    "91:2980",
+    "91:2981",
+    "I91:2981;4185:3793",
+    "91:2982",
+    "91:2983",
+    "91:2984",
+    "91:2985",
+    "I91:2985;4185:3781",
+    "91:2986",
+    "91:2987",
+    "91:2988",
+    "91:2989",
+    "I91:2989;4185:3789",
+    "91:2990",
+    "91:2991",
+    "91:2992",
+    "91:2993",
+    "91:2994",
+    "91:2995",
+    "I91:2995;4185:3793",
+    "91:2996",
+    "91:2997",
+    "91:2998",
+    "91:2999",
+    "I91:2999;4185:3793",
+    "91:3000",
+    "91:3001",
+    "91:3002",
+    "91:3003",
+    "I91:3003;4185:3793",
+    "91:3004",
+    "91:3005",
+    "91:3006"
+  ],
+  "palettes": [
+    {
+      "id": "P1",
+      "name": "白瓷电蓝",
+      "variables": {
+        "canvas": {
+          "raw": "VariableID:90:17",
+          "semantic": "VariableID:90:18"
+        },
+        "surface": {
+          "raw": "VariableID:90:19",
+          "semantic": "VariableID:90:20"
+        },
+        "text": {
+          "raw": "VariableID:90:21",
+          "semantic": "VariableID:90:22"
+        },
+        "muted": {
+          "raw": "VariableID:90:23",
+          "semantic": "VariableID:90:24"
+        },
+        "border": {
+          "raw": "VariableID:90:25",
+          "semantic": "VariableID:90:26"
+        },
+        "accent": {
+          "raw": "VariableID:90:27",
+          "semantic": "VariableID:90:28"
+        },
+        "tint": {
+          "raw": "VariableID:90:29",
+          "semantic": "VariableID:90:30"
+        },
+        "warning": {
+          "raw": "VariableID:90:31",
+          "semantic": "VariableID:90:32"
+        },
+        "success": {
+          "raw": "VariableID:90:33",
+          "semantic": "VariableID:90:34"
+        },
+        "onaccent": {
+          "raw": "VariableID:90:35",
+          "semantic": "VariableID:90:36"
+        }
+      }
+    },
+    {
+      "id": "P2",
+      "name": "藏红花与朱砂",
+      "variables": {
+        "canvas": {
+          "raw": "VariableID:90:37",
+          "semantic": "VariableID:90:38"
+        },
+        "surface": {
+          "raw": "VariableID:90:39",
+          "semantic": "VariableID:90:40"
+        },
+        "text": {
+          "raw": "VariableID:90:41",
+          "semantic": "VariableID:90:42"
+        },
+        "muted": {
+          "raw": "VariableID:90:43",
+          "semantic": "VariableID:90:44"
+        },
+        "border": {
+          "raw": "VariableID:90:45",
+          "semantic": "VariableID:90:46"
+        },
+        "accent": {
+          "raw": "VariableID:90:47",
+          "semantic": "VariableID:90:48"
+        },
+        "tint": {
+          "raw": "VariableID:90:49",
+          "semantic": "VariableID:90:50"
+        },
+        "warning": {
+          "raw": "VariableID:90:51",
+          "semantic": "VariableID:90:52"
+        },
+        "success": {
+          "raw": "VariableID:90:53",
+          "semantic": "VariableID:90:54"
+        },
+        "onaccent": {
+          "raw": "VariableID:90:55",
+          "semantic": "VariableID:90:56"
+        }
+      }
+    },
+    {
+      "id": "P3",
+      "name": "冰川泻湖",
+      "variables": {
+        "canvas": {
+          "raw": "VariableID:90:57",
+          "semantic": "VariableID:90:58"
+        },
+        "surface": {
+          "raw": "VariableID:90:59",
+          "semantic": "VariableID:90:60"
+        },
+        "text": {
+          "raw": "VariableID:90:61",
+          "semantic": "VariableID:90:62"
+        },
+        "muted": {
+          "raw": "VariableID:90:63",
+          "semantic": "VariableID:90:64"
+        },
+        "border": {
+          "raw": "VariableID:90:65",
+          "semantic": "VariableID:90:66"
+        },
+        "accent": {
+          "raw": "VariableID:90:67",
+          "semantic": "VariableID:90:68"
+        },
+        "tint": {
+          "raw": "VariableID:90:69",
+          "semantic": "VariableID:90:70"
+        },
+        "warning": {
+          "raw": "VariableID:90:71",
+          "semantic": "VariableID:90:72"
+        },
+        "success": {
+          "raw": "VariableID:90:73",
+          "semantic": "VariableID:90:74"
+        },
+        "onaccent": {
+          "raw": "VariableID:90:75",
+          "semantic": "VariableID:90:76"
+        }
+      }
+    },
+    {
+      "id": "P4",
+      "name": "墨夜酸柠",
+      "variables": {
+        "canvas": {
+          "raw": "VariableID:90:77",
+          "semantic": "VariableID:90:78"
+        },
+        "surface": {
+          "raw": "VariableID:90:79",
+          "semantic": "VariableID:90:80"
+        },
+        "text": {
+          "raw": "VariableID:90:81",
+          "semantic": "VariableID:90:82"
+        },
+        "muted": {
+          "raw": "VariableID:90:83",
+          "semantic": "VariableID:90:84"
+        },
+        "border": {
+          "raw": "VariableID:90:85",
+          "semantic": "VariableID:90:86"
+        },
+        "accent": {
+          "raw": "VariableID:90:87",
+          "semantic": "VariableID:90:88"
+        },
+        "tint": {
+          "raw": "VariableID:90:89",
+          "semantic": "VariableID:90:90"
+        },
+        "warning": {
+          "raw": "VariableID:90:91",
+          "semantic": "VariableID:90:92"
+        },
+        "success": {
+          "raw": "VariableID:90:93",
+          "semantic": "VariableID:90:94"
+        },
+        "onaccent": {
+          "raw": "VariableID:90:95",
+          "semantic": "VariableID:90:96"
+        }
+      }
+    },
+    {
+      "id": "P5",
+      "name": "暮紫杏光",
+      "variables": {
+        "canvas": {
+          "raw": "VariableID:90:97",
+          "semantic": "VariableID:90:98"
+        },
+        "surface": {
+          "raw": "VariableID:90:99",
+          "semantic": "VariableID:90:100"
+        },
+        "text": {
+          "raw": "VariableID:90:101",
+          "semantic": "VariableID:90:102"
+        },
+        "muted": {
+          "raw": "VariableID:90:103",
+          "semantic": "VariableID:90:104"
+        },
+        "border": {
+          "raw": "VariableID:90:105",
+          "semantic": "VariableID:90:106"
+        },
+        "accent": {
+          "raw": "VariableID:90:107",
+          "semantic": "VariableID:90:108"
+        },
+        "tint": {
+          "raw": "VariableID:90:109",
+          "semantic": "VariableID:90:110"
+        },
+        "warning": {
+          "raw": "VariableID:90:111",
+          "semantic": "VariableID:90:112"
+        },
+        "success": {
+          "raw": "VariableID:90:113",
+          "semantic": "VariableID:90:114"
+        },
+        "onaccent": {
+          "raw": "VariableID:90:115",
+          "semantic": "VariableID:90:116"
+        }
+      }
+    }
+  ],
+  "frames": [
+    {
+      "palette": "P1",
+      "key": "P1/overview/desktop",
+      "id": "91:1467",
+      "sourceId": "14:268",
+      "width": 1440,
+      "height": 900,
+      "structure_sha256": "896cc60f0ee277e1acc955012e622b53fc7a51bebf758b2be55f687960614449",
+      "source_structure_sha256": "896cc60f0ee277e1acc955012e622b53fc7a51bebf758b2be55f687960614449",
+      "content_sha256": "12bff3328c39978b9118cf3eb2dd9924096568fe69095c2af7e68b1632d402a2",
+      "paintsChanged": 39
+    },
+    {
+      "palette": "P1",
+      "key": "P1/overview/mobile",
+      "id": "91:1516",
+      "sourceId": "14:325",
+      "width": 390,
+      "height": 844,
+      "structure_sha256": "3205bcf73a25db4b9b30d3a44e1624345f7ae5dc77e1a6e9527847a5009e12d0",
+      "source_structure_sha256": "3205bcf73a25db4b9b30d3a44e1624345f7ae5dc77e1a6e9527847a5009e12d0",
+      "content_sha256": "2d8b37f83e5fb77a538c7b5a8f393798fc9e34839f4ef598227c7eb27aa26db0",
+      "paintsChanged": 42
+    },
+    {
+      "palette": "P1",
+      "key": "P1/compare/desktop",
+      "id": "91:1564",
+      "sourceId": "19:1037",
+      "width": 1440,
+      "height": 900,
+      "structure_sha256": "84e1a6ab573bb0ba9b6cca50a10e4254536a0b86d2c7e8168abc1aaf72422d57",
+      "source_structure_sha256": "84e1a6ab573bb0ba9b6cca50a10e4254536a0b86d2c7e8168abc1aaf72422d57",
+      "content_sha256": "aa33d3f863f65c3fb7b282c5e14976d2b7773bf160348cfe99b13b0e05bd3b26",
+      "paintsChanged": 97
+    },
+    {
+      "palette": "P1",
+      "key": "P1/states/mobile",
+      "id": "91:1705",
+      "sourceId": "23:1370",
+      "width": 390,
+      "height": 844,
+      "structure_sha256": "b5fd1c44c7828d8a7620e955a56ca87fe6653c977defdc250a6bfa56f3c383e6",
+      "source_structure_sha256": "b5fd1c44c7828d8a7620e955a56ca87fe6653c977defdc250a6bfa56f3c383e6",
+      "content_sha256": "98727dad9b8e0a32e6dc7d75fa1733e42fd2d8f24cfb50ea140d3f9e5a3f01be",
+      "paintsChanged": 62,
+      "statesGrid": "91:1709"
+    },
+    {
+      "palette": "P2",
+      "key": "P2/overview/desktop",
+      "id": "91:1781",
+      "sourceId": "14:268",
+      "width": 1440,
+      "height": 900,
+      "structure_sha256": "896cc60f0ee277e1acc955012e622b53fc7a51bebf758b2be55f687960614449",
+      "source_structure_sha256": "896cc60f0ee277e1acc955012e622b53fc7a51bebf758b2be55f687960614449",
+      "content_sha256": "a25017706ab9413c84e26528737889c456f5989a61a39b377103a3d57be462b1",
+      "paintsChanged": 39
+    },
+    {
+      "palette": "P2",
+      "key": "P2/overview/mobile",
+      "id": "91:1830",
+      "sourceId": "14:325",
+      "width": 390,
+      "height": 844,
+      "structure_sha256": "3205bcf73a25db4b9b30d3a44e1624345f7ae5dc77e1a6e9527847a5009e12d0",
+      "source_structure_sha256": "3205bcf73a25db4b9b30d3a44e1624345f7ae5dc77e1a6e9527847a5009e12d0",
+      "content_sha256": "6202b728d5b63bfc6536e45fb31848ca4466ff49753748906226a9f2eec80fe9",
+      "paintsChanged": 42
+    },
+    {
+      "palette": "P2",
+      "key": "P2/compare/desktop",
+      "id": "91:1878",
+      "sourceId": "19:1037",
+      "width": 1440,
+      "height": 900,
+      "structure_sha256": "84e1a6ab573bb0ba9b6cca50a10e4254536a0b86d2c7e8168abc1aaf72422d57",
+      "source_structure_sha256": "84e1a6ab573bb0ba9b6cca50a10e4254536a0b86d2c7e8168abc1aaf72422d57",
+      "content_sha256": "0d3d6b8da4ee68f2706225a4d7f6f65b7e39f651deb783144d71a7c17a5c657c",
+      "paintsChanged": 97
+    },
+    {
+      "palette": "P2",
+      "key": "P2/states/mobile",
+      "id": "91:2019",
+      "sourceId": "23:1370",
+      "width": 390,
+      "height": 844,
+      "structure_sha256": "b5fd1c44c7828d8a7620e955a56ca87fe6653c977defdc250a6bfa56f3c383e6",
+      "source_structure_sha256": "b5fd1c44c7828d8a7620e955a56ca87fe6653c977defdc250a6bfa56f3c383e6",
+      "content_sha256": "aa1f2834e3d649f97916da7f5aa6e4c6466bd854df8f27cda1f3ae30d062935c",
+      "paintsChanged": 62,
+      "statesGrid": "91:2023"
+    },
+    {
+      "palette": "P3",
+      "key": "P3/overview/desktop",
+      "id": "91:2095",
+      "sourceId": "14:268",
+      "width": 1440,
+      "height": 900,
+      "structure_sha256": "896cc60f0ee277e1acc955012e622b53fc7a51bebf758b2be55f687960614449",
+      "source_structure_sha256": "896cc60f0ee277e1acc955012e622b53fc7a51bebf758b2be55f687960614449",
+      "content_sha256": "ca5c40b2ae654ebb62ca71a66a594ba43c3770c0998e6816ad89340ae5b837af",
+      "paintsChanged": 39
+    },
+    {
+      "palette": "P3",
+      "key": "P3/overview/mobile",
+      "id": "91:2144",
+      "sourceId": "14:325",
+      "width": 390,
+      "height": 844,
+      "structure_sha256": "3205bcf73a25db4b9b30d3a44e1624345f7ae5dc77e1a6e9527847a5009e12d0",
+      "source_structure_sha256": "3205bcf73a25db4b9b30d3a44e1624345f7ae5dc77e1a6e9527847a5009e12d0",
+      "content_sha256": "d37f2088adddf5413ea44adb7d7158cc3dcbeacbc225677b8d664e25e2267fb6",
+      "paintsChanged": 42
+    },
+    {
+      "palette": "P3",
+      "key": "P3/compare/desktop",
+      "id": "91:2192",
+      "sourceId": "19:1037",
+      "width": 1440,
+      "height": 900,
+      "structure_sha256": "84e1a6ab573bb0ba9b6cca50a10e4254536a0b86d2c7e8168abc1aaf72422d57",
+      "source_structure_sha256": "84e1a6ab573bb0ba9b6cca50a10e4254536a0b86d2c7e8168abc1aaf72422d57",
+      "content_sha256": "fa7ef99419d200f35b5985006a92ac19d09b29ded8b7cce5a55abbc24b662a9d",
+      "paintsChanged": 97
+    },
+    {
+      "palette": "P3",
+      "key": "P3/states/mobile",
+      "id": "91:2333",
+      "sourceId": "23:1370",
+      "width": 390,
+      "height": 844,
+      "structure_sha256": "b5fd1c44c7828d8a7620e955a56ca87fe6653c977defdc250a6bfa56f3c383e6",
+      "source_structure_sha256": "b5fd1c44c7828d8a7620e955a56ca87fe6653c977defdc250a6bfa56f3c383e6",
+      "content_sha256": "6f3f873e0e4bf01884791c3150f8a8f4af5eef646d04957bfb1fa75531bd045f",
+      "paintsChanged": 62,
+      "statesGrid": "91:2337"
+    },
+    {
+      "palette": "P4",
+      "key": "P4/overview/desktop",
+      "id": "91:2409",
+      "sourceId": "14:268",
+      "width": 1440,
+      "height": 900,
+      "structure_sha256": "896cc60f0ee277e1acc955012e622b53fc7a51bebf758b2be55f687960614449",
+      "source_structure_sha256": "896cc60f0ee277e1acc955012e622b53fc7a51bebf758b2be55f687960614449",
+      "content_sha256": "d7927b621d78137de10e6a20c85e605a5f39773fa40a336d9800dcddbf600a6d",
+      "paintsChanged": 39
+    },
+    {
+      "palette": "P4",
+      "key": "P4/overview/mobile",
+      "id": "91:2458",
+      "sourceId": "14:325",
+      "width": 390,
+      "height": 844,
+      "structure_sha256": "3205bcf73a25db4b9b30d3a44e1624345f7ae5dc77e1a6e9527847a5009e12d0",
+      "source_structure_sha256": "3205bcf73a25db4b9b30d3a44e1624345f7ae5dc77e1a6e9527847a5009e12d0",
+      "content_sha256": "345d0db66895b9fb2a46919568476098f1316727190b121f7b635fa7d202b8ca",
+      "paintsChanged": 42
+    },
+    {
+      "palette": "P4",
+      "key": "P4/compare/desktop",
+      "id": "91:2506",
+      "sourceId": "19:1037",
+      "width": 1440,
+      "height": 900,
+      "structure_sha256": "84e1a6ab573bb0ba9b6cca50a10e4254536a0b86d2c7e8168abc1aaf72422d57",
+      "source_structure_sha256": "84e1a6ab573bb0ba9b6cca50a10e4254536a0b86d2c7e8168abc1aaf72422d57",
+      "content_sha256": "9b1ed8d2275c1978ae56858fcdcbff18b0a3ed99f2957785f3b29c3b08d7ff42",
+      "paintsChanged": 97
+    },
+    {
+      "palette": "P4",
+      "key": "P4/states/mobile",
+      "id": "91:2647",
+      "sourceId": "23:1370",
+      "width": 390,
+      "height": 844,
+      "structure_sha256": "b5fd1c44c7828d8a7620e955a56ca87fe6653c977defdc250a6bfa56f3c383e6",
+      "source_structure_sha256": "b5fd1c44c7828d8a7620e955a56ca87fe6653c977defdc250a6bfa56f3c383e6",
+      "content_sha256": "3880887936f122d543b41f7b002965e0d15d1a018f3607a800dbb8d416888357",
+      "paintsChanged": 62,
+      "statesGrid": "91:2651"
+    },
+    {
+      "palette": "P5",
+      "key": "P5/overview/desktop",
+      "id": "91:2723",
+      "sourceId": "14:268",
+      "width": 1440,
+      "height": 900,
+      "structure_sha256": "896cc60f0ee277e1acc955012e622b53fc7a51bebf758b2be55f687960614449",
+      "source_structure_sha256": "896cc60f0ee277e1acc955012e622b53fc7a51bebf758b2be55f687960614449",
+      "content_sha256": "042b0b266509adcb77349496bb680ba346864701a044d2a9b5d17d5d628d8e61",
+      "paintsChanged": 39
+    },
+    {
+      "palette": "P5",
+      "key": "P5/overview/mobile",
+      "id": "91:2772",
+      "sourceId": "14:325",
+      "width": 390,
+      "height": 844,
+      "structure_sha256": "3205bcf73a25db4b9b30d3a44e1624345f7ae5dc77e1a6e9527847a5009e12d0",
+      "source_structure_sha256": "3205bcf73a25db4b9b30d3a44e1624345f7ae5dc77e1a6e9527847a5009e12d0",
+      "content_sha256": "96e057802b0abb465f1a7f11050373f7f7b285e6db8ed919b312bd6d70488c1b",
+      "paintsChanged": 42
+    },
+    {
+      "palette": "P5",
+      "key": "P5/compare/desktop",
+      "id": "91:2820",
+      "sourceId": "19:1037",
+      "width": 1440,
+      "height": 900,
+      "structure_sha256": "84e1a6ab573bb0ba9b6cca50a10e4254536a0b86d2c7e8168abc1aaf72422d57",
+      "source_structure_sha256": "84e1a6ab573bb0ba9b6cca50a10e4254536a0b86d2c7e8168abc1aaf72422d57",
+      "content_sha256": "7825ab13793a243d85bdde6af69bf2e66377a93a736b2147230bd59be671a1d1",
+      "paintsChanged": 97
+    },
+    {
+      "palette": "P5",
+      "key": "P5/states/mobile",
+      "id": "91:2961",
+      "sourceId": "23:1370",
+      "width": 390,
+      "height": 844,
+      "structure_sha256": "b5fd1c44c7828d8a7620e955a56ca87fe6653c977defdc250a6bfa56f3c383e6",
+      "source_structure_sha256": "b5fd1c44c7828d8a7620e955a56ca87fe6653c977defdc250a6bfa56f3c383e6",
+      "content_sha256": "3264d26f719d53c1116953d850184d1d278e1d03a9e3371e3d4917eb158b342a",
+      "paintsChanged": 62,
+      "statesGrid": "91:2965"
+    }
+  ]
+}

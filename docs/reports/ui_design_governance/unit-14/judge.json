@@ -1,0 +1,35 @@
+{
+  "agent": "/root/tc14_judge_v2",
+  "role": "fresh_read_only_judge",
+  "candidate_sha256": "a0c70f35f896142e8224c3fd8149b81c9bdfef8530845446943948da740fba81",
+  "verdict": "PASS",
+  "reviewed_at": "2026-09-06 03:23:41 UTC",
+  "independent_checks": {
+    "candidate_files_and_state_semantics": "PASS",
+    "palettes": 5,
+    "frames": 20,
+    "exports": 25,
+    "color_bindings": 1200,
+    "isolated_variables": 100,
+    "protected_files": 95,
+    "protected_source_roots": 42,
+    "pngs": 31,
+    "text_contrast_pairs": 80,
+    "minimum_text_contrast": 4.6397,
+    "ui_contrast_pairs": 30,
+    "minimum_ui_contrast": 3.2159,
+    "repo_check": "PASS",
+    "round_consistency": "PASS",
+    "state_authority_tests": "PASS",
+    "diff_check": "PASS"
+  },
+  "findings": [
+    "P2 state content identity agrees across mapping, readback and embedded script; stale identity rejection confirmed.",
+    "All color-excluded structures match C with documented approximately 0.000004px native delta normalized at 0.001px.",
+    "Visual inspection confirms five materially distinct schemes, legible desktop/mobile layouts, identical synthetic fixture and state meanings, non-color cues retained.",
+    "All PNG dimensions/hashes/content identities and palette contexts match.",
+    "Runtime/persistence/integrations/frontend remain UNVERIFIED; browser console/network NOT_APPLICABLE for design stage; prototype limitations disclosed."
+  ],
+  "blocking_findings": [],
+  "mutations": "none"
+}

@@ -11,7 +11,7 @@ metadata:
   - registry_or_route_change
   - blocker_change
   - unique_next_action_change
-last_updated: '2026-09-06T02:40:05.238Z'
+last_updated: '2026-09-06T03:24:29.334Z'
 project:
   id: personal-control-hub
   phase: Phase 1
@@ -28,11 +28,11 @@ current_round:
 current_work:
   objective: 完成日常 Hub、真实接入、设计闭环、材料归并，并统一全局工具凭据取用。
   status: ACCEPTED
-  unit: HUB-13-FIGMA-CANDIDATES
+  unit: HUB-14-C-PALETTES
   spec: docs/design/ui_governance_execution.md
-  evidence: docs/reports/ui_design_governance/unit-13/
-  blocker: 等待所有者选择界面方向后实施。
-  next_action: TC13 三方向选稿已获 fresh Judge PASS / Governor APPROVE；交付当前分支后等待所有者选择 A/B/C 或融合方向，再实施 Hub。
+  evidence: docs/reports/ui_design_governance/unit-14/
+  blocker: C 排版已选定；最终配色等待所有者选择。
+  next_action: TC14 五套 C 排版配色已获 fresh Judge PASS / Governor APPROVE；交付后等待所有者选择 1–5 或融合配色，再实施 Hub。
 registry:
   authority: data/registry/external_projects.yaml
   registered_count: 24
@@ -71,9 +71,9 @@ task_health:
   native_goal_seconds: 7697
   telemetry_scope: previous Goal cumulative snapshot; preserved history, not this
     Goal usage
-  material_progress: TC12 accepted and pushed; TC13 three editable Figma directions,
-    36 frames and 58 exports verified
+  material_progress: TC13 accepted and pushed; owner chose C layout; TC14 five editable
+    palettes, 20 frames and 25 exports verified
   risk: design-stage evidence verified; runtime UI and persistence await implementation
-  action: independently review and deliver TC13, then implement the owner-selected direction
+  action: independently review and deliver TC14, then await the owner's palette choice
   next_checkpoint: next eligible Goal health boundary; preserve completed rebaseline/cooldown
   cooldown: 75000moretokens or30active minutes plus eligible condition
