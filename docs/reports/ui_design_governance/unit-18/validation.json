@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "projects": 24,
+  "ui_counts": {
+    "protected": 3,
+    "in_scope": 13,
+    "no_ui": 8
+  },
+  "source_files": 25,
+  "bindings": 12,
+  "protected_files_unchanged": 338,
+  "validation_external_reads": 0,
+  "validation_external_writes": 0,
+  "tc16_ledger_head": 130,
+  "tc17_preserved": true,
+  "acceptance": "requires fresh Judge and Governor; does not select TC17 design",
+  "checks": [
+    {
+      "command": "python3 -B docs/reports/ui_design_governance/unit-18/verify.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/check_repo.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/round_consistency_check.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/check_registry.py",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "scope": "Evidence-only unit; accepted UI runtime remains unchanged, no new browser or broad Python tests required."
+}

@@ -10,7 +10,7 @@ metadata:
   - registry_or_route_change
   - blocker_change
   - unique_next_action_change
-last_updated: '2026-09-06T07:20:24.607231+00:00'
+last_updated: '2026-09-06T07:21:46.637323+00:00'
 project:
   id: personal-control-hub
   phase: Phase 1
@@ -31,7 +31,7 @@ current_work:
   spec: docs/design/ui_governance_execution.md
   evidence: docs/reports/ui_design_governance/unit-17/
   blocker: null
-  next_action: TC17 v3已获独立验收，提交并验证远端；随后交付原样TC18记录并完成最终Hub交接。
+  next_action: TC17已提交且远端核对为9dba9d8；TC18原样候选和两项运行证据核对通过，交付后完成Hub最终交接。
   owner_scope_revision: docs/reports/ui_design_governance/unit-17/owner-decision.json
   accepted_candidate: 51fcdd76e9d1a0e9c1597818f925e6b63f6761090a3396e481c6cb897e022000
 registry:
@@ -51,7 +51,7 @@ registry:
   ui_scope_resolution:
     path: data/design_governance/scope-resolution-v1.json
     candidate: 31948ccec7efa9d9901270ac54cad4c6423b5571d4b7418deff7b1f1716af89f
-    status: ACCEPTED_LOCAL_DELIVERY_HELD
+    status: ACCEPTED_READY_FOR_DELIVERY
     evidence: docs/reports/ui_design_governance/unit-18/
     meaning: Current stage-A UI scope:13 in_scope,8 no_ui,3 protected; manifest-v5
       retains historical startup dispositions.

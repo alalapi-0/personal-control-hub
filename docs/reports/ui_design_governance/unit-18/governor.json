@@ -1,0 +1,16 @@
+{
+  "status": "APPROVE",
+  "governor": "/root/tc16_governor",
+  "contract": "TC18 v1",
+  "candidate_sha256": "31948ccec7efa9d9901270ac54cad4c6423b5571d4b7418deff7b1f1716af89f",
+  "fresh_judge": "/root/tc18_judge",
+  "acceptance_scope": "Local UI-scope evidence; not overall Goal or remote delivery",
+  "basis": "24 current registry IDs;13 in_scope/8 no_ui/3 protected;25 bounded source identities;12 bindings;head130;338 protected files unchanged;desktop-tool explicitly evidence-resolved.",
+  "authorized_next": "Register local acceptance and activate scope-resolution-v1 in STATE. Keep TC17 owner choice/export pending.",
+  "delivery": {
+    "status": "HELD_DEPENDENCY",
+    "dependency": "TC17 acceptance and delivery; two bound runtime evidence files are currently uncommitted.",
+    "resume": "After TC17 delivery recheck dependency hashes; unchanged evidence allows scoped TC18 commit, normal push and exact remote verification without renewed semantic review. Changed dependency requires new binding/candidate/fresh Judge and Governor."
+  },
+  "final_goal_complete": false
+}
