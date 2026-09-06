@@ -1,0 +1,32 @@
+{
+  "head": "db2aa530532f8132318772654ee0151a716aeb79",
+  "branch": "agent/governance-closure-20260812",
+  "owner_handoff": "01a071cc-f2c6-76c2-bc43-f300db610b0b -> 01a07442-c275-7270-bd2e-98b50f277bd0; explicit owner takeover; source completed and idle",
+  "protected_files": {
+    "AGENTS.md": "e125d3a9c3a1c2961b3c9619f23ad2456d5645f2f41986c92c4a9ba00d9f7ca4",
+    "data/gates/auto_advance_policy.yaml": "47a48652d107e5e9e6e5251ca8e500862b2b00665d46187c2f3c9294f9766f6b",
+    "data/mcp/mcp_approval_policy.yaml": "54330d0612d652cd41152f40ab23fb1b935cf34e322476356fb118ec772e8aff",
+    "governance/agent_policy.yaml": "2b9f8ee1bdea519fafc7772f7b45999c1856a2baae64f84a21b7c64ac069b68a",
+    "prompts/codex_project_driver.md": "db43ba63d591314a7e0f8d8ebe0291c8a7f9139dd42cd3e0c77c5ec388293c70",
+    "prompts/cursor_project_driver.md": "28ae68bd3e1d84df876675cb2dc26c3848d15cb6b4d79216efd966e7e1cd3394",
+    "scripts/agent_gate.py": "3f534a7550833e8ae95c8a893c3e625f24f7957ea7aac3c0c1e4b0f7e75c8f95",
+    "scripts/auto_advance_runner.py": "1a93d285b3e3dd8399ecfd0efab548fb284d7ffb4d2e6905d7dcec94d543e815",
+    "data/design_governance/design-store.json.lock": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/global_agent_governance_execution.md": "3c31b295653bf7d4e9b7a2fefe2d8f51830305c7b96225355fb2078af93d4484",
+    "docs/reports/ui_design_governance/figma-source-observation-v1.json": "dffb5182a8176731b9dd898d37a62942e34746dd24405a1e5178e5dd990b2ca8",
+    "docs/reports/ui_design_governance/unit-08/delivery.json": "749d9084d9bf57ebf57f780c11681770c074d7bf8d4bb280871e48189864c73f",
+    "docs/reports/ui_design_governance/unit-09/delivery.json": "a2f4e8ae51bdb20132d182702d23cb4bb6da3e4da346b70dfa054acc8aa1f6d3",
+    "docs/reports/ui_design_governance/unit-10/delivery.json": "6dbdb3a97592b8cbb5a248f1d6a186b36476d69208fd137768a22478a264d47f",
+    "docs/reports/ui_design_governance/unit-11/delivery.json": "0a853dc8f5e4ed7c9344beee6153dbb88a38bd83f448c3a84c168a54cf722503",
+    "data/design_governance/design-store.json": "ff7f6659951a3c331488b999d927e992559ac512e41214c4a3145520910ec37f"
+  },
+  "accepted_tc11_config_sha256": "28636fe76af66c25c8c2dee614ec64aed43b25e1acf01d66d6c2504df5aa2311",
+  "state_before_sha256": "e37fb0ee4f6c82bdc62096dbf5935f969bd52772d0b7d02a0e8d84079ecc42b2",
+  "connection_before_sha256": "30e3cace22b5906438f0d989bbabbd2564d109207aa74830ece4609980c1e9f7",
+  "entry_gate": {
+    "command": "python3 scripts/auto_advance_runner.py --mode check",
+    "exit_code": 0,
+    "hard_blockers": 0,
+    "existing_soft_warnings": 10
+  }
+}

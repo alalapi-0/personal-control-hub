@@ -1,0 +1,10 @@
+{
+  "governor": "/root/tc12_governor",
+  "verdict": "APPROVE",
+  "contract": "HUB-GOV-2026-09-06-TC12-v1",
+  "candidate_sha256": "2316be78b04df2a3b22cd0ce8ebf172da8bab2a3d9ef992d5a22fad71d294a61",
+  "basis": "same frozen candidate fresh Judge PASS; official runtime whoami and expected account match; preserved protected scope",
+  "authorized_next_action": "scoped commit, normal push and exact remote SHA verification; then activate TC13",
+  "overall_goal_complete": false,
+  "observed_at": "2026-09-06T01:14:30.721831+00:00"
+}

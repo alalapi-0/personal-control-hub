@@ -11,7 +11,7 @@ metadata:
   - registry_or_route_change
   - blocker_change
   - unique_next_action_change
-last_updated: '2026-09-06T00:48:12.292558+00:00'
+last_updated: '2026-09-06T01:14:30.721831+00:00'
 project:
   id: personal-control-hub
   phase: Phase 1
@@ -28,12 +28,12 @@ current_round:
 current_work:
   objective: 完成日常 Hub、真实接入、设计闭环、材料归并，并统一全局工具凭据取用。
   status: ACCEPTED
-  unit: HUB-11-FIGMA-LOCAL-ENABLE
+  unit: HUB-12-FIGMA-OAUTH-RECONNECT
   spec: docs/design/ui_governance_execution.md
-  evidence: docs/reports/ui_design_governance/unit-11/
-  blocker: 已定位并恢复 Codex 本机 Figma enabled=false；新回合工具加载和 OAuth 身份验证仍未验证。
-  next_action: TC11 单布尔修复已独立验收；提交推送并核对远端。下一新回合先检查 Figma 工具加载，再执行已授权只读 whoami；OAuth
-    和设计写入仍未验证。
+  evidence: docs/reports/ui_design_governance/unit-12/
+  blocker: null
+  next_action: TC12 已获 fresh Judge PASS / Governor APPROVE；提交推送并核对远端后进入 TC13 三方向 Figma
+    选稿。
 registry:
   authority: data/registry/external_projects.yaml
   registered_count: 24
@@ -68,11 +68,13 @@ git_delivery:
 task_health:
   first_250k_rebaseline: completed
   status: WATCH
-  native_goal_tokens: 1066751
-  native_goal_seconds: 2184
-  telemetry_scope: native cumulative Goal; no cost or active/idle breakdown inferred
-  material_progress: TC4-TC6 accepted and pushed
-  risk: transient review-role capacity; resolved when TC6Judge finished
-  action: collect review roles before next dispatch
-  next_checkpoint: TC7 candidate freeze; no repeat solely above250k
+  native_goal_tokens: 3125388
+  native_goal_seconds: 7697
+  telemetry_scope: previous Goal cumulative snapshot; preserved history, not this
+    Goal usage
+  material_progress: TC10/TC11 accepted and pushed; TC12 official tools and whoami
+    verified in new top-level task
+  risk: prior runtime tool-loading failure resolved; Figma design writes still unverified
+  action: close TC12 then create editable Hub candidates
+  next_checkpoint: next eligible Goal health boundary; preserve completed rebaseline/cooldown
   cooldown: 75000moretokens or30active minutes plus eligible condition
