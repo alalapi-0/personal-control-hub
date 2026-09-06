@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "kind": "owner_connection_exception_decision",
+  "authority_ref": "owner-turn:01a071cc-f2c6-76c2-bc43-f300db610b0b/01a07400-d059-7f90-a685-2e3250945f2d#manga-visible-exception",
+  "thread_id": "01a071cc-f2c6-76c2-bc43-f300db610b0b",
+  "turn_id": "01a07400-d059-7f90-a685-2e3250945f2d",
+  "message_id": "01a07400-d0c6-7803-af77-7a9cb5bd7caf",
+  "started_at_unix": 1788652605,
+  "quote": "在 Codex 中重新授权 Figma 插件写入权限。批准可见接入例外。",
+  "context": "Reply to the explicit remaining Manga read-scope or visible-exception decision; applies only to manga-localizer. Figma write authority does not establish OAuth connectivity.",
+  "project_ids": [
+    "manga-localizer"
+  ],
+  "decision": "AUTHORIZED_EXCEPTION",
+  "reason": "所有者批准 Manga 的可见管理接入例外；保留登记、禁读限制和未知业务状态，不访问项目、不扩大权限。",
+  "ui_verification": "UNVERIFIED",
+  "final_goal_acceptance": false
+}

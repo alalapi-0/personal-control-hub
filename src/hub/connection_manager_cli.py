@@ -22,8 +22,9 @@ DEFAULT_BUNDLES = [
     DEFAULT_BUNDLE,
     "data/design_governance/authority-bundle-v2.json",
     "data/design_governance/authority-bundle-v3.json",
+    "data/design_governance/authority-bundle-v4.json",
 ]
-DEFAULT_RELATIONS = "data/design_governance/relation-proposals-v3.json"
+DEFAULT_RELATIONS = "data/design_governance/relation-proposals-v4.json"
 ADAPTER_PATH = "data/design_governance/connection_adapters.json"
 BUNDLE_FIELDS = {"schema_version", "kind", "manifest", "adapters", "source_plan", "content_hash"}
 

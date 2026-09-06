@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "judge": "/root/tc5_judge",
+  "contract": "HUB-GOV-2026-09-06-TC9",
+  "version": 1,
+  "candidate_hash": "b38e9ae3b8a68c905397260564c49c9228919df611ea9221105f75b64b5e791b",
+  "verdict": "PASS",
+  "independent_checks": [
+    "16 file hashes and STATE semantic match",
+    "exact one Manga declaration; other registry content unchanged",
+    "all prior source/project/relation semantics and three exceptions preserved",
+    "185 Hub tests",
+    "11 control-plane tests",
+    "repository/registry/round/four-authority/nine-record/diff checks",
+    "24 project list/detail API parity",
+    "108 ledger events/98 results/5 requests byte-preserved",
+    "zero Manga probes/source reads/launches/writes/external effects/ledger mutations"
+  ],
+  "remaining": "Figma OAuth reauthentication; no overall Goal acceptance",
+  "delivery_constraint": "Governor approval then only registered TC9 Git scope; protect global dirt, locks and Figma input"
+}

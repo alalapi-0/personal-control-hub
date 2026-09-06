@@ -133,6 +133,11 @@ projects:
   - "/Users/alalapi/PycharmProjects/personal-control-hub/data/registry/external_projects.yaml"
   - "/Users/alalapi/PycharmProjects/personal-control-hub/governance/adapters/storage_governance.yaml"
 - id: manga-localizer
+  hub_connection_exception:
+    status: AUTHORIZED_EXCEPTION
+    authority_ref: owner-turn:01a071cc-f2c6-76c2-bc43-f300db610b0b/01a07400-d059-7f90-a685-2e3250945f2d#manga-visible-exception
+    reason: 所有者批准 Manga 的可见管理接入例外；保留登记、禁读限制和未知业务状态，不访问项目、不扩大权限。
+    decision_ref: docs/reports/ui_design_governance/unit-09/owner-decision.json
   name: Manga Localizer
   root_path: "/Users/alalapi/PycharmProjects/manga-localizer"
   enabled: false

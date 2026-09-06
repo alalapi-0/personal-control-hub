@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "root_checks": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 pytest -q -p no:cacheprovider tests/test_control_plane_v2.py",
+      "exit": 0,
+      "output": "...........                                                              [100%]\n11 passed in 0.17s\n"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/check_repo.py",
+      "exit": 0,
+      "output": "personal-control-hub skeleton check\nroot: /Users/alalapi/PycharmProjects/personal-control-hub\n\nFiles: OK\nDirectories: OK\nMCP registry: OK\nSecret marker scan: OK\n\nResult: PASS\n"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/check_registry.py",
+      "exit": 0,
+      "output": "=== External Project Registry Check ===\n项目数：24\n已启用：23\n结果：ok\n硬阻塞：0\n警告：0\n"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/round_consistency_check.py",
+      "exit": 0,
+      "output": "=== 轮次一致性检查 ===\n结果：ok\n当前轮次：ROUND-1-1\n下一轮次：ROUND-1-5\n警告：0\n硬阻塞：0\n"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/hub_refresh.py validate",
+      "exit": 0,
+      "output": "{\n  \"schema_version\": \"1.0\",\n  \"bundles\": 4,\n  \"projects\": 24,\n  \"current_authorities\": [\n    {\n      \"state\": \"drifted\",\n      \"changed_fields\": [\n        \"registry_hash\"\n      ]\n    },\n    {\n      \"state\": \"drifted\",\n      \"changed_fields\": [\n        \"registry_hash\"\n      ]\n    },\n    {\n      \"state\": \"drifted\",\n      \"changed_fields\": [\n        \"registry_hash\"\n      ]\n    },\n    {\n      \"state\": \"matched\",\n      \"changed_fields\": []\n    }\n  ],\n  \"relation_proposals\": 2\n}\n"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/hub_connections.py validate data/design_governance/manifest-v5.json data/design_governance/connection-exceptions-v2.json",
+      "exit": 0,
+      "output": "{\"valid\": true, \"records\": 9, \"registry_projects\": 24}\n"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0,
+      "output": ""
+    }
+  ],
+  "hub_tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'test_hub*.py'",
+    "exit": 0,
+    "output": "..................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 185 tests in 22.310s\n\nOK\n"
+  },
+  "readback": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 docs/reports/ui_design_governance/unit-09/verify.py",
+    "exit": 0,
+    "summary": "24 list/detail parity; 4 declared exceptions; 9 valid records; 108 ledger events/98 results/5 requests unchanged; zero source reads/Manga probes/ledger mutations; protected and historical hashes PASS"
+  },
+  "resolved_failure": {
+    "check": "historical/default authority count",
+    "first_output": "............................................................................................................................................F...............................\n======================================================================\nFAIL: test_defaults_accept_historical_drift_but_reject_active_drift_and_keep_history (test_hub_refresh_cli.RefreshCliTests.test_defaults_accept_historical_drift_but_reject_active_drift_and_keep_history)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/Users/alalapi/PycharmProjects/personal-control-hub/tests/test_hub_refresh_cli.py\", line 199, in test_defaults_accept_historical_drift_but_reject_active_drift_and_keep_history\n    self.assertEqual(\n    ~~~~~~~~~~~~~~~~^\n        [\"drifted\", \"matched\", \"matched\"],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        [status[\"state\"] for status in validated[\"current_authorities\"]],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\nAssertionError: Lists differ: ['drifted', 'matched', 'matched'] != ['drifted', 'matched', 'matched', 'matched']\n\nSecond list contains 1 additional elements.\nFirst extra element 3:\n'matched'\n\n- ['drifted', 'matched', 'matched']\n+ ['drifted', 'matched', 'matched', 'matched']\n?                        +++++++++++\n\n\n----------------------------------------------------------------------\nRan 185 tests in 22.413s\n\nFAILED (failures=1)\n",
+    "cause": "Existing fixture assertion expected three loaded bundles; successor correctly loads four.",
+    "repair": "Update explicit expected current_authorities to four; complete 185-test suite rerun passes."
+  },
+  "independent_acceptance": "pending"
+}

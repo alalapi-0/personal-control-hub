@@ -8,9 +8,7 @@
     "desktop-magnet",
     "pycharm-misc-project"
   ],
-  "authority_blocked": [
-    "manga-localizer"
-  ],
+  "authority_blocked": [],
   "figma": {
     "state": "UNAUTHORIZED",
     "fingerprint": "oauth_token_invalid_grant",
@@ -19,8 +17,9 @@
     "retry_policy": "no unchanged retry or workaround"
   },
   "manga": {
-    "state": "owner_scope_decision_pending",
-    "recovery": "explicit owner authorized named read-only scope or explicit visible management exception; never infer from prior storage exclusion",
+    "state": "owner_visible_exception_approved",
+    "decision_ref": "../unit-09/owner-decision.json",
+    "access": "no_current_goal_access",
     "probes": 0
   },
   "source_absence": {

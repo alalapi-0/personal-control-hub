@@ -92,6 +92,12 @@ class RefreshCliTests(unittest.TestCase):
         current_bundle["content_hash"] = content_hash({
             k: v for k, v in current_bundle.items() if k != "content_hash"})
         self.write("authority-bundle-v3.json", current_bundle)
+        current_plan["id"] = "hub-source-plan-v4"
+        current_plan["content_hash"] = content_hash({
+            k: v for k, v in current_plan.items() if k != "content_hash"})
+        current_bundle["content_hash"] = content_hash({
+            k: v for k, v in current_bundle.items() if k != "content_hash"})
+        self.write("authority-bundle-v4.json", current_bundle)
         relations = {
             "schema_version": "1.0",
             "kind": "connection_relation_proposals",
@@ -111,7 +117,7 @@ class RefreshCliTests(unittest.TestCase):
             "content_hash": "",
         }
         relations["content_hash"] = relation_hash(relations)
-        self.write("relation-proposals-v3.json", relations)
+        self.write("relation-proposals-v4.json", relations)
         return bundle
 
     def test_full_refresh_retry_and_offline_rebuild(self):
@@ -191,7 +197,7 @@ class RefreshCliTests(unittest.TestCase):
         code, validated = self.invoke("validate")
         self.assertEqual(code, 0, validated)
         self.assertEqual(
-            ["drifted", "matched", "matched"],
+            ["drifted", "matched", "matched", "matched"],
             [status["state"] for status in validated["current_authorities"]],
         )
         code, history = self.invoke("history")
