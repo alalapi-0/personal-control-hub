@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Start the Hub application API locally; no project app or UI is launched."""
+"""Start the single-user Hub UI and API on literal loopback."""
 import argparse
 import sys
 from pathlib import Path
@@ -25,8 +25,8 @@ def main(argv=None):
         # An absent design store remains unavailable; starting is never a write.
         designs = DesignService(DesignStore(ROOT, "data/design_governance/design-store.json"))
         server = HubHTTPServer(ProjectService(ROOT), designs, host=args.host, port=args.port)
-        print(f"Hub local API: {server.origin}/api/health", flush=True)
-        print("UI awaits the owner's Figma selection. Ctrl-C stops this API.", flush=True)
+        print(f"Personal Control Hub: {server.origin}/", flush=True)
+        print("Open this address in your browser. Ctrl-C stops the Hub.", flush=True)
         server.serve_forever(poll_interval=0.2)
     except KeyboardInterrupt:
         return 0

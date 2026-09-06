@@ -13,7 +13,7 @@ from types import SimpleNamespace
 from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from hub.local_service import HubHTTPServer, MAX_BODY_BYTES, _Sessions
+from hub.local_service import HubHTTPServer, MAX_BODY_BYTES, _Sessions, WEB_ASSETS
 from hub.service_contract import ArtifactResponse, OwnerAction, ServiceError
 
 
@@ -62,6 +62,32 @@ class DesignSpy:
 
 
 class LocalHTTPTests(unittest.TestCase):
+    def test_web_allowlist_does_not_read_project_facts(self):
+        for path, (_name, mime) in WEB_ASSETS.items():
+            with self.subTest(path=path):
+                status, headers, data = self.call(path=path, authenticated=False)
+                self.assertEqual(status, 200)
+                self.assertEqual(headers['Content-Type'], mime)
+                self.assertIn("script-src 'self'", headers['Content-Security-Policy'])
+                self.assertNotIn('unsafe-inline', headers['Content-Security-Policy'])
+                self.assertNotIn('sandbox', headers['Content-Security-Policy'])
+                self.assertTrue(data)
+        self.assertEqual(self.projects.calls, [])
+        self.assertEqual(self.designs.calls, [])
+        for path in ('/?q=1', '/assets/hub.js?x=1', '/STATE.yaml', '/assets/../local_service.py', '/assets/%2e%2e/local_service.py'):
+            self.assertIn(self.call(path=path)[0], (400, 404))
+
+    def test_web_preserves_request_and_artifact_boundaries(self):
+        for headers in ({'Host': 'evil.example'}, {'Origin': 'https://evil.example'}, {'Sec-Fetch-Site': 'cross-site'}):
+            with self.subTest(headers=headers):
+                self.assertEqual(self.call(path='/', headers=headers)[0], 403)
+        self.assertEqual(self.call(method='HEAD', path='/')[0], 405)
+        self.session()
+        status, headers, _ = self.call(path='/api/artifacts/demo?candidate_id=fixture&candidate_revision=1')
+        self.assertEqual(status, 200)
+        self.assertIn('sandbox', headers['Content-Security-Policy'])
+        self.assertNotIn('script-src', headers['Content-Security-Policy'])
+
     def setUp(self):
         self.projects, self.designs = ProjectSpy(), DesignSpy()
         self.server = HubHTTPServer(self.projects, self.designs)
@@ -93,7 +119,7 @@ class LocalHTTPTests(unittest.TestCase):
             response = conn.getresponse()
             data = response.read()
             result_headers = dict(response.getheaders())
-            if result_headers.get("Content-Type", "").startswith("application/json"):
+            if method != "HEAD" and result_headers.get("Content-Type", "").startswith("application/json"):
                 data = json.loads(data)
             return response.status, result_headers, data
         finally:

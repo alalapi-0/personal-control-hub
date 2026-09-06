@@ -1,0 +1,62 @@
+{
+  "status": "PASS",
+  "method": "sRGB WCAG luminance; conservative gradient endpoints. Decorative panel borders are not control-identification boundaries.",
+  "pairs": [
+    {
+      "role": "normal text",
+      "foreground": "#F1EFF3",
+      "background": "#554D5D",
+      "ratio": 7.054,
+      "minimum": 4.5
+    },
+    {
+      "role": "muted text",
+      "foreground": "#C1BBC6",
+      "background": "#423C49",
+      "ratio": 5.669,
+      "minimum": 4.5
+    },
+    {
+      "role": "primary text",
+      "foreground": "#332C30",
+      "background": "#D1B39D",
+      "ratio": 6.896,
+      "minimum": 4.5
+    },
+    {
+      "role": "input border",
+      "foreground": "#897F93",
+      "background": "#3B3642",
+      "ratio": 3.08,
+      "minimum": 3
+    },
+    {
+      "role": "focus on secondary",
+      "foreground": "#D8BBA6",
+      "background": "#554D5D",
+      "ratio": 4.443,
+      "minimum": 3
+    },
+    {
+      "role": "focus on panel",
+      "foreground": "#D8BBA6",
+      "background": "#3B3642",
+      "ratio": 6.46,
+      "minimum": 3
+    }
+  ],
+  "HSL_saturation": {
+    "canvas": {
+      "before": 0.324,
+      "after": 0.122
+    },
+    "surface": {
+      "before": 0.265,
+      "after": 0.093
+    },
+    "accent": {
+      "before": 1.0,
+      "after": 0.391
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "candidate_sha256": "c0eda89f6aab0cfbd722ed312dbb0fa820832d85e6defd42dba4bf97286dfc00",
+  "files": {
+    "docs/reports/ui_design_governance/unit-15/baseline.json": "7863188a8e2d9ea9eb168f22d0e7b629d7c4ea07afe64a37b8f8892e1b5df58a",
+    "docs/reports/ui_design_governance/unit-15/browser-functional.json": "a9d9b8e563549143f8b06cda7caf761dd9a5131db16117b13a7facc8074059ad",
+    "docs/reports/ui_design_governance/unit-15/browser-recovery.json": "e0acc4e5d9a9633e34f49f40b47bc25462ac1b540a79efbf52ce42a12c2485f0",
+    "docs/reports/ui_design_governance/unit-15/browser-visual.json": "ee1f2649baf59cdd9e7bdcc6967162ad781b22d1cdde74b8af0b995d1ec838b6",
+    "docs/reports/ui_design_governance/unit-15/browser_acceptance.js": "b6ae1912bbe27ed3039210379f22ad1899949ed277dfec06d809f8a861b1bf0e",
+    "docs/reports/ui_design_governance/unit-15/browser_fixture.py": "338eac2ea8f1a062eca623dd3eee8d1440c1a4498d284a9057a8b905c62baa10",
+    "docs/reports/ui_design_governance/unit-15/browser_visual.js": "c5b31ce2a021377f774800abc55c738bd5dd2b122fbca302882a6d0d124ae322",
+    "docs/reports/ui_design_governance/unit-15/candidate.json": "1b1ba99ac4430f51d0d2a9765ac8be5e1b4dc252d5ae5e3b0f303b72f55edf3b",
+    "docs/reports/ui_design_governance/unit-15/contract.md": "3ead31cf4b80d1d819863b46a5e3a3fa956e95c07d3b7776e743fa8be2bbf0e0",
+    "docs/reports/ui_design_governance/unit-15/contrast.json": "ccf0db570cdeab89e635205635dc9e905a82ae99a4fefa0e406fe7ab5581028a",
+    "docs/reports/ui_design_governance/unit-15/fixture-browser-export.zip": "527372def84de0ac99bdb0af72028fdb4fe5833711274d4a79d5fc75a32449ef",
+    "docs/reports/ui_design_governance/unit-15/fixture-runtime.json": "ceffcf63023a14e937d977826503ce60ce9c4f67da671ffc4e55eae042cce127",
+    "docs/reports/ui_design_governance/unit-15/import.json": "0c6aa12fc912693cb27d7d4ef3860cda61c0c3b88c629b4a832dd22a7d148ed0",
+    "docs/reports/ui_design_governance/unit-15/import_selected.py": "565739c9376b7fda5ee4c653a18eb9c61ba630297faf9f42c8ca0f9bb43bbb6b",
+    "docs/reports/ui_design_governance/unit-15/persistence.json": "3daa4fc607aeefcf4ea475700d0a7286333b6a6ba39779c4b3dd81c7019ee9a3",
+    "docs/reports/ui_design_governance/unit-15/soft-button-disabled.png": "099ceb03b164bcccf1ca3987b04680edfda02defd7908577823a1a95c76dbd27",
+    "docs/reports/ui_design_governance/unit-15/soft-button-pressed.png": "e8ee3bafd2d2d7bd10049ca1ff80e5d95919fa5e7585907db4923e5f033c9371",
+    "docs/reports/ui_design_governance/unit-15/soft-controls-focus.png": "1f12a8d8ca4b72114065305095fb9081d5e496cad5e4d1914f27a1efa8989716",
+    "docs/reports/ui_design_governance/unit-15/soft-design-desktop.png": "84a0eb2d5c880891637ffe27ac0dad86e480dc30bce2fc2e929a54f59d038be9",
+    "docs/reports/ui_design_governance/unit-15/soft-design-mobile-200.png": "e971dd28313d3ac032fcaa4626c3a6ae2cf9da1212d2aa7565f5d04c89dbb2e6",
+    "docs/reports/ui_design_governance/unit-15/soft-design-mobile.png": "6f1c872b3e451fc70edc4e1c0d2b3c5ba085b409bd3742072dc0ce3e07c81909",
+    "docs/reports/ui_design_governance/unit-15/soft-preview.png": "63530280ef4368bacd69c4cce2f385f62c7be7dcea7f691eb45607013369b892",
+    "docs/reports/ui_design_governance/unit-15/soft-projects-desktop.png": "85034d090df633a387927ec28a0d6ba5d525844042c32b9df2846bf847a11ebf",
+    "docs/reports/ui_design_governance/unit-15/soft-projects-mobile.png": "a711e7d6f927f23dbc32ea26a8b74fa13c4bfed78c821df516cdc40b3a9f31c4",
+    "docs/reports/ui_design_governance/unit-15/timestamp-repair.json": "dab1bade17053e0238ee70dfed52773b97c0da5d91ce2c1974d572a110b32bc3",
+    "docs/reports/ui_design_governance/unit-15/validation.json": "f7bcedbe0b582fe45175345d4a125bbc9dcf94ba772c785ed3c721401cbc0a91",
+    "docs/reports/ui_design_governance/unit-15/verify.py": "2ca953d9dfcb797a5004a6c6b34b3a50f2af52da1b0053dfc81240f1a8a1c804"
+  },
+  "source_authority": "Owner chose C then P5; newest request supersedes flat/hard depth treatment. Apple Materials is inspiration only.",
+  "apple_reference": "https://developer.apple.com/design/human-interface-guidelines/materials",
+  "data_roles": {
+    "project_display": "real accepted Hub projection",
+    "design_previews": "imported Figma source with example content",
+    "owner_choice": "one real imported choice",
+    "browser_mutations": "synthetic_fixture only"
+  }
+}

@@ -209,6 +209,9 @@ class ProjectService:
         if not isinstance(source_snapshot, dict):
             source_snapshot = {}
         source = {
+            "entrypoints": copy.deepcopy(declared.get("current_state_paths", []))
+                if declared.get("summary_enabled") and declared.get("enabled")
+                and not declared.get("hub_connection_exception") else [],
             "availability": source_snapshot.get("availability", "unknown"),
             "role": source_snapshot.get("source_role"),
             "observed_at": (source_result or {}).get("observed_at"),

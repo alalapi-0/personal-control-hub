@@ -1,0 +1,9 @@
+{
+  "role": "/root/tc16_governor",
+  "contract": "TC15 v3",
+  "decision": "APPROVE",
+  "candidate_sha256": "c0eda89f6aab0cfbd722ed312dbb0fa820832d85e6defd42dba4bf97286dfc00",
+  "basis": "Fresh independent Judge PASS, verified code/evidence/security/persistence/UI and explicit owner acceptance.",
+  "authorized_next": "Scoped TC15 commit and normal push to current tracking branch; continue TC16 management connections.",
+  "goal_complete": false
+}

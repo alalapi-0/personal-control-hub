@@ -1,0 +1,24 @@
+{
+  "contract": "TC15 v3",
+  "candidate_sha256": "c0eda89f6aab0cfbd722ed312dbb0fa820832d85e6defd42dba4bf97286dfc00",
+  "frozen_at": "2026-09-06T04:07:51.039275+00:00",
+  "files": {
+    "src/hub/local_service.py": "2046c7c31561120d38cbe41c6e1b288dbf92af962c8eaeac96f02c1f6363fd0b",
+    "src/hub/project_service.py": "e4460359cfe1d835b4c70f9711ffc35b51a8adee104c1b007adb5288d231f7e7",
+    "scripts/hub_server.py": "f291419e008b1dfd614e69492321aaa093c7912bf3266a5a43de88bc0dfb15f9",
+    "tests/test_hub_local_service.py": "fd1294d31c89e41f561729a1ed2f20ba28fdb3b3e51d7ac6691af476f1792324",
+    "tests/test_hub_web_logic.mjs": "05ab16c8206529193acd22b85a1ecc64f2081e5cf6de0e26a3d36808a2863139",
+    "docs/design/hub_local_service_protocol.md": "60b422e1ae3016237c6fbeea5203dd4aae55a82cdcd9ee6294c6e52e665f6a3a",
+    "data/design_governance/design-store.json": "ac8add4ebf3acb25b1e1cb8276724aab6c2eb64f101dd77ef9115d502b1372f9",
+    "docs/reports/ui_design_governance/service/exports/real/tc15-selected-c-p5-export.zip": "b8e1863afa97c9402b89f3ddd68112c57ba21afa3f10fd219ad7a746417b15eb",
+    "src/hub/web/common.js": "a9f46ef891af9a2229d307cb12cb23a3ef9bb4928ff47d788ac63254ec7b000a",
+    "src/hub/web/designs.js": "d3c381f96345a03f6e7aaccf2d3301e44bc813ea6370582671840e2d5ed7fc9c",
+    "src/hub/web/hub.css": "f5e78bc5389ab4d8d907fcb3cb0ce7bf807e3d784460c8043e573f06154225d7",
+    "src/hub/web/hub.js": "d608aaa52233929c8b59bf7416e866b1f1e42c42a4b87b04934b35446c5c7c25",
+    "src/hub/web/icon.svg": "f3d626304d2afca5a3ecbf6788ba48a2e6133271fded06e08989b46a7c861995",
+    "src/hub/web/index.html": "ff419cb4fa67cf6d045d806009d7b36ffcb85959aaf32e8afd18947001f314e4"
+  },
+  "state_pre_acceptance_sha256": "ed983bb0b183535423028d8cb5493c929b3df74e5fb110b08d17228670f85771",
+  "metadata_boundary": "Acceptance/decision/next-action reporting remains outside semantic runtime candidate identity.",
+  "evidence": "validation.json and browser evidence are produced against this frozen candidate."
+}

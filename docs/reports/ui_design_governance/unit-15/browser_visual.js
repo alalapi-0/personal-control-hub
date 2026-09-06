@@ -1,0 +1,54 @@
+async (page) => {
+  const unit='/Users/alalapi/PycharmProjects/personal-control-hub/docs/reports/ui_design_governance/unit-15/';
+  const origin='http://127.0.0.1:63078';
+  const result={classification:'real read-only Hub projection; imported design previews'};
+  const ensure=(ok,message)=>{if(!ok)throw new Error(message)};
+  const errors=[],network=[];
+  const diagnostic=m=>{if(['warning','error'].includes(m.type()))errors.push({type:m.type(),text:m.text()})};
+  const exchange=r=>network.push({method:r.request().method(),url:r.url(),status:r.status()});
+  const shot=async(name,fullPage=true)=>page.screenshot({path:unit+name,fullPage});
+  const readyImage=()=>page.waitForFunction(()=>{const i=document.querySelector('img.preview');return i&&i.complete&&i.naturalWidth>0},{},{timeout:10000});
+  const bounds=()=>page.evaluate(()=>({viewport:innerWidth,scroll:document.documentElement.scrollWidth}));
+  const style=locator=>locator.evaluate(e=>{const s=getComputedStyle(e);return {background:s.backgroundImage,color:s.color,border:s.borderColor,shadow:s.boxShadow,transform:s.transform,outline:s.outline,transition:s.transitionDuration,width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height}});
+  page.on('console',diagnostic);page.on('response',exchange);
+  try{
+    await page.setViewportSize({width:1440,height:900});await page.goto(origin+'/#projects');
+    await page.getByPlaceholder('搜索项目…').waitFor();ensure(await page.locator('.project-row').count()===24,'24 project rows');
+    await shot('soft-projects-desktop.png');await shot('soft-preview.png',false);
+    result.desktop=await bounds();
+    await page.getByPlaceholder('搜索项目…').fill('personal-control');ensure(await page.locator('.project-row').count()===1,'search');
+    await page.locator('.project-row').focus();await page.keyboard.press('Enter');await page.getByRole('heading',{name:'当前工作',exact:true}).waitFor();
+    result.detailFocus=await page.evaluate(()=>document.activeElement.id);ensure(result.detailFocus==='main','detail keyboard focus');
+    await page.getByRole('link',{name:'进入设计审核',exact:true}).click();await page.locator('.project-row').waitFor();await page.locator('.project-row').click();
+    await page.getByRole('heading',{name:'记录设计决定',exact:true}).waitFor();await readyImage();
+    result.views=await page.locator('#preview-view option').allTextContents();ensure(result.views.length===4,'four exact imported previews');
+    result.desktopImage=await page.locator('img.preview').evaluate(i=>({width:i.naturalWidth,height:i.naturalHeight}));
+    await shot('soft-design-desktop.png');
+    const primary=page.getByRole('button',{name:'选择此设计',exact:true});result.buttonDefault=await style(primary);
+    await primary.hover();result.buttonHover=await style(primary);
+    await page.getByRole('button',{name:'放大预览',exact:true}).focus();await page.keyboard.press('Tab');await page.keyboard.press('Tab');
+    ensure(await primary.evaluate(e=>e===document.activeElement&&e.matches(':focus-visible')),'keyboard primary focus');
+    result.buttonFocus=await style(primary);await page.locator('[aria-labelledby="decision-title"]').screenshot({path:unit+'soft-controls-focus.png'});
+    await page.emulateMedia({reducedMotion:'reduce'});const box=await primary.boundingBox();await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();
+    result.buttonPressed=await style(primary);await page.mouse.move(1,1);await page.mouse.up();ensure(result.buttonPressed.transform==='matrix(1, 0, 0, 1, 0, 1)','minimal press movement');
+    result.reducedMotion=await primary.evaluate(e=>getComputedStyle(e).transitionDuration);ensure(result.reducedMotion==='0s','reduced motion');
+    await page.emulateMedia({reducedMotion:'no-preference'});
+    const client=await page.context().newCDPSession(page);await client.send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-transparency',value:'reduce'}]});
+    result.opaqueNav=await page.locator('.topbar').evaluate(e=>({background:getComputedStyle(e).backgroundColor,blur:getComputedStyle(e).backdropFilter}));
+    ensure(result.opaqueNav.blur==='none','opaque navigation fallback');await client.send('Emulation.setEmulatedMedia',{features:[]});await client.detach();
+    await page.setViewportSize({width:390,height:844});await page.reload();await page.getByRole('heading',{name:'记录设计决定',exact:true}).waitFor();await readyImage();
+    result.mobile=await bounds();result.mobileImage=await page.locator('img.preview').evaluate(i=>({width:i.naturalWidth,height:i.naturalHeight}));ensure(result.mobileImage.width===390,'mobile imported preview');
+    await shot('soft-design-mobile.png');
+    await page.getByRole('button',{name:'原始版本',exact:true}).click();ensure(await page.locator('#original-canvas').isVisible()&&!(await page.locator('#candidate-canvas').isVisible()),'mobile original tab');
+    await page.getByRole('button',{name:'候选设计',exact:true}).click();await page.getByRole('button',{name:'放大预览',exact:true}).focus();await page.keyboard.press('Enter');
+    await page.getByRole('dialog').waitFor();result.dialogFocus=await page.evaluate(()=>document.activeElement.textContent);await page.keyboard.press('Escape');
+    result.restoredFocus=await page.evaluate(()=>document.activeElement.textContent);ensure(result.restoredFocus==='放大预览','dialog focus restoration');
+    await page.evaluate(()=>document.documentElement.style.fontSize='28px');result.text200=await bounds();result.text200.font=await page.locator('textarea').evaluate(e=>getComputedStyle(e).fontSize);
+    ensure(result.text200.scroll<=result.text200.viewport&&result.text200.font==='28px','200% text reflow');await shot('soft-design-mobile-200.png');await page.evaluate(()=>document.documentElement.style.fontSize='');
+    await page.goto(origin+'/#projects');await page.getByPlaceholder('搜索项目…').waitFor();await shot('soft-projects-mobile.png');
+    result.touchTargets=await page.locator('input,select,button,nav a').evaluateAll(es=>es.map(e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height})));
+    ensure(result.touchTargets.every(x=>x.width>=44&&x.height>=44),'44px mobile controls');
+    result.console=errors;result.network=network;ensure(errors.length===0,'clean real console');ensure(network.every(r=>r.method==='GET'&&r.url.startsWith(origin+'/')&&r.status===200),'read-only same-origin network');
+    result.status='PASS';return result;
+  }finally{page.off('console',diagnostic);page.off('response',exchange);await page.emulateMedia({reducedMotion:'no-preference'});}
+}

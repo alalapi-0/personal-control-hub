@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "protected_files": 235,
+  "protected_changed": [],
+  "canonical_store_sha256": "ac8add4ebf3acb25b1e1cb8276724aab6c2eb64f101dd77ef9115d502b1372f9",
+  "canonical_store_revision": 8,
+  "facts": 6,
+  "owner_events": 1,
+  "cli_service_http_agree": true,
+  "project_count": 24,
+  "ledger_head": {
+    "sequence": 108,
+    "hash": "246acf8f66a340a2a00ff4616b41b27a7beed87c0aacc1fafe6660d158e706ab"
+  },
+  "restart_process_readback": true,
+  "graceful_stop_exit": 0,
+  "exact_export_download_sha256": "b8e1863afa97c9402b89f3ddd68112c57ba21afa3f10fd219ad7a746417b15eb",
+  "canonical_mutations": 0,
+  "source_reads": "accepted Hub-local projections only"
+}

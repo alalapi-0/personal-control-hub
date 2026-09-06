@@ -1,7 +1,7 @@
 """Loopback-only HTTP transport for the Hub's local application contract.
 
 No project or design facts are duplicated here. GETs do not refresh sources or
-initialize stores. There is intentionally no UI before the owner's Figma choice.
+initialize stores. The selected Hub UI uses the same local application service.
 """
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ import secrets
 import socket
 import threading
 import time
+from pathlib import Path
 from http.cookies import CookieError, SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qsl, urlsplit
@@ -22,6 +23,18 @@ API_VERSION = "1.0"
 MAX_BODY_BYTES = 64 * 1024
 ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}\Z")
 FILENAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,160}\Z")
+WEB_ROOT = Path(__file__).with_name("web")
+WEB_ASSETS = {
+    "/": ("index.html", "text/html; charset=utf-8"),
+    "/assets/hub.css": ("hub.css", "text/css; charset=utf-8"),
+    "/assets/hub.js": ("hub.js", "text/javascript; charset=utf-8"),
+    "/assets/common.js": ("common.js", "text/javascript; charset=utf-8"),
+    "/assets/designs.js": ("designs.js", "text/javascript; charset=utf-8"),
+    "/assets/icon.svg": ("icon.svg", "image/svg+xml"),
+}
+UI_CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; "
+          "connect-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; "
+          "object-src 'none'; frame-ancestors 'none'; form-action 'none'")
 
 
 def _object_pairs(pairs):
@@ -203,13 +216,13 @@ class HubRequestHandler(BaseHTTPRequestHandler):
             raise ServiceError("INVALID_JSON")
         return result
 
-    def _send(self, data, *, status=200, content_type="application/json; charset=utf-8", headers=None):
+    def _send(self, data, *, status=200, content_type="application/json; charset=utf-8", headers=None, ui=False):
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(data)))
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("Content-Security-Policy", "default-src 'none'; sandbox; frame-ancestors 'none'")
+        self.send_header("Content-Security-Policy", UI_CSP if ui else "default-src 'none'; sandbox; frame-ancestors 'none'")
         self.send_header("Cross-Origin-Resource-Policy", "same-origin")
         self.send_header("Referrer-Policy", "no-referrer")
         self.send_header("Connection", "close")
@@ -257,7 +270,7 @@ class HubRequestHandler(BaseHTTPRequestHandler):
             if query:
                 raise ServiceError("INVALID_QUERY")
             if path == "/api/health":
-                self._success({"service": "hub-local", "ui_implemented": False})
+                self._success({"service": "hub-local", "ui_implemented": True})
             else:
                 session, csrf = self.server.sessions.issue()
                 cookie = f"{self.server.sessions.cookie_name}={session}; HttpOnly; SameSite=Strict; Path=/api"
@@ -307,6 +320,13 @@ class HubRequestHandler(BaseHTTPRequestHandler):
         operation_started = False
         try:
             self._boundary(mutation=mutation)
+            if not mutation and self.path in WEB_ASSETS:
+                name, content_type = WEB_ASSETS[self.path]
+                asset = WEB_ROOT / name
+                if asset.is_symlink() or not asset.is_file():
+                    raise ServiceError("UI_ASSET_UNAVAILABLE", status=503)
+                self._send(asset.read_bytes(), content_type=content_type, ui=True)
+                return
             path, query = self._route()
             if not mutation:
                 self._dispatch_get(path, query)

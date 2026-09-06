@@ -1,0 +1,272 @@
+{
+  "status": "PASS",
+  "classification": "synthetic_fixture",
+  "checks": {
+    "fresh isolated history": true,
+    "draft survives reload": true,
+    "decision rerender keeps meaningful focus": true,
+    "normal_console_before_faults": [],
+    "normal flow console clean": true,
+    "injected lost response follows actual commit": true,
+    "other candidate cannot overwrite pending command": true,
+    "exact pending survives cross candidate navigation": true,
+    "retry produces no duplicate event": true,
+    "same scope alternative is not falsely selected": true,
+    "other candidate cannot withdraw selected candidate": true,
+    "candidate list shows one latest revision per identity": true,
+    "export_sha256": "527372def84de0ac99bdb0af72028fdb4fe5833711274d4a79d5fc75a32449ef",
+    "fixture remains classified mock": true,
+    "final_history": 4,
+    "expected_fault_console": [
+      "error: Failed to load resource: net::ERR_FAILED"
+    ],
+    "all requests remain same local fixture origin": true,
+    "network": [
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/hub.css",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/hub.js",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/designs.js",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/common.js",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/session",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/icon.svg",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/designs",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/artifacts/fixture-overview-desktop?candidate_id=fixture-candidate&candidate_revision=2",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/designs",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/hub.css",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/hub.js",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/common.js",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/designs.js",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/session",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/icon.svg",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/designs",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/artifacts/fixture-overview-desktop?candidate_id=fixture-candidate&candidate_revision=2",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "url": "http://127.0.0.1:50008/api/designs/decisions",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/designs",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/artifacts/fixture-overview-desktop?candidate_id=fixture-candidate&candidate_revision=2",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/icon.svg",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/designs",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/artifacts/fixture-overview-desktop?candidate_id=fixture-alternative&candidate_revision=1",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "url": "http://127.0.0.1:50008/api/designs/decisions",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/designs",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/designs",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/designs",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/designs",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/icon.svg",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/icon.svg",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/designs",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "url": "http://127.0.0.1:50008/api/designs/decisions",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/designs",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "url": "http://127.0.0.1:50008/api/designs/decisions",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/designs",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "url": "http://127.0.0.1:50008/api/designs/exports",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/hub.css",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/hub.js",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/common.js",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/designs.js",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/session",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/assets/icon.svg",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/designs",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/artifacts/fixture-overview-desktop?candidate_id=fixture-candidate&candidate_revision=2",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/designs",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "url": "http://127.0.0.1:50008/api/designs",
+        "status": 200
+      }
+    ]
+  }
+}

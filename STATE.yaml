@@ -11,7 +11,7 @@ metadata:
   - registry_or_route_change
   - blocker_change
   - unique_next_action_change
-last_updated: '2026-09-06T03:24:29.334Z'
+last_updated: '2026-09-06T04:15:50+00:00'
 project:
   id: personal-control-hub
   phase: Phase 1
@@ -28,11 +28,11 @@ current_round:
 current_work:
   objective: 完成日常 Hub、真实接入、设计闭环、材料归并，并统一全局工具凭据取用。
   status: ACCEPTED
-  unit: HUB-14-C-PALETTES
+  unit: HUB-15-LOCAL-UI
   spec: docs/design/ui_governance_execution.md
-  evidence: docs/reports/ui_design_governance/unit-14/
-  blocker: C 排版已选定；最终配色等待所有者选择。
-  next_action: TC14 五套 C 排版配色已获 fresh Judge PASS / Governor APPROVE；交付后等待所有者选择 1–5 或融合配色，再实施 Hub。
+  evidence: docs/reports/ui_design_governance/unit-15/
+  blocker: null
+  next_action: 所有者已接受 TC15 v3 界面，fresh Judge PASS / Governor APPROVE；交付本单元后按 TC16 合同完成 20 项真实刷新与 4 个授权例外的全覆盖验收。
 registry:
   authority: data/registry/external_projects.yaml
   registered_count: 24
@@ -71,9 +71,9 @@ task_health:
   native_goal_seconds: 7697
   telemetry_scope: previous Goal cumulative snapshot; preserved history, not this
     Goal usage
-  material_progress: TC13 accepted and pushed; owner chose C layout; TC14 five editable
-    palettes, 20 frames and 25 exports verified
-  risk: design-stage evidence verified; runtime UI and persistence await implementation
-  action: independently review and deliver TC14, then await the owner's palette choice
+  material_progress: Owner accepted TC15 v3 soft material UI; fresh Judge PASS and Governor APPROVE;
+    local Hub, one imported selection and design recovery/export loop verified
+  risk: TC16 management connection refresh, representative external UI workflow and final handoff remain
+  action: deliver TC15 and continue TC16 exact 20-project refresh plus four authorized exceptions
   next_checkpoint: next eligible Goal health boundary; preserve completed rebaseline/cooldown
   cooldown: 75000moretokens or30active minutes plus eligible condition

@@ -1,0 +1,242 @@
+{
+  "classification": "real read-only Hub projection; imported design previews",
+  "desktop": {
+    "viewport": 1440,
+    "scroll": 1425
+  },
+  "detailFocus": "main",
+  "views": [
+    "桌面总览",
+    "手机总览",
+    "桌面对照",
+    "手机状态"
+  ],
+  "desktopImage": {
+    "width": 1440,
+    "height": 900
+  },
+  "buttonDefault": {
+    "background": "linear-gradient(160deg, rgb(224, 200, 182), rgb(209, 179, 157))",
+    "color": "rgb(51, 44, 48)",
+    "border": "rgb(207, 179, 159)",
+    "shadow": "rgba(13, 9, 17, 0.16) 0px 3px 10px 0px, rgba(255, 250, 245, 0.2) 0px 1px 0px 0px inset",
+    "transform": "none",
+    "outline": "rgb(51, 44, 48) none 3px",
+    "transition": "0.16s, 0.16s, 0.12s",
+    "width": 120,
+    "height": 44
+  },
+  "buttonHover": {
+    "background": "linear-gradient(160deg, rgb(231, 209, 192), rgb(217, 190, 169))",
+    "color": "rgb(51, 44, 48)",
+    "border": "rgb(207, 179, 159)",
+    "shadow": "rgba(13, 9, 17, 0.16) 0px 3.05553px 10.1111px 0px, rgba(255, 250, 245, 0.204) 0px 1px 0px 0px inset",
+    "transform": "none",
+    "outline": "rgb(51, 44, 48) none 3px",
+    "transition": "0.16s, 0.16s, 0.12s",
+    "width": 120,
+    "height": 44
+  },
+  "buttonFocus": {
+    "background": "linear-gradient(160deg, rgb(231, 209, 192), rgb(217, 190, 169))",
+    "color": "rgb(51, 44, 48)",
+    "border": "rgb(207, 179, 159)",
+    "shadow": "rgba(13, 9, 17, 0.176) 0px 3.74636px 11.4927px 0px, rgba(255, 250, 245, 0.24) 0px 1px 0px 0px inset",
+    "transform": "none",
+    "outline": "rgb(216, 187, 166) solid 3px",
+    "transition": "0.16s, 0.16s, 0.12s",
+    "width": 120,
+    "height": 44
+  },
+  "buttonPressed": {
+    "background": "linear-gradient(160deg, rgb(231, 209, 192), rgb(217, 190, 169))",
+    "color": "rgb(51, 44, 48)",
+    "border": "rgb(207, 179, 159)",
+    "shadow": "rgba(12, 9, 18, 0.12) 0px 1px 4px 0px, rgba(12, 9, 18, 0.11) 0px 1px 3px 0px inset",
+    "transform": "matrix(1, 0, 0, 1, 0, 1)",
+    "outline": "rgb(216, 187, 166) solid 3px",
+    "transition": "0s",
+    "width": 120,
+    "height": 44
+  },
+  "reducedMotion": "0s",
+  "opaqueNav": {
+    "background": "rgb(53, 49, 59)",
+    "blur": "none"
+  },
+  "mobile": {
+    "viewport": 390,
+    "scroll": 375
+  },
+  "mobileImage": {
+    "width": 390,
+    "height": 844
+  },
+  "dialogFocus": "关闭大图",
+  "restoredFocus": "放大预览",
+  "text200": {
+    "viewport": 390,
+    "scroll": 375,
+    "font": "28px"
+  },
+  "touchTargets": [
+    {
+      "width": 96,
+      "height": 44
+    },
+    {
+      "width": 96,
+      "height": 44
+    },
+    {
+      "width": 327,
+      "height": 44
+    },
+    {
+      "width": 157.5,
+      "height": 44
+    },
+    {
+      "width": 157.5,
+      "height": 44
+    },
+    {
+      "width": 102,
+      "height": 44
+    }
+  ],
+  "console": [],
+  "network": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/assets/hub.css",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/assets/hub.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/assets/common.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/assets/designs.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/api/session",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/assets/icon.svg",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/api/projects",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/assets/icon.svg",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/api/projects/personal-control-hub",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/assets/icon.svg",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/api/designs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/assets/icon.svg",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/api/designs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/api/artifacts/hub-c-p5-overview-desktop?candidate_id=hub-c-p5&candidate_revision=1",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/assets/hub.css",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/assets/hub.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/assets/common.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/assets/designs.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/api/session",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/assets/icon.svg",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/api/designs",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/api/artifacts/hub-c-p5-overview-mobile?candidate_id=hub-c-p5&candidate_revision=1",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/assets/icon.svg",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63078/api/projects",
+      "status": 200
+    }
+  ],
+  "status": "PASS"
+}
