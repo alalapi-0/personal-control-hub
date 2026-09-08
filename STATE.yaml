@@ -25,15 +25,15 @@ all_projects_governance:
   lane: GOVERNED
   evidence: docs/reports/all-projects-governance/hub-entry/manga-routing.json
   candidate_manifest: docs/reports/all-projects-governance/hub-entry/manga-routing.json
-  candidate_status: Stage A accepted; delivery pending
-  next_action: Deliver accepted route to main, then install after CI passes.
+  candidate_status: Stage B accepted; receipt pending
+  next_action: Deliver receipt, then resume Manga page134 actual recovery.
   coverage:
     local: 24
     removed_local: 2
     cloud_excluded: 17
   budget:
-    native_tokens: 9774914
-    native_seconds: 35423
+    native_tokens: 10204538
+    native_seconds: 37512
     coverage: cumulative native Goal; cost/cap unavailable
     first_250k_rebaseline: completed
     last_health: REPLAN at3903214; repaired; no reset
@@ -41,5 +41,5 @@ all_projects_governance:
   history_ref: docs/reports/all-projects-governance/hub-entry/baseline.json#preserved_goal_history
   contract: docs/reports/all-projects-governance/hub-entry/manga-routing-contract.md
   delivery:
-    status: pending
-    previous_receipt: deb2bc12cc6d0fc78ae7723db32b0961d3e4711c
+    status: main_verified
+    source_commit: 6333a7cf5a5fc0bddc3c048ea21a6698fdcf3256

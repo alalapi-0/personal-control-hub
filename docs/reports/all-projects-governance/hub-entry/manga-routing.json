@@ -2,12 +2,12 @@
   "contract": "docs/reports/all-projects-governance/hub-entry/manga-routing-contract.md",
   "contract_id": "ALL-PROJECTS-CODEX-GOVERNANCE-V1-HUB-MANGA-ROUTING-v1",
   "lane": "GOVERNED",
-  "stage": "A",
-  "status": "Stage A accepted; delivery pending",
+  "stage": "B",
+  "status": "Accepted installation; normal main receipt delivery pending",
   "baseline_main": "deb2bc12cc6d0fc78ae7723db32b0961d3e4711c",
   "files": {
     "STATE.yaml": {
-      "sha256": "8c0910855cbe5d94f06ab68adb1581ccb3b4e929b32fc608cd2a57409e359225",
+      "sha256": "472af3a8b27497f3226cf80a84a9fcdec2ba5dd898b5931d3871969a69e5cd68",
       "mode": 420
     },
     "data/registry/external_projects.yaml": {
@@ -250,9 +250,9 @@
     "reason": "No local Git or proven matching GitHub repository; same-name youtube remote differs; no repository created"
   },
   "native_budget": {
-    "tokens": 9774914,
-    "seconds": 35423,
-    "coverage": "cumulative native Goal; cost/cap unavailable; no reset"
+    "tokens": 10204538,
+    "seconds": 37512,
+    "coverage": "Cumulative native Goal snapshot; cost/cap unavailable; prior rebaseline and failure history retained"
   },
   "checks": {
     "python": {
@@ -500,10 +500,43 @@
       "observed_at": "2026-09-08T13:19:25.991267+00:00",
       "scope": "Stage A normal Hub main delivery and remote ancestry/CI; Stage B activates only after success, separate exact installation review required",
       "basis": "Fresh Judge PASS plus independently recomputed exact six-file candidate, route restriction, checks, full26 ledger/projection parity and unchanged original protection evidence"
+    },
+    "stage_b_judge": {
+      "agent": "/root/hub_manga_stage_b_judge_v1",
+      "decision": "PASS",
+      "semantic_sha256": "7f868e13e2ca8c0bfc270f0a2ed3e290de1b055ddb83d7d4a65019e0684fc526",
+      "observed_at": "2026-09-08T13:31:23.181017+00:00",
+      "basis": [
+        "Independently recomputed six-file installed semantic identity and29 protected nonowned file hashes",
+        "Exact Manga route/validator restriction, other25 registry and storage permissions preserved",
+        "Original ledger56/full26 coverage,546field provenance and fullJSON/MD/disabledFeishu parity",
+        "Manga20known1unknown,140/199,3blockers,falsecompleted/accepted",
+        "Root193Python17Node/requiredchecks,replayzero,guardedrealHTTP/CUA and freshHubreader evidence",
+        "Initial failed installer stopped beforewrites; exactManga-block repair validated; expectedrefresh exit2 retained"
+      ]
+    },
+    "stage_b_governor": {
+      "agent": "/root/hub_connection_governor",
+      "decision": "APPROVE",
+      "semantic_sha256": "7f868e13e2ca8c0bfc270f0a2ed3e290de1b055ddb83d7d4a65019e0684fc526",
+      "observed_at": "2026-09-08T13:33:59.003732+00:00",
+      "scope": "Source receipt and management metadata only, normal Hub main push and remote ancestry/CI; no new refresh/UI/project/Git effects in original Hub",
+      "basis": "Fresh exact Stage B Judge PASS; independent candidate identity, full26 durable observations/provenance/parity, original preservation and real guarded HTTP/UI evidence"
     }
   },
   "delivery": {
-    "status": "pending"
+    "status": "Stage A main/CI verified; Stage B accepted receipt pending",
+    "stage_a": {
+      "status": "main_ci_verified",
+      "commit": "6333a7cf5a5fc0bddc3c048ea21a6698fdcf3256",
+      "observed_main": "6333a7cf5a5fc0bddc3c048ea21a6698fdcf3256",
+      "remote": "https://github.com/alalapi-0/personal-control-hub",
+      "branch": "main",
+      "ci_run": 34231287564,
+      "ci_conclusion": "success",
+      "ci_url": "https://github.com/alalapi-0/personal-control-hub/actions/runs/34231287564",
+      "observed_at": "2026-09-08T13:21:14.169820+00:00"
+    }
   },
   "semantic_files": [
     {
@@ -544,5 +577,741 @@
     "next_action",
     "delivery",
     "budget"
-  ]
+  ],
+  "stage_b": {
+    "status": "Accepted installation; normal main receipt delivery pending",
+    "source_commit": "6333a7cf5a5fc0bddc3c048ea21a6698fdcf3256",
+    "preimages": {
+      "src/hub/services/project_registry_service.py": {
+        "before_sha256": "331cfb094eafe477c37645f1c7b9e149026bcd8725b53aa989ec589dc0bd1c6f",
+        "after_sha256": "5bb517419ab413afc13f358a4b26565d9bf2d12b42df38b1028d96c4644f1294",
+        "mode": 420
+      },
+      "tests/test_hub_registry_storage.py": {
+        "before_sha256": "067cc500d1e9dbeab45294bb20ae971ecbf63692a2d6f2ec96feb8016a7bb57c",
+        "after_sha256": "3e40084124e5dbf6918bff416b6a7cd66ae0916800e43fbef8ae55e75f287f50",
+        "mode": 420
+      },
+      "tests/test_hub_project_service.py": {
+        "before_sha256": "430ca7558b2b9e40fd08ec2c91f5ec67d504a72e43c6e0ca3a4debd97c99ac89",
+        "after_sha256": "f6d01c9f6aedc44de547a03420d28d4bf6c998b451727af2cb6790670019c7c6",
+        "mode": 420
+      },
+      "data/registry/external_projects.yaml": {
+        "before_sha256": "5b0922259f22a15a232697fc12dcc28077dac88d033d03214b0657db35c69851",
+        "after_sha256": "4c862e89980105f848fe91ae55d530e510142d8096479987a8eaa60605b5aab7",
+        "mode": 420
+      },
+      "STATE.yaml": {
+        "before_sha256": "cbbb49cf8818802c9b5df6efd404ad834cba27463f82763ac716a8c1bdc88e1a",
+        "after_sha256": "d5ba4c04516d5d5aa43cace9154bc766fb540dc02e95a81c10dc4f3992fc19b4",
+        "mode": 420
+      },
+      "docs/reports/all-projects-governance/hub-entry/manga-routing-contract.md": {
+        "before_sha256": null,
+        "after_sha256": "1bf1f1e9108243e4dfb0eb5f3e00bee2a8d42548b6d441816adcd874f2c923c9",
+        "mode": 420
+      }
+    },
+    "rollback": {
+      "three_code_test_files": "exact registered baseline.source bytes available at deb2bc12cc6d0fc78ae7723db32b0961d3e4711c",
+      "registry": "replace the single authorized Manga .agent/STATE.yaml hunk with .agent/STATE.md only after after-hash CAS",
+      "state_task_preimage": "all_projects_governance:\n  task_id: ALL-PROJECTS-CODEX-GOVERNANCE-V1\n  native_task_id: 01a07ef7-735b-7270-9c21-3347e1232b5a\n  status: ACTIVE\n  unit: hub_entry_integration\n  lane: GOVERNED\n  evidence: docs/reports/all-projects-governance/hub-entry/\n  candidate_manifest: docs/reports/all-projects-governance/hub-entry/installation.json\n  candidate_status: Stage B delivered; rollout pending\n  next_action: Resume Manga recovery and pending-content delivery.\n  coverage:\n    local: 24\n    removed_local: 2\n    cloud_excluded: 17\n  budget:\n    native_tokens: 7023919\n    native_seconds: 24903\n    coverage: cumulative native Goal; cost/cap unavailable\n    first_250k_rebaseline: completed\n    last_health: REPLAN at3903214; repaired; no reset\n    cooldown: 75000tokens or30active minutes plus eligible trigger\n  history_ref: docs/reports/all-projects-governance/hub-entry/baseline.json#preserved_goal_history\n  contract: docs/reports/all-projects-governance/hub-entry/contract.md\n  delivery:\n    status: main_verified\n    source_commit: e537b83dff8da74dc0006eef124f9dba4f6d4f4c\n",
+      "new_files": [
+        "docs/reports/all-projects-governance/hub-entry/manga-routing-contract.md",
+        "docs/reports/all-projects-governance/hub-entry/manga-routing.json"
+      ],
+      "condition": "Only exact unchanged after-hashes; never reset original checkout"
+    },
+    "state_prefix_sha256": "1a7508f298ae38e2f4938122eb6d580a32f963634f054195cbc4bafe4b90b4bc",
+    "startup_bytes": 8133,
+    "protected_before": {
+      "head": "0ca1ee547990fd876e9917c8c6ee1fa7d2bb8142",
+      "branch": "agent/governance-closure-20260812",
+      "index_sha256": "d68325d0fa8bc1c6c6442ef52f54d00a75b67ca3d95367fce0bdc33703349b5c",
+      "current_work_sha256": "a03d8cb9fcdf5679ac7a31177175ed14f8c852e55fdb585163aa9ecf600df87d"
+    },
+    "preflight_recovery": {
+      "failure": "Initial installer incorrectly assumed only one .agent/STATE.md substring across the registry; assertion stopped before original writes",
+      "new_evidence": "Universal Player has separate authorized Markdown routes; exact Manga current_state_paths block uniquely identified",
+      "repair": "Use named exact Manga hunk and assert all other25 parsed records unchanged; no broad replacement"
+    },
+    "checks": {
+      "entry_gate": {
+        "command": "python3 -B scripts/auto_advance_runner.py --mode check --task-id ALL-PROJECTS-CODEX-GOVERNANCE-V1",
+        "before_and_after_install_exit": 0,
+        "hard_blockers": 0,
+        "preserved_roadmap_soft_warnings": 10
+      },
+      "python": {
+        "command": "python3 -B -m unittest discover -s tests -q",
+        "exit": 0,
+        "passed": 193,
+        "seconds": 4.651,
+        "log_sha256": "2843c18b136e78fadf8361c7243c7a5e177a59d3dd6dbee4e4e7fbfeb960808f"
+      },
+      "node": {
+        "command": "node --test tests/test_hub_connection_view.mjs tests/test_hub_web_logic.mjs",
+        "exit": 0,
+        "passed": 17,
+        "preserved_warning": "Existing package type fallback for designs.js; no runtime/UI errors"
+      },
+      "required": {
+        "check_repo": 0,
+        "round_consistency": 0,
+        "check_registry": 0,
+        "schema": 0,
+        "ledger_validate": 0
+      },
+      "refresh": {
+        "root_role": "original",
+        "request_id": "hub-manga-routing-original-26-v1",
+        "resumed_after_probe_failure": false,
+        "initial_trace_note": "Detailed trace saved before consumer checks",
+        "refresh_exit": 2,
+        "replay_exit": 2,
+        "coverage": {
+          "registry_count": 26,
+          "local_count": 24,
+          "removed_local_count": 2,
+          "resolved_count": 2
+        },
+        "dispositions": {
+          "missing_declaration": 22,
+          "removed_local": 2,
+          "resolved": 2
+        },
+        "before_head": {
+          "sequence": 28,
+          "hash": "e925da38908bd78e1612561235a541a0cf8c6dfa6b3aa6e89981aa686498ccf4"
+        },
+        "after_head": {
+          "sequence": 56,
+          "hash": "f0ca58240ffdfb4a3032afb1e25e9dc735f8bdb2f92e34905abe7fe7f9abac37"
+        },
+        "source_read_attempts": [
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/ai-anime-short-factory",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/ai-music-foundry",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/audio-clone",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/cognitive-asset-library",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/computer-study-plan",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/desktop-downloads-scripts",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/desktop-jav-tools",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/desktop-magnet",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/desktop-tool",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/light-novel",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/light-novel",
+            "relative": "governance/round_state.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/light-novel",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Users/alalapi/PycharmProjects/manga-localizer",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Users/alalapi/PycharmProjects/manga-localizer",
+            "relative": ".agent/STATE.yaml"
+          },
+          {
+            "root": "/Users/alalapi/PycharmProjects/manga-localizer",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/mpv-clip-workbench",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/novel-continuation-agent",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/pixel-world-asset-forge",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/pycharm-agent-workspace",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/pycharm-misc-project",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/resilient-personal-network",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Users/alalapi/PycharmProjects/personal-control-hub/governance/programs/storage_governance",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/story-faceless-utopia",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/universal-player",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/wechat-article-scheduler",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/youtube-hq-downloader",
+            "relative": "hub.connection.yaml"
+          },
+          {
+            "root": "/Volumes/AI_WORK_SSD/Projects/zarathustra-adaptation",
+            "relative": "hub.connection.yaml"
+          }
+        ],
+        "root_path_checks": [
+          "/Volumes/AI_WORK_SSD/Projects/ai-anime-short-factory",
+          "/Volumes/AI_WORK_SSD/Projects/ai-anime-short-factory",
+          "/Volumes/AI_WORK_SSD/Projects/ai-music-foundry",
+          "/Volumes/AI_WORK_SSD/Projects/ai-music-foundry",
+          "/Volumes/AI_WORK_SSD/Projects/audio-clone",
+          "/Volumes/AI_WORK_SSD/Projects/audio-clone",
+          "/Volumes/AI_WORK_SSD/Projects/cognitive-asset-library",
+          "/Volumes/AI_WORK_SSD/Projects/cognitive-asset-library",
+          "/Volumes/AI_WORK_SSD/Projects/computer-study-plan",
+          "/Volumes/AI_WORK_SSD/Projects/computer-study-plan",
+          "/Volumes/AI_WORK_SSD/Projects/desktop-downloads-scripts",
+          "/Volumes/AI_WORK_SSD/Projects/desktop-downloads-scripts",
+          "/Volumes/AI_WORK_SSD/Projects/desktop-jav-tools",
+          "/Volumes/AI_WORK_SSD/Projects/desktop-jav-tools",
+          "/Volumes/AI_WORK_SSD/Projects/desktop-magnet",
+          "/Volumes/AI_WORK_SSD/Projects/desktop-magnet",
+          "/Volumes/AI_WORK_SSD/Projects/desktop-tool",
+          "/Volumes/AI_WORK_SSD/Projects/desktop-tool",
+          "/Volumes/AI_WORK_SSD/Projects/light-novel",
+          "/Volumes/AI_WORK_SSD/Projects/light-novel",
+          "/Users/alalapi/PycharmProjects/light_novel/governance/round_state.yaml",
+          "/Volumes/AI_WORK_SSD/Projects/light-novel/governance/round_state.yaml",
+          "/Users/alalapi/PycharmProjects/manga-localizer",
+          "/Users/alalapi/PycharmProjects/manga-localizer",
+          "/Volumes/AI_WORK_SSD/mpv-clip-workbench",
+          "/Volumes/AI_WORK_SSD/mpv-clip-workbench",
+          "/Volumes/AI_WORK_SSD/Projects/novel-continuation-agent",
+          "/Volumes/AI_WORK_SSD/Projects/novel-continuation-agent",
+          "/Users/alalapi/PycharmProjects/personal-control-hub",
+          "/Users/alalapi/PycharmProjects/personal-control-hub",
+          "/Volumes/AI_WORK_SSD/Projects/pixel-world-asset-forge",
+          "/Volumes/AI_WORK_SSD/Projects/pixel-world-asset-forge",
+          "/Volumes/AI_WORK_SSD/Projects/pycharm-agent-workspace",
+          "/Volumes/AI_WORK_SSD/Projects/pycharm-agent-workspace",
+          "/Volumes/AI_WORK_SSD/Projects/pycharm-misc-project",
+          "/Volumes/AI_WORK_SSD/Projects/pycharm-misc-project",
+          "/Volumes/AI_WORK_SSD/Projects/resilient-personal-network",
+          "/Volumes/AI_WORK_SSD/Projects/resilient-personal-network",
+          "/Users/alalapi/PycharmProjects/personal-control-hub/governance/programs/storage_governance",
+          "/Users/alalapi/PycharmProjects/personal-control-hub/governance/programs/storage_governance",
+          "/Volumes/AI_WORK_SSD/Projects/story-faceless-utopia",
+          "/Volumes/AI_WORK_SSD/Projects/story-faceless-utopia",
+          "/Volumes/AI_WORK_SSD/Projects/universal-player",
+          "/Volumes/AI_WORK_SSD/Projects/universal-player",
+          "/Volumes/AI_WORK_SSD/Projects/wechat-article-scheduler",
+          "/Volumes/AI_WORK_SSD/Projects/wechat-article-scheduler",
+          "/Volumes/AI_WORK_SSD/Projects/youtube-hq-downloader",
+          "/Volumes/AI_WORK_SSD/Projects/youtube-hq-downloader",
+          "/Volumes/AI_WORK_SSD/Projects/zarathustra-adaptation",
+          "/Volumes/AI_WORK_SSD/Projects/zarathustra-adaptation"
+        ],
+        "source_resolution_ids": [
+          "ai-anime-short-factory",
+          "ai-music-foundry",
+          "audio-clone",
+          "cognitive-asset-library",
+          "computer-study-plan",
+          "desktop-downloads-scripts",
+          "desktop-jav-tools",
+          "desktop-magnet",
+          "desktop-tool",
+          "game-removed-local",
+          "light-novel",
+          "manga-localizer",
+          "manga-removed-local",
+          "mpv-clip-workbench",
+          "novel-continuation-agent",
+          "personal-control-hub",
+          "pixel-world-asset-forge",
+          "pycharm-agent-workspace",
+          "pycharm-misc-project",
+          "resilient-personal-network",
+          "storage_governance",
+          "story-faceless-utopia",
+          "universal-player",
+          "wechat-article-scheduler",
+          "youtube-hq-downloader",
+          "zarathustra-adaptation"
+        ],
+        "removed_zero_root_reads": true,
+        "ordinary_source_reads": 0,
+        "replay_source_reads": 0,
+        "replay_appends": 0,
+        "history_prefix_preserved": true,
+        "other25_changed_fields": {
+          "ai-anime-short-factory": [
+            "authority",
+            "observed_at"
+          ],
+          "ai-music-foundry": [
+            "authority",
+            "observed_at"
+          ],
+          "audio-clone": [
+            "authority",
+            "observed_at"
+          ],
+          "cognitive-asset-library": [
+            "authority",
+            "observed_at"
+          ],
+          "computer-study-plan": [
+            "authority",
+            "observed_at"
+          ],
+          "desktop-downloads-scripts": [
+            "authority",
+            "observed_at"
+          ],
+          "desktop-jav-tools": [
+            "authority",
+            "observed_at"
+          ],
+          "desktop-magnet": [
+            "authority",
+            "observed_at"
+          ],
+          "desktop-tool": [
+            "authority",
+            "observed_at"
+          ],
+          "game-removed-local": [
+            "authority",
+            "observed_at"
+          ],
+          "light-novel": [
+            "authority",
+            "observed_at"
+          ],
+          "manga-localizer": [
+            "authority",
+            "business",
+            "declaration",
+            "disposition",
+            "errors",
+            "field_provenance",
+            "freshness",
+            "observed_at",
+            "sources",
+            "success",
+            "unknown_fields",
+            "update_key",
+            "validation_entry"
+          ],
+          "manga-removed-local": [
+            "authority",
+            "observed_at"
+          ],
+          "mpv-clip-workbench": [
+            "authority",
+            "observed_at"
+          ],
+          "novel-continuation-agent": [
+            "authority",
+            "observed_at"
+          ],
+          "personal-control-hub": [
+            "authority",
+            "observed_at"
+          ],
+          "pixel-world-asset-forge": [
+            "authority",
+            "observed_at"
+          ],
+          "pycharm-agent-workspace": [
+            "authority",
+            "observed_at"
+          ],
+          "pycharm-misc-project": [
+            "authority",
+            "observed_at"
+          ],
+          "resilient-personal-network": [
+            "authority",
+            "observed_at"
+          ],
+          "storage_governance": [
+            "authority",
+            "observed_at"
+          ],
+          "story-faceless-utopia": [
+            "authority",
+            "observed_at"
+          ],
+          "universal-player": [
+            "authority",
+            "observed_at"
+          ],
+          "wechat-article-scheduler": [
+            "authority",
+            "observed_at"
+          ],
+          "youtube-hq-downloader": [
+            "authority",
+            "observed_at"
+          ],
+          "zarathustra-adaptation": [
+            "authority",
+            "observed_at"
+          ]
+        },
+        "existing_light_novel_catchup": "No Light Novel business/source change in original Hub: already resolved before this request. The source-stage catch-up is recorded separately.",
+        "full_preview_parity_rows": 26,
+        "feishu_disabled": true,
+        "service_list_and_detail_count": 26,
+        "manga_known": 20,
+        "manga_unknown": 1,
+        "manga_completed_accepted": false,
+        "manga_progress": [
+          140,
+          199
+        ],
+        "manga_blockers": 3,
+        "current_snapshot_sha256": "9df6f40b87999b9befa7b75530ecbda769a3493b6d5ab36f52a085cc9c4c14c8"
+      },
+      "http_api": {
+        "status": "PASS",
+        "actual_original_http": true,
+        "all_list_detail_count": 26,
+        "http_calls": [
+          {
+            "path": "/api/projects?limit=100",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/ai-anime-short-factory",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/ai-music-foundry",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/audio-clone",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/cognitive-asset-library",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/computer-study-plan",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/desktop-downloads-scripts",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/desktop-jav-tools",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/desktop-magnet",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/desktop-tool",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/game-removed-local",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/light-novel",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/manga-localizer",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/manga-removed-local",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/mpv-clip-workbench",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/novel-continuation-agent",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/personal-control-hub",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/pixel-world-asset-forge",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/pycharm-agent-workspace",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/pycharm-misc-project",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/resilient-personal-network",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/storage_governance",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/story-faceless-utopia",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/universal-player",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/wechat-article-scheduler",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/youtube-hq-downloader",
+            "status": 200
+          },
+          {
+            "path": "/api/projects/zarathustra-adaptation",
+            "status": 200
+          },
+          {
+            "path": "/api/projects?q=manga-localizer&status=blocked",
+            "status": 200
+          },
+          {
+            "path": "/api/projects?freshness=removed_local",
+            "status": 200
+          }
+        ],
+        "manga": {
+          "source": "resolved",
+          "business_status": "blocked",
+          "progress": [
+            140,
+            199
+          ],
+          "blockers": 3,
+          "completed": false,
+          "accepted": false
+        },
+        "missing_declarations": 22,
+        "removed_disabled": 2,
+        "normal_get_only": true,
+        "auth": "Native session bootstrap; ephemeral cookie retained only in memory and never logged"
+      },
+      "http_source_read_guard": {
+        "source_access_attempts": {
+          "refresh": 0,
+          "root_check": 0,
+          "source_read": 0
+        },
+        "scope": "Real original Hub HTTP/UI; SourceResolver boundary instrumented to fail external access"
+      },
+      "preservation": {
+        "registered_original_hashes": 33,
+        "task_owned_changed_files": 6,
+        "all_other_registered_files_unchanged": true,
+        "head_branch_index_current_work_unchanged": true,
+        "raw_state_prefix_unchanged": true,
+        "non_cursor_status_preserved_with_two_owned_new_files": true,
+        "index_sha256": "d68325d0fa8bc1c6c6442ef52f54d00a75b67ca3d95367fce0bdc33703349b5c",
+        "head": "0ca1ee547990fd876e9917c8c6ee1fa7d2bb8142"
+      },
+      "ui": {
+        "tool": "mcp__cua_repl (native tool output in this Goal)",
+        "original_server": "scripts/hub_server.py, literal loopback with temporary fail-on-source-read instrumentation",
+        "tab": 4,
+        "observed_at": "2026-09-08T13:26:40.023398+00:00",
+        "project_list": "26 个项目 · 22 项来源需关注; Manga Localizer 受阻/已更新; two removed rows 已从本地移除",
+        "manga_detail": "Current status blocked/受阻, exact .agent/STATE.yaml source, all3 blocker records and full next step visible; native screenshot visually checked",
+        "removed_details": {
+          "manga-removed-local": "已从本地移除; 刷新此项目 disabled; no source location",
+          "game-removed-local": "已从本地移除; 刷新此项目 disabled; no source location"
+        },
+        "console_errors_and_warnings": 0,
+        "network": {
+          "cdp_truncated": false,
+          "cdp_has_more": false,
+          "loading_failed": 0,
+          "responses": [
+            {
+              "path": "/",
+              "status": 200
+            },
+            {
+              "path": "/assets/hub.css",
+              "status": 200
+            },
+            {
+              "path": "/assets/hub.js",
+              "status": 200
+            },
+            {
+              "path": "/assets/common.js",
+              "status": 200
+            },
+            {
+              "path": "/assets/designs.js",
+              "status": 200
+            },
+            {
+              "path": "/assets/connection_view.mjs",
+              "status": 200
+            },
+            {
+              "path": "/api/session",
+              "status": 200
+            },
+            {
+              "path": "/assets/icon.svg",
+              "status": 200
+            },
+            {
+              "path": "/api/projects/game-removed-local",
+              "status": 200
+            }
+          ]
+        },
+        "effects": "Project navigation/ordinary reads only; no refresh/design action in UI; temporary server and tab closed"
+      },
+      "fresh_hub_only_reader": {
+        "agent": "/root/hub_manga_stage_b_handoff_reader",
+        "verdict": "PASS for Hub-only readability/traceability; overall governance and actual image recovery incomplete",
+        "read_scope": "Hub AGENTS -> STATE -> routed docs, registry, current CLI, full previews and SQLite mode=ro only; no external roots/writes/refresh/Git/network",
+        "observed_at": "2026-09-08T13:27:30.202651+00:00",
+        "registered": 26,
+        "local": 24,
+        "removed": 2,
+        "resolved": 2,
+        "missing": 22,
+        "typed_fields_checked": 546,
+        "proven_known_fields": 38,
+        "explicit_unknown_fields": 508,
+        "inconsistencies": 0,
+        "preview_parity": 26,
+        "manga": {
+          "known": 20,
+          "unknown": 1,
+          "completed": false,
+          "accepted": false,
+          "progress": [
+            140,
+            199
+          ],
+          "issues": 56,
+          "pending": 3,
+          "counting_basis": "Historical owner-review batch revision485; not new database reads, repaired-image count or export acceptance",
+          "source_sha256": "1d400617e6189437fc5886419dca776f6a5c0a11b7290318fe8798ae71a01dd7",
+          "declaration_sha256": "a6f6baea6521056ef1b2fc52b9731f68a9a646de395fb5573f6a5743b5ba3f69"
+        },
+        "head": {
+          "sequence": 56,
+          "hash": "f0ca58240ffdfb4a3032afb1e25e9dc735f8bdb2f92e34905abe7fe7f9abac37"
+        },
+        "request_id": "hub-manga-routing-original-26-v1",
+        "registry_sha256": "4c862e89980105f848fe91ae55d530e510142d8096479987a8eaa60605b5aab7",
+        "authority_sha256": "7bbf4b8c64c5c0471aaea5380e35aaea479ef250613011e656c5f8aa66f311ee",
+        "feishu_disabled": true,
+        "metadata_timing_note": "Reader saw pre-verification status before Root registered final checks. The same receipt now records completed refresh and review pending; no source/business candidate change."
+      }
+    },
+    "semantic_files": [
+      {
+        "path": "STATE.yaml",
+        "sha256": "b2265e710349bd1791f559bd3a9a7e9cd0decf7e1cb9d3e0ced971ec782ed281",
+        "mode": 420
+      },
+      {
+        "path": "data/registry/external_projects.yaml",
+        "sha256": "4c862e89980105f848fe91ae55d530e510142d8096479987a8eaa60605b5aab7",
+        "mode": 420
+      },
+      {
+        "path": "docs/reports/all-projects-governance/hub-entry/manga-routing-contract.md",
+        "sha256": "1bf1f1e9108243e4dfb0eb5f3e00bee2a8d42548b6d441816adcd874f2c923c9",
+        "mode": 420
+      },
+      {
+        "path": "src/hub/services/project_registry_service.py",
+        "sha256": "5bb517419ab413afc13f358a4b26565d9bf2d12b42df38b1028d96c4644f1294",
+        "mode": 420
+      },
+      {
+        "path": "tests/test_hub_project_service.py",
+        "sha256": "f6d01c9f6aedc44de547a03420d28d4bf6c998b451727af2cb6790670019c7c6",
+        "mode": 420
+      },
+      {
+        "path": "tests/test_hub_registry_storage.py",
+        "sha256": "3e40084124e5dbf6918bff416b6a7cd66ae0916800e43fbef8ae55e75f287f50",
+        "mode": 420
+      }
+    ],
+    "semantic_sha256": "7f868e13e2ca8c0bfc270f0a2ed3e290de1b055ddb83d7d4a65019e0684fc526",
+    "identity_recipe": "SHA256 sorted compact UTF8 JSON semantic_files; STATE normalized as YAML-to-JSON with only listed all_projects_governance decision/observation metadata omitted. Manifest/evidence/review/delivery JSON itself excluded to avoid self-reference.",
+    "delivery": {
+      "status": "pending_main_receipt",
+      "remote": "https://github.com/alalapi-0/personal-control-hub",
+      "branch": "main",
+      "receipt_identity": "This metadata-only commit; exact commit and CI observation recorded in native Goal output after push, avoiding self-reference"
+    }
+  }
 }
