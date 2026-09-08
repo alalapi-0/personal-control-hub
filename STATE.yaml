@@ -25,8 +25,8 @@ all_projects_governance:
   lane: GOVERNED
   evidence: docs/reports/all-projects-governance/hub-entry/
   candidate_manifest: docs/reports/all-projects-governance/hub-entry/candidate.json
-  candidate_status: Stage A approved; pending main delivery
-  next_action: Commit approved Stage A, push main and verify remote CI.
+  candidate_status: Stage A source delivered; original installation pending
+  next_action: Verify receipt main CI, then install accepted source into original Hub by exact CAS.
   coverage:
     local: 24
     removed_local: 2
@@ -41,5 +41,7 @@ all_projects_governance:
   history_ref: docs/reports/all-projects-governance/hub-entry/baseline.json#preserved_goal_history
   contract: docs/reports/all-projects-governance/hub-entry/contract.md
   delivery:
-    status: pending
-    prior_receipts_ref: docs/reports/all-projects-governance/hub-entry/baseline.json#preserved_goal_history.delivery
+    status: stage_a_source_delivered_stage_b_pending
+    receipt: docs/reports/all-projects-governance/hub-entry/delivery.json
+    code_commit: b5d93484089240ff54ed6049a3d1a38327c219ed
+    ci: 34212717933

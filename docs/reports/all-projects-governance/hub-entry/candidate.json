@@ -1,7 +1,7 @@
 {
   "contract": "ALL-PROJECTS-CODEX-GOVERNANCE-V1-HUB-ENTRY-INTEGRATION-v1",
   "stage": "A",
-  "status": "stage_a_approved_pending_delivery",
+  "status": "stage_a_source_delivered_stage_b_pending",
   "base_commit": "20eff90cf46eefcf127ba5f19c9dbb397d4e770b",
   "semantic_sha256": "11dc4a9cb4f615dbd05cdaf58958e6ce0d30518a6105d2f8b025c16c0524137d",
   "identity_method": "SHA256 of canonical UTF-8 JSON path -> {sha256,mode}, sorted keys, compact separators, ensure_ascii=False; STATE semantic bytes are parsed YAML canonical JSON with only all_projects_governance candidate_status,next_action,delivery removed. All other files raw bytes. Modes are stat.S_IMODE decimal. Metadata files excluded; no self hash.",
