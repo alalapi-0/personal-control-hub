@@ -1,0 +1,60 @@
+{
+  "contract": "ALL-PROJECTS-CODEX-GOVERNANCE-V1-HUB-ENTRY-INTEGRATION-v1",
+  "stage": "B",
+  "semantic_sha256": "3c086242c7ecae7f74eb4d23ae463b8c062b310e5bec7275e90d0d596e8963f1",
+  "status": "installation_accepted_main_verified",
+  "repository": "https://github.com/alalapi-0/personal-control-hub",
+  "default_branch": "main",
+  "source_code_commit": "b5d93484089240ff54ed6049a3d1a38327c219ed",
+  "source_receipt_commit": "62767bdbbcd0f6ea0846aaa33d1a4d92afc24492",
+  "evidence_commit": "e537b83dff8da74dc0006eef124f9dba4f6d4f4c",
+  "observed_remote_main": "e537b83dff8da74dc0006eef124f9dba4f6d4f4c",
+  "remote_match_verified": true,
+  "push": "normal fast-forward HEAD:refs/heads/main; no force or protection bypass",
+  "ci": {
+    "id": 34215509371,
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "e537b83dff8da74dc0006eef124f9dba4f6d4f4c",
+    "url": "https://github.com/alalapi-0/personal-control-hub/actions/runs/34215509371"
+  },
+  "source_ci": [
+    {
+      "id": 34212717933,
+      "conclusion": "success"
+    },
+    {
+      "id": 34212818506,
+      "conclusion": "success"
+    }
+  ],
+  "review": {
+    "judge": "/root/hub_entry_stage_b_judge PASS",
+    "governor": "/root/hub_connection_governor APPROVE"
+  },
+  "original_installation": {
+    "accepted": true,
+    "head_preserved": "0ca1ee547990fd876e9917c8c6ee1fa7d2bb8142",
+    "index_preserved": "d68325d0fa8bc1c6c6442ef52f54d00a75b67ca3d95367fce0bdc33703349b5c",
+    "original_git_delivery": false,
+    "python_tests": 193,
+    "node_tests": 17,
+    "source_bootstrap_tests": 14,
+    "actual_refresh": {
+      "registered": 26,
+      "resolved": 1,
+      "missing_declaration": 23,
+      "removed_local": 2
+    },
+    "previews": "26 complete JSON/Markdown/disabled-Feishu records identical; writeback disabled",
+    "runtime": "normal HTTP/browser, immutable replay, restart and Hub-only reader passed"
+  },
+  "remaining": [
+    "23 local project declarations and project governance",
+    "Global Codex versioned sources and installed-file verification",
+    "Manga actual generation and full review/redo chain",
+    "All eligible pre-existing uncommitted local project contents: later serial repository delivery units, including original Hub-only UI/history dependencies; no such broad delivery claimed by this receipt"
+  ],
+  "next_action": "Resume Manga supported recovery diagnosis and pending-content inventory; continue serial local-project units.",
+  "receipt_identity": "This receipt records the preceding evidence commit; its own commit and CI are verified in native delivery output, avoiding a self-containing hash."
+}

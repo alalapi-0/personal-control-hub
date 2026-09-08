@@ -1,7 +1,7 @@
 {
   "contract": "ALL-PROJECTS-CODEX-GOVERNANCE-V1-HUB-ENTRY-INTEGRATION-v1",
   "stage": "B",
-  "status": "stage_b_approved_pending_main_delivery",
+  "status": "stage_b_delivered_main_verified",
   "source_root": "/Users/alalapi/.codex/worktrees/all-projects-governance-hub",
   "installation_root": "/Users/alalapi/PycharmProjects/personal-control-hub",
   "source_commit": "62767bdbbcd0f6ea0846aaa33d1a4d92afc24492",

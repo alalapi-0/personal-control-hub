@@ -25,8 +25,8 @@ all_projects_governance:
   lane: GOVERNED
   evidence: docs/reports/all-projects-governance/hub-entry/
   candidate_manifest: docs/reports/all-projects-governance/hub-entry/installation.json
-  candidate_status: Stage B accepted; main receipt pending
-  next_action: Deliver installation evidence to main and verify CI.
+  candidate_status: Stage B delivered; rollout pending
+  next_action: Resume Manga recovery and pending-content delivery.
   coverage:
     local: 24
     removed_local: 2
@@ -41,5 +41,5 @@ all_projects_governance:
   history_ref: docs/reports/all-projects-governance/hub-entry/baseline.json#preserved_goal_history
   contract: docs/reports/all-projects-governance/hub-entry/contract.md
   delivery:
-    status: stage_b_accepted_pending_main
-    source_commit: b5d93484089240ff54ed6049a3d1a38327c219ed
+    status: main_verified
+    source_commit: e537b83dff8da74dc0006eef124f9dba4f6d4f4c
