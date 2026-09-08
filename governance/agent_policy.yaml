@@ -155,3 +155,19 @@ task_state_policy:
   completed_means: "Agent 声称完成并提供证据。"
   accepted_means: "用户或明确 Gate 验收通过。"
   rule: "completed 与 accepted 必须分离记录。"
+
+# Applies only after the current owner activates the named task. Selection is not authorization.
+task_overrides:
+  ALL-PROJECTS-CODEX-GOVERNANCE-V1:
+    activation: current_owner_prompt_required
+    execution_document: docs/all_projects_governance_execution.md
+    state_entry: STATE.yaml#all_projects_governance
+    executor: codex
+    cursor_access: forbidden
+    external_project_writes: current_task_document_scope_only
+    git_delivery: accepted_unit_to_verified_default_branch
+    force_push: false
+    bypass_protection: false
+    real_feishu: disabled
+    paid_generation: additional_authority_required
+    runner_grants_authority: false

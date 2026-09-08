@@ -3,8 +3,11 @@
 
 from __future__ import annotations
 
+from governance_scope import add_scope_argument, activate_scope, selected_task, excluded_path
+
 import argparse
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -20,6 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 CORE_FILES = [
     "README.md",
+    "STATE.yaml",
     "AGENTS.md",
     "project.yaml",
     "docs/00_start_here.md",
@@ -55,6 +59,7 @@ REQUIRED_MCP_IDS = {
 
 SCAN_ROOTS = [
     "README.md",
+    "STATE.yaml",
     "AGENTS.md",
     "project.yaml",
     "docs",
@@ -118,22 +123,30 @@ def _load_yaml(relative: str, hard_blockers: list[str]) -> Any:
 
 def _iter_scan_files() -> list[Path]:
     files: list[Path] = []
+
+    def visit(path: Path) -> None:
+        relative = path.relative_to(ROOT)
+        if excluded_path(relative) or any(part in SKIP_DIRS for part in relative.parts):
+            return
+        # Never follow aliases into another authority, including the excluded host.
+        if path.is_symlink():
+            return
+        if path.is_file():
+            if path.suffix in SCAN_SUFFIXES and not path.name.startswith(".env"):
+                files.append(path)
+            return
+        if not path.is_dir():
+            return
+        with os.scandir(path) as entries:
+            names = sorted(entry.name for entry in entries)
+        for name in names:
+            child = path / name
+            # Reject by name before any child stat, open or directory descent.
+            if not excluded_path(child.relative_to(ROOT)) and name not in SKIP_DIRS:
+                visit(child)
+
     for item in SCAN_ROOTS:
-        root = ROOT / item
-        if not root.exists():
-            continue
-        if root.is_file():
-            if root.suffix in SCAN_SUFFIXES and root.name != ".env":
-                files.append(root)
-            continue
-        for path in root.rglob("*"):
-            if not path.is_file():
-                continue
-            if any(part in SKIP_DIRS for part in path.relative_to(ROOT).parts):
-                continue
-            if path.name == ".env" or path.suffix not in SCAN_SUFFIXES:
-                continue
-            files.append(path)
+        visit(ROOT / item)
     return sorted(set(files))
 
 
@@ -157,7 +170,7 @@ def _scan_for_secrets() -> list[str]:
 
 
 def _check_core_files(hard_blockers: list[str]) -> None:
-    missing = [relative for relative in CORE_FILES if not (ROOT / relative).is_file()]
+    missing = [relative for relative in CORE_FILES if not excluded_path(relative) and not (ROOT / relative).is_file()]
     if missing:
         hard_blockers.extend(f"核心文件缺失：{relative}" for relative in missing)
 
@@ -295,6 +308,21 @@ def run_gate(requested_round: str | None = None) -> dict[str, Any]:
     soft_warnings: list[str] = []
 
     _check_core_files(hard_blockers)
+    if selected_task():
+        for file in ("governance/agent_policy.yaml", "data/gates/auto_advance_policy.yaml"):
+            policy = _load_yaml(file, hard_blockers) or {}
+            scope = policy.get("task_overrides", {}).get(selected_task(), {})
+            expected = {"executor": "codex", "cursor_access": "forbidden",
+                        "activation": "current_owner_prompt_required", "runner_grants_authority": False,
+                        "force_push": False, "bypass_protection": False, "real_feishu": "disabled"}
+            if any(scope.get(k) != v for k, v in expected.items()):
+                hard_blockers.append(file + ": task scope boundary drift")
+    state = _load_yaml("STATE.yaml", hard_blockers)
+    if not isinstance(state, dict) or state.get("metadata", {}).get("authority") != "canonical":
+        hard_blockers.append("STATE.yaml must be the canonical current state")
+    boot = [ROOT / "AGENTS.md", ROOT / "STATE.yaml"]
+    if all(p.is_file() for p in boot) and sum(p.stat().st_size for p in boot) > 8192:
+        hard_blockers.append("Startup packet exceeds 8192 bytes")
     rounds = _check_round_tasks(hard_blockers, soft_warnings)
     _check_policy(hard_blockers)
     _check_mcp_registry(hard_blockers)
@@ -369,7 +397,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="personal-control-hub local agent gate")
     parser.add_argument("--round", dest="round_id", help="检查指定 round 是否可自动推进")
     parser.add_argument("--json", action="store_true", help="输出 JSON")
+    add_scope_argument(parser)
     args = parser.parse_args(argv)
+    activate_scope(args.task_id)
 
     result = run_gate(args.round_id)
     if args.json:

@@ -1,0 +1,2529 @@
+{
+  "schema_version": "1.0",
+  "task_id": "ALL-PROJECTS-CODEX-GOVERNANCE-V1",
+  "observed_at": "2026-09-08T03:11:03.264320+00:00",
+  "registry_source": "/Users/alalapi/PycharmProjects/personal-control-hub/data/registry/external_projects.yaml",
+  "registry_sha256": "18543d67938b1614da937366f07a5f14096ac816f43ca127bce2c830367deefc",
+  "coverage": {
+    "registered_projects": 24,
+    "native_saved_records": 35,
+    "extra_native_dispositions": 21,
+    "confirmed_local_acceptance_denominator": 24,
+    "unresolved_extra_records_remain_visible": false,
+    "registry_records_after_correction": 26,
+    "removed_local_records": 2,
+    "cloud_governance_denominator": 0
+  },
+  "projects": [
+    {
+      "project_id": "storage_governance",
+      "name": "StorageGovernance",
+      "root_path": "/Users/alalapi/PycharmProjects/personal-control-hub/governance/programs/storage_governance",
+      "canonical_root": "/Users/alalapi/PycharmProjects/personal-control-hub/governance/programs/storage_governance",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STATE.yaml",
+          "resolved": "/Users/alalapi/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STATE.yaml",
+          "exists": true
+        }
+      ],
+      "state_disposition": "sole_execution_current_state",
+      "native_aliases": [],
+      "git": {
+        "status": "git",
+        "git_root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+        "branch": "agent/governance-closure-20260812",
+        "upstream": "origin/agent/governance-closure-20260812",
+        "remote": "https://github.com/alalapi-0/personal-control-hub.git",
+        "dirty_paths": [
+          "M AGENTS.md",
+          " M STATE.yaml",
+          " M data/gates/auto_advance_policy.yaml",
+          " M data/mcp/mcp_approval_policy.yaml",
+          " M governance/agent_policy.yaml",
+          " M prompts/codex_project_driver.md",
+          " M prompts/cursor_project_driver.md",
+          " M scripts/agent_gate.py",
+          " M scripts/auto_advance_runner.py",
+          "?? .playwright-mcp/",
+          "?? data/design_governance/design-store.json.lock",
+          "?? data/design_governance/multi-project-figma-redesign-v1.json",
+          "?? docs/all_projects_governance_execution.md",
+          "?? docs/global_agent_governance_execution.md",
+          "?? docs/reports/ui_design_governance/figma-source-observation-v1.json",
+          "?? docs/reports/ui_design_governance/unit-08/delivery.json",
+          "?? docs/reports/ui_design_governance/unit-09/delivery.json",
+          "?? docs/reports/ui_design_governance/unit-10/delivery.json",
+          "?? docs/reports/ui_design_governance/unit-11/delivery.json",
+          "?? docs/reports/ui_design_governance/unit-13/delivery.json",
+          "?? docs/reports/ui_design_governance/unit-14/delivery.json",
+          "?? prompts/all_projects_governance_goal_mode.md"
+        ],
+        "ownership": "pre-existing changes preserved; no writer authority inferred from status",
+        "main_delivery": "normal_push_possible_after_acceptance",
+        "delivery": "belongs_to_parent_repository",
+        "server": {
+          "archived": false,
+          "default_branch": "main",
+          "permissions": {
+            "push": true
+          }
+        },
+        "default_branch_observation": {
+          "name": "main",
+          "protected": false,
+          "sha": "15a4971061b60b43255fa709a48aaae08bb64b45"
+        },
+        "local_ci_files": []
+      }
+    },
+    {
+      "project_id": "personal-control-hub",
+      "name": "personal-control-hub",
+      "root_path": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "canonical_root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/PycharmProjects/personal-control-hub/STATE.yaml",
+          "resolved": "/Users/alalapi/PycharmProjects/personal-control-hub/STATE.yaml",
+          "exists": true
+        }
+      ],
+      "state_disposition": "compact_hub_current_state_not_storage_execution_authority",
+      "native_aliases": [
+        "143aa8bc-4e11-457c-ad2a-5d6ca478a280"
+      ],
+      "git": {
+        "status": "git",
+        "git_root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+        "branch": "agent/governance-closure-20260812",
+        "upstream": "origin/agent/governance-closure-20260812",
+        "remote": "https://github.com/alalapi-0/personal-control-hub.git",
+        "dirty_paths": [
+          "M AGENTS.md",
+          " M STATE.yaml",
+          " M data/gates/auto_advance_policy.yaml",
+          " M data/mcp/mcp_approval_policy.yaml",
+          " M governance/agent_policy.yaml",
+          " M prompts/codex_project_driver.md",
+          " M prompts/cursor_project_driver.md",
+          " M scripts/agent_gate.py",
+          " M scripts/auto_advance_runner.py",
+          "?? .playwright-mcp/",
+          "?? data/design_governance/design-store.json.lock",
+          "?? data/design_governance/multi-project-figma-redesign-v1.json",
+          "?? docs/all_projects_governance_execution.md",
+          "?? docs/global_agent_governance_execution.md",
+          "?? docs/reports/ui_design_governance/figma-source-observation-v1.json",
+          "?? docs/reports/ui_design_governance/unit-08/delivery.json",
+          "?? docs/reports/ui_design_governance/unit-09/delivery.json",
+          "?? docs/reports/ui_design_governance/unit-10/delivery.json",
+          "?? docs/reports/ui_design_governance/unit-11/delivery.json",
+          "?? docs/reports/ui_design_governance/unit-13/delivery.json",
+          "?? docs/reports/ui_design_governance/unit-14/delivery.json",
+          "?? prompts/all_projects_governance_goal_mode.md"
+        ],
+        "ownership": "pre-existing changes preserved; no writer authority inferred from status",
+        "main_delivery": "normal_push_possible_after_acceptance",
+        "server": {
+          "archived": false,
+          "default_branch": "main",
+          "permissions": {
+            "push": true
+          }
+        },
+        "default_branch_observation": {
+          "name": "main",
+          "protected": false,
+          "sha": "15a4971061b60b43255fa709a48aaae08bb64b45"
+        },
+        "local_ci_files": []
+      }
+    },
+    {
+      "project_id": "manga-localizer",
+      "name": "Manga Localizer",
+      "root_path": "/Users/alalapi/PycharmProjects/manga-localizer",
+      "canonical_root": "/Users/alalapi/PycharmProjects/manga-localizer",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": false,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": ".agent/STATE.md",
+          "resolved": "/Users/alalapi/PycharmProjects/manga-localizer/.agent/STATE.md",
+          "exists": true
+        }
+      ],
+      "state_disposition": "identity confirmed; current owner diagnosis authorized; storage exclusion preserved",
+      "native_aliases": [
+        "2eef94be-d754-46b7-b3cc-3a57bc305e49"
+      ],
+      "git": {
+        "status": "git",
+        "git_root": "/Users/alalapi/PycharmProjects/manga-localizer",
+        "branch": "main",
+        "upstream": "origin/main",
+        "remote": "https://github.com/alalapi-0/manga-localizer.git",
+        "dirty_paths": [
+          "M .agent/CURSOR_LOOP_PROMPT.md",
+          " M .agent/STATE.md",
+          " M .agents/skills/manga-final-review-loop/SKILL.md",
+          " M backend/src/manga_localizer/cloud_image_cli.py",
+          " M backend/src/manga_localizer/database.py",
+          " M backend/src/manga_localizer/main.py",
+          " M backend/src/manga_localizer/schemas.py",
+          " M backend/src/manga_localizer/services/clean_plates.py",
+          " M backend/src/manga_localizer/services/cloud_full_page_clean_plates.py",
+          " M backend/src/manga_localizer/services/final_reviews.py",
+          " M backend/src/manga_localizer/services/masks.py",
+          " M backend/src/manga_localizer/services/page_lineage.py",
+          " M backend/src/manga_localizer/services/projects.py",
+          " M backend/src/manga_localizer/services/translations.py",
+          " M backend/src/manga_localizer/services/typesets.py",
+          " M backend/tests/test_api_projects.py",
+          " M backend/tests/test_cloud_full_page_clean_plates.py",
+          " M backend/tests/test_cloud_image_cli.py",
+          " M backend/tests/test_final_reviews.py",
+          " M backend/tests/test_page_lineage.py",
+          " M frontend/src/App.tsx",
+          " M frontend/src/api/client.ts",
+          " M frontend/src/components/Sidebar.tsx",
+          " M frontend/src/components/Workbench.test.tsx",
+          " M frontend/src/finalReview/FinalReviewPage.test.tsx",
+          " M frontend/src/finalReview/FinalReviewPage.tsx",
+          " M frontend/src/finalReview/store.test.ts",
+          " M frontend/src/finalReview/store.ts",
+          " M frontend/src/store/workbench.test.ts",
+          " M frontend/src/store/workbench.ts"
+        ],
+        "ownership": "pre-existing changes preserved; no writer authority inferred from status",
+        "main_delivery": "normal_push_possible_after_acceptance",
+        "server": {
+          "archived": false,
+          "default_branch": "main",
+          "permissions": {
+            "push": true
+          }
+        },
+        "default_branch_observation": {
+          "name": "main",
+          "protected": false,
+          "sha": "9196143d45fc29a18edcf65139134ebcdcb567e7"
+        },
+        "local_ci_files": [
+          "ci.yml"
+        ]
+      }
+    },
+    {
+      "project_id": "universal-player",
+      "name": "Universal Player",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/universal-player",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/universal-player",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/PycharmProjects/universal-player/.agent/STATE.md",
+          "resolved": "/Volumes/AI_WORK_SSD/Projects/universal-player/.agent/STATE.md",
+          "exists": true
+        }
+      ],
+      "state_disposition": "declared_product_truth",
+      "native_aliases": [],
+      "git": {
+        "status": "git",
+        "git_root": "/Volumes/AI_WORK_SSD/Projects/universal-player",
+        "branch": "main",
+        "upstream": "origin/main",
+        "remote": "https://github.com/alalapi-0/universal-player.git",
+        "dirty_paths": [
+          "M .agent/STATE.md",
+          " M AGENTS.md",
+          " M Apps/UniversalPlayerIOS/UniversalPlayerIOSApp.swift",
+          " M Apps/UniversalPlayerMac/UniversalPlayerMacApp.swift",
+          " M Config/Base.xcconfig",
+          " M Package.swift",
+          " M README.md",
+          " M Scripts/fetch-vlckit.sh",
+          " M Scripts/generate-test-media.sh",
+          " M Sources/UniversalPlayerEngines/VLCEngine.swift",
+          " M TestMedia/README.md",
+          " M docs/ARCHITECTURE.md",
+          " M docs/PRODUCT_SPEC.md",
+          " M docs/THIRD_PARTY.md",
+          " M docs/USER_GUIDE.md",
+          "?? Config/ExternalVLCKitPackage.swift",
+          "?? Config/ExternalVLCKitTreeManifest.json",
+          "?? Scripts/external-build",
+          "?? Scripts/media_contract.py",
+          "?? Scripts/storage_governance.py",
+          "?? Scripts/test-external-build-guard.sh",
+          "?? Scripts/test_storage_governance.py"
+        ],
+        "ownership": "pre-existing changes preserved; no writer authority inferred from status",
+        "main_delivery": "normal_push_possible_after_acceptance",
+        "server": {
+          "archived": false,
+          "default_branch": "main",
+          "permissions": {
+            "push": true
+          }
+        },
+        "default_branch_observation": {
+          "name": "main",
+          "protected": false,
+          "sha": "bf0e6dfce882cff74799c300ff6c1c9b54615463"
+        },
+        "local_ci_files": []
+      }
+    },
+    {
+      "project_id": "ai-anime-short-factory",
+      "name": "AI Anime Short Factory",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/ai-anime-short-factory",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/ai-anime-short-factory",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/PycharmProjects/ai-anime-short-factory/.agent_runtime/agent-state.json",
+          "resolved": "/Volumes/AI_WORK_SSD/Projects/ai-anime-short-factory/.agent_runtime/agent-state.json",
+          "exists": true
+        }
+      ],
+      "state_disposition": "declared_unique_runtime_state",
+      "native_aliases": [
+        "local-1262eae64dc0085f95af2f5e1cfe92fc"
+      ],
+      "git": {
+        "status": "git",
+        "git_root": "/Volumes/AI_WORK_SSD/Projects/ai-anime-short-factory",
+        "branch": "agent/supervised-image-governance-20260812",
+        "upstream": "origin/agent/supervised-image-governance-20260812",
+        "remote": "https://github.com/alalapi-0/ai-anime-short-factory.git",
+        "dirty_paths": [
+          "M .gitignore",
+          " M README.md",
+          " M agent_layer.yaml",
+          " M agent_tools.yaml",
+          " M governance/repo_protocol_standard.yaml",
+          " M review_app/server/app.py",
+          " M review_app/server/studio_api.py",
+          " M review_app/static/off-frame-studio/app.js",
+          " M review_app/static/off-frame-studio/styles.css",
+          " M schemas/governance_round_state.schema.json",
+          " M schemas/image_generation_task.schema.json",
+          " M schemas/studio_animation_plan.schema.json",
+          " M schemas/studio_asset.schema.json",
+          " M schemas/studio_execution_candidate.schema.json",
+          " M schemas/studio_preparation_package.schema.json",
+          " M schemas/studio_quote.schema.json",
+          " M schemas/studio_real_image_batch.schema.json",
+          " M schemas/studio_real_image_run.schema.json",
+          " M schemas/studio_task.schema.json",
+          " M schemas/studio_technical_preview.schema.json",
+          " M schemas/studio_template.schema.json",
+          " M schemas/verification_run_manifest.schema.json",
+          " M scripts/agent_gate.py",
+          " M scripts/agent_verify.py",
+          " M scripts/check_project_structure.py",
+          " M scripts/governance_round.py",
+          " M src/anime_factory/agent_workflow_state.py",
+          " M src/anime_factory/real_image_execution.py",
+          " M src/anime_factory/studio_workbench.py",
+          " M tests/fake_openai_image_server.py",
+          " M tests/isolated_studio_server.py",
+          " M tests/playwright/generation_journey.spec.ts",
+          " M tests/playwright/studio_routes.spec.ts",
+          " M tests/playwright/studio_workbench.spec.ts",
+          " M tests/test_agent_gate.py",
+          " M tests/test_agent_verification.py",
+          " M tests/test_agent_workflow_state.py",
+          " M tests/test_execution_handoff_workflow.py",
+          " M tests/test_governance_execution_policy.py",
+          " M tests/test_real_image_execution.py",
+          " M tests/test_studio_routes.py",
+          " M tests/test_studio_workbench.py",
+          " M tests/test_supervised_image_worker.py",
+          "?? configs/storage_archives.json",
+          "?? docs/storage_archives.md",
+          "?? docs/storage_runtime.md",
+          "?? governance/active_contracts/GOV-EXPIRED-ZERO-POST-REISSUE-20260825-v1.yaml",
+          "?? governance/active_contracts/GOV-VIDEO-PREPARATION-20260813-v1.yaml",
+          "?? governance/active_contracts/GOV-VIDEO-PREPARATION-20260813-v2.yaml",
+          "?? governance/active_contracts/GOV-VIDEO-PREPARATION-20260813-v3.yaml",
+          "?? schemas/studio_real_image_batch_authority.schema.json",
+          "?? schemas/studio_template_binding.schema.json",
+          "?? scripts/real_image_batch_authority.py",
+          "?? scripts/storage_archive.py",
+          "?? scripts/storage_archive_checks.py",
+          "?? scripts/storage_runtime.py",
+          "?? src/anime_factory/template_binding.py",
+          "?? tests/test_real_image_batch_authority.py",
+          "?? tests/test_template_binding.py"
+        ],
+        "ownership": "pre-existing changes preserved; no writer authority inferred from status",
+        "main_delivery": "normal_push_possible_after_acceptance",
+        "server": {
+          "archived": false,
+          "default_branch": "main",
+          "permissions": {
+            "push": true
+          }
+        },
+        "default_branch_observation": {
+          "name": "main",
+          "protected": false,
+          "sha": "ff6db1c3051d709272fff35f37a5af30e4f708d4"
+        },
+        "local_ci_files": []
+      }
+    },
+    {
+      "project_id": "ai-music-foundry",
+      "name": "AI Music Foundry",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/ai-music-foundry",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/ai-music-foundry",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/PycharmProjects/ai-music-foundry/docs/STATUS.md",
+          "resolved": "/Volumes/AI_WORK_SSD/Projects/ai-music-foundry/docs/STATUS.md",
+          "exists": true
+        }
+      ],
+      "state_disposition": "declared_exact_current_capability_and_gaps",
+      "native_aliases": [],
+      "git": {
+        "status": "git",
+        "git_root": "/Volumes/AI_WORK_SSD/Projects/ai-music-foundry",
+        "branch": "main",
+        "upstream": "origin/main",
+        "remote": "https://github.com/alalapi-0/ai-music-foundry.git",
+        "dirty_paths": [
+          "M .env.example",
+          " M Makefile",
+          " M README.md",
+          " M docs/PROJECT_WORKSPACE_SPEC.md",
+          " M docs/STATUS.md",
+          " M src/music_foundry/application/services.py",
+          " M src/music_foundry/audio/separation.py",
+          " M src/music_foundry/cli.py",
+          " M src/music_foundry/web/app.py",
+          " M src/music_foundry/web/static/index.html",
+          " M tests/test_cli.py",
+          " M tests/test_stem_separation.py",
+          " M tests/test_web.py",
+          "?? scripts/external-uv",
+          "?? scripts/test-external-storage-guard.sh",
+          "?? src/music_foundry/storage_policy.py",
+          "?? tests/test_storage_policy.py"
+        ],
+        "ownership": "pre-existing changes preserved; no writer authority inferred from status",
+        "main_delivery": "normal_push_possible_after_acceptance",
+        "server": {
+          "archived": false,
+          "default_branch": "main",
+          "permissions": {
+            "push": true
+          }
+        },
+        "default_branch_observation": {
+          "name": "main",
+          "protected": false,
+          "sha": "4be8ed1b34a8ae3e2f831d6425bfab1f124caeda"
+        },
+        "local_ci_files": [
+          "ci.yml"
+        ]
+      }
+    },
+    {
+      "project_id": "novel-continuation-agent",
+      "name": "Novel Continuation Agent",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/novel-continuation-agent",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/novel-continuation-agent",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/PycharmProjects/novel-continuation-agent/governance/round_state.yaml",
+          "resolved": "/Volumes/AI_WORK_SSD/Projects/novel-continuation-agent/governance/round_state.yaml",
+          "exists": true
+        }
+      ],
+      "state_disposition": "declared_unique_current_and_next_round_state",
+      "native_aliases": [
+        "local-9a26fcce0253e0fc0129fa8b24cd9cba"
+      ],
+      "git": {
+        "status": "git",
+        "git_root": "/Volumes/AI_WORK_SSD/Projects/novel-continuation-agent",
+        "branch": "agent/governed-wip-r42",
+        "upstream": "origin/agent/governed-wip-r42",
+        "remote": "https://github.com/alalapi-0/novel-continuation-agent.git",
+        "dirty_paths": [
+          "M AGENTS.md",
+          " M README.md",
+          " M api/server.py",
+          " M docs/PROJECT_STATE.md",
+          " M docs/codex/project-tools.yaml",
+          " M docs/codex/verification-matrix.yaml",
+          " M docs/context/document_registry.md",
+          " M docs/context/fast_bootstrap.md",
+          " M docs/context/project_summary.md",
+          " M docs/index.md",
+          " M docs/product_final_state_spec.md",
+          " M governance/agent_policy.yaml",
+          " M governance/file_role_map.yaml",
+          " M governance/model_policy.yaml",
+          " M governance/repo_protocol_standard.yaml",
+          " M governance/round_state.yaml",
+          " M project.yaml",
+          " M project_state/active_round.json",
+          " M project_state/context_snapshot.json",
+          " M project_state/current_phase.json",
+          " M project_state/document_registry.json",
+          " M project_state/human_authorizations.json",
+          " M project_state/trust_registry.json",
+          " M tests/test_r46_confirmation_handoff.py",
+          "?? core/agent_native_reverse_readiness.py",
+          "?? docs/storage_runtime.md",
+          "?? governance/evidence/r51_candidate_evidence_005.yaml",
+          "?? governance/evidence/r51_candidate_judgment_005.yaml",
+          "?? governance/evidence/r51_candidate_registration_005.yaml",
+          "?? governance/evidence/r52_activation_002.yaml",
+          "?? governance/evidence/r52_authority_resolution_002.yaml",
+          "?? governance/evidence/r52_environment_blocker_001.yaml",
+          "?? governance/evidence/r52_refs_baseline_clarification_001.yaml",
+          "?? governance/evidence/r52_refs_baseline_clarification_002.yaml",
+          "?? governance/evidence/r52_refs_clarification_governor_decision_002.yaml",
+          "?? governance/evidence/r52_refs_clarification_judgment_001.yaml",
+          "?? governance/evidence/r52_refs_clarification_judgment_002.yaml",
+          "?? governance/evidence/r52_revision_baseline_001.yaml",
+          "?? governance/evidence/r52_revision_baseline_002.yaml",
+          "?? governance/evidence/r52_revision_judgment_001.yaml",
+          "?? governance/evidence/r52_revision_judgment_002.yaml",
+          "?? governance/evidence/r52_user_confirmation_001.yaml",
+          "?? governance/evidence/r53_activation_001.yaml",
+          "?? governance/evidence/r53_authority_resolution_001.yaml",
+          "?? governance/evidence/r53_environment_blocker_001.yaml",
+          "?? governance/evidence/r53_environment_blocker_002.yaml",
+          "?? governance/evidence/r53_environment_blocker_003.yaml",
+          "?? governance/evidence/r53_post_implementation_checkpoint_001.yaml",
+          "?? governance/evidence/r53_post_implementation_checkpoint_002.yaml",
+          "?? governance/evidence/r53_post_implementation_checkpoint_003.yaml",
+          "?? governance/evidence/r53_post_implementation_governor_decision_002.yaml",
+          "?? governance/evidence/r53_post_implementation_governor_decision_003.yaml",
+          "?? governance/evidence/r53_post_implementation_judgment_001.yaml",
+          "?? governance/evidence/r53_post_implementation_judgment_002.yaml",
+          "?? governance/evidence/r53_post_implementation_judgment_003.yaml",
+          "?? governance/evidence/r53_post_implementation_repair_001.yaml",
+          "?? governance/evidence/r53_r52_supersession_disposition_001.yaml",
+          "?? governance/evidence/r53_revision_baseline_001.yaml",
+          "?? governance/evidence/r53_revision_governor_decision_001.yaml",
+          "?? governance/evidence/r53_revision_judgment_001.yaml",
+          "?? governance/evidence/r54_authority_resolution_001.yaml",
+          "?? governance/evidence/r54_r53_supersession_disposition_001.yaml",
+          "?? governance/evidence/r54_revision_baseline_001.yaml",
+          "?? governance/task_contract_novel_real_readiness_r52.yaml",
+          "?? governance/task_contract_novel_real_readiness_r52_attempt_002.yaml",
+          "?? governance/task_contract_novel_real_readiness_r53_attempt_001.yaml",
+          "?? governance/task_contract_novel_real_readiness_r54_attempt_001.yaml",
+          "?? prompts/agent_native_reverse_001_005.md",
+          "?? schemas/agent_native_reverse_candidate.schema.json",
+          "?? scripts/capture_agent_verify.py",
+          "?? scripts/storage_runtime.py",
+          "?? scripts/worktree_candidate.py",
+          "?? tests/test_agent_native_reverse_readiness.py",
+          "?? tests/test_capture_agent_verify.py",
+          "?? tests/test_storage_runtime.py",
+          "?? tests/test_worktree_candidate.py",
+          "?? tools/browser_automation/node_modules",
+          "?? web/novel-os/dist",
+          "?? web/novel-os/node_modules"
+        ],
+        "ownership": "pre-existing changes preserved; no writer authority inferred from status",
+        "main_delivery": "normal_push_possible_after_acceptance",
+        "server": {
+          "archived": false,
+          "default_branch": "main",
+          "permissions": {
+            "push": true
+          }
+        },
+        "default_branch_observation": {
+          "name": "main",
+          "protected": false,
+          "sha": "3ae029cff0ccde97c651c2d4d6e6fe7b73f0ef77"
+        },
+        "local_ci_files": []
+      }
+    },
+    {
+      "project_id": "story-faceless-utopia",
+      "name": "Story Faceless Utopia",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/story-faceless-utopia",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/story-faceless-utopia",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/PycharmProjects/story-faceless-utopia/README.md",
+          "resolved": "/Volumes/AI_WORK_SSD/Projects/story-faceless-utopia/README.md",
+          "exists": true
+        }
+      ],
+      "state_disposition": "declared_readme_current_stage_status_summary",
+      "native_aliases": [
+        "d6d60baf-4b60-4093-90f3-d70b67f00f7e"
+      ],
+      "git": {
+        "status": "git",
+        "git_root": "/Volumes/AI_WORK_SSD/Projects/story-faceless-utopia",
+        "branch": "main",
+        "upstream": "origin/main",
+        "remote": "https://github.com/alalapi-0/story-faceless-utopia.git",
+        "dirty_paths": [
+          "M .gitignore",
+          " M README.md",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/images/01-character-master-turnaround.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/images/02-head-face-detail-board.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/images/03-body-hands-feet-proportion-board.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/images/04-clothing-accessory-material-board.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/images/05-expression-posture-action-board.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/images/06-room-plan-and-elevations.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/images/07-room-day-night-perspectives.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/images/08-workstation-and-prop-continuity.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/images/09-character-in-room-scale-board.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/sources/01-character-master-turnaround-raw.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/sources/02-head-face-detail-board-raw.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/sources/03-body-hands-feet-proportion-board-raw.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/sources/04-clothing-accessory-material-board-raw.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/sources/05-expression-posture-action-board-raw.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/sources/06-room-plan-and-elevations-raw.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/sources/07-room-day-night-perspectives-raw.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/sources/08-workstation-and-prop-continuity-raw.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/sources/09-character-in-room-scale-board-raw.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/sources/rejected/02-head-face-detail-board-attempt001.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/sources/rejected/03-body-hands-feet-proportion-board-attempt001.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/sources/rejected/03-body-hands-feet-proportion-board-attempt002.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/sources/rejected/04-clothing-accessory-material-board-attempt001.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/sources/rejected/05-expression-posture-action-board-attempt001.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/sources/rejected/05-expression-posture-action-board-attempt002.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v001/sources/rejected/09-character-in-room-scale-board-attempt001.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/01-identity-master.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/02-three-quarter-nose-frame-right.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/03-three-quarter-nose-frame-left.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/04-full-body-front.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/05-full-body-rear.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/06-profile-facing-frame-right.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/07-profile-facing-frame-left.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/08-action-adjust-glasses.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/09-room-doorway-daylight.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/10-room-bedside-daylight.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/11-room-desk-daylight.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/12-room-window-reverse-daylight.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/13-room-doorway-night-ceiling.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/14-room-doorway-night-screen.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/15-workstation-oblique-detail.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/16-east-wall-sequence-detail.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/17-character-standing-room-scale.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/final/18-character-seated-desk-scale.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/qa/contact-sheets/gate-2-character-continuity-01-08.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/qa/contact-sheets/gate-3-room-axes-09-12.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/qa/contact-sheets/gate-4-light-detail-scale-13-18.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/sources/rejected/09-doorway-candidate-a.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/sources/rejected/11-desk-candidate-a.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/sources/rejected/12-window-reverse-candidate-a.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/sources/rejected/14-room-doorway-night-screen-candidate-a.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/sources/rejected/14-room-doorway-night-screen-candidate-b.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/sources/rejected/18-character-seated-desk-scale-candidate-a.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/sources/rejected/identity-master-candidate-a.png",
+          " T productions/visual_references/aliang-season0-detailed-setting-v002/sources/rejected/identity-master-candidate-b.png",
+          " T productions/visual_references/aliang-season0-primary-v001/reference-sheet.jpg",
+          " T productions/visual_references/ambient-resident-alex-setting-board-v001/design-sheet.png",
+          " T productions/visual_references/ambient-resident-casey-setting-board-v001/design-sheet.png",
+          " T productions/visual_references/ambient-resident-jamie-setting-board-v001/design-sheet.png",
+          " T productions/visual_references/ambient-resident-robin-setting-board-v001/design-sheet.png",
+          " T productions/visual_references/ambient-resident-sam-setting-board-v001/design-sheet.png",
+          " M workbench/visual_review/serve.py",
+          "?? docs/storage_runtime.md",
+          "?? scripts/storage_runtime.py",
+          "?? tests/test_storage_runtime.py"
+        ],
+        "ownership": "pre-existing changes preserved; no writer authority inferred from status",
+        "main_delivery": "normal_push_possible_after_acceptance",
+        "server": {
+          "archived": false,
+          "default_branch": "main",
+          "permissions": {
+            "push": true
+          }
+        },
+        "default_branch_observation": {
+          "name": "main",
+          "protected": false,
+          "sha": "cd6d82a26615b8ea2751f265fe4bfd87fc88b9f0"
+        },
+        "local_ci_files": []
+      }
+    },
+    {
+      "project_id": "light-novel",
+      "name": "Light Novel",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/light-novel",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/light-novel",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/PycharmProjects/light_novel/governance/round_state.yaml",
+          "resolved": "/Volumes/AI_WORK_SSD/Projects/light-novel/governance/round_state.yaml",
+          "exists": true
+        }
+      ],
+      "state_disposition": "declared_current_round_state_plus_live_probe_precedence",
+      "native_aliases": [
+        "91faff3f-da02-4c0e-96e5-86b8dcb6ab09",
+        "local-cecf4a0faa2c2cd6d0959562b585413c"
+      ],
+      "git": {
+        "status": "git",
+        "git_root": "/Volumes/AI_WORK_SSD/Projects/light-novel",
+        "branch": "main",
+        "upstream": "origin/main",
+        "remote": "https://github.com/alalapi-0/jp-cn-novel-translation-pipeline.git",
+        "dirty_paths": [
+          "M .agent_runtime/blockers.jsonl",
+          " M .agent_runtime/status.json",
+          " M docs/prompts/CHAPTER_088_ONWARD_REVIEW_GOAL_PROMPT.md",
+          " M docs/prompts/FULL_BOOK_CHAPTER_REVIEW_GOAL_PROMPT.md",
+          " M scripts/audit_draft_structure.py",
+          " M scripts/audit_glossary_conflicts.py",
+          " M scripts/build_entity_index.py",
+          " M scripts/build_segment_index.py",
+          " M scripts/build_term_usage_index.py",
+          " M scripts/build_term_variant_report.py",
+          " M scripts/finalize_consistency_run.py",
+          " M scripts/fix_terminology_consistency.py",
+          " M scripts/phase_b_completion_check.py",
+          " M scripts/run_quality_review.py",
+          " M scripts/run_round_50_e2e_trial.py",
+          " M scripts/supplement_fullbook_regen_rules.py",
+          " M src/consistency/draft_consistency_report.py",
+          " M tests/test_round_50_e2e_trial.py",
+          " M workspace/review/README.md",
+          "?? .agent_runtime/locks/",
+          "?? scripts/chapter_review_storage_root.sh",
+          "?? scripts/review_workspace_storage.py",
+          "?? src/consistency/index_workspace_storage.py",
+          "?? tests/test_index_workspace_storage.py"
+        ],
+        "ownership": "pre-existing changes preserved; no writer authority inferred from status",
+        "main_delivery": "normal_push_possible_after_acceptance",
+        "server": {
+          "archived": false,
+          "default_branch": "main",
+          "permissions": {
+            "push": true
+          }
+        },
+        "default_branch_observation": {
+          "name": "main",
+          "protected": false,
+          "sha": "77e4b57ca2baa67f0646b72c7d28823d4a683a7a"
+        },
+        "local_ci_files": [
+          "ci.yml"
+        ]
+      }
+    },
+    {
+      "project_id": "wechat-article-scheduler",
+      "name": "WeChat Article Scheduler",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/wechat-article-scheduler",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/wechat-article-scheduler",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/PycharmProjects/wechat-article-scheduler/project.yaml",
+          "resolved": "/Volumes/AI_WORK_SSD/Projects/wechat-article-scheduler/project.yaml",
+          "exists": true
+        }
+      ],
+      "state_disposition": "declared_project_yaml_runtime_and_project_status",
+      "native_aliases": [
+        "local-d1760cdb4f4250c255ed9261ee8bf7ec"
+      ],
+      "git": {
+        "status": "git",
+        "git_root": "/Volumes/AI_WORK_SSD/Projects/wechat-article-scheduler",
+        "branch": "agent/wechat-draft-workbench-20260812",
+        "upstream": "origin/agent/wechat-draft-workbench-20260812",
+        "remote": "https://github.com/alalapi-0/wechat-article-scheduler.git",
+        "dirty_paths": [
+          "M README.md",
+          " M project.yaml",
+          " M src/wechat_article_scheduler/cli.py",
+          " M src/wechat_article_scheduler/config.py",
+          " M storage/README.md",
+          "?? docs/storage_runtime.md",
+          "?? scripts/storage_runtime.py",
+          "?? tests/test_storage_runtime.py"
+        ],
+        "ownership": "pre-existing changes preserved; no writer authority inferred from status",
+        "main_delivery": "normal_push_possible_after_acceptance",
+        "server": {
+          "archived": false,
+          "default_branch": "main",
+          "permissions": {
+            "push": true
+          }
+        },
+        "default_branch_observation": {
+          "name": "main",
+          "protected": false,
+          "sha": "cfadf5ced9c8f260e5bda80f830560a0ad3b8da1"
+        },
+        "local_ci_files": []
+      }
+    },
+    {
+      "project_id": "resilient-personal-network",
+      "name": "Resilient Personal Network",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/resilient-personal-network",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/resilient-personal-network",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/PycharmProjects/resilient-personal-network/README.md",
+          "resolved": "/Volumes/AI_WORK_SSD/Projects/resilient-personal-network/README.md",
+          "exists": true
+        }
+      ],
+      "state_disposition": "declared_readme_repository_stage_only_remote_configuration_excluded",
+      "native_aliases": [
+        "34d7f753-9a57-4c8a-8eed-b4b2d44e448d",
+        "local-14b7d102985dca5c2433f79941050282"
+      ],
+      "git": {
+        "status": "git",
+        "git_root": "/Volumes/AI_WORK_SSD/Projects/resilient-personal-network",
+        "branch": "main",
+        "upstream": "origin/main",
+        "remote": "https://github.com/alalapi-0/resilient-personal-network.git",
+        "dirty_paths": [
+          "M README.md",
+          " M scripts/check_local_singbox_macos.sh",
+          " M scripts/test_client_generation.sh",
+          " M scripts/validate_client_artifacts.sh",
+          "?? docs/storage_runtime.md",
+          "?? scripts/external-sing-box",
+          "?? scripts/lib/storage_runtime.sh"
+        ],
+        "ownership": "pre-existing changes preserved; no writer authority inferred from status",
+        "main_delivery": "normal_push_possible_after_acceptance",
+        "server": {
+          "archived": false,
+          "default_branch": "main",
+          "permissions": {
+            "push": true
+          }
+        },
+        "default_branch_observation": {
+          "name": "main",
+          "protected": false,
+          "sha": "c63b55c63c71445ec48114038238d1615249b002"
+        },
+        "local_ci_files": []
+      }
+    },
+    {
+      "project_id": "pixel-world-asset-forge",
+      "name": "Pixel World Asset Forge",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/pixel-world-asset-forge",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/pixel-world-asset-forge",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/PycharmProjects/pixel-world-asset-forge/protocols/round_progression.yaml",
+          "resolved": "/Volumes/AI_WORK_SSD/Projects/pixel-world-asset-forge/protocols/round_progression.yaml",
+          "exists": true
+        }
+      ],
+      "state_disposition": "declared_unique_current_and_next_round_state",
+      "native_aliases": [],
+      "git": {
+        "status": "git",
+        "git_root": "/Volumes/AI_WORK_SSD/Projects/pixel-world-asset-forge",
+        "branch": "main",
+        "upstream": "origin/main",
+        "remote": "https://github.com/alalapi-0/pixel-world-asset-forge.git",
+        "dirty_paths": [
+          "M .cursor/rules/agent-layer.mdc",
+          " M .cursor/rules/cursor-browser-ui.mdc",
+          " M .cursor/rules/mcp-agent-tools.mdc",
+          " M .env.example",
+          " M AGENTS.md",
+          " M README.md",
+          " M agent_layer.yaml",
+          " M docs/AGENT_BROWSER_TOOL_HANDOFF.md",
+          " M docs/AGENT_LAYER.md",
+          " M docs/AUTO_APPROVE_PIPELINE.md",
+          " M docs/BINARY_ASSET_POLICY.md",
+          " M docs/CODEX_HANDOFF.md",
+          " M docs/CYCLE11_IMPLEMENTATION_ROUNDS.md",
+          " M docs/CYCLE11_PLAN.md",
+          " M docs/EXTERNAL_ASSET_STORAGE_SPEC.md",
+          " M docs/FIXED_ASSET_PROMOTION_SPEC.md",
+          " M docs/FRAME_EXTRACTION_PIPELINE.md",
+          " M docs/IMAGE_GENERATION_QUALITY_POLICY.md",
+          " M docs/MAINTENANCE_CHECKLIST.md",
+          " M docs/MCP_BROWSER_RUNBOOK.md",
+          " M docs/PLAYWRIGHT_USAGE_POLICY.md",
+          " M docs/PROMPTS.md",
+          " M docs/REVIEW_WORKBENCH_SPEC.md",
+          " M docs/ROADMAP.md",
+          " M docs/USER_VIEW_TESTING.md",
+          " M docs/agent-browser-verification.md",
+          " M docs/agent_skills/mcp_usage_skill.md",
+          " M docs/agent_workflow/visual_testing_agent.md",
+          " M docs/cursor_browser_ui_runbook.md",
+          " M docs/cursor_tool_registry_check.md",
+          " M docs/design/stitch/README.md",
+          " M docs/design/stitch/STITCH_MCP_SETUP.md",
+          " M docs/mcp/README.md",
+          " M docs/prompts/CURSOR_UI_IMPLEMENTATION_PROMPT.md",
+          " M docs/runbooks/supervised_api_worker_runbook.md",
+          " M docs/testing/BROWSER_TESTING.md",
+          " M docs/testing/REAL_API_TESTING.md",
+          " M docs/visual_quality_gate.md",
+          " M model-router/README.md",
+          " M package.json",
+          " M protocols/common_agent_protocol.md",
+          " M protocols/common_asset_pipeline_protocol.md",
+          " M protocols/common_repo_governance.md",
+          " M protocols/review_workbench_protocol.md",
+          " M review_app/server.py",
+          " M review_app/static/app.js",
+          " M schemas/workbench_e2e_smoke_report.schema.json",
+          " M scripts/agent_gate.py",
+          " M scripts/clear_smoke_outputs.py",
+          " M scripts/extract_video_frames.py",
+          " M scripts/mcp_browser_doctor.py",
+          " M scripts/mcp_browser_lock.py",
+          " M scripts/regression_smoke.py",
+          " M scripts/run_auto_approve_pipeline.py",
+          " M scripts/run_real_generation.py",
+          " M scripts/run_review_app.py",
+          " M scripts/run_visual_quality_check.py",
+          " M scripts/stitch_mcp_proxy.mjs",
+          " M scripts/storage_helpers.py",
+          " M scripts/supervised_worker_diagnostic.py",
+          " M scripts/tool_probe.py",
+          " M scripts/user_view_test.py",
+          " M src/asset_forge/__init__.py",
+          " M src/asset_forge/asset_pipeline.py",
+          " M src/asset_forge/character_animation_pipeline.py",
+          " M src/asset_forge/cli.py",
+          " M src/asset_forge/export_manifest.py",
+          " M src/asset_forge/fixed_manifest_trace.py",
+          " M src/asset_forge/job_runner.py",
+          " M src/asset_forge/migration_dry_run.py",
+          " M src/asset_forge/spritesheet_manifest.py",
+          " M src/asset_forge/storage.py",
+          " M src/asset_forge/visual_manifest.py",
+          " M src/asset_forge/visual_quality_check.py",
+          " M src/asset_forge/workbench_e2e_smoke.py",
+          " M tests/test_storage_budget.py",
+          "?? scripts/build-external-runtime.py",
+          "?? scripts/external-python",
+          "?? scripts/test-external-storage-guard.sh",
+          "?? src/asset_forge/storage_policy.py",
+          "?? tests/conftest.py",
+          "?? tests/test_external_storage_guard.py",
+          "?? tests/test_storage_capability_v2.py"
+        ],
+        "ownership": "pre-existing changes preserved; no writer authority inferred from status",
+        "main_delivery": "normal_push_possible_after_acceptance",
+        "server": {
+          "archived": false,
+          "default_branch": "main",
+          "permissions": {
+            "push": true
+          }
+        },
+        "default_branch_observation": {
+          "name": "main",
+          "protected": false,
+          "sha": "ce3639e214f97f7f91a80667a07a7bc23243aa4b"
+        },
+        "local_ci_files": [
+          "ci.yml"
+        ]
+      }
+    },
+    {
+      "project_id": "desktop-jav-tools",
+      "name": "Desktop JAV Python Tools",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/desktop-jav-tools",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/desktop-jav-tools",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/Desktop/jav/README.md",
+          "resolved": "/Volumes/AI_WORK_SSD/Projects/desktop-jav-tools/README.md",
+          "exists": true
+        }
+      ],
+      "state_disposition": "declared_operational_readme_no_business_round",
+      "native_aliases": [],
+      "git": {
+        "status": "no_git",
+        "delivery": "missing_repository_no_remote_creation_authorized"
+      }
+    },
+    {
+      "project_id": "zarathustra-adaptation",
+      "name": "Zarathustra Adaptation",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/zarathustra-adaptation",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/zarathustra-adaptation",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/PycharmProjects/zarathustra-adaptation/STATUS.md",
+          "resolved": "/Volumes/AI_WORK_SSD/Projects/zarathustra-adaptation/STATUS.md",
+          "exists": true
+        }
+      ],
+      "state_disposition": "declared_unique_product_current_state",
+      "native_aliases": [
+        "1e58bbb8-d1ce-4e60-8bac-c3848d3d578b"
+      ],
+      "git": {
+        "status": "git",
+        "git_root": "/Volumes/AI_WORK_SSD/Projects/zarathustra-adaptation",
+        "branch": "main",
+        "upstream": null,
+        "remote": "https://github.com/alalapi-0/zarathustra-adaptation.git",
+        "dirty_paths": [
+          "M .cursor/rules/00-project-core.mdc",
+          " M .cursor/skills/classic-adaptation/SKILL.md",
+          " M AGENTS.md",
+          " M README.md",
+          " M src/__init__.py",
+          " M workbench/editorial_review/PROTOCOL.md",
+          " M workbench/editorial_review/README.md",
+          " M workbench/editorial_review/index.html",
+          " M workbench/editorial_review/serve.py",
+          " D workbench/editorial_review/sources/.gitkeep",
+          " D workbench/editorial_review/sources/phase1b-plain-v001-fixture/items.json",
+          " D workbench/editorial_review/sources/phase1b-plain-v001-fixture/manifest.json",
+          " D workbench/editorial_review/sources/phase1b-plain-v001/items.json",
+          " D workbench/editorial_review/sources/phase1b-plain-v001/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v001/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v001/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v002/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v002/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v003/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v003/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v004/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v004/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v005/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v005/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v006/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v006/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v007/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v007/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v008/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v008/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v009/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v009/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v010/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v010/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v011/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v011/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v012/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v012/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v013/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v013/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v014/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v014/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v015/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v015/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v016/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v016/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v017/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v017/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v018/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v018/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v019/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v019/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v020/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v020/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v021/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v021/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v022/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v022/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v023/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v023/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v024/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v024/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v025/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v025/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v026/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v026/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v027/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v027/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v028/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v028/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v029/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v029/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v030/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v030/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v031/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v031/manifest.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v032/items.json",
+          " D workbench/editorial_review/sources/phase1d-modern-reader-v032/manifest.json",
+          "?? scripts/",
+          "?? workbench/editorial_review/sources"
+        ],
+        "ownership": "pre-existing changes preserved; no writer authority inferred from status",
+        "main_delivery": "normal_push_possible_after_acceptance",
+        "server": {
+          "archived": false,
+          "default_branch": "main",
+          "permissions": {
+            "push": true
+          }
+        },
+        "default_branch_observation": {
+          "name": "main",
+          "protected": false,
+          "sha": "0a7f0b9ca61f273806e8566db521e7ccb482b5de"
+        },
+        "local_ci_files": []
+      }
+    },
+    {
+      "project_id": "computer-study-plan",
+      "name": "Computer Study Plan",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/computer-study-plan",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/computer-study-plan",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/PycharmProjects/computer_study_plan/docs/PROJECT_STATE.md",
+          "resolved": "/Volumes/AI_WORK_SSD/Projects/computer-study-plan/docs/PROJECT_STATE.md",
+          "exists": true
+        }
+      ],
+      "state_disposition": "declared_project_current_facts_with_progress_json_as_task_progress_truth",
+      "native_aliases": [
+        "local-195e0a4e37ffd7f0a5211377c0e597c7"
+      ],
+      "git": {
+        "status": "git",
+        "git_root": "/Volumes/AI_WORK_SSD/Projects/computer-study-plan",
+        "branch": "agent/ui-ux-recovery-20260812",
+        "upstream": "origin/agent/ui-ux-recovery-20260812",
+        "remote": "https://github.com/alalapi-0/computer_study_plan.git",
+        "dirty_paths": [
+          "M .gitignore",
+          " M AGENTS.md",
+          " M README.md",
+          " M docs/ARCHITECTURE.md",
+          " M docs/CODEX_LONG_TERM_PLAN.md",
+          " M docs/DECISIONS.md",
+          " M docs/NEXT_ACTIONS.md",
+          " M docs/PRODUCT_VISION.md",
+          " M docs/PROGRESS_RULES.md",
+          " M docs/PROJECT_STATE.md",
+          " M docs/ROADMAP.md",
+          " M package.json",
+          " M progress.html",
+          " M progress.json",
+          " M progress_data.js",
+          " M progress_ui.css",
+          " M progress_ui.js",
+          " M records/action_logs/README.md",
+          " M rounds/round_00/final/comprehensive_exercise.sh",
+          " M rounds/round_00/week1/exercises.sh",
+          " M rounds/round_00/week2/exercises.sh",
+          " M rounds/round_00/week3/exercises.sh",
+          " M scripts/build_rounds_data.py",
+          " M scripts/check_protocol_sync.py",
+          " M scripts/generate_task_feedback.py",
+          " M scripts/mark_done_cli.py",
+          " M scripts/progress_lib.py",
+          " M scripts/progress_server.py",
+          " M scripts/sync_progress_data.py",
+          " M scripts/validate_learning_data.py",
+          "?? requirements-ui.txt",
+          "?? scripts/external-ui-python",
+          "?? tests/"
+        ],
+        "ownership": "pre-existing changes preserved; no writer authority inferred from status",
+        "main_delivery": "normal_push_possible_after_acceptance",
+        "server": {
+          "archived": false,
+          "default_branch": "main",
+          "permissions": {
+            "push": true
+          }
+        },
+        "default_branch_observation": {
+          "name": "main",
+          "protected": false,
+          "sha": "924fbc84648dc674766a4462624183106cd2e997"
+        },
+        "local_ci_files": []
+      }
+    },
+    {
+      "project_id": "desktop-tool",
+      "name": "Desktop Tool",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/desktop-tool",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/desktop-tool",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/Desktop/tool/README.md",
+          "resolved": "/Volumes/AI_WORK_SSD/Projects/desktop-tool/README.md",
+          "exists": true
+        }
+      ],
+      "state_disposition": "declared_tool_and_storage_state",
+      "native_aliases": [],
+      "git": {
+        "status": "no_git",
+        "delivery": "missing_repository_no_remote_creation_authorized"
+      }
+    },
+    {
+      "project_id": "audio-clone",
+      "name": "Audio Clone",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/audio-clone",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/audio-clone",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/audio_clone/docs/storage-runtime.md",
+          "resolved": "/Volumes/AI_WORK_SSD/Projects/audio-clone/docs/storage-runtime.md",
+          "exists": true
+        }
+      ],
+      "state_disposition": "declared_storage_operation_state_no_business_round",
+      "native_aliases": [
+        "local-2409f25f98a195a43b8ba5a756e1a482"
+      ],
+      "git": {
+        "status": "git",
+        "git_root": "/Volumes/AI_WORK_SSD/Projects/audio-clone",
+        "branch": "main",
+        "upstream": "origin/main",
+        "remote": "https://github.com/alalapi-0/audio_clone.git",
+        "dirty_paths": [
+          "M .env.example",
+          " M AGENTS.md",
+          " M Makefile",
+          " M README.md",
+          " M docs/codex/capability-audit.json",
+          " M docs/codex/environment.md",
+          " M docs/codex/project-tools.yaml",
+          " M docs/desktop-p0.md",
+          " M docs/macos-distribution.md",
+          " M models/README.md",
+          " M scripts/verify_desktop_p0.py",
+          " M scripts/verify_role_p1.py",
+          " M src/audio_clone/app.py",
+          " M src/audio_clone/cli.py",
+          " M src/audio_clone/desktop/window.py",
+          " M src/audio_clone/packaging/macos_app.py",
+          " M src/audio_clone/quality.py",
+          " M src/audio_clone/resources/chatterbox_v3/README.md",
+          " M tests/test_macos_app_packaging.py",
+          " M tests/test_verification.py",
+          "?? .artifacts/",
+          "?? docs/storage-runtime.md",
+          "?? scripts/external-uv"
+        ],
+        "ownership": "pre-existing changes preserved; no writer authority inferred from status",
+        "main_delivery": "normal_push_possible_after_acceptance",
+        "server": {
+          "archived": false,
+          "default_branch": "main",
+          "permissions": {
+            "push": true
+          }
+        },
+        "default_branch_observation": {
+          "name": "main",
+          "protected": false,
+          "sha": "56d693770f2d5cde154cfcb375153916c1c19053"
+        },
+        "local_ci_files": []
+      }
+    },
+    {
+      "project_id": "cognitive-asset-library",
+      "name": "Cognitive Asset Library",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/cognitive-asset-library",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/cognitive-asset-library",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/PycharmProjects/cognitive_asset_library/docs/roadmap.md",
+          "resolved": "/Volumes/AI_WORK_SSD/Projects/cognitive-asset-library/docs/roadmap.md",
+          "exists": true
+        }
+      ],
+      "state_disposition": "roadmap_and_AGENTS_phase_summary_in_sync",
+      "native_aliases": [
+        "local-68b89917de40eeffacdf08bcd9b02d01"
+      ],
+      "git": {
+        "status": "git",
+        "git_root": "/Volumes/AI_WORK_SSD/Projects/cognitive-asset-library",
+        "branch": "agent/governed-cal-tools-20260812",
+        "upstream": "origin/agent/governed-cal-tools-20260812",
+        "remote": "https://github.com/alalapi-0/cognitive_asset_library.git",
+        "dirty_paths": [
+          "M AGENTS.md"
+        ],
+        "ownership": "pre-existing changes preserved; no writer authority inferred from status",
+        "main_delivery": "normal_push_possible_after_acceptance",
+        "server": {
+          "archived": false,
+          "default_branch": "main",
+          "permissions": {
+            "push": true
+          }
+        },
+        "default_branch_observation": {
+          "name": "main",
+          "protected": false,
+          "sha": "0d68cf7de1438c4a4a6cdff7747913566f19aeae"
+        },
+        "local_ci_files": []
+      }
+    },
+    {
+      "project_id": "pycharm-agent-workspace",
+      "name": "PyCharm Agent Workspace",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/pycharm-agent-workspace",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/pycharm-agent-workspace",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/PycharmProjects/.agent_workspace/VERSION.yaml",
+          "resolved": "/Volumes/AI_WORK_SSD/Projects/pycharm-agent-workspace/VERSION.yaml",
+          "exists": true
+        }
+      ],
+      "state_disposition": "version_manifest_declares_current_draft_lifecycle_state",
+      "native_aliases": [],
+      "git": {
+        "status": "no_git",
+        "delivery": "missing_repository_no_remote_creation_authorized"
+      }
+    },
+    {
+      "project_id": "youtube-hq-downloader",
+      "name": "YouTube HQ Downloader",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/youtube-hq-downloader",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/youtube-hq-downloader",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Users/alalapi/Desktop/youtube_hq_downloader/PROJECT_STATUS.md",
+          "resolved": "/Volumes/AI_WORK_SSD/Projects/youtube-hq-downloader/PROJECT_STATUS.md",
+          "exists": true
+        }
+      ],
+      "state_disposition": "project_status_document_not_explicitly_unique",
+      "native_aliases": [],
+      "git": {
+        "status": "no_git",
+        "delivery": "missing_repository_no_remote_creation_authorized"
+      }
+    },
+    {
+      "project_id": "desktop-magnet",
+      "name": "Desktop Magnet",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/desktop-magnet",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/desktop-magnet",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [],
+      "state_disposition": "no_rules_or_current_state_declared",
+      "native_aliases": [],
+      "git": {
+        "status": "no_git",
+        "delivery": "missing_repository_no_remote_creation_authorized"
+      }
+    },
+    {
+      "project_id": "pycharm-misc-project",
+      "name": "PyCharm Misc Project",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/pycharm-misc-project",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/pycharm-misc-project",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [],
+      "state_disposition": "no_rules_or_current_state_declared",
+      "native_aliases": [],
+      "git": {
+        "status": "no_git",
+        "delivery": "missing_repository_no_remote_creation_authorized"
+      }
+    },
+    {
+      "project_id": "desktop-downloads-scripts",
+      "name": "Desktop Downloads Scripts",
+      "root_path": "/Volumes/AI_WORK_SSD/Projects/desktop-downloads-scripts",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/desktop-downloads-scripts",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [],
+      "state_disposition": "no_rules_or_current_state_declared",
+      "native_aliases": [],
+      "git": {
+        "status": "no_git",
+        "delivery": "missing_repository_no_remote_creation_authorized"
+      }
+    },
+    {
+      "project_id": "mpv-clip-workbench",
+      "name": "MPV Clip Workbench",
+      "root_path": "/Volumes/AI_WORK_SSD/mpv-clip-workbench",
+      "canonical_root": "/Volumes/AI_WORK_SSD/mpv-clip-workbench",
+      "provenance": [
+        "registry"
+      ],
+      "enabled": true,
+      "root_exists": true,
+      "state_sources": [
+        {
+          "declared": "/Volumes/AI_WORK_SSD/mpv-clip-workbench/PROJECT_STATE.md",
+          "resolved": "/Volumes/AI_WORK_SSD/mpv-clip-workbench/PROJECT_STATE.md",
+          "exists": true
+        }
+      ],
+      "state_disposition": "declared_project_state",
+      "native_aliases": [],
+      "git": {
+        "status": "git",
+        "git_root": "/Volumes/AI_WORK_SSD/mpv-clip-workbench",
+        "branch": "main",
+        "upstream": "origin/main",
+        "remote": "https://github.com/alalapi-0/mpv-clip-workbench.git",
+        "dirty_paths": [
+          "M PROJECT_STATE.md",
+          " M apps/desktop/qml/PlaybackShell.qml",
+          " M apps/desktop/src/playback_main.cpp",
+          " M apps/desktop/src/timeline_controller.cpp",
+          " M apps/desktop/src/timeline_controller.hpp",
+          " M docs/10-product/BEGINNER_UX_DIRECTION.md",
+          " M docs/10-product/HOW_TO_USE.md",
+          " M modules/application/src/timeline_session.cpp",
+          " M modules/application/tests/test_timeline_session.cpp",
+          " M modules/cutting/include/mpvclip/cutting/plan.hpp",
+          " M modules/cutting/src/plan.cpp",
+          " M modules/cutting/tests/test_cutting.cpp",
+          " M modules/playback/include/mpvclip/playback/session.hpp",
+          " M modules/playback/src/mpv_quick_item.cpp",
+          " M modules/playback/src/mpv_quick_item.hpp",
+          " M modules/playback/src/session.cpp",
+          " M modules/playback/src/spike_main.cpp",
+          " M modules/playback/tests/CMakeLists.txt",
+          " M modules/playback/tests/test_session_lifecycle.cpp",
+          " M scripts/run_desktop.sh",
+          " M tests/playback/run_desktop_cut_flow.py",
+          "?? tests/playback/run_cut_batch_and_name.py",
+          "?? tests/playback/run_open_special_path.py",
+          "?? tests/playback/run_track_menu_open.py"
+        ],
+        "ownership": "pre-existing changes preserved; no writer authority inferred from status",
+        "main_delivery": "normal_push_possible_after_acceptance",
+        "server": {
+          "archived": false,
+          "default_branch": "main",
+          "permissions": {
+            "push": true
+          }
+        },
+        "default_branch_observation": {
+          "name": "main",
+          "protected": false,
+          "sha": "24d5ef9f40dad3be96204bc7971110084f6b966f"
+        },
+        "local_ci_files": [
+          "repository-validation.yml"
+        ]
+      }
+    }
+  ],
+  "additional_dispositions": [
+    {
+      "discovery_id": "a3af69b8-527d-40be-9b7d-487e236b2c26",
+      "name": "game",
+      "path": "/Volumes/AI_WORK_SSD/WineGames/亜人少女～異能少女との同棲生活～",
+      "canonical_root": "/Volumes/AI_WORK_SSD/WineGames/亜人少女～異能少女との同棲生活～",
+      "kind": "unresolved_project",
+      "disposition": "removed_local",
+      "delivery": "not_applicable_removed_local",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": true,
+      "state_source": {
+        "status": "removed_local",
+        "path": null,
+        "reason": "Owner confirmed deleted local entries must be marked removed"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Saved project root is missing"
+      },
+      "project_id": "game-removed-local"
+    },
+    {
+      "discovery_id": "local-a9b8f6985f6a2af624d9ff277ed3b601",
+      "name": "alalapi",
+      "path": "/Users/alalapi",
+      "canonical_root": "/Users/alalapi",
+      "kind": "workspace_container",
+      "disposition": "container_not_independent_project",
+      "delivery": "not_observed",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Container is not an independent project"
+      },
+      "git": {
+        "status": "not_applicable",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Container is not an independent project"
+      }
+    },
+    {
+      "discovery_id": "local-1e00315201990d02930e2c56de2f87e8",
+      "name": "manga",
+      "path": "/Volumes/AI_WORK_SSD/manga",
+      "canonical_root": "/Volumes/AI_WORK_SSD/manga",
+      "kind": "unresolved_project",
+      "disposition": "removed_local",
+      "delivery": "not_applicable_removed_local",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": true,
+      "state_source": {
+        "status": "removed_local",
+        "path": null,
+        "reason": "Owner confirmed deleted local entries must be marked removed"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Saved project root is missing"
+      },
+      "project_id": "manga-removed-local"
+    },
+    {
+      "discovery_id": "local-3b4820b88ccd1640d28e3ab29de01158",
+      "name": "PycharmProjects",
+      "path": "/Users/alalapi/PycharmProjects",
+      "canonical_root": "/Users/alalapi/PycharmProjects",
+      "kind": "workspace_container",
+      "disposition": "container_not_independent_project",
+      "delivery": "not_observed",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Container is not an independent project"
+      },
+      "git": {
+        "status": "not_applicable",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Container is not an independent project"
+      }
+    },
+    {
+      "discovery_id": "g-p-692644ff13b88191a16c0564eee97159",
+      "name": "ai小说生成器",
+      "kind": "cloud_project",
+      "disposition": "owner_excluded",
+      "delivery": "not_applicable_owner_excluded",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Owner explicitly excluded cloud projects on 2026-09-08"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Cloud project has no local repository mapping"
+      }
+    },
+    {
+      "discovery_id": "g-p-6a23928466f481919f8bc08255a49bd0",
+      "name": "图片生成提示词",
+      "kind": "cloud_project",
+      "disposition": "owner_excluded",
+      "delivery": "not_applicable_owner_excluded",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Owner explicitly excluded cloud projects on 2026-09-08"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Cloud project has no local repository mapping"
+      }
+    },
+    {
+      "discovery_id": "g-p-69e8c729716081918347e52767a758b4",
+      "name": "作曲",
+      "kind": "cloud_project",
+      "disposition": "owner_excluded",
+      "delivery": "not_applicable_owner_excluded",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Owner explicitly excluded cloud projects on 2026-09-08"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Cloud project has no local repository mapping"
+      }
+    },
+    {
+      "discovery_id": "g-p-67a375b702b081918314b1c35aa9afed",
+      "name": "打字游戏小程序（英语学习小程序）",
+      "kind": "cloud_project",
+      "disposition": "owner_excluded",
+      "delivery": "not_applicable_owner_excluded",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Owner explicitly excluded cloud projects on 2026-09-08"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Cloud project has no local repository mapping"
+      }
+    },
+    {
+      "discovery_id": "g-p-69fda1f7d9c881918ed96b934eb5ac79",
+      "name": "角色一致性控制模块",
+      "kind": "cloud_project",
+      "disposition": "owner_excluded",
+      "delivery": "not_applicable_owner_excluded",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Owner explicitly excluded cloud projects on 2026-09-08"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Cloud project has no local repository mapping"
+      }
+    },
+    {
+      "discovery_id": "g-p-69e9699b0c788191a18c6487003be215",
+      "name": "IntentOS",
+      "kind": "cloud_project",
+      "disposition": "owner_excluded",
+      "delivery": "not_applicable_owner_excluded",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Owner explicitly excluded cloud projects on 2026-09-08"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Cloud project has no local repository mapping"
+      }
+    },
+    {
+      "discovery_id": "g-p-69ea18484f3c8191ba4131f3ed5755d8",
+      "name": "赛博分身",
+      "kind": "cloud_project",
+      "disposition": "owner_excluded",
+      "delivery": "not_applicable_owner_excluded",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Owner explicitly excluded cloud projects on 2026-09-08"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Cloud project has no local repository mapping"
+      }
+    },
+    {
+      "discovery_id": "g-p-69e9f73c224c819184857c87c2165245",
+      "name": "创作前置规则",
+      "kind": "cloud_project",
+      "disposition": "owner_excluded",
+      "delivery": "not_applicable_owner_excluded",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Owner explicitly excluded cloud projects on 2026-09-08"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Cloud project has no local repository mapping"
+      }
+    },
+    {
+      "discovery_id": "g-p-69b208266080819188291c4558ee606b",
+      "name": "宠物记录产品计划",
+      "kind": "cloud_project",
+      "disposition": "owner_excluded",
+      "delivery": "not_applicable_owner_excluded",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Owner explicitly excluded cloud projects on 2026-09-08"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Cloud project has no local repository mapping"
+      }
+    },
+    {
+      "discovery_id": "g-p-69a82a7bb81c819186d03d22307b901c",
+      "name": "舞蹈midi",
+      "kind": "cloud_project",
+      "disposition": "owner_excluded",
+      "delivery": "not_applicable_owner_excluded",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Owner explicitly excluded cloud projects on 2026-09-08"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Cloud project has no local repository mapping"
+      }
+    },
+    {
+      "discovery_id": "g-p-69a824eb11208191b72aeb4bfa7590d6",
+      "name": "anime经典桥段截取工具",
+      "kind": "cloud_project",
+      "disposition": "owner_excluded",
+      "delivery": "not_applicable_owner_excluded",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Owner explicitly excluded cloud projects on 2026-09-08"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Cloud project has no local repository mapping"
+      }
+    },
+    {
+      "discovery_id": "g-p-69a3d8fb00e88191847cdb7c1bb43fe6",
+      "name": "总控agent",
+      "kind": "cloud_project",
+      "disposition": "owner_excluded",
+      "delivery": "not_applicable_owner_excluded",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Owner explicitly excluded cloud projects on 2026-09-08"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Cloud project has no local repository mapping"
+      }
+    },
+    {
+      "discovery_id": "g-p-698bd3e819c88191b7c3fe087da851a4",
+      "name": "cos生成器",
+      "kind": "cloud_project",
+      "disposition": "owner_excluded",
+      "delivery": "not_applicable_owner_excluded",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Owner explicitly excluded cloud projects on 2026-09-08"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Cloud project has no local repository mapping"
+      }
+    },
+    {
+      "discovery_id": "g-p-6791cc97978c81919dab2ab34c71ef66",
+      "name": "解梦与心理辅导",
+      "kind": "cloud_project",
+      "disposition": "owner_excluded",
+      "delivery": "not_applicable_owner_excluded",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Owner explicitly excluded cloud projects on 2026-09-08"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Cloud project has no local repository mapping"
+      }
+    },
+    {
+      "discovery_id": "g-p-6852ba3d6e4c8191a4fa56a317c6be11",
+      "name": "冒险者工会（去中介化平台）",
+      "kind": "cloud_project",
+      "disposition": "owner_excluded",
+      "delivery": "not_applicable_owner_excluded",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Owner explicitly excluded cloud projects on 2026-09-08"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Cloud project has no local repository mapping"
+      }
+    },
+    {
+      "discovery_id": "g-p-67885e7d4acc81919ca9e71e2b66f934",
+      "name": "日语助教",
+      "kind": "cloud_project",
+      "disposition": "owner_excluded",
+      "delivery": "not_applicable_owner_excluded",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Owner explicitly excluded cloud projects on 2026-09-08"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Cloud project has no local repository mapping"
+      }
+    },
+    {
+      "discovery_id": "g-p-67885f57062481918aad65585d71eadf",
+      "name": "打造个人IP",
+      "kind": "cloud_project",
+      "disposition": "owner_excluded",
+      "delivery": "not_applicable_owner_excluded",
+      "provenance": [
+        "Codex saved projects"
+      ],
+      "enabled": false,
+      "excluded": true,
+      "offline": "not_applicable",
+      "state_source": {
+        "status": "not_applicable",
+        "path": null,
+        "reason": "Owner explicitly excluded cloud projects on 2026-09-08"
+      },
+      "git": {
+        "status": "unknown",
+        "remote": null,
+        "default_branch": null,
+        "upstream": null,
+        "branch_protection": "not_observed",
+        "pr_requirement": "unknown",
+        "ci": "not_observed",
+        "dirty_ownership": "not_observed",
+        "reason": "Cloud project has no local repository mapping"
+      }
+    }
+  ],
+  "workspace_one_level": [
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": ".DS_Store",
+      "canonical_root": "/Users/alalapi/PycharmProjects/.DS_Store",
+      "project_id": null,
+      "symlink": false,
+      "disposition": "non_project_entry_or_associated_path"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": ".agent",
+      "canonical_root": "/Users/alalapi/PycharmProjects/.agent",
+      "project_id": null,
+      "symlink": false,
+      "disposition": "non_project_entry_or_associated_path"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": ".agent_workspace",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/pycharm-agent-workspace",
+      "project_id": "pycharm-agent-workspace",
+      "symlink": true,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": ".claude",
+      "disposition": "excluded_host_boundary_not_entered"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": ".cursor",
+      "disposition": "excluded_host_boundary_not_entered"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": "AGENTS.md",
+      "canonical_root": "/Users/alalapi/PycharmProjects/AGENTS.md",
+      "project_id": null,
+      "symlink": false,
+      "disposition": "non_project_entry_or_associated_path"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": "ai-anime-short-factory",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/ai-anime-short-factory",
+      "project_id": "ai-anime-short-factory",
+      "symlink": true,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": "ai-anime-short-factory-external",
+      "canonical_root": "/Volumes/AI_WORK_SSD/ProjectData/ai-anime-short-factory/legacy-shadow",
+      "project_id": null,
+      "symlink": true,
+      "disposition": "non_project_entry_or_associated_path"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": "ai-music-foundry",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/ai-music-foundry",
+      "project_id": "ai-music-foundry",
+      "symlink": true,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": "cognitive_asset_library",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/cognitive-asset-library",
+      "project_id": "cognitive-asset-library",
+      "symlink": true,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": "computer_study_plan",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/computer-study-plan",
+      "project_id": "computer-study-plan",
+      "symlink": true,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": "light_novel",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/light-novel",
+      "project_id": "light-novel",
+      "symlink": true,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": "manga-localizer",
+      "canonical_root": "/Users/alalapi/PycharmProjects/manga-localizer",
+      "project_id": "manga-localizer",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": "novel-continuation-agent",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/novel-continuation-agent",
+      "project_id": "novel-continuation-agent",
+      "symlink": true,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": "personal-control-hub",
+      "canonical_root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "project_id": "personal-control-hub",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": "pixel-world-asset-forge",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/pixel-world-asset-forge",
+      "project_id": "pixel-world-asset-forge",
+      "symlink": true,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": "resilient-personal-network",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/resilient-personal-network",
+      "project_id": "resilient-personal-network",
+      "symlink": true,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": "story-faceless-utopia",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/story-faceless-utopia",
+      "project_id": "story-faceless-utopia",
+      "symlink": true,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": "universal-player",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/universal-player",
+      "project_id": "universal-player",
+      "symlink": true,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": "wechat-article-scheduler",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/wechat-article-scheduler",
+      "project_id": "wechat-article-scheduler",
+      "symlink": true,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Users/alalapi/PycharmProjects",
+      "name": "zarathustra-adaptation",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/zarathustra-adaptation",
+      "project_id": "zarathustra-adaptation",
+      "symlink": true,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "ai-anime-short-factory",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/ai-anime-short-factory",
+      "project_id": "ai-anime-short-factory",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "ai-music-foundry",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/ai-music-foundry",
+      "project_id": "ai-music-foundry",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "audio-clone",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/audio-clone",
+      "project_id": "audio-clone",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "cognitive-asset-library",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/cognitive-asset-library",
+      "project_id": "cognitive-asset-library",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "computer-study-plan",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/computer-study-plan",
+      "project_id": "computer-study-plan",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "desktop-downloads-scripts",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/desktop-downloads-scripts",
+      "project_id": "desktop-downloads-scripts",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "desktop-jav-tools",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/desktop-jav-tools",
+      "project_id": "desktop-jav-tools",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "desktop-magnet",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/desktop-magnet",
+      "project_id": "desktop-magnet",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "desktop-tool",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/desktop-tool",
+      "project_id": "desktop-tool",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "light-novel",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/light-novel",
+      "project_id": "light-novel",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "novel-continuation-agent",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/novel-continuation-agent",
+      "project_id": "novel-continuation-agent",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "pixel-world-asset-forge",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/pixel-world-asset-forge",
+      "project_id": "pixel-world-asset-forge",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "pycharm-agent-workspace",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/pycharm-agent-workspace",
+      "project_id": "pycharm-agent-workspace",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "pycharm-misc-project",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/pycharm-misc-project",
+      "project_id": "pycharm-misc-project",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "resilient-personal-network",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/resilient-personal-network",
+      "project_id": "resilient-personal-network",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "story-faceless-utopia",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/story-faceless-utopia",
+      "project_id": "story-faceless-utopia",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "universal-player",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/universal-player",
+      "project_id": "universal-player",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "wechat-article-scheduler",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/wechat-article-scheduler",
+      "project_id": "wechat-article-scheduler",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "youtube-hq-downloader",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/youtube-hq-downloader",
+      "project_id": "youtube-hq-downloader",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    },
+    {
+      "parent": "/Volumes/AI_WORK_SSD/Projects",
+      "name": "zarathustra-adaptation",
+      "canonical_root": "/Volumes/AI_WORK_SSD/Projects/zarathustra-adaptation",
+      "project_id": "zarathustra-adaptation",
+      "symlink": false,
+      "disposition": "registered_or_alias"
+    }
+  ],
+  "associated_unknown": [
+    {
+      "path": "/Users/alalapi/PycharmProjects/ai-anime-short-factory-external",
+      "canonical_root": "/Volumes/AI_WORK_SSD/ProjectData/ai-anime-short-factory/legacy-shadow",
+      "disposition": "associated_legacy_shadow_ownership_unknown"
+    }
+  ],
+  "reconciliation": {
+    "native_records": 35,
+    "matched_native_records": 14,
+    "additional_native_records": 21,
+    "cloud_records": 17,
+    "missing_roots": 2,
+    "containers": 2,
+    "registered_local_records": 24,
+    "independent_git_repositories": 16,
+    "no_git_projects": 7,
+    "parent_owned_governance_programs": 1,
+    "duplicates_or_omissions": 0,
+    "registry_in_target_main": "26 records: 24 existing local identities plus 2 owner-confirmed local removal records; no cloud rollout",
+    "registry_records": 26,
+    "removed_local_records": 2,
+    "owner_excluded_cloud_records": 17,
+    "local_execution_denominator": 24
+  },
+  "owner_clarification": {
+    "date": "2026-09-08",
+    "cloud": "excluded_from_governance_by_owner",
+    "deleted_local": "retain_registry_identity_and_path_with_removed_local_status"
+  }
+}

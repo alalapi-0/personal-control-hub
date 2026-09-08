@@ -1,0 +1,47 @@
+{
+  "contract": "ALL-PROJECTS-CODEX-GOVERNANCE-V1-BOOTSTRAP-v1",
+  "base_commit": "15a4971061b60b43255fa709a48aaae08bb64b45",
+  "semantic_hash": "54d0ac90c5bff4a36b1f2a64ff49c82a29a04e846f89a9ccca7dca178d068d31",
+  "files": {
+    "AGENTS.md": "209d49aa8de99d1f8b6941515f37385c9ca313dbc2c6c38cd122192f17cfced9",
+    "STATE.yaml": "c54f53e9f9d70fbb0b6c75b9e116d23e86ce01a173a8ffa831fbb58b73ea7e68",
+    "data/gates/auto_advance_policy.yaml": "4c9bf5ba7c0063398aee0d685b609eb35fcab64ebc21ecb019a7fd3b72011a0e",
+    "data/registry/external_projects.yaml": "ec703d137bc1b82c182ef082bf34f08943dde6b777bc004851d278335fa86dcc",
+    "data/state/current_status.yaml": "8cac96e73c2e47c57e6a0e27c15139a818b8918e9a4750e4e18a35bb26acc2b5",
+    "docs/all_projects_governance_execution.md": "025f67430fee7ac7bed6f74c4d59346b52f811df7f23ecfda4281c30344ddfda",
+    "docs/reports/all-projects-governance/bootstrap/baseline.json": "423d01722af6605013d76f739373308a2cf08bcbdf60df51dee7d19b26e76b68",
+    "docs/reports/all-projects-governance/bootstrap/connection-proposal.md": "7ae45ca41d48879009337259ed9d27af3f7435088d18291283e771d22b8ee11a",
+    "docs/reports/all-projects-governance/bootstrap/contract.md": "f5c2bb7ca1d74ae1ada1a8533e116c168d390a65f5b2de0f3c6f2fbb7962c02b",
+    "docs/reports/all-projects-governance/bootstrap/coverage.json": "be94ad4629faa7a921e06b0d19db72bc0702aa5d23be1b8ae804cad508ca9fcb",
+    "docs/reports/all-projects-governance/bootstrap/manga-identity.json": "8f504c3f4f5c586f6d57c04e6147d4dcd26c18dc64e141854cbfeb6d35752564",
+    "docs/reports/all-projects-governance/bootstrap/native-projects.json": "c226e725085ebd513dbff481f45a9a873f97978addb87d055deb928bb2fdf0e7",
+    "docs/reports/all-projects-governance/bootstrap/validation.json": "e78ca4f48f12c824dce10a61ceeda6d54a9d6abc0ed9b9671b1914d724c6b977",
+    "governance/agent_policy.yaml": "a6870c755dc15dc9cbdb2b6657357c8357b292de0498b75c160e0c74af0d52a7",
+    "governance/round_state.yaml": "7c0c7db22a3709028f152d915cf894e9dfa98d9a17ecb7de81de3d69401d9574",
+    "prompts/all_projects_governance_goal_mode.md": "54c82b0f9cef95c2bafb415de90a50491e545d68595537b8f5b95fd525f4281b",
+    "prompts/codex_project_driver.md": "63ce376956727684f0070b05b843335e3a5c50da87cec106c075a51748488ab5",
+    "scripts/agent_gate.py": "c228fd49a7982c0cb8f813571704f72cf2919d874ac813061dee249c7e454ba8",
+    "scripts/auto_advance_runner.py": "2bee5c32add92775c327cfd0382685bd20338ff1789e9c607cf3eb102804950f",
+    "scripts/check_environment.py": "8475f1556563cffdd5b2dec342cdb13dc8a56003a5463384d803db9ee86d87ca",
+    "scripts/check_repo.py": "cbbaf2475c625849b9a39ba73db1dd8db0b19f0e19f83c721151eb23ec156a2e",
+    "scripts/governance_scope.py": "adaf422c27e4e1f02dce9f60b89897a50058c17b2bb80c1cd87ff30b72d07ff5",
+    "scripts/round_consistency_check.py": "6d3655ac39e8817d49d2b9d0e24b4db3ac9913cf3d1de5af90e9c9ac8cf229da",
+    "src/hub/services/project_registry_service.py": "1f05fc3f92707b1c427dd441245727185413d3c2d04ce637306a1dfa431fc34e",
+    "tests/test_governance_bootstrap.py": "a7119881a104d218009f6e1f0bfcff2b1f635fa6d9684b91dcb9586388712d45"
+  },
+  "state_metadata_exclusions": [
+    "budget",
+    "delivery",
+    "next_action",
+    "status",
+    "unit"
+  ],
+  "excluded_evidence": [
+    "candidate.json",
+    "delivery.json",
+    "governor.json",
+    "judge.json",
+    "review.json"
+  ],
+  "meaning": "File bytes except listed task management metadata; review/delivery records outside reviewed content identity."
+}

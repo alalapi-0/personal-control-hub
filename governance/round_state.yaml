@@ -1,3 +1,7 @@
+metadata:
+  authority: non_canonical
+  canonical_current_state: STATE.yaml
+  role: preserved_historical_record
 current_phase: Phase 1
 current_round: ROUND-1-1
 current_round_name: Registry Runtime Validation

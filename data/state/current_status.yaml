@@ -1,3 +1,7 @@
+metadata:
+  authority: non_canonical
+  canonical_current_state: STATE.yaml
+  role: preserved_historical_record
 status:
   project_id: personal-control-hub
   current_round: ROUND-1-1

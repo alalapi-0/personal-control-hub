@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/bootstrap_judge_v3",
+  "contract": "ALL-PROJECTS-CODEX-GOVERNANCE-V1-BOOTSTRAP-v1",
+  "candidate": "54d0ac90c5bff4a36b1f2a64ff49c82a29a04e846f89a9ccca7dca178d068d31",
+  "verdict": "PASS",
+  "scope": "pre-delivery",
+  "independent_checks": [
+    "12 bootstrap tests including real index isolation and complete literal pathspecs",
+    "scoped git diff --check",
+    "25 file identities and semantic/normalized STATE hash reproduced",
+    "structured files parse; startup 3560 bytes"
+  ],
+  "reused_valid_evidence": [
+    "coverage",
+    "registry reconciliation",
+    "manga identity",
+    "original checkout preservation",
+    "connection proposal"
+  ],
+  "remaining": "Governor acceptance and verified Hub main receipt"
+}

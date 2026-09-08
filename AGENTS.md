@@ -1,141 +1,20 @@
 # AGENTS.md
 
-本文件是 Cursor、Codex 和其他 Agent 进入 personal-control-hub 时的首读入口。
+Hub 的条件上下文入口。默认只读本文件与 `STATE.yaml`，合计不超过 8192 bytes。`STATE.yaml` 是当前管理状态唯一权威；`governance/round_state.yaml` 与 `data/state/current_status.yaml` 只供历史溯源，不恢复旧任务。
 
-## 必读顺序
+## 当前任务路由
 
-1. `README.md`
-2. `project.yaml`
-3. `governance/repo_protocol_standard.yaml`
-4. `governance/agent_policy.yaml`
-5. `governance/round_state.yaml`
-6. `docs/00_start_here.md`
-7. `docs/01_project_ultimate_goal.md`
-8. `docs/02_master_roadmap.md`
-9. `docs/11_mcp_infrastructure_strategy.md`
-10. `docs/12_external_tool_approval_model.md`
-11. `docs/14_ui_console_plan.md`
-12. `docs/15_auto_advance_gate.md`
-13. `docs/reports/restart_audit_report.md`
+- 所有者激活 `ALL-PROJECTS-CODEX-GOVERNANCE-V1` 时，每轮再读 `docs/all_projects_governance_execution.md`，使用 STATE 的 `all_projects_governance` 条目；不占用 `current_work`。
+- 本任务只由 Codex 执行，禁止访问或操作 Cursor。首次写入前执行 `python3 scripts/auto_advance_runner.py --mode check --task-id ALL-PROJECTS-CODEX-GOVERNANCE-V1`；仅首次修复检查入口自身冲突可先做最小 bootstrap 修复，立即补验。检查不是授权。
+- 项目身份与路径：`data/registry/external_projects.yaml`、`docs/05_external_project_protocol.md`。历史工作分支的接入实现按执行文档验证后逐单元移植，不整分支合并。
+- 权限/Git：`governance/agent_policy.yaml`、`data/gates/auto_advance_policy.yaml`；当前任务授权覆盖冲突的旧限制，其余任务仍默认外部只读。
+- 飞书本地准备：`docs/09_feishu_lark_strategy.md`。真实连接保持 disabled。
+- 其他工作仅按具体任务读取 `project.yaml`、相关治理文件与路线图条目，不默认读全历史。
 
-参考报告 `docs/00_synthesis_for_my_ai_company_os.md` 到 `docs/15_solo-founder-playbook.md` 是思想来源，不是当前执行入口。读取时吸收机制，不复制参考仓库代码。
+## 执行与交付
 
-MCP 配置实操见 `docs/13_cursor_mcp_workspace_setup.md` 与 `prompts/cursor_mcp_usage_prompt.md`。
+Root 是本任务状态、控制面和 Git 的唯一写者。跨项目仅并行只读发现，写入、验证与交付按仓库串行。保护既有 dirty 工作、原始素材、凭据和用户决定；不读取或提交真实 .env、token、cookie、私钥，不操作生产或迁移存储。
 
-## Agent 分工
+本任务 accepted 单元依所有者明确授权交付对应远端真实主分支，核对远端祖先关系后才标 delivered。禁止强推、绕过检查/分支保护或带入无关历史。runner 永不暂存、commit、push、生成队列或自动恢复任务。普通任务仍需自身当前授权。
 
-- Cursor: 日常主力推进环境，负责小步编辑、检索、检查、文档与轻量脚本；**Cursor 是 MCP 宿主**。
-- Codex: 高质量执行器，用于复杂修改、关键轮次、审查和需要更强代码质量的任务；**不得绕过 MCP 审批策略**。
-- ChatGPT: 规划、分析、Prompt 生成和外部讨论。
-- personal-control-hub: 三者之间的控制台和治理层。
-
-## 默认权限
-
-Agent 默认可以：
-
-- 修改本仓库内的文档、YAML 骨架、占位脚本和测试占位。
-- 读取外部项目的注册路径和允许读取的主要文件。
-- 生成 profile、snapshot、priority suggestion、next actions 的草案。
-- 运行本地只读检查命令和本仓库脚本（含 `hub.py mcp list|policy`）。
-- 在 L0/L1 范围内更新本仓库 MCP 登记与策略文件。
-- 将六个已登记 MCP（chrome-devtools、context7、filesystem、github、playwright、stitch）视为 Cursor 工作区 default start / 默认可用候选；具体动作仍按 L0-L3 审批。
-
-Agent 必须请求用户确认后才可以：
-
-- 修改外部项目本体。
-- 删除文件或大规模迁移目录。
-- 覆盖已有用户内容（含 `.cursor/mcp.json`）。
-- 推送 GitHub 或执行 checkout/reset。
-- 调用真实付费 API 或真实 Feishu/Lark API。
-- **调用真实外部 MCP 服务（L2+）。**
-- **自行安装 MCP 包或执行高风险 MCP 动作（如 playwright 自动登录、GitHub 写操作）。**
-- 写入真实 Feishu/Lark 空间。
-- 修改真实 `.env`。
-- 执行远程控制。
-- 将项目优先级改为 P0/P1。
-- 改变技术栈。
-
-## MCP 规则（Round 0.5）
-
-- **不得自行安装 MCP**；不得在本轮真实调用外部 MCP。
-- 六个已登记 MCP 可默认进入 **default start / 可被 Cursor 工作区启用** 状态；这不是免审批或自动执行授权。
-- **不得执行高风险 MCP 动作**；playwright 生产账号登录、支付、发布、破坏性 UI 操作等 L3 行为仍默认禁止。
-- **新增 MCP** 须同时修改 `data/mcp/mcp_capability_registry.yaml`、`mcp_approval_policy.yaml`、`mcp_integration_roadmap.yaml`。
-- **L2/L3 须停止并向用户确认**后再继续。
-- **外部工具调用记日志**：`data/logs/automation_log.jsonl`。
-- **token 仅环境变量**；禁止写入仓库。
-- **默认 L0/L1 可用**；L2/L3 即使 MCP 已启动，也必须在具体动作前停止确认。
-- **Cursor 是 MCP 宿主**；Codex 不绕过策略。
-
-## 安全规则
-
-- 不写 token、secret、cookie、API key。
-- 不扫描 `.git`、`node_modules`、`dist`、`build`、`target`、虚拟环境、缓存、日志输出、大型媒体、模型文件、数据集或真实 `.env`。
-- 外部项目默认只读；扫描策略以 `docs/05_external_project_protocol.md` 为准。
-- LLM 只能提出 priority proposal，不能替用户做最终优先级决策。
-- completed 与 accepted 分离：Agent 完成不等于用户验收通过。
-
-## 推进轮 Agent 默认规则（Round 0.7）
-
-- 开始前必须运行 `python scripts/auto_advance_runner.py --mode check` 与 `python scripts/agent_gate.py`。
-- gate/runner 输出 `continue` 时可以继续。
-- 输出 `warn_and_continue` 时记录 warning 后继续。
-- 输出 `stop` 时必须停止。
-- 没有 hard blocker 不要因偏好不完美而停。
-- 可用保守默认值就使用保守默认值。
-- 只有 hard blocker 才请求用户。
-- 每轮完成后更新 `governance/round_state.yaml`、`data/state/current_status.yaml`、`data/logs/automation_log.jsonl`。
-- 涉及代码修改必须运行最小验证。
-- 验证失败两次停止。
-
-## 持续推进入口
-
-推进轮 Agent 必须使用：
-
-```bash
-python scripts/auto_advance_runner.py --mode check
-```
-
-开始前检查。
-
-一轮完成后必须使用：
-
-```bash
-python scripts/auto_advance_runner.py --mode finalize-round
-```
-
-进行验证、commit、push（用户确认 push 策略后）。
-
-如果 finalize-round 成功，可以继续：
-
-```bash
-python scripts/auto_advance_runner.py --mode prepare-next
-```
-
-生成下一轮任务 prompt 草案到 `data/codex_queue/`。不自动调用 Codex 或 Cursor。
-
-## 一致性规则
-
-每轮结束前必须保证：
-
-- `round_state` 当前轮次正确
-- `current_status` 当前轮次正确
-- `master roadmap` 当前轮次存在
-- `round_tasks` 当前轮次存在
-- `automation_log` / `auto_advance_log` 有记录
-- commit message 与当前轮次一致
-
-## 本轮验证
-
-完成修改前至少运行：
-
-```bash
-python scripts/check_repo.py
-python scripts/check_environment.py
-python scripts/round_consistency_check.py
-python scripts/agent_gate.py
-python scripts/auto_advance_runner.py --mode check
-python scripts/bootstrap.py --dry-run
-python hub.py mcp list
-python hub.py mcp policy
-```
+控制面变更由 Governor 冻结合约，Root 注册精确候选，fresh Judge 审查，Governor 决策。同一语义候选只审一次。保留未解决项与唯一下一步，不以局部完成冒充全部完成。

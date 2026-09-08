@@ -94,16 +94,27 @@ def validate_registry(registry: dict[str, Any] | None = None) -> dict[str, Any]:
         if priority_source not in ALLOWED_PRIORITY_SOURCES:
             hard_blockers.append(f"{project_id}: priority_source 无效")
 
+        presence = project.get("local_presence", {})
+        removed = isinstance(presence, dict) and presence.get("status") == "removed_local"
+        if removed:
+            if any(project.get(flag) is not False for flag in ("enabled", "scan_enabled", "profile_enabled", "external_write_allowed")):
+                hard_blockers.append(f"{project_id}: removed_local must disable execution, scanning and writes")
+            if presence.get("retry_allowed") is not False or project.get("current_state_status") != "removed_local":
+                hard_blockers.append(f"{project_id}: removed_local cannot be retried or presented as a live source")
+            if any(project.get(field) for field in ("watch_paths", "rules_paths", "current_state_paths", "supporting_authority_paths")):
+                hard_blockers.append(f"{project_id}: removed_local must not contain active read routes")
+            if not presence.get("reason"):
+                hard_blockers.append(f"{project_id}: removed_local needs a provenance reason")
         root_path = project.get("root_path")
         if isinstance(root_path, str) and root_path.strip():
             path = Path(root_path).expanduser()
-            if not path.exists():
+            if not removed and not path.exists():
                 warnings.append(f"{project_id}: root_path 不存在或不可读：{root_path}")
         elif project.get("enabled"):
             warnings.append(f"{project_id}: enabled=true 但 root_path 为空")
 
         watch_paths = project.get("watch_paths")
-        if not isinstance(watch_paths, list) or not watch_paths:
+        if not isinstance(watch_paths, list) or (not watch_paths and not removed):
             warnings.append(f"{project_id}: watch_paths 为空")
 
     return {
@@ -130,7 +141,8 @@ def print_registry_list() -> int:
         return 0
 
     for project in projects:
-        status = "enabled" if project.get("enabled") else "disabled"
+        removed = project.get("local_presence", {}).get("status") == "removed_local"
+        status = "removed_local / 已从本地移除" if removed else "enabled" if project.get("enabled") else "disabled"
         print(
             f"- {project.get('id')}: {project.get('name')} "
             f"[{status}] scan={project.get('scan_enabled')} "

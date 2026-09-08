@@ -1,0 +1,286 @@
+{
+  "schemaVersion": 2,
+  "projects": [
+    {
+      "projectId": "143aa8bc-4e11-457c-ad2a-5d6ca478a280",
+      "projectKind": "local",
+      "label": "全局治理",
+      "path": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": true
+    },
+    {
+      "projectId": "d6d60baf-4b60-4093-90f3-d70b67f00f7e",
+      "projectKind": "local",
+      "label": "ai漫剧mvp",
+      "path": "/Users/alalapi/PycharmProjects/story-faceless-utopia",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": true
+    },
+    {
+      "projectId": "1e58bbb8-d1ce-4e60-8bac-c3848d3d578b",
+      "projectKind": "local",
+      "label": "查拉图斯特拉",
+      "path": "/Users/alalapi/PycharmProjects/zarathustra-adaptation",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": true
+    },
+    {
+      "projectId": "a3af69b8-527d-40be-9b7d-487e236b2c26",
+      "projectKind": "local",
+      "label": "game",
+      "path": "/Volumes/AI_WORK_SSD/WineGames/亜人少女～異能少女との同棲生活～",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": false
+    },
+    {
+      "projectId": "34d7f753-9a57-4c8a-8eed-b4b2d44e448d",
+      "projectKind": "local",
+      "label": "resilient-personal-network",
+      "path": "/Users/alalapi/PycharmProjects/resilient-personal-network",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": true
+    },
+    {
+      "projectId": "91faff3f-da02-4c0e-96e5-86b8dcb6ab09",
+      "projectKind": "local",
+      "label": "light_novel",
+      "path": "/Users/alalapi/PycharmProjects/light_novel",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": true
+    },
+    {
+      "projectId": "2eef94be-d754-46b7-b3cc-3a57bc305e49",
+      "projectKind": "local",
+      "label": "manga-localizer",
+      "path": "/Users/alalapi/PycharmProjects/manga-localizer",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": true
+    },
+    {
+      "projectId": "local-a9b8f6985f6a2af624d9ff277ed3b601",
+      "projectKind": "local",
+      "label": "alalapi",
+      "path": "/Users/alalapi",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": false
+    },
+    {
+      "projectId": "local-195e0a4e37ffd7f0a5211377c0e597c7",
+      "projectKind": "local",
+      "label": "computer_study_plan",
+      "path": "/Users/alalapi/PycharmProjects/computer_study_plan",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": true
+    },
+    {
+      "projectId": "local-2409f25f98a195a43b8ba5a756e1a482",
+      "projectKind": "local",
+      "label": "audio_clone",
+      "path": "/Users/alalapi/audio_clone",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": true
+    },
+    {
+      "projectId": "local-9a26fcce0253e0fc0129fa8b24cd9cba",
+      "projectKind": "local",
+      "label": "novel-continuation-agent",
+      "path": "/Users/alalapi/PycharmProjects/novel-continuation-agent",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": true
+    },
+    {
+      "projectId": "local-14b7d102985dca5c2433f79941050282",
+      "projectKind": "local",
+      "label": "resilient-personal-network",
+      "path": "/Users/alalapi/PycharmProjects/resilient-personal-network",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": true
+    },
+    {
+      "projectId": "local-1e00315201990d02930e2c56de2f87e8",
+      "projectKind": "local",
+      "label": "manga",
+      "path": "/Volumes/AI_WORK_SSD/manga",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": false
+    },
+    {
+      "projectId": "local-68b89917de40eeffacdf08bcd9b02d01",
+      "projectKind": "local",
+      "label": "cognitive_asset_library",
+      "path": "/Users/alalapi/PycharmProjects/cognitive_asset_library",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": true
+    },
+    {
+      "projectId": "local-3b4820b88ccd1640d28e3ab29de01158",
+      "projectKind": "local",
+      "label": "PycharmProjects",
+      "path": "/Users/alalapi/PycharmProjects",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": false
+    },
+    {
+      "projectId": "local-d1760cdb4f4250c255ed9261ee8bf7ec",
+      "projectKind": "local",
+      "label": "wechat-article-scheduler",
+      "path": "/Users/alalapi/PycharmProjects/wechat-article-scheduler",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": true
+    },
+    {
+      "projectId": "local-cecf4a0faa2c2cd6d0959562b585413c",
+      "projectKind": "local",
+      "label": "light_novel",
+      "path": "/Users/alalapi/PycharmProjects/light_novel",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": true
+    },
+    {
+      "projectId": "local-1262eae64dc0085f95af2f5e1cfe92fc",
+      "projectKind": "local",
+      "label": "ai-anime-short-factory",
+      "path": "/Users/alalapi/PycharmProjects/ai-anime-short-factory",
+      "hostId": "local",
+      "hostDisplayName": null,
+      "isGitRepository": true
+    },
+    {
+      "projectId": "g-p-692644ff13b88191a16c0564eee97159",
+      "projectKind": "chatgpt",
+      "label": "ai小说生成器",
+      "hostId": null,
+      "hostDisplayName": null
+    },
+    {
+      "projectId": "g-p-6a23928466f481919f8bc08255a49bd0",
+      "projectKind": "chatgpt",
+      "label": "图片生成提示词",
+      "hostId": null,
+      "hostDisplayName": null
+    },
+    {
+      "projectId": "g-p-69e8c729716081918347e52767a758b4",
+      "projectKind": "chatgpt",
+      "label": "作曲",
+      "hostId": null,
+      "hostDisplayName": null
+    },
+    {
+      "projectId": "g-p-67a375b702b081918314b1c35aa9afed",
+      "projectKind": "chatgpt",
+      "label": "打字游戏小程序（英语学习小程序）",
+      "hostId": null,
+      "hostDisplayName": null
+    },
+    {
+      "projectId": "g-p-69fda1f7d9c881918ed96b934eb5ac79",
+      "projectKind": "chatgpt",
+      "label": "角色一致性控制模块",
+      "hostId": null,
+      "hostDisplayName": null
+    },
+    {
+      "projectId": "g-p-69e9699b0c788191a18c6487003be215",
+      "projectKind": "chatgpt",
+      "label": "IntentOS",
+      "hostId": null,
+      "hostDisplayName": null
+    },
+    {
+      "projectId": "g-p-69ea18484f3c8191ba4131f3ed5755d8",
+      "projectKind": "chatgpt",
+      "label": "赛博分身",
+      "hostId": null,
+      "hostDisplayName": null
+    },
+    {
+      "projectId": "g-p-69e9f73c224c819184857c87c2165245",
+      "projectKind": "chatgpt",
+      "label": "创作前置规则",
+      "hostId": null,
+      "hostDisplayName": null
+    },
+    {
+      "projectId": "g-p-69b208266080819188291c4558ee606b",
+      "projectKind": "chatgpt",
+      "label": "宠物记录产品计划",
+      "hostId": null,
+      "hostDisplayName": null
+    },
+    {
+      "projectId": "g-p-69a82a7bb81c819186d03d22307b901c",
+      "projectKind": "chatgpt",
+      "label": "舞蹈midi",
+      "hostId": null,
+      "hostDisplayName": null
+    },
+    {
+      "projectId": "g-p-69a824eb11208191b72aeb4bfa7590d6",
+      "projectKind": "chatgpt",
+      "label": "anime经典桥段截取工具",
+      "hostId": null,
+      "hostDisplayName": null
+    },
+    {
+      "projectId": "g-p-69a3d8fb00e88191847cdb7c1bb43fe6",
+      "projectKind": "chatgpt",
+      "label": "总控agent",
+      "hostId": null,
+      "hostDisplayName": null
+    },
+    {
+      "projectId": "g-p-698bd3e819c88191b7c3fe087da851a4",
+      "projectKind": "chatgpt",
+      "label": "cos生成器",
+      "hostId": null,
+      "hostDisplayName": null
+    },
+    {
+      "projectId": "g-p-6791cc97978c81919dab2ab34c71ef66",
+      "projectKind": "chatgpt",
+      "label": "解梦与心理辅导",
+      "hostId": null,
+      "hostDisplayName": null
+    },
+    {
+      "projectId": "g-p-6852ba3d6e4c8191a4fa56a317c6be11",
+      "projectKind": "chatgpt",
+      "label": "冒险者工会（去中介化平台）",
+      "hostId": null,
+      "hostDisplayName": null
+    },
+    {
+      "projectId": "g-p-67885e7d4acc81919ca9e71e2b66f934",
+      "projectKind": "chatgpt",
+      "label": "日语助教",
+      "hostId": null,
+      "hostDisplayName": null
+    },
+    {
+      "projectId": "g-p-67885f57062481918aad65585d71eadf",
+      "projectKind": "chatgpt",
+      "label": "打造个人IP",
+      "hostId": null,
+      "hostDisplayName": null
+    }
+  ]
+}

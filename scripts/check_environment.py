@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from governance_scope import add_scope_argument, activate_scope, selected_task, excluded_path
+
 import argparse
 import json
 import re
@@ -31,12 +33,7 @@ REQUIRED_DIRS = [
     "governance",
 ]
 
-MCP_CONFIG_CANDIDATES = [
-    ".cursor/mcp.example.json",
-    ".cursor/mcp.json",
-]
-
-EXPECTED_MCP = [
+REGISTERED_MCP_CANDIDATES = [
     "chrome-devtools",
     "context7",
     "filesystem",
@@ -111,15 +108,13 @@ def _check_directories(hard_blockers: list[str], warnings: list[str]) -> None:
 
 
 def _check_mcp_config(warnings: list[str]) -> dict[str, Any]:
-    found = [rel for rel in MCP_CONFIG_CANDIDATES if (ROOT / rel).is_file()]
+    # Preserve the legacy presence-only probe outside the Codex task scope.
+    candidates = [".cursor/mcp.example.json", ".cursor/mcp.json"]
+    found = [rel for rel in candidates if (ROOT / rel).is_file()]
     if not found:
-        warnings.append("未找到 .cursor/mcp.example.json 或 .cursor/mcp.json")
-    return {
-        "status": "manual_check_required",
-        "expected": EXPECTED_MCP,
-        "notes": "本脚本不直接启用 MCP，只记录检查要求",
-        "config_files_found": found,
-    }
+        warnings.append("未找到 MCP 示例或项目配置")
+    return {"status": "manual_check_required", "expected": REGISTERED_MCP_CANDIDATES,
+            "config_files_found": found, "notes": "Presence is not runtime availability or authority"}
 
 
 def run_check() -> dict[str, Any]:
@@ -136,7 +131,7 @@ def run_check() -> dict[str, Any]:
     if git_info["status"] == "missing":
         hard_blockers.append("Git 不可用")
     elif git_info["status"] == "warning_not_in_repo":
-        warnings.append("当前目录不在 git 仓库中；finalize-round 的 commit/push 将失败")
+        warnings.append("当前目录不在 git 仓库中；只能执行非 Git 的只读检查")
 
     if node_info["status"] == "optional_missing":
         warnings.append("Node 未安装（可选，未来 UI/Playwright 可能需要）")
@@ -144,7 +139,9 @@ def run_check() -> dict[str, Any]:
         warnings.append("npm 未安装（可选）")
 
     _check_directories(hard_blockers, warnings)
-    mcp_info = _check_mcp_config(warnings)
+    mcp_info = ({"status": "not_probed", "runtime_available": None,
+                 "notes": "Codex-only scope; connector availability and authority are not inferred"}
+                if selected_task() else _check_mcp_config(warnings))
 
     tools = {
         "python": python_info,
@@ -163,6 +160,10 @@ def run_check() -> dict[str, Any]:
         },
         "mcp_servers": mcp_info,
     }
+
+    if selected_task():
+        tools.pop("cursor", None)
+        tools["codex"] = {"status": "runtime_unverified", "version": None}
 
     if hard_blockers:
         overall = "fail"
@@ -214,7 +215,8 @@ def _print_text(result: dict[str, Any]) -> None:
     print(f"Git: {tools['git']['status']}")
     print(f"Node: {tools['node']['status']}")
     print(f"npm: {tools['npm']['status']}")
-    print("Cursor MCP: manual_check_required")
+    if not selected_task():
+        print("Cursor MCP: manual_check_required")
     print("Codex: manual_check_required")
     print(f"总体状态: {result['overall_status']}")
     if result["warnings"]:
@@ -230,11 +232,19 @@ def _print_text(result: dict[str, Any]) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="personal-control-hub environment check")
     parser.add_argument("--json", action="store_true", help="输出 JSON")
+    parser.add_argument(
+        "--record",
+        action="store_true",
+        help="在当前任务已明确授权记录时，更新状态文件并追加日志；默认不写文件",
+    )
+    add_scope_argument(parser)
     args = parser.parse_args(argv)
+    activate_scope(args.task_id)
 
     result = run_check()
-    _write_status(result)
-    _append_log(result)
+    if args.record:
+        _write_status(result)
+        _append_log(result)
 
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
