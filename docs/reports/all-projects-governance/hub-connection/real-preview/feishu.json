@@ -1,0 +1,3248 @@
+{
+  "schema_version": "2.0",
+  "kind": "disabled_feishu_preview",
+  "config": {
+    "enabled": false,
+    "config_source": "env",
+    "env_keys": [
+      "FEISHU_APP_ID",
+      "FEISHU_APP_SECRET",
+      "FEISHU_WEBHOOK_URL"
+    ],
+    "write_back_allowed": false,
+    "requires_user_confirmation": true
+  },
+  "coverage": {
+    "registry_count": 26,
+    "local_count": 24,
+    "removed_local_count": 2,
+    "resolved_count": 0
+  },
+  "write_policy": "preview_only; no credential reads, sends, spaces or write-back",
+  "updates": [
+    {
+      "project_id": "ai-anime-short-factory",
+      "update_key": "ba9f958e5d1b979b8d635288a3ae0f786a2acb4c5a83091911b3e21c0009d5b6",
+      "source_record": {
+        "project_id": "ai-anime-short-factory",
+        "name": "AI Anime Short Factory",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "8efb69fbe6badbc3c34404e616841c73817ab60e0640e781bcb11da67bf811d3",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "AI Anime Short Factory",
+          "observed_at": "2026-09-08T07:09:33.367486Z",
+          "project_id": "ai-anime-short-factory",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "cbb13d60e3cadb49338ddab3e9a863b49d594575257c27556fac4f53654f3e38",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.136655,
+          "source_age_seconds": null
+        },
+        "update_key": "ba9f958e5d1b979b8d635288a3ae0f786a2acb4c5a83091911b3e21c0009d5b6"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "AI Anime Short Factory"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "AI Anime Short Factory (ai-anime-short-factory)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: ba9f958e5d1b979b8d635288a3ae0f786a2acb4c5a83091911b3e21c0009d5b6\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.367486Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"8efb69fbe6badbc3c34404e616841c73817ab60e0640e781bcb11da67bf811d3\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "ai-music-foundry",
+      "update_key": "f18029c6c5787b7ded0a107c0f4aa06645007c145f7bcf664725d87a3cf3d850",
+      "source_record": {
+        "project_id": "ai-music-foundry",
+        "name": "AI Music Foundry",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "59e81c91e30bcb01c06d461a1ff2588104143fbd45a3e3f8351a686ad5e6fd64",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "AI Music Foundry",
+          "observed_at": "2026-09-08T07:09:33.371430Z",
+          "project_id": "ai-music-foundry",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "51b08e39682cb7b8430c78d7ecbcad40becd918c6dd286cdccb8cecd348f660b",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.132711,
+          "source_age_seconds": null
+        },
+        "update_key": "f18029c6c5787b7ded0a107c0f4aa06645007c145f7bcf664725d87a3cf3d850"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "AI Music Foundry"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "AI Music Foundry (ai-music-foundry)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: f18029c6c5787b7ded0a107c0f4aa06645007c145f7bcf664725d87a3cf3d850\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.371430Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"59e81c91e30bcb01c06d461a1ff2588104143fbd45a3e3f8351a686ad5e6fd64\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "audio-clone",
+      "update_key": "90cabc7ed8d0365d351fbb75e97cda31fbd747ce4a7f8631f45a32b744b3206b",
+      "source_record": {
+        "project_id": "audio-clone",
+        "name": "Audio Clone",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "3ec5c1a84a58675ed143ca58762d87e7f9bdd9056b13110e30275b333dc00473",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "Audio Clone",
+          "observed_at": "2026-09-08T07:09:33.375155Z",
+          "project_id": "audio-clone",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "5b81ef6520c086409bfb7b32be0fe5ca748b554e97c516b56e369e63a8a699d5",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.128986,
+          "source_age_seconds": null
+        },
+        "update_key": "90cabc7ed8d0365d351fbb75e97cda31fbd747ce4a7f8631f45a32b744b3206b"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "Audio Clone"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "Audio Clone (audio-clone)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: 90cabc7ed8d0365d351fbb75e97cda31fbd747ce4a7f8631f45a32b744b3206b\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.375155Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"3ec5c1a84a58675ed143ca58762d87e7f9bdd9056b13110e30275b333dc00473\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "cognitive-asset-library",
+      "update_key": "eeeaf00b7dd573d8c1136f5c2e67923f1bb9f4d6875fa5f26bfa7a02f15fb265",
+      "source_record": {
+        "project_id": "cognitive-asset-library",
+        "name": "Cognitive Asset Library",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "500b86e6439baa035ae9475445309cd305a62aed0f15519b16e5d98f77b2f3c5",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "Cognitive Asset Library",
+          "observed_at": "2026-09-08T07:09:33.379090Z",
+          "project_id": "cognitive-asset-library",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "fa4117bf1db9ed551a2121727c2191bd4c7370cf54c9cdf0b7a9249de6a8e3a3",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.125051,
+          "source_age_seconds": null
+        },
+        "update_key": "eeeaf00b7dd573d8c1136f5c2e67923f1bb9f4d6875fa5f26bfa7a02f15fb265"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "Cognitive Asset Library"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "Cognitive Asset Library (cognitive-asset-library)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: eeeaf00b7dd573d8c1136f5c2e67923f1bb9f4d6875fa5f26bfa7a02f15fb265\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.379090Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"500b86e6439baa035ae9475445309cd305a62aed0f15519b16e5d98f77b2f3c5\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "computer-study-plan",
+      "update_key": "7f25d6b5bf5fe46293fa5a29e39a6daf964aa887a56d15df32cae89e1d4def2e",
+      "source_record": {
+        "project_id": "computer-study-plan",
+        "name": "Computer Study Plan",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "e9476d46c6f7293c50bb0643b4145867365d8988a10ded912e9386d01915e6a4",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "Computer Study Plan",
+          "observed_at": "2026-09-08T07:09:33.383061Z",
+          "project_id": "computer-study-plan",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "bedbd9a9d7a76e15b169cde2a18403c99775209c736ebfefccf7968078a4b6d5",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.12108,
+          "source_age_seconds": null
+        },
+        "update_key": "7f25d6b5bf5fe46293fa5a29e39a6daf964aa887a56d15df32cae89e1d4def2e"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "Computer Study Plan"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "Computer Study Plan (computer-study-plan)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: 7f25d6b5bf5fe46293fa5a29e39a6daf964aa887a56d15df32cae89e1d4def2e\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.383061Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"e9476d46c6f7293c50bb0643b4145867365d8988a10ded912e9386d01915e6a4\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "desktop-downloads-scripts",
+      "update_key": "5e5d1be6224cafcd25a2f58cb40e90df8cc6c3cf98e6d1fad99e16a6b1c8e061",
+      "source_record": {
+        "project_id": "desktop-downloads-scripts",
+        "name": "Desktop Downloads Scripts",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "571c85411e959567e5d0c6c0f7dca057f835aeb385e3f1f8fb83e259faae8e13",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "Desktop Downloads Scripts",
+          "observed_at": "2026-09-08T07:09:33.386878Z",
+          "project_id": "desktop-downloads-scripts",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "5ef249a7ddfe108d5284390b4a08a1191912d02c4bd460cd33e6f8ca3acc667b",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.117263,
+          "source_age_seconds": null
+        },
+        "update_key": "5e5d1be6224cafcd25a2f58cb40e90df8cc6c3cf98e6d1fad99e16a6b1c8e061"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "Desktop Downloads Scripts"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "Desktop Downloads Scripts (desktop-downloads-scripts)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: 5e5d1be6224cafcd25a2f58cb40e90df8cc6c3cf98e6d1fad99e16a6b1c8e061\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.386878Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"571c85411e959567e5d0c6c0f7dca057f835aeb385e3f1f8fb83e259faae8e13\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "desktop-jav-tools",
+      "update_key": "474f726f153c7ff2c3b7ae8189f60a9caf3354e298a8f072c1fd6a38a8fb06ad",
+      "source_record": {
+        "project_id": "desktop-jav-tools",
+        "name": "Desktop JAV Python Tools",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "a65d58611af8123e22e6ca9bac9bc711c8baebdce7fa3c8f447c9346b71b595d",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "Desktop JAV Python Tools",
+          "observed_at": "2026-09-08T07:09:33.390862Z",
+          "project_id": "desktop-jav-tools",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "97fd5e3fc6d5372111c8d232b7872d19a353f5cbce940fd0267acc4659efbc9c",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.113279,
+          "source_age_seconds": null
+        },
+        "update_key": "474f726f153c7ff2c3b7ae8189f60a9caf3354e298a8f072c1fd6a38a8fb06ad"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "Desktop JAV Python Tools"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "Desktop JAV Python Tools (desktop-jav-tools)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: 474f726f153c7ff2c3b7ae8189f60a9caf3354e298a8f072c1fd6a38a8fb06ad\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.390862Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"a65d58611af8123e22e6ca9bac9bc711c8baebdce7fa3c8f447c9346b71b595d\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "desktop-magnet",
+      "update_key": "e3a3d9ddd6c96a22e181a046f7866b1dd312b059b7ac73de3c889f30da2debdd",
+      "source_record": {
+        "project_id": "desktop-magnet",
+        "name": "Desktop Magnet",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "e1459acc53fc8171b996ef1106dc55e1a421b526cd185753d730e66243544ab8",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "Desktop Magnet",
+          "observed_at": "2026-09-08T07:09:33.394796Z",
+          "project_id": "desktop-magnet",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "a6579a8a36ecb920ef9a0836d33c896f62f62acb0a489e903a73d713095d200d",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.109345,
+          "source_age_seconds": null
+        },
+        "update_key": "e3a3d9ddd6c96a22e181a046f7866b1dd312b059b7ac73de3c889f30da2debdd"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "Desktop Magnet"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "Desktop Magnet (desktop-magnet)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: e3a3d9ddd6c96a22e181a046f7866b1dd312b059b7ac73de3c889f30da2debdd\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.394796Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"e1459acc53fc8171b996ef1106dc55e1a421b526cd185753d730e66243544ab8\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "desktop-tool",
+      "update_key": "5b4409184f800cae7c5fae541ca19c01dbb13d54d03a4968519345a3b6bd1d72",
+      "source_record": {
+        "project_id": "desktop-tool",
+        "name": "Desktop Tool",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "118dd5052426556c4a44dcdcaac0a873f5ba264b1b0af1b09dce540a6ef1c020",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "Desktop Tool",
+          "observed_at": "2026-09-08T07:09:33.398989Z",
+          "project_id": "desktop-tool",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "491b57ca8d63167984de7fc59fb987e42874a794dcd45ec1fc2737f8dde7251a",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.105152,
+          "source_age_seconds": null
+        },
+        "update_key": "5b4409184f800cae7c5fae541ca19c01dbb13d54d03a4968519345a3b6bd1d72"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "Desktop Tool"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "Desktop Tool (desktop-tool)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: 5b4409184f800cae7c5fae541ca19c01dbb13d54d03a4968519345a3b6bd1d72\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.398989Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"118dd5052426556c4a44dcdcaac0a873f5ba264b1b0af1b09dce540a6ef1c020\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "game-removed-local",
+      "update_key": "6c5966ccb77fbe96eb9048ded08306a08a722d896904b35ea3b569bf8a263fdd",
+      "source_record": {
+        "project_id": "game-removed-local",
+        "name": "game",
+        "local_presence": "removed_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "removed_local",
+          "errors": [
+            {
+              "code": "removed_local",
+              "message": "已从本地移除；保留登记身份，不扫描、不写入、不重试。"
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "removed_local",
+            "reason": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "root_binding": null,
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "game",
+          "observed_at": "2026-09-08T07:09:33.403029Z",
+          "project_id": "game-removed-local",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "current_work.accepted": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "current_work.completed": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "current_work.next_action": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "current_work.objective": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "current_work.owner_role": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "current_work.phase": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "current_work.round": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "current_work.status": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "delivery.branch": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "delivery.commit": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "delivery.receipt_ref": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "delivery.remote": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "delivery.status": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "progress.completed": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "progress.counting_basis": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "progress.milestones": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "progress.total": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "verification.accepted_basis": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "verification.evidence_refs": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "verification.status": "已从本地移除；保留登记身份，不扫描、不写入、不重试。"
+          },
+          "update_key": "7cb1f4ebf3907236ce962cddecdab7c3d765334926e24843b8248d7e07c36609",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "removed_local",
+          "reason": "已从本地移除；不扫描、不写入、不重试。",
+          "authority_drift": false,
+          "read_age_seconds": 0.101112,
+          "source_age_seconds": null
+        },
+        "update_key": "6c5966ccb77fbe96eb9048ded08306a08a722d896904b35ea3b569bf8a263fdd"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "game"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "game (game-removed-local)\n读取: removed_local; 新鲜度: removed_local\n原因: 已从本地移除；不扫描、不写入、不重试。\n更新标识: 6c5966ccb77fbe96eb9048ded08306a08a722d896904b35ea3b569bf8a263fdd\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.403029Z\nlatest_attempt.disposition: removed_local\nlatest_attempt.errors: [{\"code\": \"removed_local\", \"message\": \"已从本地移除；保留登记身份，不扫描、不写入、不重试。\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"removed_local\", \"reason\": \"已从本地移除；保留登记身份，不扫描、不写入、不重试。\", \"root_binding\": null, \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "light-novel",
+      "update_key": "7356ff9e215cafd24389492ef308695bf0d23e571e8c411267358a38cc1eb04b",
+      "source_record": {
+        "project_id": "light-novel",
+        "name": "Light Novel",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "3afd122a8ab303accaddc93f29193a2ecea96e4de97f92f85d465429806ecba8",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "Light Novel",
+          "observed_at": "2026-09-08T07:09:33.406754Z",
+          "project_id": "light-novel",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "f1b41f90fae5160c2ff0e19165a7b5f6a37d0c8ec071fd2ba39c239daf05026e",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.097387,
+          "source_age_seconds": null
+        },
+        "update_key": "7356ff9e215cafd24389492ef308695bf0d23e571e8c411267358a38cc1eb04b"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "Light Novel"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "Light Novel (light-novel)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: 7356ff9e215cafd24389492ef308695bf0d23e571e8c411267358a38cc1eb04b\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.406754Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"3afd122a8ab303accaddc93f29193a2ecea96e4de97f92f85d465429806ecba8\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "manga-localizer",
+      "update_key": "a07ddc76c7fbf37878407d16c0e3ee5ac78c5173f3e1351fe21d7c8d699c3ffa",
+      "source_record": {
+        "project_id": "manga-localizer",
+        "name": "Manga Localizer",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "f38779d80230e542245639ca0dcf274eb811e5ab33fd6c3e0570856c660d8f47",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "Manga Localizer",
+          "observed_at": "2026-09-08T07:09:33.410730Z",
+          "project_id": "manga-localizer",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "067666dcd4e738dfc2936df25cd2c802d95b4724a785e3bd7b88190c0d71f47b",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.093411,
+          "source_age_seconds": null
+        },
+        "update_key": "a07ddc76c7fbf37878407d16c0e3ee5ac78c5173f3e1351fe21d7c8d699c3ffa"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "Manga Localizer"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "Manga Localizer (manga-localizer)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: a07ddc76c7fbf37878407d16c0e3ee5ac78c5173f3e1351fe21d7c8d699c3ffa\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.410730Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"f38779d80230e542245639ca0dcf274eb811e5ab33fd6c3e0570856c660d8f47\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "manga-removed-local",
+      "update_key": "fd9d424b5ddd03c42616d6f9235c0249c0f468ab273d26fc6deef341f93472e7",
+      "source_record": {
+        "project_id": "manga-removed-local",
+        "name": "manga",
+        "local_presence": "removed_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "removed_local",
+          "errors": [
+            {
+              "code": "removed_local",
+              "message": "已从本地移除；保留登记身份，不扫描、不写入、不重试。"
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "removed_local",
+            "reason": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "root_binding": null,
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "manga",
+          "observed_at": "2026-09-08T07:09:33.414912Z",
+          "project_id": "manga-removed-local",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "current_work.accepted": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "current_work.completed": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "current_work.next_action": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "current_work.objective": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "current_work.owner_role": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "current_work.phase": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "current_work.round": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "current_work.status": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "delivery.branch": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "delivery.commit": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "delivery.receipt_ref": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "delivery.remote": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "delivery.status": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "progress.completed": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "progress.counting_basis": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "progress.milestones": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "progress.total": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "verification.accepted_basis": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "verification.evidence_refs": "已从本地移除；保留登记身份，不扫描、不写入、不重试。",
+            "verification.status": "已从本地移除；保留登记身份，不扫描、不写入、不重试。"
+          },
+          "update_key": "f346658566849fc175bdaa2e08e9762cb3dc4d1179cfc77ded6cd4dcd306ee59",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "removed_local",
+          "reason": "已从本地移除；不扫描、不写入、不重试。",
+          "authority_drift": false,
+          "read_age_seconds": 0.089229,
+          "source_age_seconds": null
+        },
+        "update_key": "fd9d424b5ddd03c42616d6f9235c0249c0f468ab273d26fc6deef341f93472e7"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "manga"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "manga (manga-removed-local)\n读取: removed_local; 新鲜度: removed_local\n原因: 已从本地移除；不扫描、不写入、不重试。\n更新标识: fd9d424b5ddd03c42616d6f9235c0249c0f468ab273d26fc6deef341f93472e7\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.414912Z\nlatest_attempt.disposition: removed_local\nlatest_attempt.errors: [{\"code\": \"removed_local\", \"message\": \"已从本地移除；保留登记身份，不扫描、不写入、不重试。\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"removed_local\", \"reason\": \"已从本地移除；保留登记身份，不扫描、不写入、不重试。\", \"root_binding\": null, \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "mpv-clip-workbench",
+      "update_key": "a26f26f9f4f6c46e2f436c6f9f5d51eb46dd13eb6996b63f0dc9747be0ed4d14",
+      "source_record": {
+        "project_id": "mpv-clip-workbench",
+        "name": "MPV Clip Workbench",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "9d7914ace1dbb0cef591d0a21b120508c4d9d2232812eece68686c970fe3160f",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "MPV Clip Workbench",
+          "observed_at": "2026-09-08T07:09:33.418835Z",
+          "project_id": "mpv-clip-workbench",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "8632601e8e4a86628f8a79a90fe7b82ca6e956386ee02f6c3aa0dcda8ae9853e",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.085306,
+          "source_age_seconds": null
+        },
+        "update_key": "a26f26f9f4f6c46e2f436c6f9f5d51eb46dd13eb6996b63f0dc9747be0ed4d14"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "MPV Clip Workbench"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "MPV Clip Workbench (mpv-clip-workbench)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: a26f26f9f4f6c46e2f436c6f9f5d51eb46dd13eb6996b63f0dc9747be0ed4d14\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.418835Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"9d7914ace1dbb0cef591d0a21b120508c4d9d2232812eece68686c970fe3160f\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "novel-continuation-agent",
+      "update_key": "eba1b2cab78d91517c5cdd3cce0876db19c51a8d5789c533c71501df69c034d7",
+      "source_record": {
+        "project_id": "novel-continuation-agent",
+        "name": "Novel Continuation Agent",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "87d7d7a5a40464bbaf75361659e61f8064977b1b93a8353f334cf22b78d47bd7",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "Novel Continuation Agent",
+          "observed_at": "2026-09-08T07:09:33.423088Z",
+          "project_id": "novel-continuation-agent",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "b277d296fe56f9a6cfa0dd688ff274c11cd19aec66d85a3844c70a938c5b256e",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.081053,
+          "source_age_seconds": null
+        },
+        "update_key": "eba1b2cab78d91517c5cdd3cce0876db19c51a8d5789c533c71501df69c034d7"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "Novel Continuation Agent"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "Novel Continuation Agent (novel-continuation-agent)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: eba1b2cab78d91517c5cdd3cce0876db19c51a8d5789c533c71501df69c034d7\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.423088Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"87d7d7a5a40464bbaf75361659e61f8064977b1b93a8353f334cf22b78d47bd7\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "personal-control-hub",
+      "update_key": "7d7c803841fe977192355c65fbadff8754893119a8f362c768a7122ea3de1ab9",
+      "source_record": {
+        "project_id": "personal-control-hub",
+        "name": "personal-control-hub",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "d7d8425386eac535c83067cf7b1304490ec4e4d7468e866048c224bcaa0a03c3",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "personal-control-hub",
+          "observed_at": "2026-09-08T07:09:33.427321Z",
+          "project_id": "personal-control-hub",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "c59c60fd928581ce5c1309e6e2c8c0aed42cb6070667f74142b110a4e83be5d2",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.07682,
+          "source_age_seconds": null
+        },
+        "update_key": "7d7c803841fe977192355c65fbadff8754893119a8f362c768a7122ea3de1ab9"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "personal-control-hub"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "personal-control-hub (personal-control-hub)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: 7d7c803841fe977192355c65fbadff8754893119a8f362c768a7122ea3de1ab9\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.427321Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"d7d8425386eac535c83067cf7b1304490ec4e4d7468e866048c224bcaa0a03c3\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "pixel-world-asset-forge",
+      "update_key": "31c99ff49c943ae419f9a99778d8c639da86c4e6bd23633dfc008d4045ed61f6",
+      "source_record": {
+        "project_id": "pixel-world-asset-forge",
+        "name": "Pixel World Asset Forge",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "1678f903c8c81ae0449ec6b331040042f7e63d912fb5211c48874bdd26135b8e",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "Pixel World Asset Forge",
+          "observed_at": "2026-09-08T07:09:33.431833Z",
+          "project_id": "pixel-world-asset-forge",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "7917f77672e68f6eb5e6b8ca840dc86bf2dc194eb786d192e83c6b2129fb0d3a",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.072308,
+          "source_age_seconds": null
+        },
+        "update_key": "31c99ff49c943ae419f9a99778d8c639da86c4e6bd23633dfc008d4045ed61f6"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "Pixel World Asset Forge"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "Pixel World Asset Forge (pixel-world-asset-forge)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: 31c99ff49c943ae419f9a99778d8c639da86c4e6bd23633dfc008d4045ed61f6\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.431833Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"1678f903c8c81ae0449ec6b331040042f7e63d912fb5211c48874bdd26135b8e\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "pycharm-agent-workspace",
+      "update_key": "b6260ea542951e628b0fa923e52c56c5381236f8398ca0994dd49ac7f9bce633",
+      "source_record": {
+        "project_id": "pycharm-agent-workspace",
+        "name": "PyCharm Agent Workspace",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "f47202ae53a8ca63c79f629ca702801eb682e4f291c44d965689f3a8c32bf0e4",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "PyCharm Agent Workspace",
+          "observed_at": "2026-09-08T07:09:33.436363Z",
+          "project_id": "pycharm-agent-workspace",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "ad76b5e47e6efec5ad2256f4e837c35f5b5d5b260dc23506e545ca3ea835f030",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.067778,
+          "source_age_seconds": null
+        },
+        "update_key": "b6260ea542951e628b0fa923e52c56c5381236f8398ca0994dd49ac7f9bce633"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "PyCharm Agent Workspace"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "PyCharm Agent Workspace (pycharm-agent-workspace)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: b6260ea542951e628b0fa923e52c56c5381236f8398ca0994dd49ac7f9bce633\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.436363Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"f47202ae53a8ca63c79f629ca702801eb682e4f291c44d965689f3a8c32bf0e4\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "pycharm-misc-project",
+      "update_key": "3a3f5e9ba91833a9d065c3c03412e122dfbecc11e1b2f06afcbdec1c93b48f3e",
+      "source_record": {
+        "project_id": "pycharm-misc-project",
+        "name": "PyCharm Misc Project",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "7b8bc36499e8cf6003f1e578c85acf90e2e4255094ea61aa9513963b2e9b94f2",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "PyCharm Misc Project",
+          "observed_at": "2026-09-08T07:09:33.441453Z",
+          "project_id": "pycharm-misc-project",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "152a76c78fa65c7696b1cb95fd37c803246337d1fa8d8cae2202e2812b253460",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.062688,
+          "source_age_seconds": null
+        },
+        "update_key": "3a3f5e9ba91833a9d065c3c03412e122dfbecc11e1b2f06afcbdec1c93b48f3e"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "PyCharm Misc Project"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "PyCharm Misc Project (pycharm-misc-project)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: 3a3f5e9ba91833a9d065c3c03412e122dfbecc11e1b2f06afcbdec1c93b48f3e\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.441453Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"7b8bc36499e8cf6003f1e578c85acf90e2e4255094ea61aa9513963b2e9b94f2\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "resilient-personal-network",
+      "update_key": "aec597a928247b77af372f5a0e99b50b1c4f5b3ea598004492ddf6017ea0fb47",
+      "source_record": {
+        "project_id": "resilient-personal-network",
+        "name": "Resilient Personal Network",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "57d9d578a7643f62eaca95a23971da9a0c4021beb4c3bde4a5aa6960dc20cfd3",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "Resilient Personal Network",
+          "observed_at": "2026-09-08T07:09:33.446123Z",
+          "project_id": "resilient-personal-network",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "d0c8693d99253094946b9a1d24930349f1ef9d372833bbb328b8cbc9e8d3fab5",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.058018,
+          "source_age_seconds": null
+        },
+        "update_key": "aec597a928247b77af372f5a0e99b50b1c4f5b3ea598004492ddf6017ea0fb47"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "Resilient Personal Network"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "Resilient Personal Network (resilient-personal-network)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: aec597a928247b77af372f5a0e99b50b1c4f5b3ea598004492ddf6017ea0fb47\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.446123Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"57d9d578a7643f62eaca95a23971da9a0c4021beb4c3bde4a5aa6960dc20cfd3\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "storage_governance",
+      "update_key": "71652edd9fb36778f2b53bf86ccb758429c8bd4206e57d447832d2c6de772989",
+      "source_record": {
+        "project_id": "storage_governance",
+        "name": "StorageGovernance",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "b4b4c51f1933178efe5f3c2de62e05b323c4445dd91a85a43e43f5bbf6e73f98",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "StorageGovernance",
+          "observed_at": "2026-09-08T07:09:33.451397Z",
+          "project_id": "storage_governance",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "d0677397035033f1473ea0d4c3f379c24858a518a269ae8aa20cb9f4ff4e2fa9",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.052744,
+          "source_age_seconds": null
+        },
+        "update_key": "71652edd9fb36778f2b53bf86ccb758429c8bd4206e57d447832d2c6de772989"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "StorageGovernance"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "StorageGovernance (storage_governance)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: 71652edd9fb36778f2b53bf86ccb758429c8bd4206e57d447832d2c6de772989\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.451397Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"b4b4c51f1933178efe5f3c2de62e05b323c4445dd91a85a43e43f5bbf6e73f98\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "story-faceless-utopia",
+      "update_key": "d2c87b9fda4add8c939db1c113a4679e362f93f1a7b55cf2b9d4c4414ae12a54",
+      "source_record": {
+        "project_id": "story-faceless-utopia",
+        "name": "Story Faceless Utopia",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "c288f4bfadfa1c9e99b2ccbbfe5094556750fdb0a0043aa7cb62d4bc6f9d7e38",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "Story Faceless Utopia",
+          "observed_at": "2026-09-08T07:09:33.456362Z",
+          "project_id": "story-faceless-utopia",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "953324fd20b6e8dc68b610c6f251b688c1a459f73d68f2f093225b959808f454",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.047779,
+          "source_age_seconds": null
+        },
+        "update_key": "d2c87b9fda4add8c939db1c113a4679e362f93f1a7b55cf2b9d4c4414ae12a54"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "Story Faceless Utopia"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "Story Faceless Utopia (story-faceless-utopia)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: d2c87b9fda4add8c939db1c113a4679e362f93f1a7b55cf2b9d4c4414ae12a54\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.456362Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"c288f4bfadfa1c9e99b2ccbbfe5094556750fdb0a0043aa7cb62d4bc6f9d7e38\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "universal-player",
+      "update_key": "d95393adc2287e6c4a22e820581e409985360e5d7bb971c14a35290384da2a78",
+      "source_record": {
+        "project_id": "universal-player",
+        "name": "Universal Player",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "03d71e133dc8cdd162a260f19bdfc69a276cc667653886ad379accc7cc08ab7c",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "Universal Player",
+          "observed_at": "2026-09-08T07:09:33.460921Z",
+          "project_id": "universal-player",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "304210f13072dfc2a3016ecc404db3dc9c66c23f6394d424bd0046997da1c5a8",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.04322,
+          "source_age_seconds": null
+        },
+        "update_key": "d95393adc2287e6c4a22e820581e409985360e5d7bb971c14a35290384da2a78"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "Universal Player"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "Universal Player (universal-player)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: d95393adc2287e6c4a22e820581e409985360e5d7bb971c14a35290384da2a78\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.460921Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"03d71e133dc8cdd162a260f19bdfc69a276cc667653886ad379accc7cc08ab7c\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "wechat-article-scheduler",
+      "update_key": "824574d13dddee600905ee6ffcf9af852a09cbba36aa2157c1b9c327654fc48a",
+      "source_record": {
+        "project_id": "wechat-article-scheduler",
+        "name": "WeChat Article Scheduler",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "edaeacb022f93953bb23d983ca36ec5ca2fa3ea4ef908e4cbeefcfef29ec76bc",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "WeChat Article Scheduler",
+          "observed_at": "2026-09-08T07:09:33.465731Z",
+          "project_id": "wechat-article-scheduler",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "4b98f229b5004c9c3a3232e92f89ed4d13677bfa8557cbf4b94c6b355ff52adb",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.03841,
+          "source_age_seconds": null
+        },
+        "update_key": "824574d13dddee600905ee6ffcf9af852a09cbba36aa2157c1b9c327654fc48a"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "WeChat Article Scheduler"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "WeChat Article Scheduler (wechat-article-scheduler)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: 824574d13dddee600905ee6ffcf9af852a09cbba36aa2157c1b9c327654fc48a\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.465731Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"edaeacb022f93953bb23d983ca36ec5ca2fa3ea4ef908e4cbeefcfef29ec76bc\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "youtube-hq-downloader",
+      "update_key": "cb7aa3e7d216fca26afc038971daad7a806dadb42c356cb2b588caae7c037849",
+      "source_record": {
+        "project_id": "youtube-hq-downloader",
+        "name": "YouTube HQ Downloader",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "d32e898e92c283f94003aaa8a09eb8245d4a3042452cbbd9d9850893f3cb44af",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "YouTube HQ Downloader",
+          "observed_at": "2026-09-08T07:09:33.470549Z",
+          "project_id": "youtube-hq-downloader",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "13b44e020338e18b66042c438b114505507c54af845dba3c5b9dd741ed47f2bc",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.033592,
+          "source_age_seconds": null
+        },
+        "update_key": "cb7aa3e7d216fca26afc038971daad7a806dadb42c356cb2b588caae7c037849"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "YouTube HQ Downloader"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "YouTube HQ Downloader (youtube-hq-downloader)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: cb7aa3e7d216fca26afc038971daad7a806dadb42c356cb2b588caae7c037849\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.470549Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"d32e898e92c283f94003aaa8a09eb8245d4a3042452cbbd9d9850893f3cb44af\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "project_id": "zarathustra-adaptation",
+      "update_key": "5e668fab9492c6c6ffad4ae94ab4460f10d20d179accc14ec40373a5f4c92250",
+      "source_record": {
+        "project_id": "zarathustra-adaptation",
+        "name": "Zarathustra Adaptation",
+        "local_presence": "registered_local",
+        "latest_attempt": {
+          "authority": {
+            "adapter_version": "2.0",
+            "registry_hash": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+            "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+          },
+          "business": {
+            "blockers": null,
+            "current_work": {
+              "accepted": null,
+              "completed": null,
+              "next_action": null,
+              "objective": null,
+              "owner_role": null,
+              "phase": null,
+              "round": null,
+              "status": null
+            },
+            "delivery": {
+              "branch": null,
+              "commit": null,
+              "receipt_ref": null,
+              "remote": null,
+              "status": null
+            },
+            "progress": {
+              "completed": null,
+              "counting_basis": null,
+              "milestones": null,
+              "total": null
+            },
+            "verification": {
+              "accepted_basis": null,
+              "evidence_refs": null,
+              "status": null
+            }
+          },
+          "declaration": null,
+          "disposition": "missing_declaration",
+          "errors": [
+            {
+              "code": "missing_declaration",
+              "message": "Project has no hub.connection.yaml declaration."
+            }
+          ],
+          "field_provenance": {},
+          "freshness": {
+            "max_read_age_seconds": 86400,
+            "read_status": "missing_declaration",
+            "reason": "Project has no hub.connection.yaml declaration.",
+            "root_binding": "36bd69c4cba50986124bc6d89326346db41e8a8e9d6a6dc02cff42a7afba5286",
+            "stale": true
+          },
+          "kind": "source_resolution",
+          "name": "Zarathustra Adaptation",
+          "observed_at": "2026-09-08T07:09:33.475432Z",
+          "project_id": "zarathustra-adaptation",
+          "schema_version": "2.0",
+          "sources": [],
+          "success": false,
+          "unknown_fields": {
+            "blockers": "Project has no hub.connection.yaml declaration.",
+            "current_work.accepted": "Project has no hub.connection.yaml declaration.",
+            "current_work.completed": "Project has no hub.connection.yaml declaration.",
+            "current_work.next_action": "Project has no hub.connection.yaml declaration.",
+            "current_work.objective": "Project has no hub.connection.yaml declaration.",
+            "current_work.owner_role": "Project has no hub.connection.yaml declaration.",
+            "current_work.phase": "Project has no hub.connection.yaml declaration.",
+            "current_work.round": "Project has no hub.connection.yaml declaration.",
+            "current_work.status": "Project has no hub.connection.yaml declaration.",
+            "delivery.branch": "Project has no hub.connection.yaml declaration.",
+            "delivery.commit": "Project has no hub.connection.yaml declaration.",
+            "delivery.receipt_ref": "Project has no hub.connection.yaml declaration.",
+            "delivery.remote": "Project has no hub.connection.yaml declaration.",
+            "delivery.status": "Project has no hub.connection.yaml declaration.",
+            "progress.completed": "Project has no hub.connection.yaml declaration.",
+            "progress.counting_basis": "Project has no hub.connection.yaml declaration.",
+            "progress.milestones": "Project has no hub.connection.yaml declaration.",
+            "progress.total": "Project has no hub.connection.yaml declaration.",
+            "verification.accepted_basis": "Project has no hub.connection.yaml declaration.",
+            "verification.evidence_refs": "Project has no hub.connection.yaml declaration.",
+            "verification.status": "Project has no hub.connection.yaml declaration."
+          },
+          "update_key": "235970064e995e68b1839498b26b9646eb3e446965bfe9c1ec392c453ac3d08b",
+          "validation_entry": []
+        },
+        "last_success": null,
+        "freshness": {
+          "state": "unknown",
+          "reason": "Project has no hub.connection.yaml declaration.",
+          "authority_drift": false,
+          "read_age_seconds": 0.028709,
+          "source_age_seconds": null
+        },
+        "update_key": "5e668fab9492c6c6ffad4ae94ab4460f10d20d179accc14ec40373a5f4c92250"
+      },
+      "card": {
+        "config": {
+          "wide_screen_mode": true
+        },
+        "header": {
+          "title": {
+            "tag": "plain_text",
+            "content": "Zarathustra Adaptation"
+          }
+        },
+        "elements": [
+          {
+            "tag": "div",
+            "text": {
+              "tag": "plain_text",
+              "content": "Zarathustra Adaptation (zarathustra-adaptation)\n读取: missing_declaration; 新鲜度: unknown\n原因: Project has no hub.connection.yaml declaration.\n更新标识: 5e668fab9492c6c6ffad4ae94ab4460f10d20d179accc14ec40373a5f4c92250\n最新读取证据（包括失败，独立于历史成功）：\nlatest_attempt.observed_at: 2026-09-08T07:09:33.475432Z\nlatest_attempt.disposition: missing_declaration\nlatest_attempt.errors: [{\"code\": \"missing_declaration\", \"message\": \"Project has no hub.connection.yaml declaration.\"}]\nlatest_attempt.declaration: unknown\nlatest_attempt.sources: []\nlatest_attempt.freshness: {\"max_read_age_seconds\": 86400, \"read_status\": \"missing_declaration\", \"reason\": \"Project has no hub.connection.yaml declaration.\", \"root_binding\": \"36bd69c4cba50986124bc6d89326346db41e8a8e9d6a6dc02cff42a7afba5286\", \"stale\": true}\n业务状态、进度、阻塞及下一步: unknown；尚无有效来源。"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

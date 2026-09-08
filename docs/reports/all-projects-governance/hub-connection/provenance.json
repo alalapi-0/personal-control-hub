@@ -1,0 +1,99 @@
+{
+  "contract": "ALL-PROJECTS-CODEX-GOVERNANCE-V1-HUB-CONNECTION-v1",
+  "source_checkout": "0ca1ee547990fd876e9917c8c6ee1fa7d2bb8142",
+  "original_scope": "strictly read-only; 19 registered source/protected hashes and HEAD rechecked unchanged",
+  "source_to_destination": [
+    {
+      "source": "src/hub/connection_records.py",
+      "source_sha256": "486cc52f2319a344bd2bab5094b5ef4cc6489e2c497b11011ab5f6e79aa7d7f2",
+      "destination": "src/hub/connection_records.py",
+      "destination_sha256": "24ed402167f7811dd4cb12ebb3e08237a57f32e0a1aedc6d5e0bd2966d80e733",
+      "dependency_reason": "Reuse canonical hash, assertions and timestamp/type validation; replace UI PASS and lifecycle-collapse semantics with traceable business fields."
+    },
+    {
+      "source": "src/hub/connections.py",
+      "source_sha256": "79207a22991f8cd7eeb28dd508cefc0b29426836745dd0b16dd8a1e0c36291e6",
+      "destination": "src/hub/connections.py",
+      "destination_sha256": "b9fa95e08272b8747dc0326ac149ba6c384993a9e1bc131125929ec617619033",
+      "dependency_reason": "Reuse registry-load entry concept; parse a single frozen byte snapshot and typed selectors instead of scalar stringification."
+    },
+    {
+      "source": "src/hub/connection_sources.py",
+      "source_sha256": "cf7e57ad5a0062dbb5eda54590ef6c30967b72a379bca45c549ed33e561e36ad",
+      "destination": "src/hub/connection_sources.py",
+      "destination_sha256": "0648baa808ac566ff8c1e1a6f1e6c5a6b826b230787e32665424060776014435",
+      "dependency_reason": "Reuse no-follow file-descriptor walk; add same-open mtime/hash, root and source-alias binding, project-owned declaration, no UI authority dependency."
+    },
+    {
+      "source": "src/hub/connection_refresh.py",
+      "source_sha256": "8102392979ded0baf0c104efe2357fd90b87c1ad9c1d391048921db5145e206a",
+      "destination": "src/hub/connection_refresh.py",
+      "destination_sha256": "233bec16f3df68ae94524c1a3b7f43a95d7ae57f5200f10f57a4a6f659b0492f",
+      "dependency_reason": "Reuse durable SQLite/CAS/hash-chain/restart/offline validation; adapt v2 authority/paths and fix omitted current_authority in coordinator rebuild."
+    },
+    {
+      "source": "src/hub/project_service.py",
+      "source_sha256": "e4460359cfe1d835b4c70f9711ffc35b51a8adee104c1b007adb5288d231f7e7",
+      "destination": "src/hub/project_service.py",
+      "destination_sha256": "cc19844331af11519923f687201685db3640087efa284505313c0da8c292da0a",
+      "dependency_reason": "Reuse latest-attempt versus last-success separation; project-complete DTO from same ledger snapshot with age/authority checks."
+    },
+    {
+      "source": "data/design_governance/connection_adapters.json",
+      "source_sha256": "06df415a7ca906a1d779fa2867ab5dc18915ab2d8581bb65c7db85eeb6bcc5c6",
+      "destination": "data/connections/hub.connection.template.yaml",
+      "destination_sha256": "c2e19eae9083e323801fb83769daf46cf4696dcfa7da4594f9468342b129e727",
+      "dependency_reason": "Replace UI-plan-specific adapter authority with a source-owned declaration. Original adapters and all original UI consumers remain byte-preserved."
+    },
+    {
+      "source": "src/hub/paths.py",
+      "source_sha256": "d16a3457171cfff451406b0b51b00baf09571934cef1360aa5610305d41a9877",
+      "destination": "src/hub/paths.py",
+      "destination_sha256": "d16a3457171cfff451406b0b51b00baf09571934cef1360aa5610305d41a9877",
+      "dependency_reason": "Existing main PROJECT_ROOT remains the canonical Hub root; no source branch import required."
+    },
+    {
+      "source": "src/hub/__init__.py",
+      "source_sha256": "0c487b25bcc2442a0cb2d480bf0cc95213b6b2820db780b3daf6cf7593fb6fb4",
+      "destination": "src/hub/__init__.py",
+      "destination_sha256": "0c487b25bcc2442a0cb2d480bf0cc95213b6b2820db780b3daf6cf7593fb6fb4",
+      "dependency_reason": "Existing main package entry is preserved."
+    },
+    {
+      "source": "tests/test_hub_connections.py",
+      "source_sha256": "84ea069758690b3225817ddb21fc258732d3045b7621e9dacc85133827a4a80d",
+      "destination": "tests/test_hub_connections.py",
+      "destination_sha256": "05628f84ca2a5d94f8bde24aff1eb15190b79abc49df18c0a92b5a269ddc72a3",
+      "dependency_reason": "Refresh suite retains 17 existing ledger cases; remaining UI-specific tests are replaced with current strict source/record/consumer acceptance regressions."
+    },
+    {
+      "source": "tests/test_hub_sources.py",
+      "source_sha256": "4918876db5b7627c77e1d3d6cf95232290643eb5c336883cddafe75efa7562f0",
+      "destination": "tests/test_hub_sources.py",
+      "destination_sha256": "bda269b48ace4e7ae319cc421ca1c1f8b1bb690705f8f2ed8620cdb2b6051c26",
+      "dependency_reason": "Refresh suite retains 17 existing ledger cases; remaining UI-specific tests are replaced with current strict source/record/consumer acceptance regressions."
+    },
+    {
+      "source": "tests/test_hub_refresh.py",
+      "source_sha256": "5f60cad081d392e1eb3a85f211c7a7bffa2f87f7280726da764f74dcbbdf5160",
+      "destination": "tests/test_hub_refresh.py",
+      "destination_sha256": "b172dcbadc8fe1ebe3b9e04b1ca44f4475e993dcde24938914dfa4979e78446c",
+      "dependency_reason": "Refresh suite retains 17 existing ledger cases; remaining UI-specific tests are replaced with current strict source/record/consumer acceptance regressions."
+    },
+    {
+      "source": "tests/test_hub_project_service.py",
+      "source_sha256": "3c4c3cabc7fd574556468579cdcfc639585c0887a19452380cbb7f1610e81656",
+      "destination": "tests/test_hub_project_service.py",
+      "destination_sha256": "e2bf719989d61d4327ca3b2359dfc40be1df16aabd86058bdcbbd8e5b6868b0e",
+      "dependency_reason": "Refresh suite retains 17 existing ledger cases; remaining UI-specific tests are replaced with current strict source/record/consumer acceptance regressions."
+    }
+  ],
+  "preserved_main_consumers": [
+    "src/hub/cli.py: mcp list/policy and registry list",
+    "src/hub/services/* except previously placeholder integration_service.py"
+  ],
+  "excluded_dependencies": [
+    "UI/Figma source-plan/authority bundles, UI PASS gating and design-store connections are not business-source authority; their original checkout remains preserved."
+  ],
+  "current_tests": "60 unittest cases:48 connection/ledger/projection and12 bootstrap; local Python3.14.5 + PyYAML6.0.3; CI Python3.12."
+}

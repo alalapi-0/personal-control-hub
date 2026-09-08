@@ -1,0 +1,111 @@
+{
+  "contract": "ALL-PROJECTS-CODEX-GOVERNANCE-V1-HUB-CONNECTION-v1",
+  "lane": "GOVERNED",
+  "hub_main": "5705f811840d5490b375b9916ea74381f2bcc7f5",
+  "source_checkout": {
+    "registry_project_id": "personal-control-hub",
+    "role": "original dirty implementation source; strictly read-only in this unit",
+    "head": "0ca1ee547990fd876e9917c8c6ee1fa7d2bb8142",
+    "branch": "agent/governance-closure-20260812",
+    "hashes": {
+      "src/hub/connection_records.py": "486cc52f2319a344bd2bab5094b5ef4cc6489e2c497b11011ab5f6e79aa7d7f2",
+      "src/hub/connections.py": "79207a22991f8cd7eeb28dd508cefc0b29426836745dd0b16dd8a1e0c36291e6",
+      "src/hub/connection_sources.py": "cf7e57ad5a0062dbb5eda54590ef6c30967b72a379bca45c549ed33e561e36ad",
+      "src/hub/connection_refresh.py": "8102392979ded0baf0c104efe2357fd90b87c1ad9c1d391048921db5145e206a",
+      "src/hub/project_service.py": "e4460359cfe1d835b4c70f9711ffc35b51a8adee104c1b007adb5288d231f7e7",
+      "src/hub/paths.py": "d16a3457171cfff451406b0b51b00baf09571934cef1360aa5610305d41a9877",
+      "src/hub/__init__.py": "0c487b25bcc2442a0cb2d480bf0cc95213b6b2820db780b3daf6cf7593fb6fb4",
+      "data/design_governance/connection_adapters.json": "06df415a7ca906a1d779fa2867ab5dc18915ab2d8581bb65c7db85eeb6bcc5c6",
+      "tests/test_hub_connections.py": "84ea069758690b3225817ddb21fc258732d3045b7621e9dacc85133827a4a80d",
+      "tests/test_hub_sources.py": "4918876db5b7627c77e1d3d6cf95232290643eb5c336883cddafe75efa7562f0",
+      "tests/test_hub_refresh.py": "5f60cad081d392e1eb3a85f211c7a7bffa2f87f7280726da764f74dcbbdf5160",
+      "tests/test_hub_project_service.py": "3c4c3cabc7fd574556468579cdcfc639585c0887a19452380cbb7f1610e81656",
+      "AGENTS.md": "e125d3a9c3a1c2961b3c9619f23ad2456d5645f2f41986c92c4a9ba00d9f7ca4",
+      "STATE.yaml": "24f56160f967628436403f46158ce7b1645be10f6c8a339350f9d082119b8054",
+      "governance/agent_policy.yaml": "2b9f8ee1bdea519fafc7772f7b45999c1856a2baae64f84a21b7c64ac069b68a",
+      "data/gates/auto_advance_policy.yaml": "47a48652d107e5e9e6e5251ca8e500862b2b00665d46187c2f3c9294f9766f6b",
+      "data/mcp/mcp_approval_policy.yaml": "54330d0612d652cd41152f40ab23fb1b935cf34e322476356fb118ec772e8aff",
+      "scripts/agent_gate.py": "3f534a7550833e8ae95c8a893c3e625f24f7957ea7aac3c0c1e4b0f7e75c8f95",
+      "scripts/auto_advance_runner.py": "1a93d285b3e3dd8399ecfd0efab548fb284d7ffb4d2e6905d7dcec94d543e815"
+    },
+    "current_work_sha256": "a03d8cb9fcdf5679ac7a31177175ed14f8c852e55fdb585163aa9ecf600df87d",
+    "status_excluding_cursor_paths": [
+      " M AGENTS.md",
+      " M STATE.yaml",
+      " M data/gates/auto_advance_policy.yaml",
+      " M data/mcp/mcp_approval_policy.yaml",
+      " M governance/agent_policy.yaml",
+      " M prompts/codex_project_driver.md",
+      " M scripts/agent_gate.py",
+      " M scripts/auto_advance_runner.py",
+      "?? .playwright-mcp/console-2026-09-06T03-39-13-535Z.log",
+      "?? .playwright-mcp/console-2026-09-06T07-11-02-049Z.log",
+      "?? .playwright-mcp/page-2026-09-06T03-39-13-753Z.yml",
+      "?? .playwright-mcp/ui-export-519c97cc-d4c4-4c3c-ac91-1508f58874aa.zip",
+      "?? .playwright-mcp/ui-export-bb842192-64ec-4246-8a15-04e62f5e7a1e.zip",
+      "?? .playwright-mcp/ui-export-c65d5662-a43c-41c2-bcaa-9fb6dca87602.zip",
+      "?? data/design_governance/design-store.json.lock",
+      "?? data/design_governance/multi-project-figma-redesign-v1.json",
+      "?? docs/all_projects_governance_execution.md",
+      "?? docs/global_agent_governance_execution.md",
+      "?? docs/reports/ui_design_governance/figma-source-observation-v1.json",
+      "?? docs/reports/ui_design_governance/unit-08/delivery.json",
+      "?? docs/reports/ui_design_governance/unit-09/delivery.json",
+      "?? docs/reports/ui_design_governance/unit-10/delivery.json",
+      "?? docs/reports/ui_design_governance/unit-11/delivery.json",
+      "?? docs/reports/ui_design_governance/unit-13/delivery.json",
+      "?? docs/reports/ui_design_governance/unit-14/delivery.json",
+      "?? prompts/all_projects_governance_goal_mode.md"
+    ]
+  },
+  "selected_source_paths": [
+    "src/hub/connection_records.py",
+    "src/hub/connections.py",
+    "src/hub/connection_sources.py",
+    "src/hub/connection_refresh.py",
+    "src/hub/project_service.py",
+    "src/hub/paths.py",
+    "src/hub/__init__.py",
+    "data/design_governance/connection_adapters.json",
+    "tests/test_hub_connections.py",
+    "tests/test_hub_sources.py",
+    "tests/test_hub_refresh.py",
+    "tests/test_hub_project_service.py"
+  ],
+  "manga_prerequisite": {
+    "repository": "alalapi-0/manga-localizer",
+    "accepted_commit": "35665cd1052d7ac707cc39a9a933922c9778896f",
+    "semantic_sha256": "92ba1cf5315a8a52509a4a0cabcff181b14713ecf04d5920e7094e475f401e2f",
+    "ci_run": 34190703515,
+    "ci_conclusion": "success; frontend, backend963, normal-audit, E2E6",
+    "receipt_commit": "0e2a03b27e15661b18d25c96d236577751b3391c",
+    "remote_main_verified": true,
+    "receipt_followup_ci": {
+      "run": 34192258576,
+      "status": "pending; read-only observation still required; no semantic candidate change"
+    }
+  },
+  "entry_check": {
+    "command": "python3 scripts/auto_advance_runner.py --mode check --task-id ALL-PROJECTS-CODEX-GOVERNANCE-V1",
+    "exit": 0,
+    "hard_blockers": 0,
+    "soft_warnings": 10
+  },
+  "delivery_permission": {
+    "default_branch": "main",
+    "push": true,
+    "protected": false,
+    "rulesets": []
+  },
+  "coverage": {
+    "local": 24,
+    "removed_local": 2,
+    "cloud_excluded": 17
+  },
+  "budget": {
+    "native_tokens_observed": 2842617,
+    "native_seconds_observed": 10354,
+    "explicit_token_budget": null,
+    "cost_telemetry": "unavailable"
+  }
+}

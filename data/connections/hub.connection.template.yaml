@@ -1,0 +1,45 @@
+schema_version: '2.0'
+project_id: example-project
+source_refs:
+- id: state
+  path: STATE.yaml
+  format: yaml
+  role: current_state
+mapping:
+  current_work.status:
+    source_ref: state
+    selector:
+      path:
+      - current_work
+      - status
+    value_map: null
+unknown_fields:
+  current_work.objective: The sole project state does not currently publish this field.
+  current_work.phase: The sole project state does not currently publish this field.
+  current_work.round: The sole project state does not currently publish this field.
+  current_work.status: The sole project state does not currently publish this field.
+  current_work.completed: The sole project state does not currently publish this field.
+  current_work.accepted: The sole project state does not currently publish this field.
+  current_work.next_action: The sole project state does not currently publish this
+    field.
+  current_work.owner_role: The sole project state does not currently publish this
+    field.
+  progress.completed: The sole project state does not currently publish this field.
+  progress.total: The sole project state does not currently publish this field.
+  progress.counting_basis: The sole project state does not currently publish this
+    field.
+  progress.milestones: The sole project state does not currently publish this field.
+  blockers: The sole project state does not currently publish this field.
+  verification.status: The sole project state does not currently publish this field.
+  verification.evidence_refs: The sole project state does not currently publish this
+    field.
+  verification.accepted_basis: The sole project state does not currently publish this
+    field.
+  delivery.status: The sole project state does not currently publish this field.
+  delivery.remote: The sole project state does not currently publish this field.
+  delivery.branch: The sole project state does not currently publish this field.
+  delivery.commit: The sole project state does not currently publish this field.
+  delivery.receipt_ref: The sole project state does not currently publish this field.
+validation_entry:
+- python3 scripts/check_state.py
+max_read_age_seconds: 86400

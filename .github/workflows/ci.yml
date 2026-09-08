@@ -1,0 +1,29 @@
+name: Hub checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  governance-and-connections:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install parser
+        run: python -m pip install PyYAML==6.0.3
+      - name: Governance and connection regressions
+        run: python -m unittest discover -s tests -q
+      - name: Repository checks
+        run: python scripts/check_repo.py --task-id ALL-PROJECTS-CODEX-GOVERNANCE-V1
+      - name: State consistency
+        run: python scripts/round_consistency_check.py --json --task-id ALL-PROJECTS-CODEX-GOVERNANCE-V1
+      - name: Registry and template validation
+        run: |
+          python scripts/check_registry.py
+          python scripts/hub_connections.py schema
+          python scripts/hub_connections.py validate-declaration data/connections/hub.connection.template.yaml

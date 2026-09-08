@@ -46,3 +46,9 @@ Feishu/Lark 配置只允许声明：
 - Codex/Cursor prompt queue 摘要。
 
 第一阶段全部只生成本地预览。
+
+## 当前可运行的本地预览
+
+统一字段、刷新、错误与去重语义见 [项目状态统一入口](12_project_connections.md)。
+`python3 scripts/hub_connections.py current --format feishu` 从 Hub 账本生成 disabled 样例；
+JSON、Markdown、卡片共享同一项目投影。该命令不读取环境变量或凭据，不调用真实 API。

@@ -1,0 +1,145 @@
+{
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-q"
+      ],
+      "exit": 0,
+      "output": "----------------------------------------------------------------------\nRan 60 tests in 2.469s\n\nOK\n=== Auto Advance Runner: finalize-round ===\n决策：continue\n检测到工作区变更；仅报告，不暂存、不提交、不推送。\ngit_commit: not_attempted\ngit_push_status: not_attempted_runner_is_read_only\n=== Auto Advance Runner: finalize-round ===\n决策：continue\n检测到工作区变更；仅报告，不暂存、不提交、不推送。\ngit_commit: not_attempted\ngit_push_status: not_attempted_runner_is_read_only\n"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/check_repo.py",
+        "--task-id",
+        "ALL-PROJECTS-CODEX-GOVERNANCE-V1"
+      ],
+      "exit": 0,
+      "output": "personal-control-hub skeleton check\nroot: /Users/alalapi/.codex/worktrees/all-projects-governance-hub\n\nFiles: OK\nDirectories: OK\nMCP registry: OK\nSecret marker scan: OK\n\nResult: PASS\n"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/round_consistency_check.py",
+        "--json",
+        "--task-id",
+        "ALL-PROJECTS-CODEX-GOVERNANCE-V1"
+      ],
+      "exit": 0,
+      "output": "{\n  \"result\": \"ok\",\n  \"current_round\": \"ROUND-1-1\",\n  \"next_round\": \"ROUND-1-5\",\n  \"current_phase\": \"Phase 1\",\n  \"warnings\": [],\n  \"hard_blockers\": []\n}\n"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/check_registry.py"
+      ],
+      "exit": 0,
+      "output": "=== External Project Registry Check ===\n项目数：26\n已启用：23\n结果：ok\n硬阻塞：0\n警告：1\n\n警告：\n  - manga-localizer: watch_paths 为空\n"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/hub_connections.py",
+        "schema"
+      ],
+      "exit": 0,
+      "output": "{\n  \"schema_version\": \"2.0\",\n  \"schema_language\": \"hub-typed-validator-v2\",\n  \"declaration_validator\": \"hub.connection_records.validate_declaration\",\n  \"record_validator\": \"hub.connection_records.validate_result\",\n  \"business_fields\": {\n    \"current_work.objective\": \"string\",\n    \"current_work.phase\": \"string\",\n    \"current_work.round\": \"string\",\n    \"current_work.status\": \"status\",\n    \"current_work.completed\": \"boolean\",\n    \"current_work.accepted\": \"boolean\",\n    \"current_work.next_action\": \"string\",\n    \"current_work.owner_role\": \"string\",\n    \"progress.completed\": \"integer\",\n    \"progress.total\": \"integer\",\n    \"progress.counting_basis\": \"string\",\n    \"progress.milestones\": \"milestones\",\n    \"blockers\": \"blockers\",\n    \"verification.status\": \"string\",\n    \"verification.evidence_refs\": \"strings\",\n    \"verification.accepted_basis\": \"string\",\n    \"delivery.status\": \"delivery\",\n    \"delivery.remote\": \"string\",\n    \"delivery.branch\": \"string\",\n    \"delivery.commit\": \"commit\",\n    \"delivery.receipt_ref\": \"string\"\n  },\n  \"nullable\": \"all fields; each null requires a reason\",\n  \"enums\": {\n    \"status\": [\n      \"active\",\n      \"blocked\",\n      \"complete\",\n      \"paused\",\n      \"unknown\"\n    ],\n    \"delivery\": [\n      \"delivered\",\n      \"local\",\n      \"pending_delivery\",\n      \"unknown\"\n    ]\n  },\n  \"read_statuses\": [\n    \"authority_drift\",\n    \"disabled\",\n    \"invalid\",\n    \"missing_declaration\",\n    \"missing_source\",\n    \"offline\",\n    \"permission_denied\",\n    \"removed_local\",\n    \"resolved\",\n    \"unsafe_path\"\n  ],\n  \"source_contract\": \"one relative current_state source; typed path or exact Markdown heading/label\",\n  \"permission_rule\": \"explicit connection_read_allowed=false denies before root access; absent field falls back to enabled\",\n  \"protected_sources\": \"no .codex/.cursor/.ssh roots, unsafe aliases, environment or credential/token source filenames\",\n  \"output_shell\": \"exact snapshot/row/authority/head/coverage/freshness fields; valid project IDs, nonempty names, strict numeric/boolean types\",\n  \"value_maps\": \"all declared and provenance targets must match the field type, including unselected entries\",\n  \"lifecycle\": \"completed, accepted and delivery.status are independent source facts\"\n}\n"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/hub_connections.py",
+        "validate-declaration",
+        "data/connections/hub.connection.template.yaml"
+      ],
+      "exit": 0,
+      "output": "{\"valid\": true, \"schema_version\": \"2.0\"}\n"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/hub_refresh.py",
+        "validate"
+      ],
+      "exit": 0,
+      "output": "connection-real-26-v4\",\n          \"event_sequence\": 108,\n          \"result_ref\": \"refresh-result:hub-connection-real-26-v4:universal-player:777b1b28fef7241838752252012d65efafb74a6213eb866f3762ec0f7aaed28b\",\n          \"result_hash\": \"777b1b28fef7241838752252012d65efafb74a6213eb866f3762ec0f7aaed28b\",\n          \"observed_at\": \"2026-09-08T07:09:33.460921Z\",\n          \"disposition\": \"missing_declaration\",\n          \"success\": false\n        },\n        \"last_success\": null,\n        \"freshness\": \"unknown\",\n        \"stale_reason\": \"[{\\\"code\\\":\\\"missing_declaration\\\",\\\"message\\\":\\\"Project has no hub.connection.yaml declaration.\\\"}]\",\n        \"authority_drift\": false\n      },\n      \"wechat-article-scheduler\": {\n        \"latest_attempt\": {\n          \"request_id\": \"hub-connection-real-26-v4\",\n          \"event_sequence\": 109,\n          \"result_ref\": \"refresh-result:hub-connection-real-26-v4:wechat-article-scheduler:9d40d7c54bd2e4b77cd1591367f72e7197662b7097c10e175158af202a92672a\",\n          \"result_hash\": \"9d40d7c54bd2e4b77cd1591367f72e7197662b7097c10e175158af202a92672a\",\n          \"observed_at\": \"2026-09-08T07:09:33.465731Z\",\n          \"disposition\": \"missing_declaration\",\n          \"success\": false\n        },\n        \"last_success\": null,\n        \"freshness\": \"unknown\",\n        \"stale_reason\": \"[{\\\"code\\\":\\\"missing_declaration\\\",\\\"message\\\":\\\"Project has no hub.connection.yaml declaration.\\\"}]\",\n        \"authority_drift\": false\n      },\n      \"youtube-hq-downloader\": {\n        \"latest_attempt\": {\n          \"request_id\": \"hub-connection-real-26-v4\",\n          \"event_sequence\": 110,\n          \"result_ref\": \"refresh-result:hub-connection-real-26-v4:youtube-hq-downloader:5b5b087153ae81b532a4aacc33e6a7f8c2c160a5600ad490dfe237ed7b613ed2\",\n          \"result_hash\": \"5b5b087153ae81b532a4aacc33e6a7f8c2c160a5600ad490dfe237ed7b613ed2\",\n          \"observed_at\": \"2026-09-08T07:09:33.470549Z\",\n          \"disposition\": \"missing_declaration\",\n          \"success\": false\n        },\n        \"last_success\": null,\n        \"freshness\": \"unknown\",\n        \"stale_reason\": \"[{\\\"code\\\":\\\"missing_declaration\\\",\\\"message\\\":\\\"Project has no hub.connection.yaml declaration.\\\"}]\",\n        \"authority_drift\": false\n      },\n      \"zarathustra-adaptation\": {\n        \"latest_attempt\": {\n          \"request_id\": \"hub-connection-real-26-v4\",\n          \"event_sequence\": 111,\n          \"result_ref\": \"refresh-result:hub-connection-real-26-v4:zarathustra-adaptation:896530c8486c5e605b7dc7085a72d12486084f3eca4f0cb671ae8eeed077c196\",\n          \"result_hash\": \"896530c8486c5e605b7dc7085a72d12486084f3eca4f0cb671ae8eeed077c196\",\n          \"observed_at\": \"2026-09-08T07:09:33.475432Z\",\n          \"disposition\": \"missing_declaration\",\n          \"success\": false\n        },\n        \"last_success\": null,\n        \"freshness\": \"unknown\",\n        \"stale_reason\": \"[{\\\"code\\\":\\\"missing_declaration\\\",\\\"message\\\":\\\"Project has no hub.connection.yaml declaration.\\\"}]\",\n        \"authority_drift\": false\n      }\n    }\n  }\n}\n"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/auto_advance_runner.py",
+        "--mode",
+        "check",
+        "--task-id",
+        "ALL-PROJECTS-CODEX-GOVERNANCE-V1"
+      ],
+      "exit": 0,
+      "output": "=== Auto Advance Runner: check ===\n决策：warn_and_continue\n当前轮次：ROUND-1-1\n下一轮次：ROUND-1-5\n硬阻塞：0\n软警告：10\n检查通过：是\n动作授权：未授予（runner 只报告检查结果）\n\n软警告：\n  - ROUND-3-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-4-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-8-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-10-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-11-6: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-12-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-14: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-15: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-16: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-17: planned 但 can_auto_advance 不是 true，可能需要人工确认\n"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "hub.cli",
+        "registry",
+        "list"
+      ],
+      "exit": 0,
+      "output": "=== External Project Registry ===\nschema_version: 1.0\nread_only: True\nwrite_external_forbidden: True\nprojects: 26\n- storage_governance: StorageGovernance [enabled] scan=True profile=True\n- personal-control-hub: personal-control-hub [enabled] scan=False profile=True\n- manga-localizer: Manga Localizer [disabled] scan=False profile=False\n- universal-player: Universal Player [enabled] scan=True profile=True\n- ai-anime-short-factory: AI Anime Short Factory [enabled] scan=True profile=True\n- ai-music-foundry: AI Music Foundry [enabled] scan=True profile=True\n- novel-continuation-agent: Novel Continuation Agent [enabled] scan=True profile=True\n- story-faceless-utopia: Story Faceless Utopia [enabled] scan=True profile=True\n- light-novel: Light Novel [enabled] scan=True profile=True\n- wechat-article-scheduler: WeChat Article Scheduler [enabled] scan=True profile=True\n- resilient-personal-network: Resilient Personal Network [enabled] scan=True profile=True\n- pixel-world-asset-forge: Pixel World Asset Forge [enabled] scan=True profile=True\n- desktop-jav-tools: Desktop JAV Python Tools [enabled] scan=True profile=True\n- zarathustra-adaptation: Zarathustra Adaptation [enabled] scan=True profile=True\n- computer-study-plan: Computer Study Plan [enabled] scan=True profile=True\n- desktop-tool: Desktop Tool [enabled] scan=True profile=True\n- audio-clone: Audio Clone [enabled] scan=True profile=True\n- cognitive-asset-library: Cognitive Asset Library [enabled] scan=True profile=True\n- pycharm-agent-workspace: PyCharm Agent Workspace [enabled] scan=True profile=True\n- youtube-hq-downloader: YouTube HQ Downloader [enabled] scan=True profile=True\n- desktop-magnet: Desktop Magnet [enabled] scan=True profile=True\n- pycharm-misc-project: PyCharm Misc Project [enabled] scan=True profile=True\n- desktop-downloads-scripts: Desktop Downloads Scripts [enabled] scan=True profile=True\n- mpv-clip-workbench: MPV Clip Workbench [enabled] scan=True profile=True\n- game-removed-local: game [removed_local / 已从本地移除] scan=False profile=False\n- manga-removed-local: manga [removed_local / 已从本地移除] scan=False profile=False\n"
+    },
+    {
+      "command": [
+        "hub.cli",
+        "mcp",
+        "list"
+      ],
+      "exit": 0,
+      "output": "MCP capability registry (read-only)\nsource: data/mcp/mcp_capability_registry.yaml\n\nid                 category               level  enabled  status\n------------------------------------------------------------------------\nchrome-devtools    browser_debug          L2     no       planned\ncontext7           documentation_context  L0     no       planned\nfilesystem         local_files            L1     no       planned\ngithub             external_vcs           L2     no       planned\nplaywright         browser_automation     L3     no       planned\nstitch             ui_generation          L2     no       planned\n"
+    },
+    {
+      "command": [
+        "hub.cli",
+        "mcp",
+        "policy"
+      ],
+      "exit": 0,
+      "output": "MCP approval policy (read-only)\nsource: data/mcp/mcp_approval_policy.yaml\n\nlevel  name                         confirm  log    forbidden\n------------------------------------------------------------------------\nL0     read_only_context            no       no     no\nL1     local_low_risk_write         no       yes    no\nL2     external_or_shell_low_risk   yes      yes    no\nL3     high_risk_write              yes      yes    yes\n"
+    }
+  ],
+  "test_count": 60,
+  "structured_files": [
+    ".github/workflows/ci.yml",
+    "data/connections/hub.connection.template.yaml",
+    "data/connections/schema.json",
+    "docs/reports/all-projects-governance/hub-connection/baseline.json",
+    "docs/reports/all-projects-governance/hub-connection/provenance.json",
+    "docs/reports/all-projects-governance/hub-connection/reader.json",
+    "docs/reports/all-projects-governance/hub-connection/real-preview/feishu.json",
+    "docs/reports/all-projects-governance/hub-connection/real-preview/projects.json",
+    "docs/reports/all-projects-governance/hub-connection/real-smoke.json",
+    "STATE.yaml",
+    "data/registry/external_projects.yaml"
+  ],
+  "preview_reproduction": "PASS lossless full normalized records JSON↔Markdown JSON blocks↔Feishu; real26 exact equality and stable update keys. Synthetic first failure, success, corrupt source after success, stale, removed verified.",
+  "preservation": "19 original preimages plus original HEAD rechecked; unrelated isolated STATE semantic fields unchanged",
+  "limitations": [
+    "24 project declarations remain pending separate project units",
+    "Manga real image redo remains incomplete",
+    "Original Hub and global Codex configuration were not modified in this unit",
+    "Remote Hub CI will be checked after normal main delivery"
+  ],
+  "repair_regressions": "all prior zero-read routes; service-account canonical variants; strict snapshot ID/name/authority/head/counters/freshness; all mapping targets and nested bool/int proofs; visible ledger result lower bound; full-row parity for five dispositions including corrupt-source hash and separate latest/historical evidence"
+}

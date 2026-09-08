@@ -9,6 +9,7 @@ Hub 的条件上下文入口。默认只读本文件与 `STATE.yaml`，合计不
 - 项目身份与路径：`data/registry/external_projects.yaml`、`docs/05_external_project_protocol.md`。历史工作分支的接入实现按执行文档验证后逐单元移植，不整分支合并。
 - 权限/Git：`governance/agent_policy.yaml`、`data/gates/auto_advance_policy.yaml`；当前任务授权覆盖冲突的旧限制，其余任务仍默认外部只读。
 - 飞书本地准备：`docs/09_feishu_lark_strategy.md`。真实连接保持 disabled。
+- 统一项目状态入口：`docs/12_project_connections.md`；`python3 scripts/hub_connections.py current` 只读 Hub 账本，显式 `refresh` 才读取登记来源并更新本地投影。
 - 其他工作仅按具体任务读取 `project.yaml`、相关治理文件与路线图条目，不默认读全历史。
 
 ## 执行与交付

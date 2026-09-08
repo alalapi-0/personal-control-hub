@@ -15,6 +15,11 @@ venv/
 .pytest_cache/
 .mypy_cache/
 
+# Rebuildable Hub-local connection ledger and default previews
+data/connections/*.sqlite3
+data/connections/*.sqlite3-*
+data/connections/preview/
+
 # 编辑器与系统
 .DS_Store
 .idea/
