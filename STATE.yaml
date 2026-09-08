@@ -21,10 +21,10 @@ all_projects_governance:
   task_id: ALL-PROJECTS-CODEX-GOVERNANCE-V1
   native_task_id: 01a07ef7-735b-7270-9c21-3347e1232b5a
   status: ACTIVE
-  unit: bootstrap
+  unit: manga_retry_repair
   contract: docs/reports/all-projects-governance/bootstrap/contract.md
   evidence: docs/reports/all-projects-governance/bootstrap/
-  delivery: accepted_pending_main
+  delivery: 'bootstrap delivered; receipt: docs/reports/all-projects-governance/bootstrap/delivery.json'
   budget:
     native_tokens_observed: 315996
     native_seconds_observed: 371
@@ -32,5 +32,6 @@ all_projects_governance:
     first_250k_rebaseline: HEALTHY; startup root causes repaired; current candidate
       has 12 passing tests
     cooldown: 75000 more tokens or 30 active minutes plus eligible trigger
-  next_action: Deliver accepted Hub bootstrap to remote main and verify ancestry;
-    then enter manga retry repair.
+  next_action: Repair the manga UI handoff contract for three current attempt-2 issue
+    heads, prove isolated regression and supported recovery, then deliver manga main.
+    Preserve all image quality blockers.
