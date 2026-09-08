@@ -1,0 +1,328 @@
+{
+  "stage": "B",
+  "python": {
+    "command": "python3 -B -W error::ResourceWarning -m unittest discover -s tests -q",
+    "exit": 0,
+    "tests": 193,
+    "seconds": 4.732
+  },
+  "node": {
+    "command": "node --test tests/test_hub_connection_view.mjs tests/test_hub_web_logic.mjs",
+    "exit": 0,
+    "tests": 17,
+    "warnings": "Existing MODULE_TYPELESS_PACKAGE_JSON for original designs.js; all tests pass."
+  },
+  "entry_gate": {
+    "exit": 0,
+    "hard_blockers": 0,
+    "historical_warnings": 10,
+    "authority_granted": false
+  },
+  "server_import": {
+    "command": "python3 -B scripts/hub_server.py --help",
+    "exit": 0
+  },
+  "original_pre_runtime_hashes": {
+    "src/hub/service_contract.py": "f06b00793aad42d07f2ba708a97090645412688dc72bbaece08bf33df5a43f52",
+    "data/design_governance/design-store.json": "df9ff333977cec6589610f74333039ccd04ff42c24e3782c00d8623264ffe6c0",
+    "data/design_governance/design-store.json.lock": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/design_governance/multi-project-figma-redesign-v1.json": "5dc287a4c1d9c67ffc8c1904a89fb7b5c01fe95c31a97740ce1f742dd12e1c0b"
+  },
+  "initial_new_ledger_exists": false,
+  "live_refresh": {
+    "command": "python3 -B scripts/hub_refresh.py refresh --request-id hub-entry-real-26-v1",
+    "exit": 2,
+    "request": {
+      "request_id": "hub-entry-real-26-v1",
+      "project_ids": [
+        "ai-anime-short-factory",
+        "ai-music-foundry",
+        "audio-clone",
+        "cognitive-asset-library",
+        "computer-study-plan",
+        "desktop-downloads-scripts",
+        "desktop-jav-tools",
+        "desktop-magnet",
+        "desktop-tool",
+        "game-removed-local",
+        "light-novel",
+        "manga-localizer",
+        "manga-removed-local",
+        "mpv-clip-workbench",
+        "novel-continuation-agent",
+        "personal-control-hub",
+        "pixel-world-asset-forge",
+        "pycharm-agent-workspace",
+        "pycharm-misc-project",
+        "resilient-personal-network",
+        "storage_governance",
+        "story-faceless-utopia",
+        "universal-player",
+        "wechat-article-scheduler",
+        "youtube-hq-downloader",
+        "zarathustra-adaptation"
+      ],
+      "authority": {
+        "adapter_version": "2.0",
+        "registry_hash": "5b0922259f22a15a232697fc12dcc28077dac88d033d03214b0657db35c69851",
+        "schema_hash": "bcbdcd7826ceaa2102afb0023261ddc57763168ed6056f8f1006dd89bd451a4f"
+      },
+      "authority_hash": "b30f033cddbf6a9427ede2aaca1ad3fd213ef65c05ecbd8144587c814d4e34c3",
+      "status": "FINISHED",
+      "started_at": "2026-09-08T10:04:28.518780Z",
+      "finished_at": "2026-09-08T10:04:28.587841Z",
+      "begin_sequence": 1,
+      "finish_sequence": 28,
+      "completed_project_ids": [
+        "ai-anime-short-factory",
+        "ai-music-foundry",
+        "audio-clone",
+        "cognitive-asset-library",
+        "computer-study-plan",
+        "desktop-downloads-scripts",
+        "desktop-jav-tools",
+        "desktop-magnet",
+        "desktop-tool",
+        "game-removed-local",
+        "light-novel",
+        "manga-localizer",
+        "manga-removed-local",
+        "mpv-clip-workbench",
+        "novel-continuation-agent",
+        "personal-control-hub",
+        "pixel-world-asset-forge",
+        "pycharm-agent-workspace",
+        "pycharm-misc-project",
+        "resilient-personal-network",
+        "storage_governance",
+        "story-faceless-utopia",
+        "universal-player",
+        "wechat-article-scheduler",
+        "youtube-hq-downloader",
+        "zarathustra-adaptation"
+      ],
+      "remaining_project_ids": []
+    },
+    "appended_project_ids": [
+      "ai-anime-short-factory",
+      "ai-music-foundry",
+      "audio-clone",
+      "cognitive-asset-library",
+      "computer-study-plan",
+      "desktop-downloads-scripts",
+      "desktop-jav-tools",
+      "desktop-magnet",
+      "desktop-tool",
+      "game-removed-local",
+      "light-novel",
+      "manga-localizer",
+      "manga-removed-local",
+      "mpv-clip-workbench",
+      "novel-continuation-agent",
+      "personal-control-hub",
+      "pixel-world-asset-forge",
+      "pycharm-agent-workspace",
+      "pycharm-misc-project",
+      "resilient-personal-network",
+      "storage_governance",
+      "story-faceless-utopia",
+      "universal-player",
+      "wechat-article-scheduler",
+      "youtube-hq-downloader",
+      "zarathustra-adaptation"
+    ],
+    "resolver_errors": {},
+    "dispositions": {
+      "missing_declaration": 23,
+      "removed_local": 2,
+      "resolved": 1
+    },
+    "coverage": {
+      "registry_count": 26,
+      "local_count": 24,
+      "removed_local_count": 2,
+      "resolved_count": 1
+    },
+    "previews": {
+      "projects.json": "data/connections/preview/projects.json",
+      "projects.md": "data/connections/preview/projects.md",
+      "feishu.json": "data/connections/preview/feishu.json"
+    },
+    "meaning": "Completed durable request; nonzero exit preserves missing-declaration failures, not a successful full rollout."
+  },
+  "full_preview_parity": {
+    "rows": 26,
+    "comparison": "Every complete normalized row from JSON equals corresponding Markdown JSON block and Feishu source_record; coverage equal",
+    "result": "PASS",
+    "hashes": {
+      "projects.json": "234430a4843e4283b1ebbf00f054e8fe15cd0417ab4559ac826e76ebba006e03",
+      "projects.md": "dbe71b37fa61f4afbcae77539ba1b9b24e027a902b71267a3fa8f8a30fd28967",
+      "feishu.json": "e0e14b149acab1c9de9e2db76e7e061d69d41f9e87ac77905f4f2978ff95a48e"
+    },
+    "feishu_enabled": false,
+    "write_back_allowed": false
+  },
+  "original_checks": [
+    {
+      "command": "python3 -B scripts/check_repo.py --task-id ALL-PROJECTS-CODEX-GOVERNANCE-V1",
+      "exit": 0
+    },
+    {
+      "command": "python3 -B scripts/round_consistency_check.py --json --task-id ALL-PROJECTS-CODEX-GOVERNANCE-V1",
+      "exit": 0
+    },
+    {
+      "command": "python3 -B scripts/check_registry.py --metadata-only",
+      "exit": 0
+    },
+    {
+      "command": "python3 -B scripts/hub_refresh.py validate",
+      "exit": 0
+    },
+    {
+      "command": "python3 -B scripts/check_registry.py",
+      "exit": 0,
+      "project_count": 26,
+      "path_availability_checked": true,
+      "hard_blockers": 0,
+      "warnings": 0
+    }
+  ],
+  "http": {
+    "url": "http://127.0.0.1:62748/",
+    "routes": "GET list26/detail/light-novel/query1; POST existing request replay through original common.js API/session layer",
+    "head_sequence_before_after": [
+      28,
+      28
+    ],
+    "head_hash": "e925da38908bd78e1612561235a541a0cf8c6dfa6b3aa6e89981aa686498ccf4",
+    "appended_on_replay": [],
+    "current_authority": "matched",
+    "ledger_sha_before_after": "7e7917e92e7e046456e8a3c0734ec3692bdf5d2cda3f4fbc48cf1a6b9eec7d0f",
+    "session_values_recorded": false,
+    "typed_business_fields": 21,
+    "business_groups": 5,
+    "expected_error_probe": {
+      "status": 404,
+      "code": "PROJECT_NOT_FOUND",
+      "outcome": "NOT_COMMITTED",
+      "intentional_browser_console_error": 1
+    }
+  },
+  "ui": {
+    "normal_server_session": 73966,
+    "browser": "Original HTTP/UI in Codex in-app tab3 and independent Playwright tab0",
+    "list_count": 26,
+    "attention_count": 23,
+    "manga": {
+      "visible_failure": true,
+      "refresh_enabled": true
+    },
+    "removed": {
+      "label": "已从本地移除",
+      "refresh_disabled": true,
+      "mobile_viewport": [
+        390,
+        844
+      ]
+    },
+    "light_novel": {
+      "status": "complete",
+      "next_action_full": "source-provided full text visible; previous approval binding/local installation complete, actual translation untouched"
+    },
+    "screenshots": [
+      "installation-projects.png",
+      "installation-manga.png",
+      "installation-removed-mobile.png"
+    ],
+    "root_images_inspected": true,
+    "horizontal_overflow": false,
+    "initial_console_errors": 0,
+    "initial_console_warnings": 0,
+    "initial_static_and_api_http_statuses": "all200; connection_view.mjs served normally",
+    "scope": "Compatibility proof; no unrelated UI redesign or original-only history main-delivery claim."
+  },
+  "reader": {
+    "agent": "/root/hub_entry_only_reader",
+    "result": "entry_readability_verified_rollout_incomplete",
+    "source": "Normal original Hub AGENTS/STATE/docs/registry and readonly current/history/preview only",
+    "unique_ids": 26,
+    "local": 24,
+    "removed": 2,
+    "resolved": 1,
+    "missing_declaration": 23,
+    "business_scope": "Light-novel governance unit complete; translation progress unknown; other23 all21businessfields unknown because missing declarations",
+    "light_novel_populated_fields": 18,
+    "light_novel_unknown_fields": 3,
+    "light_novel_source_sha256": "13eb1da30bfd0c73b3d5d9cee7fc7b1d89311822a7f4adccdefb8402c34a4c3f",
+    "history": "one finished26-item request;26results; available authority; separate latest_attempt/last_success; no actual failed-current-after-success row yet",
+    "feishu": "disabled/writebackfalse;26fullsource_record andupdatekeys match JSON;26Markdown full JSON records",
+    "external_roots_reads": 0,
+    "writes": 0,
+    "remote_delivery_independently_verified": false
+  },
+  "generated_browser_artifacts_removed": [
+    {
+      "path": ".playwright-mcp/console-2026-09-08T10-05-40-972Z.log",
+      "sha256": "ece8882e3d0a499fdb3d5c2d3d57f2485a4b1946b57da70882fe95ff6b4cf5fc",
+      "reason": "This round generated disposable browser log/snapshot; durable screenshots and structured UI evidence retained."
+    },
+    {
+      "path": ".playwright-mcp/page-2026-09-08T10-05-41-052Z.yml",
+      "sha256": "9e87201bb0d60a4e3f0a6fc4d45c8e6767b88dc793194e178d02259c016658f8",
+      "reason": "This round generated disposable browser log/snapshot; durable screenshots and structured UI evidence retained."
+    }
+  ],
+  "preservation": {
+    "registered_install_paths": 76,
+    "all_post_hashes_modes_match": true,
+    "protected_original_preimages_checked": 27,
+    "original_head": "0ca1ee547990fd876e9917c8c6ee1fa7d2bb8142",
+    "original_branch": "agent/governance-closure-20260812",
+    "original_index_sha256": "d68325d0fa8bc1c6c6442ef52f54d00a75b67ca3d95367fce0bdc33703349b5c",
+    "current_work_sha256": "a03d8cb9fcdf5679ac7a31177175ed14f8c852e55fdb585163aa9ecf600df87d",
+    "unregistered_changes": [],
+    "original_only_design_store_and_shared_service_types": "unchanged",
+    "registry_semantic_equality_to_main": true,
+    "source_task_overrides_match": true,
+    "startup_bytes": 8098
+  },
+  "restart": {
+    "first_session": 73966,
+    "first_stop_exit": 0,
+    "second_session": 40819,
+    "second_url": "http://127.0.0.1:63013/",
+    "second_stop_exit": 0,
+    "normal_browser_after_restart": {
+      "total": 26,
+      "resolved": [
+        "light-novel"
+      ],
+      "missing": 23,
+      "removed": [
+        "game-removed-local",
+        "manga-removed-local"
+      ],
+      "head_sequence": 28,
+      "head_hash": "e925da38908bd78e1612561235a541a0cf8c6dfa6b3aa6e89981aa686498ccf4",
+      "console_errors": 0,
+      "console_warnings": 0
+    },
+    "ledger_sha_unchanged": true,
+    "owned_servers_stopped": true
+  },
+  "preflight_corrections": [
+    {
+      "class": "string_reference_false_positive",
+      "target": "legacy CLI retirement preflight",
+      "method_change": "Check AST import nodes instead of rejecting test strings that deliberately name the forbidden legacy module.",
+      "original_writes_before_failure": 0
+    }
+  ],
+  "source_receipt_checks": {
+    "bootstrap_tests": 14,
+    "exit": 0,
+    "finalize_round": "warn_and_continue; no hard blockers; no Git effects",
+    "reuse": "Stage A source98Python7Node remain unchanged; original integration independently193Python17Node."
+  }
+}

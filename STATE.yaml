@@ -24,16 +24,16 @@ all_projects_governance:
   unit: hub_entry_integration
   lane: GOVERNED
   evidence: docs/reports/all-projects-governance/hub-entry/
-  candidate_manifest: docs/reports/all-projects-governance/hub-entry/candidate.json
-  candidate_status: Stage A source delivered; original installation pending
-  next_action: Verify receipt main CI, then install accepted source into original Hub by exact CAS.
+  candidate_manifest: docs/reports/all-projects-governance/hub-entry/installation.json
+  candidate_status: Stage B accepted; main receipt pending
+  next_action: Deliver installation evidence to main and verify CI.
   coverage:
     local: 24
     removed_local: 2
     cloud_excluded: 17
   budget:
-    native_tokens: 6742702
-    native_seconds: 23971
+    native_tokens: 7023919
+    native_seconds: 24903
     coverage: cumulative native Goal; cost/cap unavailable
     first_250k_rebaseline: completed
     last_health: REPLAN at3903214; repaired; no reset
@@ -41,7 +41,5 @@ all_projects_governance:
   history_ref: docs/reports/all-projects-governance/hub-entry/baseline.json#preserved_goal_history
   contract: docs/reports/all-projects-governance/hub-entry/contract.md
   delivery:
-    status: stage_a_source_delivered_stage_b_pending
-    receipt: docs/reports/all-projects-governance/hub-entry/delivery.json
-    code_commit: b5d93484089240ff54ed6049a3d1a38327c219ed
-    ci: 34212717933
+    status: stage_b_accepted_pending_main
+    source_commit: b5d93484089240ff54ed6049a3d1a38327c219ed
