@@ -1,0 +1,28 @@
+{
+  "repository": "alalapi-0/personal-control-hub",
+  "branch": "main",
+  "accepted_commit": "1b5dd803ab156f30a33299347b5afcf06b0b8066",
+  "semantic_sha256": "731369068a09f099e1e07728efb150041468f0c5be942ee9b32726e77e771ebe",
+  "observed_remote_main": "1b5dd803ab156f30a33299347b5afcf06b0b8066",
+  "ancestor_verified": true,
+  "ci": {
+    "run": 34198651395,
+    "head_sha": "1b5dd803ab156f30a33299347b5afcf06b0b8066",
+    "conclusion": "success",
+    "url": "https://github.com/alalapi-0/personal-control-hub/actions/runs/34198651395",
+    "checks": "60tests plus repo/state/registry/schema/template; all steps passed",
+    "warning": "GitHub runner forced checkout@v4/setup-python@v5 from Node20 to Node24; nonblocking platform deprecation annotation retained."
+  },
+  "observed_at": "2026-09-08T07:19:05.107954+00:00",
+  "status": "delivered",
+  "scope": "Shared template and all26 visible failure/removed records only;24 project declarations pending",
+  "original_checkout": "Unmodified, read-only source; original integration remains a separate unit",
+  "remaining": [
+    "24 project declarations and per-project governance/delivery",
+    "light-novel review version binding and state/runtime repair",
+    "remaining real Manga redo",
+    "global Codex versionized source/install consistency",
+    "original Hub integration and final all-project handoff"
+  ],
+  "receipt_followup": "This receipt is metadata outside semantic identity. Its commit will be checked through native remote/CI output to avoid self-containing SHA."
+}

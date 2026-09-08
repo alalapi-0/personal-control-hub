@@ -44,7 +44,7 @@
     "docs/reports/all-projects-governance/hub-connection/governor.json",
     "docs/reports/all-projects-governance/hub-connection/judge.json"
   ],
-  "status": "accepted_pending_main_delivery",
+  "status": "delivered_main_ci_success",
   "checks": "validation.json; real-smoke.json; reader.json; provenance.json",
   "scope": "Shared Hub template only; 24 declaration rollout items, real manga redo and global sync remain unfinished",
   "prior_candidates": [

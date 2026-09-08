@@ -53,11 +53,12 @@ all_projects_governance:
     hub_health_checkpoint: 'REPLAN at 3903214 tokens after 3 rejected Hub candidates: replace ID-only
       preview checks with lossless full-record parity across success/failure/history/stale/removed. Next
       eligible review checkpoint after 3978214 tokens; no attempt or budget reset.'
-  next_action: Finish independent review and Hub-main delivery of the shared connection template; then
-    serial project declaration rollout, analogous recovery repairs, global configuration sync and remaining
-    real manga redo.
+  next_action: Begin light-novel review version binding, state/runtime repair and declaration rollout
+    in an isolated main worktree; then remaining project units, global sync, original Hub integration
+    and real Manga redo.
   lane: GOVERNED
-  candidate_status: fourth candidate fresh Judge PASS and Governor APPROVE; main delivery pending
+  candidate_status: shared template accepted and delivered to Hub main; CI success; project rollout still
+    pending
   connection_smoke:
     registry_count: 26
     local_count: 24
@@ -72,6 +73,9 @@ all_projects_governance:
     disposition: Latest failure and historical success now separate; full normalized records added to
       Markdown; 3 rejected candidates retained; not accepted yet.
   hub_delivery:
-    semantic_sha256: 731369068a09f099e1e07728efb150041468f0c5be942ee9b32726e77e771ebe
-    status: accepted_pending_delivery
-    evidence: docs/reports/all-projects-governance/hub-connection/
+    status: delivered
+    accepted_commit: 1b5dd803ab156f30a33299347b5afcf06b0b8066
+    remote_main: 1b5dd803ab156f30a33299347b5afcf06b0b8066
+    ci_run: 34198651395
+    ci_conclusion: success
+    receipt: docs/reports/all-projects-governance/hub-connection/delivery.json
