@@ -26,6 +26,7 @@ python3 scripts/hub_refresh.py validate
 ```
 
 中断后重用完全相同的 request ID，已经提交的项目不重复读取。重新检查变化的来源时使用新的 request ID。
+刷新退出码依据该请求的不可变结果；后续成功不会让旧失败请求重放变成成功。仅包含已移除项目的请求正常结束，不产生重试。刷新后会重新核对当前登记权威；权威不可用或预览写入失败时，返回固定错误码及已提交请求收据，不把已提交事实丢失或伪装成当前预览成功。
 如只刷新一项，加 `--project-id PROJECT_ID`；输出仍保留全登记覆盖，其他项保留原读取时间。
 默认账本 `data/connections/connection_refresh.sqlite3` 和预览 `data/connections/preview/` 不进入 Git。
 `validate` 验证账本结构、不可变记录与投影；未初始化会明确返回 `ledger_initialized: false`，不代表接入成功。
@@ -51,6 +52,42 @@ SQLite、JSON 或来源错误必须按具体原因修复，不能删除失败项
 `.codex`、`.cursor`、`.ssh` 等保护根及指向它们的别名不能成为项目状态来源；auth、token 等常见凭据文件名在读取前拒绝。
 
 诊断时再按 registry 根路径及结果中的 source 相对路径深入项目；日常交接无需逐个浏览业务仓库。
+
+## 现有服务入口
+
+`hub.project_service.ProjectService` 为现有本地 HTTP/UI 消费者提供 `list_projects`、`get_project` 和显式 `refresh`。主分支提供服务模块；原工作区的 HTTP/UI 历史是否已完成安装验证，以 `STATE.yaml` 的本任务条目和交付收据为准。
+
+服务保持原查询、分页、错误码和设计快照接口。`source.source_record` 保存完整规范来源记录，`operational.last_success` 单独保存历史成功，`business.fields` 提供全部21个类型化业务字段。业务摘要不把过期或失败证据当作当前成功。移除状态在 `freshness.local_presence` 与 `freshness.state` 明确表达。设计快照按 project_id 过滤；旧关系或设计数据不能授予项目业务状态权威。
+
+服务读取不创建账本或访问项目根。显式刷新要求完整 request_id、project_ids 与 expected_head；冲突和部分提交带稳定错误码及可恢复请求收据。新 Hub2 账本不回退到旧设计治理账本或旧 authority bundle。
+
+登记文件损坏或暂时不可用时，公共 CLI 仍可核对已有账本：
+
+```sh
+python3 scripts/hub_refresh.py history
+python3 scripts/hub_refresh.py rebuild
+```
+
+这两个命令只读现有 Hub2 账本，不创建数据库、不访问项目根。结果是历史审计记录或重建的历史投影；当前登记权威不可用时会明确显示，历史成功不能冒充当前项目状态。账本缺失或损坏返回可操作错误，不能通过初始化新库或回退旧设计账本隐藏故障。日常项目状态仍从 `current` 与显式刷新取得。
+
+`declared.enabled` 保留原登记值；页面的读取资格使用服务输出的明确布尔值 `declared.connection_read_allowed`，与当前来源解析权限一致。历史 `legacy_hub_connection_exception` 不得提升为当前 `hub_connection_exception`，也不能遮蔽最新失败。漫画的 `enabled: false` 是原登记事实，不取消本任务明确允许的业务读取。
+
+`src/hub/web/connection_view.mjs` 提供现有页面使用的 `attention`、`freshness`、`refreshable` 三个纯函数：已移除项目明确显示“已从本地移除”且不能刷新；最新失败保持可见，即使存在历史成功或例外。回归命令为 `node --test tests/test_hub_connection_view.mjs`。
+
+原工作目录的安装只把这三个函数接入已有 `hub.js`，并在 HTTP 静态资源名单增加该模块的单一映射；保留其余页面、设计逻辑及 `OwnerAction`、`ArtifactResponse` 服务类型。安装配方须记录精确原文件哈希和定点差异；真实页面与26项刷新验证属于安装阶段，不能由纯函数测试代替。
+
+## 仓库检查与本机可用性
+
+```sh
+python3 scripts/check_registry.py
+python3 scripts/check_registry.py --metadata-only
+```
+
+默认本机检查保留 authority 路径存在性、watch_paths 覆盖及存储保护约束。两条已移除记录在任何文件探测前停止；漫画只允许当前所有者登记的唯一业务状态路由，存储检查仍不访问漫画根。
+
+`--metadata-only` 用于无法拥有本机项目盘的 CI：仍验证全部登记、路由和存储契约，并明确输出 `path_availability_checked: false`。它不声称本机路径可用；路径缺失拒绝由临时样例回归覆盖，真实来源结果由显式刷新验证。
+
+治理 runner 从 `STATE.yaml` 的 `all_projects_governance.candidate_manifest` 读取本轮登记的文件范围。候选缺失、非法或越界时失败，不回退到首轮 bootstrap 清单；选定范围仍不产生任何动作授权。
 
 ## 项目声明模板与校验
 

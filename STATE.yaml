@@ -15,67 +15,31 @@ current_round:
   next_round: ROUND-1-5
 legacy_context:
   source: origin/main:15a4971
-  meaning: Preserved historical roadmap context; does not resume that task. Working checkout has later
-    unmerged work preserved there.
+  meaning: Preserved historical roadmap context; does not resume that task. Working checkout has later unmerged
+    work preserved there.
 all_projects_governance:
   task_id: ALL-PROJECTS-CODEX-GOVERNANCE-V1
   native_task_id: 01a07ef7-735b-7270-9c21-3347e1232b5a
   status: ACTIVE
-  unit: hub_connection_template
-  contract: docs/reports/all-projects-governance/hub-connection/contract.md
-  evidence: docs/reports/all-projects-governance/hub-connection/
-  delivery:
-    bootstrap: docs/reports/all-projects-governance/bootstrap/delivery.json
-    manga:
-      repository: alalapi-0/manga-localizer
-      accepted_commit: 35665cd1052d7ac707cc39a9a933922c9778896f
-      semantic_sha256: 92ba1cf5315a8a52509a4a0cabcff181b14713ecf04d5920e7094e475f401e2f
-      ci_run: 34190703515
-      ci_conclusion: success; frontend, backend963, normal-audit, E2E6
-      receipt_commit: 0e2a03b27e15661b18d25c96d236577751b3391c
-      remote_main_verified: true
-      receipt_followup_ci:
-        run: 34192258576
-        status: success
-        backend_tests: 963
-        frontend_tests: 454
-        e2e_tests: 6
-        normal_audit: PASS
-        remote_main: 0e2a03b27e15661b18d25c96d236577751b3391c
-  budget:
-    native_tokens_observed: 3964870
-    native_seconds_observed: 14747
-    coverage: native Goal cumulative snapshots; no explicit token budget or cost telemetry
-    first_250k_rebaseline: HEALTHY; startup root causes repaired; current candidate has 12 passing tests
-    cooldown: 75000 more tokens or 30 active minutes plus eligible trigger
-    later_health_checkpoint: 'REPLAN at 1179583: browser interceptor matched source-module URL; strict
-      API-root matching repaired it and subsequent browser checks passed.'
-    hub_health_checkpoint: 'REPLAN at 3903214 tokens after 3 rejected Hub candidates: replace ID-only
-      preview checks with lossless full-record parity across success/failure/history/stale/removed. Next
-      eligible review checkpoint after 3978214 tokens; no attempt or budget reset.'
-  next_action: Begin light-novel review version binding, state/runtime repair and declaration rollout
-    in an isolated main worktree; then remaining project units, global sync, original Hub integration
-    and real Manga redo.
+  unit: hub_entry_integration
   lane: GOVERNED
-  candidate_status: shared template accepted and delivered to Hub main; CI success; project rollout still
-    pending
-  connection_smoke:
-    registry_count: 26
-    local_count: 24
-    removed_local_count: 2
-    resolved_count: 0
-    missing_declaration: 24
-    evidence: docs/reports/all-projects-governance/hub-connection/real-smoke.json
-  last_failure:
-    candidate: a7fca889d6656caccf4f89b0ec8368b52cebe1ed1b0272e24f2b0a07856e52ef
-    class: markdown_loses_latest_failure_evidence
-    method: fresh Judge corrupt mapped-source counterexample
-    disposition: Latest failure and historical success now separate; full normalized records added to
-      Markdown; 3 rejected candidates retained; not accepted yet.
-  hub_delivery:
-    status: delivered
-    accepted_commit: 1b5dd803ab156f30a33299347b5afcf06b0b8066
-    remote_main: 1b5dd803ab156f30a33299347b5afcf06b0b8066
-    ci_run: 34198651395
-    ci_conclusion: success
-    receipt: docs/reports/all-projects-governance/hub-connection/delivery.json
+  evidence: docs/reports/all-projects-governance/hub-entry/
+  candidate_manifest: docs/reports/all-projects-governance/hub-entry/candidate.json
+  candidate_status: Stage A approved; pending main delivery
+  next_action: Commit approved Stage A, push main and verify remote CI.
+  coverage:
+    local: 24
+    removed_local: 2
+    cloud_excluded: 17
+  budget:
+    native_tokens: 6742702
+    native_seconds: 23971
+    coverage: cumulative native Goal; cost/cap unavailable
+    first_250k_rebaseline: completed
+    last_health: REPLAN at3903214; repaired; no reset
+    cooldown: 75000tokens or30active minutes plus eligible trigger
+  history_ref: docs/reports/all-projects-governance/hub-entry/baseline.json#preserved_goal_history
+  contract: docs/reports/all-projects-governance/hub-entry/contract.md
+  delivery:
+    status: pending
+    prior_receipts_ref: docs/reports/all-projects-governance/hub-entry/baseline.json#preserved_goal_history.delivery

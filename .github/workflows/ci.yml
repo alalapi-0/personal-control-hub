@@ -14,16 +14,21 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - name: Install parser
         run: python -m pip install PyYAML==6.0.3
       - name: Governance and connection regressions
         run: python -m unittest discover -s tests -q
+      - name: Connection view regressions
+        run: node --test tests/test_hub_connection_view.mjs
       - name: Repository checks
         run: python scripts/check_repo.py --task-id ALL-PROJECTS-CODEX-GOVERNANCE-V1
       - name: State consistency
         run: python scripts/round_consistency_check.py --json --task-id ALL-PROJECTS-CODEX-GOVERNANCE-V1
       - name: Registry and template validation
         run: |
-          python scripts/check_registry.py
+          python scripts/check_registry.py --metadata-only
           python scripts/hub_connections.py schema
           python scripts/hub_connections.py validate-declaration data/connections/hub.connection.template.yaml

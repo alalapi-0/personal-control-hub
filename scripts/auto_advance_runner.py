@@ -301,16 +301,44 @@ def mode_prepare_next() -> dict[str, Any]:
 def _candidate_paths() -> list[str]:
     if not selected_task():
         return []
-    relative = "docs/reports/all-projects-governance/bootstrap/candidate.json"
-    manifest = json.loads((ROOT / relative).read_text(encoding="utf-8"))
-    paths = list(manifest["files"])
-    for path in paths:
-        if (not isinstance(path, str) or Path(path).is_absolute()
-                or ".." in Path(path).parts or excluded_path(path)):
-            raise ValueError("Invalid candidate path for scoped Git check")
-    evidence_dir = str(Path(relative).parent)
-    return sorted(set(paths + [relative] + [evidence_dir + "/" + name for name in
-                                           ("judge.json", "governor.json", "delivery.json", "review.json")]))
+    state = _load_yaml("STATE.yaml") or {}
+    task = state.get("all_projects_governance", {})
+    if not isinstance(task, dict) or task.get("task_id") != selected_task():
+        raise ValueError("Selected task lacks canonical candidate authority")
+    relative = task.get("candidate_manifest")
+    if not isinstance(relative, str):
+        raise ValueError("Current task candidate manifest is required")
+
+    def valid(path):
+        return (isinstance(path, str) and path and not Path(path).is_absolute()
+                and not any(part in {"..", "."} for part in path.split("/"))
+                and not excluded_path(path))
+
+    manifest_path = Path(relative)
+    if (not valid(relative) or manifest_path.suffix != ".json"
+            or manifest_path.parts[:3] != ("docs", "reports", "all-projects-governance")):
+        raise ValueError("Invalid current candidate manifest path")
+    current = ROOT
+    for part in manifest_path.parts:
+        current = current / part
+        if current.is_symlink():
+            raise ValueError("Candidate manifest cannot traverse symlinks")
+    manifest = json.loads(current.read_text(encoding="utf-8"))
+    files = manifest.get("files")
+    if isinstance(files, dict):
+        paths = list(files)
+    elif isinstance(files, list) and all(isinstance(item, dict) and "path" in item for item in files):
+        paths = [item["path"] for item in files]
+    else:
+        raise ValueError("Current candidate files must be an explicit manifest")
+    metadata = manifest.get("file_metadata_exclusions", [])
+    if not isinstance(metadata, list):
+        raise ValueError("Invalid candidate metadata paths")
+    paths += metadata
+    paths += [relative]
+    if not paths or not all(valid(path) for path in paths):
+        raise ValueError("Invalid candidate path for scoped Git check")
+    return sorted(set(paths))
 
 
 def _git_status_porcelain() -> tuple[int, str]:

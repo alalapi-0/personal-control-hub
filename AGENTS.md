@@ -7,6 +7,7 @@ Hub 的条件上下文入口。默认只读本文件与 `STATE.yaml`，合计不
 - 所有者激活 `ALL-PROJECTS-CODEX-GOVERNANCE-V1` 时，每轮再读 `docs/all_projects_governance_execution.md`，使用 STATE 的 `all_projects_governance` 条目；不占用 `current_work`。
 - 本任务只由 Codex 执行，禁止访问或操作 Cursor。首次写入前执行 `python3 scripts/auto_advance_runner.py --mode check --task-id ALL-PROJECTS-CODEX-GOVERNANCE-V1`；仅首次修复检查入口自身冲突可先做最小 bootstrap 修复，立即补验。检查不是授权。
 - 项目身份与路径：`data/registry/external_projects.yaml`、`docs/05_external_project_protocol.md`。历史工作分支的接入实现按执行文档验证后逐单元移植，不整分支合并。
+- 本轮 Git 检查清单由 STATE 的 `all_projects_governance.candidate_manifest` 指定；缺失或无效时修复当前登记，不读取历史候选代替本轮。
 - 权限/Git：`governance/agent_policy.yaml`、`data/gates/auto_advance_policy.yaml`；当前任务授权覆盖冲突的旧限制，其余任务仍默认外部只读。
 - 飞书本地准备：`docs/09_feishu_lark_strategy.md`。真实连接保持 disabled。
 - 统一项目状态入口：`docs/12_project_connections.md`；`python3 scripts/hub_connections.py current` 只读 Hub 账本，显式 `refresh` 才读取登记来源并更新本地投影。

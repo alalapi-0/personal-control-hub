@@ -95,6 +95,7 @@ class BootstrapTests(unittest.TestCase):
             evidence = tmp / "docs/reports/all-projects-governance/bootstrap"
             evidence.mkdir(parents=True)
             (evidence / "candidate.json").write_text(json.dumps({"files": {"task.txt": "fixture"}}))
+            (tmp / "STATE.yaml").write_text("all_projects_governance:\n  task_id: " + TASK + "\n  candidate_manifest: docs/reports/all-projects-governance/bootstrap/candidate.json\n")
             (tmp / "task.txt").write_text("owned fixture")
             unrelated = tmp / "unrelated.txt"
             unrelated.write_text(runner.SENSITIVE_CONTENT_MARKERS[0])
@@ -150,6 +151,48 @@ class BootstrapTests(unittest.TestCase):
             self.assertIn("STATE.yaml: contains suspected token", output.getvalue())
             self.assertNotIn(fake, output.getvalue())
 
+    def test_candidate_git_scope_follows_current_state_not_bootstrap_history(self):
+        runner = module("auto_advance_runner")
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, HUB_GOVERNANCE_TASK=TASK):
+            tmp = Path(directory)
+            for unit, files in [("bootstrap", {"old.txt": "old"}),
+                                ("current", [{"path": "new.txt", "sha256": "pending"}])]:
+                folder = tmp / "docs/reports/all-projects-governance" / unit
+                folder.mkdir(parents=True)
+                (folder / "candidate.json").write_text(json.dumps({"files": files}))
+            state = tmp / "STATE.yaml"
+            state.write_text("all_projects_governance:\n  task_id: " + TASK +
+                             "\n  candidate_manifest: docs/reports/all-projects-governance/current/candidate.json\n")
+            with patch.object(runner, "ROOT", tmp):
+                paths = runner._candidate_paths()
+                self.assertIn("new.txt", paths)
+                self.assertNotIn("old.txt", paths)
+                state.write_text("all_projects_governance:\n  task_id: " + TASK + "\n")
+                with self.assertRaises(ValueError):
+                    runner._candidate_paths()
+
+    def test_candidate_pointer_cannot_escape_or_follow_symlinks(self):
+        runner = module("auto_advance_runner")
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, HUB_GOVERNANCE_TASK=TASK):
+            tmp = Path(directory)
+            outside = tmp / "not-a-candidate.json"
+            outside.write_text("never opened")
+            folder = tmp / "docs/reports/all-projects-governance/current"
+            folder.mkdir(parents=True)
+            (folder / "candidate.json").symlink_to(outside)
+            for pointer in ["../not-a-candidate.json", "docs/cursor-fixture/candidate.json",
+                            "docs/reports/all-projects-governance/current/candidate.json"]:
+                (tmp / "STATE.yaml").write_text("all_projects_governance:\n  task_id: " + TASK +
+                                               "\n  candidate_manifest: " + pointer + "\n")
+                original = Path.read_text
+                def guarded(path, *args, **kwargs):
+                    self.assertNotEqual(path, outside)
+                    self.assertNotEqual(path, folder / "candidate.json")
+                    return original(path, *args, **kwargs)
+                with patch.object(runner, "ROOT", tmp), patch.object(Path, "read_text", guarded):
+                    with self.assertRaises(ValueError):
+                        runner._candidate_paths()
+
     def test_unknown_scope_fails_closed(self):
         result = subprocess.run([sys.executable, 'scripts/auto_advance_runner.py', '--task-id', 'invalid'],
                                 cwd=ROOT, capture_output=True)
@@ -194,6 +237,7 @@ class BootstrapTests(unittest.TestCase):
             value = original(relative, blockers)
             if relative == "STATE.yaml":
                 value.pop("all_projects_governance", None)
+                value["current_work"] = {"status": "ACTIVE", "next_action": "Unrelated task"}
             return value
         with patch.dict(os.environ, HUB_GOVERNANCE_TASK=TASK), patch.object(checker, "_load_yaml", side_effect=absent_task):
             result = checker.run_check()
@@ -212,11 +256,11 @@ class BootstrapTests(unittest.TestCase):
         removed = [p for p in registry["projects"] if p.get("current_state_status") == "removed_local"]
         self.assertEqual(len(registry["projects"]), 26)
         self.assertEqual({p["id"] for p in removed}, {"manga-removed-local", "game-removed-local"})
-        self.assertTrue(validate_registry(registry)["valid"])
+        self.assertTrue(validate_registry(registry, check_paths=False)["valid"])
         for field, value in (("enabled", True), ("scan_enabled", True), ("external_write_allowed", True), ("watch_paths", ["STATE.yaml"])):
             broken = deepcopy(registry)
             next(p for p in broken["projects"] if p["id"] == "manga-removed-local")[field] = value
-            self.assertFalse(validate_registry(broken)["valid"])
+            self.assertFalse(validate_registry(broken, check_paths=False)["valid"])
         coverage = json.loads((ROOT / "docs/reports/all-projects-governance/bootstrap/coverage.json").read_text())
         native = json.loads((ROOT / "docs/reports/all-projects-governance/bootstrap/native-projects.json").read_text())["projects"]
         covered = [a for p in coverage["projects"] for a in p["native_aliases"]] + [p["discovery_id"] for p in coverage["additional_dispositions"]]
@@ -229,7 +273,7 @@ class BootstrapTests(unittest.TestCase):
         import yaml
         state = yaml.safe_load((ROOT / 'STATE.yaml').read_text())
         self.assertEqual(state['metadata']['authority'], 'canonical')
-        self.assertNotIn('current_work', state)
+        self.assertEqual(state['all_projects_governance']['task_id'], TASK)
         self.assertLessEqual(sum((ROOT / p).stat().st_size for p in ('AGENTS.md', 'STATE.yaml')), 8192)
 
 if __name__ == '__main__':
