@@ -91,7 +91,11 @@ class RegistryStorageTests(unittest.TestCase):
         self.assertFalse(validate_registry(broken, check_paths=False)['valid'])
 
     def test_manga_business_route_is_exact_and_does_not_expand_storage_access(self):
-        for key, value in [('current_state_paths', ['other.yaml']),
+        self.assertTrue(validate_registry(self.registry, check_paths=False)['valid'])
+        self.assertEqual(['.agent/STATE.yaml'],
+                         self.project(self.registry, 'manga-localizer')['current_state_paths'])
+        for key, value in [('current_state_paths', ['.agent/STATE.md']),
+                           ('current_state_paths', ['other.yaml']),
                            ('rules_paths', ['AGENTS.md']),
                            ('connection_authority', 'unrelated owner'),
                            ('access_profile', 'unbounded'),

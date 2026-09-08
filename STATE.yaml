@@ -15,31 +15,31 @@ current_round:
   next_round: ROUND-1-5
 legacy_context:
   source: origin/main:15a4971
-  meaning: Preserved historical roadmap context; does not resume that task. Working checkout has later unmerged
-    work preserved there.
+  meaning: Preserved historical roadmap context; does not resume that task. Working checkout has later
+    unmerged work preserved there.
 all_projects_governance:
   task_id: ALL-PROJECTS-CODEX-GOVERNANCE-V1
   native_task_id: 01a07ef7-735b-7270-9c21-3347e1232b5a
   status: ACTIVE
-  unit: hub_entry_integration
+  unit: hub_manga_routing
   lane: GOVERNED
-  evidence: docs/reports/all-projects-governance/hub-entry/
-  candidate_manifest: docs/reports/all-projects-governance/hub-entry/installation.json
-  candidate_status: Stage B delivered; rollout pending
-  next_action: Resume Manga recovery and pending-content delivery.
+  evidence: docs/reports/all-projects-governance/hub-entry/manga-routing.json
+  candidate_manifest: docs/reports/all-projects-governance/hub-entry/manga-routing.json
+  candidate_status: Stage A accepted; delivery pending
+  next_action: Deliver accepted route to main, then install after CI passes.
   coverage:
     local: 24
     removed_local: 2
     cloud_excluded: 17
   budget:
-    native_tokens: 7023919
-    native_seconds: 24903
+    native_tokens: 9774914
+    native_seconds: 35423
     coverage: cumulative native Goal; cost/cap unavailable
     first_250k_rebaseline: completed
     last_health: REPLAN at3903214; repaired; no reset
     cooldown: 75000tokens or30active minutes plus eligible trigger
   history_ref: docs/reports/all-projects-governance/hub-entry/baseline.json#preserved_goal_history
-  contract: docs/reports/all-projects-governance/hub-entry/contract.md
+  contract: docs/reports/all-projects-governance/hub-entry/manga-routing-contract.md
   delivery:
-    status: main_verified
-    source_commit: e537b83dff8da74dc0006eef124f9dba4f6d4f4c
+    status: pending
+    previous_receipt: deb2bc12cc6d0fc78ae7723db32b0961d3e4711c

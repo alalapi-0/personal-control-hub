@@ -159,7 +159,7 @@ projects:
     mutation_allowed: false
   rules_paths: []
   current_state_paths:
-  - .agent/STATE.md
+  - .agent/STATE.yaml
   current_state_status: owner_authorized_sole_business_state
   supporting_authority_paths: []
 - id: universal-player

@@ -289,7 +289,7 @@ class ProjectServiceFacadeTests(unittest.TestCase):
         manga.update(name="Manga Localizer", enabled=False, summary_enabled=True,
                      access_profile="bounded_named_business_state_read",
                      connection_read_allowed=True,
-                     current_state_paths=[".agent/STATE.md"],
+                     current_state_paths=[".agent/STATE.yaml"],
                      current_state_status="owner_authorized_sole_business_state",
                      legacy_hub_connection_exception={
                          "status": "AUTHORIZED_EXCEPTION",

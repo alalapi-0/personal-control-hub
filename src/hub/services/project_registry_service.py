@@ -237,7 +237,7 @@ def validate_registry(registry: dict[str, Any] | None = None, *,
         hard_blockers.append("manga-localizer 当前 Goal 的 inventory/inspection/validation/mutation 必须全部为 false")
     named_business_route = (
         manga.get("connection_read_allowed") is True
-        and manga.get("current_state_paths") == [".agent/STATE.md"]
+        and manga.get("current_state_paths") == [".agent/STATE.yaml"]
         and manga.get("rules_paths") == [] and manga.get("supporting_authority_paths") == []
         and manga.get("access_profile") == "bounded_named_business_state_read"
         and manga.get("current_state_status") == "owner_authorized_sole_business_state"

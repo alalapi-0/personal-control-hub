@@ -1,0 +1,548 @@
+{
+  "contract": "docs/reports/all-projects-governance/hub-entry/manga-routing-contract.md",
+  "contract_id": "ALL-PROJECTS-CODEX-GOVERNANCE-V1-HUB-MANGA-ROUTING-v1",
+  "lane": "GOVERNED",
+  "stage": "A",
+  "status": "Stage A accepted; delivery pending",
+  "baseline_main": "deb2bc12cc6d0fc78ae7723db32b0961d3e4711c",
+  "files": {
+    "STATE.yaml": {
+      "sha256": "8c0910855cbe5d94f06ab68adb1581ccb3b4e929b32fc608cd2a57409e359225",
+      "mode": 420
+    },
+    "data/registry/external_projects.yaml": {
+      "sha256": "60c827a6adb898e0787274d9feeae845b8e026cca63aa55aedb9b2921d2cb811",
+      "mode": 420
+    },
+    "src/hub/services/project_registry_service.py": {
+      "sha256": "5bb517419ab413afc13f358a4b26565d9bf2d12b42df38b1028d96c4644f1294",
+      "mode": 420
+    },
+    "tests/test_hub_registry_storage.py": {
+      "sha256": "3e40084124e5dbf6918bff416b6a7cd66ae0916800e43fbef8ae55e75f287f50",
+      "mode": 420
+    },
+    "tests/test_hub_project_service.py": {
+      "sha256": "f6d01c9f6aedc44de547a03420d28d4bf6c998b451727af2cb6790670019c7c6",
+      "mode": 420
+    },
+    "docs/reports/all-projects-governance/hub-entry/manga-routing-contract.md": {
+      "sha256": "1bf1f1e9108243e4dfb0eb5f3e00bee2a8d42548b6d441816adcd874f2c923c9",
+      "mode": 420
+    }
+  },
+  "baseline": {
+    "source": {
+      "STATE.yaml": {
+        "sha256": "b9cf749116973dbce163825eca27f78573e5b747b1b7a43e2037fab39fb98f37",
+        "mode": 420
+      },
+      "data/registry/external_projects.yaml": {
+        "sha256": "cda527933aa5f685dd9a5b2e53a381568f382485d0dfe7bdb3116760c1cd3d56",
+        "mode": 420
+      },
+      "src/hub/services/project_registry_service.py": {
+        "sha256": "331cfb094eafe477c37645f1c7b9e149026bcd8725b53aa989ec589dc0bd1c6f",
+        "mode": 420
+      },
+      "tests/test_hub_registry_storage.py": {
+        "sha256": "067cc500d1e9dbeab45294bb20ae971ecbf63692a2d6f2ec96feb8016a7bb57c",
+        "mode": 420
+      },
+      "tests/test_hub_project_service.py": {
+        "sha256": "430ca7558b2b9e40fd08ec2c91f5ec67d504a72e43c6e0ca3a4debd97c99ac89",
+        "mode": 420
+      }
+    },
+    "original": {
+      "head": "0ca1ee547990fd876e9917c8c6ee1fa7d2bb8142",
+      "branch": "agent/governance-closure-20260812",
+      "index_sha256": "d68325d0fa8bc1c6c6442ef52f54d00a75b67ca3d95367fce0bdc33703349b5c",
+      "current_work_sha256": "a03d8cb9fcdf5679ac7a31177175ed14f8c852e55fdb585163aa9ecf600df87d",
+      "hashes": {
+        "AGENTS.md": "8a68ff4b6837ed1dd6d29b7bdd85667d12dc82e0766195297006f635596a3c8c",
+        "STATE.yaml": "cbbb49cf8818802c9b5df6efd404ad834cba27463f82763ac716a8c1bdc88e1a",
+        "data/design_governance/connection_adapters.json": "06df415a7ca906a1d779fa2867ab5dc18915ab2d8581bb65c7db85eeb6bcc5c6",
+        "data/design_governance/design-store.json": "df9ff333977cec6589610f74333039ccd04ff42c24e3782c00d8623264ffe6c0",
+        "data/design_governance/design-store.json.lock": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "data/design_governance/multi-project-figma-redesign-v1.json": "5dc287a4c1d9c67ffc8c1904a89fb7b5c01fe95c31a97740ce1f742dd12e1c0b",
+        "data/gates/auto_advance_policy.yaml": "6edc2ec7dcca27f32cdd331f360f4e4fba988830f81cdeef7cd935a60a36ce12",
+        "data/mcp/mcp_approval_policy.yaml": "54330d0612d652cd41152f40ab23fb1b935cf34e322476356fb118ec772e8aff",
+        "data/registry/external_projects.yaml": "5b0922259f22a15a232697fc12dcc28077dac88d033d03214b0657db35c69851",
+        "data/state/current_status.yaml": "2ebbc2f10f4462c83e69fd02b49169877f60af850d0dddbc06c3b7b66dae0e8a",
+        "governance/agent_policy.yaml": "d26b945d1666d4ad7dbcb21ffa8e6214491c79d06135eb30a20c3fc454d9084a",
+        "governance/round_state.yaml": "c6774e9ba92d055ca4450f12f7ae702f1a44c6b43d75e8f22a3c809326518674",
+        "prompts/codex_project_driver.md": "b518057e95d9fcd62f1addd82cbcb03af5d18a0a4405fa595870b33e7f42cddd",
+        "scripts/agent_gate.py": "55aa48460658195efe30f53dc130a3cb983aa95fec0d0ca929b3313e7c60b0a3",
+        "scripts/auto_advance_runner.py": "5636b8826536478e98a17e75e7a397bb5cf7b475fe45c8c4f54b2e35b29befdc",
+        "scripts/check_environment.py": "2a75208c6d4f6b615ca38465fe2567f7a8615b11810b59d7e5d9a2eb425dde9e",
+        "scripts/check_repo.py": "526955bd919722ab082741a907fa05a0620d602bc8de9796f460ec892384c43b",
+        "scripts/round_consistency_check.py": "6d3655ac39e8817d49d2b9d0e24b4db3ac9913cf3d1de5af90e9c9ac8cf229da",
+        "src/hub/__init__.py": "0c487b25bcc2442a0cb2d480bf0cc95213b6b2820db780b3daf6cf7593fb6fb4",
+        "src/hub/connection_records.py": "24ed402167f7811dd4cb12ebb3e08237a57f32e0a1aedc6d5e0bd2966d80e733",
+        "src/hub/connection_refresh.py": "233bec16f3df68ae94524c1a3b7f43a95d7ae57f5200f10f57a4a6f659b0492f",
+        "src/hub/connection_sources.py": "0648baa808ac566ff8c1e1a6f1e6c5a6b826b230787e32665424060776014435",
+        "src/hub/connections.py": "b9fa95e08272b8747dc0326ac149ba6c384993a9e1bc131125929ec617619033",
+        "src/hub/local_service.py": "13585c54a5a38842b575c7d212b45ac3c477a9d1e1cdb7c29e317dc9e218a35d",
+        "src/hub/paths.py": "d16a3457171cfff451406b0b51b00baf09571934cef1360aa5610305d41a9877",
+        "src/hub/project_service.py": "34a2dc0d9cfdfb49ee12b545ad9e85f603f3749aa952ec1c1bcf1de476709f5a",
+        "src/hub/service_contract.py": "f06b00793aad42d07f2ba708a97090645412688dc72bbaece08bf33df5a43f52",
+        "src/hub/services/project_registry_service.py": "331cfb094eafe477c37645f1c7b9e149026bcd8725b53aa989ec589dc0bd1c6f",
+        "src/hub/web/hub.js": "d7c81bc0561eec1d475e3f6bf263edb9d2a1529a0bcf8531b913fd1f93652bfe",
+        "tests/test_hub_connections.py": "05628f84ca2a5d94f8bde24aff1eb15190b79abc49df18c0a92b5a269ddc72a3",
+        "tests/test_hub_project_service.py": "430ca7558b2b9e40fd08ec2c91f5ec67d504a72e43c6e0ca3a4debd97c99ac89",
+        "tests/test_hub_refresh.py": "b172dcbadc8fe1ebe3b9e04b1ca44f4475e993dcde24938914dfa4979e78446c",
+        "tests/test_hub_sources.py": "bda269b48ace4e7ae319cc421ca1c1f8b1bb690705f8f2ed8620cdb2b6051c26"
+      },
+      "status_excluding_cursor": [
+        " M .gitignore",
+        " M AGENTS.md",
+        " M STATE.yaml",
+        " M data/gates/auto_advance_policy.yaml",
+        " M data/mcp/mcp_approval_policy.yaml",
+        " M data/registry/external_projects.yaml",
+        " M docs/09_feishu_lark_strategy.md",
+        " M governance/agent_policy.yaml",
+        " M prompts/codex_project_driver.md",
+        " M scripts/agent_gate.py",
+        " M scripts/auto_advance_runner.py",
+        " M scripts/check_environment.py",
+        " M scripts/check_registry.py",
+        " M scripts/check_repo.py",
+        " M scripts/hub_connections.py",
+        " M scripts/hub_refresh.py",
+        " M scripts/round_consistency_check.py",
+        " M src/hub/connection_cli.py",
+        " D src/hub/connection_manager_cli.py",
+        " M src/hub/connection_records.py",
+        " M src/hub/connection_refresh.py",
+        " M src/hub/connection_sources.py",
+        " M src/hub/connections.py",
+        " M src/hub/local_service.py",
+        " M src/hub/project_service.py",
+        " M src/hub/services/integration_service.py",
+        " M src/hub/services/project_registry_service.py",
+        " M src/hub/web/hub.js",
+        " M tests/test_hub_connections.py",
+        " M tests/test_hub_project_service.py",
+        " M tests/test_hub_refresh.py",
+        " M tests/test_hub_refresh_cli.py",
+        " M tests/test_hub_service_integration.py",
+        " M tests/test_hub_sources.py",
+        "?? .github/workflows/ci.yml",
+        "?? .playwright-mcp/console-2026-09-06T03-39-13-535Z.log",
+        "?? .playwright-mcp/console-2026-09-06T07-11-02-049Z.log",
+        "?? .playwright-mcp/page-2026-09-06T03-39-13-753Z.yml",
+        "?? .playwright-mcp/ui-export-519c97cc-d4c4-4c3c-ac91-1508f58874aa.zip",
+        "?? .playwright-mcp/ui-export-bb842192-64ec-4246-8a15-04e62f5e7a1e.zip",
+        "?? .playwright-mcp/ui-export-c65d5662-a43c-41c2-bcaa-9fb6dca87602.zip",
+        "?? data/connections/hub.connection.template.yaml",
+        "?? data/connections/schema.json",
+        "?? data/design_governance/design-store.json.lock",
+        "?? data/design_governance/multi-project-figma-redesign-v1.json",
+        "?? docs/12_project_connections.md",
+        "?? docs/all_projects_governance_execution.md",
+        "?? docs/global_agent_governance_execution.md",
+        "?? docs/reports/all-projects-governance/bootstrap/baseline.json",
+        "?? docs/reports/all-projects-governance/bootstrap/candidate.json",
+        "?? docs/reports/all-projects-governance/bootstrap/connection-proposal.md",
+        "?? docs/reports/all-projects-governance/bootstrap/contract.md",
+        "?? docs/reports/all-projects-governance/bootstrap/coverage.json",
+        "?? docs/reports/all-projects-governance/bootstrap/delivery.json",
+        "?? docs/reports/all-projects-governance/bootstrap/governor.json",
+        "?? docs/reports/all-projects-governance/bootstrap/judge.json",
+        "?? docs/reports/all-projects-governance/bootstrap/manga-identity.json",
+        "?? docs/reports/all-projects-governance/bootstrap/native-projects.json",
+        "?? docs/reports/all-projects-governance/bootstrap/review.json",
+        "?? docs/reports/all-projects-governance/bootstrap/validation.json",
+        "?? docs/reports/all-projects-governance/hub-connection/baseline.json",
+        "?? docs/reports/all-projects-governance/hub-connection/candidate.json",
+        "?? docs/reports/all-projects-governance/hub-connection/contract.md",
+        "?? docs/reports/all-projects-governance/hub-connection/delivery.json",
+        "?? docs/reports/all-projects-governance/hub-connection/governor.json",
+        "?? docs/reports/all-projects-governance/hub-connection/judge.json",
+        "?? docs/reports/all-projects-governance/hub-connection/provenance.json",
+        "?? docs/reports/all-projects-governance/hub-connection/reader.json",
+        "?? docs/reports/all-projects-governance/hub-connection/real-preview/feishu.json",
+        "?? docs/reports/all-projects-governance/hub-connection/real-preview/projects.json",
+        "?? docs/reports/all-projects-governance/hub-connection/real-preview/projects.md",
+        "?? docs/reports/all-projects-governance/hub-connection/real-smoke.json",
+        "?? docs/reports/all-projects-governance/hub-connection/validation.json",
+        "?? docs/reports/all-projects-governance/hub-entry/baseline.json",
+        "?? docs/reports/all-projects-governance/hub-entry/candidate.json",
+        "?? docs/reports/all-projects-governance/hub-entry/checks.json",
+        "?? docs/reports/all-projects-governance/hub-entry/contract.md",
+        "?? docs/reports/all-projects-governance/hub-entry/delivery.json",
+        "?? docs/reports/all-projects-governance/hub-entry/governor.json",
+        "?? docs/reports/all-projects-governance/hub-entry/installation-manga.png",
+        "?? docs/reports/all-projects-governance/hub-entry/installation-projects.png",
+        "?? docs/reports/all-projects-governance/hub-entry/installation-removed-mobile.png",
+        "?? docs/reports/all-projects-governance/hub-entry/installation.json",
+        "?? docs/reports/all-projects-governance/hub-entry/installation_checks.json",
+        "?? docs/reports/all-projects-governance/hub-entry/installation_delivery.json",
+        "?? docs/reports/all-projects-governance/hub-entry/installation_governor.json",
+        "?? docs/reports/all-projects-governance/hub-entry/installation_judge.json",
+        "?? docs/reports/all-projects-governance/hub-entry/judge.json",
+        "?? docs/reports/ui_design_governance/figma-source-observation-v1.json",
+        "?? docs/reports/ui_design_governance/unit-08/delivery.json",
+        "?? docs/reports/ui_design_governance/unit-09/delivery.json",
+        "?? docs/reports/ui_design_governance/unit-10/delivery.json",
+        "?? docs/reports/ui_design_governance/unit-11/delivery.json",
+        "?? docs/reports/ui_design_governance/unit-13/delivery.json",
+        "?? docs/reports/ui_design_governance/unit-14/delivery.json",
+        "?? prompts/all_projects_governance_goal_mode.md",
+        "?? scripts/governance_scope.py",
+        "?? src/hub/web/connection_view.mjs",
+        "?? tests/connection_fixtures.py",
+        "?? tests/test_governance_bootstrap.py",
+        "?? tests/test_hub_connection_view.mjs",
+        "?? tests/test_hub_registry_storage.py"
+      ]
+    }
+  },
+  "governor_contract_origin": "Native read-only hub_connection_governor draft and two clarifications, activated after Manga full CI success",
+  "entry_gate": {
+    "command": "python3 -B scripts/auto_advance_runner.py --mode check --task-id ALL-PROJECTS-CODEX-GOVERNANCE-V1",
+    "exit": 0,
+    "hard_blockers": 0,
+    "historical_warnings": 10,
+    "authority_granted": false
+  },
+  "manga_delivery": {
+    "repository": "alalapi-0/manga-localizer",
+    "main": "1aa3fb8a80241bf7a533b13eeb08771a428f4839",
+    "source_code": "f97852faed4cfc61cc0dca0227f0d961aa60d9e1",
+    "checkpoint": "c130b50f1584c1ecd78d9bad9a49cc9daf103937",
+    "remote_ancestry_verified": true,
+    "audit": {
+      "base": "0e2a03b27e15661b18d25c96d236577751b3391c",
+      "head": "1aa3fb8a80241bf7a533b13eeb08771a428f4839",
+      "exit": 0,
+      "coverage": "candidate237/index237/history1603/live234/Cursorlive0"
+    },
+    "ci": {
+      "id": 34226749921,
+      "conclusion": "success",
+      "jobs": [
+        "backend",
+        "frontend",
+        "e2e"
+      ],
+      "url": "https://github.com/alalapi-0/manga-localizer/actions/runs/34226749921"
+    },
+    "original_installation_accepted": true,
+    "failed_unpublished_commit_preserved": "b23a40f836eaf0539a78a47b30b7d58da5a4aa94",
+    "state_sha256": "1d400617e6189437fc5886419dca776f6a5c0a11b7290318fe8798ae71a01dd7",
+    "declaration_sha256": "a6f6baea6521056ef1b2fc52b9731f68a9a646de395fb5573f6a5743b5ba3f69",
+    "actual_image_repair": "pending"
+  },
+  "pending_repository_targets": {
+    "status": "awaiting_owner_mapping; independent repository work continues",
+    "project_ids": [
+      "desktop-jav-tools",
+      "desktop-tool",
+      "pycharm-agent-workspace",
+      "youtube-hq-downloader",
+      "desktop-magnet",
+      "pycharm-misc-project",
+      "desktop-downloads-scripts"
+    ],
+    "reason": "No local Git or proven matching GitHub repository; same-name youtube remote differs; no repository created"
+  },
+  "native_budget": {
+    "tokens": 9774914,
+    "seconds": 35423,
+    "coverage": "cumulative native Goal; cost/cap unavailable; no reset"
+  },
+  "checks": {
+    "python": {
+      "command": "python3 -B -m unittest discover -s tests -q",
+      "exit": 0,
+      "tests": 98,
+      "seconds": 3.221,
+      "log_sha256": "682b7752ef4cedaa1993a52a90a4f6260fded4ef43c2ece07c28cbf60c04fcfa"
+    },
+    "view": {
+      "command": "node --test tests/test_hub_connection_view.mjs",
+      "tests": 7,
+      "exit": 0
+    },
+    "repository": "check_repo task scope PASS",
+    "state_consistency": "round_consistency_check task scope PASS",
+    "registry": {
+      "local_paths_checked": true,
+      "projects": 26,
+      "hard_blockers": 0,
+      "warnings": 0,
+      "other25_registry_records_unchanged": true
+    },
+    "schema_and_template": "PASS",
+    "ledger_validate": "PASS; existing history preserved",
+    "runtime": {
+      "root_role": "source",
+      "request_id": "hub-manga-routing-source-26-v1",
+      "resumed_after_probe_failure": true,
+      "initial_trace_note": "Initial removed/Manga read-scope assertions passed before QUERY_INVALID; in-memory detailed trace was not saved. Resume reads no sources.",
+      "refresh_exit": 2,
+      "replay_exit": 2,
+      "coverage": {
+        "registry_count": 26,
+        "local_count": 24,
+        "removed_local_count": 2,
+        "resolved_count": 2
+      },
+      "dispositions": {
+        "missing_declaration": 22,
+        "removed_local": 2,
+        "resolved": 2
+      },
+      "before_head": {
+        "sequence": 112,
+        "hash": "866bc18e2b9f04fe99e66b09c3585e7d7eaefc37db2c6b9b4813a684be2385ac"
+      },
+      "after_head": {
+        "sequence": 140,
+        "hash": "67ef5db21fb34cf96c98783aa394b4104471e71357d8ab04578f7330c2813c8e"
+      },
+      "source_read_attempts": [],
+      "root_path_checks": [],
+      "source_resolution_ids": [],
+      "removed_zero_root_reads": true,
+      "ordinary_source_reads": 0,
+      "replay_source_reads": 0,
+      "replay_appends": 0,
+      "history_prefix_preserved": true,
+      "other25_changed_fields": {
+        "ai-anime-short-factory": [
+          "authority",
+          "observed_at"
+        ],
+        "ai-music-foundry": [
+          "authority",
+          "observed_at"
+        ],
+        "audio-clone": [
+          "authority",
+          "observed_at"
+        ],
+        "cognitive-asset-library": [
+          "authority",
+          "observed_at"
+        ],
+        "computer-study-plan": [
+          "authority",
+          "observed_at"
+        ],
+        "desktop-downloads-scripts": [
+          "authority",
+          "observed_at"
+        ],
+        "desktop-jav-tools": [
+          "authority",
+          "observed_at"
+        ],
+        "desktop-magnet": [
+          "authority",
+          "observed_at"
+        ],
+        "desktop-tool": [
+          "authority",
+          "observed_at"
+        ],
+        "game-removed-local": [
+          "authority",
+          "observed_at"
+        ],
+        "light-novel": [
+          "authority",
+          "business",
+          "declaration",
+          "disposition",
+          "errors",
+          "field_provenance",
+          "freshness",
+          "observed_at",
+          "sources",
+          "success",
+          "unknown_fields",
+          "update_key",
+          "validation_entry"
+        ],
+        "manga-localizer": [
+          "authority",
+          "business",
+          "declaration",
+          "disposition",
+          "errors",
+          "field_provenance",
+          "freshness",
+          "observed_at",
+          "sources",
+          "success",
+          "unknown_fields",
+          "update_key",
+          "validation_entry"
+        ],
+        "manga-removed-local": [
+          "authority",
+          "observed_at"
+        ],
+        "mpv-clip-workbench": [
+          "authority",
+          "observed_at"
+        ],
+        "novel-continuation-agent": [
+          "authority",
+          "observed_at"
+        ],
+        "personal-control-hub": [
+          "authority",
+          "observed_at"
+        ],
+        "pixel-world-asset-forge": [
+          "authority",
+          "observed_at"
+        ],
+        "pycharm-agent-workspace": [
+          "authority",
+          "observed_at"
+        ],
+        "pycharm-misc-project": [
+          "authority",
+          "observed_at"
+        ],
+        "resilient-personal-network": [
+          "authority",
+          "observed_at"
+        ],
+        "storage_governance": [
+          "authority",
+          "observed_at"
+        ],
+        "story-faceless-utopia": [
+          "authority",
+          "observed_at"
+        ],
+        "universal-player": [
+          "authority",
+          "observed_at"
+        ],
+        "wechat-article-scheduler": [
+          "authority",
+          "observed_at"
+        ],
+        "youtube-hq-downloader": [
+          "authority",
+          "observed_at"
+        ],
+        "zarathustra-adaptation": [
+          "authority",
+          "observed_at"
+        ]
+      },
+      "existing_light_novel_catchup": "Source ledger previously missing declaration; refreshed source SHA matches prior accepted original Hub reader13eb1da. This unit did not change Light Novel.",
+      "full_preview_parity_rows": 26,
+      "feishu_disabled": true,
+      "service_list_and_detail_count": 26,
+      "manga_known": 20,
+      "manga_unknown": 1,
+      "manga_completed_accepted": false,
+      "manga_progress": [
+        140,
+        199
+      ],
+      "manga_blockers": 3,
+      "current_snapshot_sha256": "251c1d3738497897fc07252570d06cbcb0455e77adbbbfc63416ab95131250ed"
+    },
+    "probe_failure_recovery": {
+      "target": "Root source runtime proof after successful26refresh",
+      "failure": "Service query limit was integer100; existing public contract requires string. QUERY_INVALID occurred after refresh and replay assertions, before final evidence serialization.",
+      "prior_script_sha256": "2a040c92c3438d7c87b91b7bb22d479d0eeb93c7c53b56eb234157225fa2903f",
+      "mutation_outcome": "Request hub-manga-routing-source-26-v1 already FINISHED113..140; preserved.",
+      "recovery": "Fix probe query to string; resume same request with zero append/read, recover prior head112 from saved snapshot; do not rerun26refresh or alter product contract. Detailed initial in-memory read trace not retained; executed pre-failure read-scope assertions are identified separately.",
+      "followup_failure": "Probe compared DTO source_record with projected row; actual facade exposes latest source_resolution there and last_success separately. No product mutation; fresh source code contract read before correction.",
+      "method_change": "Use inspected DTO fields and existing parity test implementation; corrected Feishu config/updates paths in same repair before rerun.",
+      "new_evidence": "Source ledger112 predates Light Novel declaration (missing_declaration), unlike accepted original Hub ledger. Refresh correctly resolves already delivered Light Novel; source SHA13eb1da exactly matches prior accepted hub-entry installation reader. Other24 unchanged business/source/disposition; no external project writes."
+    },
+    "probe": {
+      "command": "python3 -B /tmp/hub-manga-routing-proof.py <Hub-source-root> hub-manga-routing-source-26-v1",
+      "sha256": "a4e85ea2b0b7e81576ddf379859f5ad3839d028059a8f0859c3cd6acd6fc6cfd",
+      "repeat_behavior": "Same finished request, zero source reads and appends; no new refresh ID"
+    },
+    "preservation": {
+      "original_registered_files": 33,
+      "hashes_head_index_status_unchanged": true,
+      "source_registry_one_field_only": true,
+      "no_external_project_writes": true
+    }
+  },
+  "reviews": {
+    "stage_a_judge": {
+      "agent": "/root/hub_manga_routing_judge_v1",
+      "decision": "PASS",
+      "semantic_sha256": "e9f16c0ef83492a69d1ae35faf8604589aa72c58cda22cadc3ceb93b87679553",
+      "observed_at": "2026-09-08T13:17:37.561144+00:00",
+      "evidence": [
+        "Six-file exact semantic candidate verified",
+        "98 Python and 7 Node tests; repository/state/registry/schema/ledger checks pass",
+        "Independent in-memory route probe: Manga declaration and sole YAML only; removed records zero root access",
+        "Ledger113..140 one finished26 request;2resolved22missing2removed; replay/current/list/detail zero source reads",
+        "Manga20known1unknown,140/199,3blockers,completed=false,accepted=false; full projections agree",
+        "Other24 business/source/disposition unchanged; Light Novel catch-up matches accepted source hash",
+        "Original33 hashes,HEAD,branch,index,current_work unchanged",
+        "Lost initial in-memory trace replaced by immutable ledger, regression,replay and independent bounded probe"
+      ]
+    },
+    "stage_a_governor": {
+      "agent": "/root/hub_connection_governor",
+      "decision": "APPROVE",
+      "semantic_sha256": "e9f16c0ef83492a69d1ae35faf8604589aa72c58cda22cadc3ceb93b87679553",
+      "observed_at": "2026-09-08T13:19:25.991267+00:00",
+      "scope": "Stage A normal Hub main delivery and remote ancestry/CI; Stage B activates only after success, separate exact installation review required",
+      "basis": "Fresh Judge PASS plus independently recomputed exact six-file candidate, route restriction, checks, full26 ledger/projection parity and unchanged original protection evidence"
+    }
+  },
+  "delivery": {
+    "status": "pending"
+  },
+  "semantic_files": [
+    {
+      "path": "STATE.yaml",
+      "sha256": "b0c49cbb706da80ca884539cbf6e0779623f9f2a37ba23be64cd88bf113f7cdf",
+      "mode": 420
+    },
+    {
+      "path": "data/registry/external_projects.yaml",
+      "sha256": "60c827a6adb898e0787274d9feeae845b8e026cca63aa55aedb9b2921d2cb811",
+      "mode": 420
+    },
+    {
+      "path": "docs/reports/all-projects-governance/hub-entry/manga-routing-contract.md",
+      "sha256": "1bf1f1e9108243e4dfb0eb5f3e00bee2a8d42548b6d441816adcd874f2c923c9",
+      "mode": 420
+    },
+    {
+      "path": "src/hub/services/project_registry_service.py",
+      "sha256": "5bb517419ab413afc13f358a4b26565d9bf2d12b42df38b1028d96c4644f1294",
+      "mode": 420
+    },
+    {
+      "path": "tests/test_hub_project_service.py",
+      "sha256": "f6d01c9f6aedc44de547a03420d28d4bf6c998b451727af2cb6790670019c7c6",
+      "mode": 420
+    },
+    {
+      "path": "tests/test_hub_registry_storage.py",
+      "sha256": "3e40084124e5dbf6918bff416b6a7cd66ae0916800e43fbef8ae55e75f287f50",
+      "mode": 420
+    }
+  ],
+  "semantic_sha256": "e9f16c0ef83492a69d1ae35faf8604589aa72c58cda22cadc3ceb93b87679553",
+  "identity_recipe": "SHA256 sorted compact UTF8 JSON semantic_files; STATE normalized as YAML-to-JSON with only listed all_projects_governance decision/observation metadata omitted. Manifest/evidence/review/delivery JSON itself excluded to avoid self-reference.",
+  "state_metadata_exclusions": [
+    "candidate_status",
+    "next_action",
+    "delivery",
+    "budget"
+  ]
+}
