@@ -19,6 +19,8 @@ DOMAIN_ADAPTERS = {
     "story": ("hub.metric_documents", "collect_story"),
     "zarathustra": ("hub.metric_documents", "collect_zarathustra"),
     "cognitive": ("hub.metric_documents", "collect_cognitive"),
+    "music": ("hub.metric_music", "collect_music"),
+    "continuation": ("hub.metric_continuation", "collect_continuation"),
 }
 
 
@@ -78,18 +80,21 @@ def collect_declared(root, project_id, observed_at, sources):
 
 
 class MetricCollector:
-    def __init__(self, root, *, clock=utcnow):
+    def __init__(self, root, *, clock=utcnow, remote_git=False, github_ci=False):
         self.resolver = SourceResolver(Path(root))
         self.registry = self.resolver.registry
         self.projects = self.resolver.projects
         self.clock = clock
+        require(type(remote_git) is bool and type(github_ci) is bool, "remote options must be boolean")
+        self.remote_git, self.github_ci = remote_git, github_ci
         path = Path(root) / "data/connections/metric_sources.yaml"
         self.config, _ = read_structured(Path(root), str(path.relative_to(root)))
         self.validate_config()
         # Input identity includes implementation, rather than relying only on a manually bumped version.
         modules = sorted(Path(__file__).parent.glob("metric*.py"))
         code = content_hash({p.name: content_hash(p.read_text()) for p in modules})
-        self.identity = content_hash([self.resolver.authority, self.config, VERSION, code])
+        self.identity = content_hash([self.resolver.authority, self.config, VERSION, code,
+                                      {"remote_git": remote_git, "github_ci": github_ci}])
 
     def validate_config(self):
         require(self.config.get("schema_version") == VERSION and type(self.config.get("projects")) is dict, "invalid metric source configuration")
@@ -141,6 +146,10 @@ class MetricCollector:
         from hub.metric_git import collect_git
         groups = [("git", lambda: collect_git(root, project_id, observed))]
         spec = self.config["projects"].get(project_id, {"adapter": "unmapped"})
+        if self.remote_git or self.github_ci:
+            from hub.metric_remote import collect_remote
+            groups.append(("remote", lambda: collect_remote(root, project_id, observed, spec,
+                remote_git=self.remote_git, github_ci=self.github_ci)))
         if spec["adapter"] == "novel":
             from hub.metric_novel import collect_novel
             groups.append(("business", lambda: collect_novel(root, project_id, observed)))
@@ -177,6 +186,8 @@ class MetricCollector:
                     recovery_condition="Inspect source schema and collector; no workflow was executed."))
         self.resolver._check_registry()
         require(registered.resolve(strict=True) == root, "root binding changed during collection")
+        if result["issues"] and result["disposition"] == "resolved":
+            result["disposition"] = "partial"
         return result
 
     def refresh(self, store, request_id, project_ids=None):

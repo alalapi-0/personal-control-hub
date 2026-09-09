@@ -8,35 +8,47 @@ projects:
     project_dbs:
       63ac150e-b071-41d9-af18-6d31d10f4590: manga01/runs/round8-clean-plate-final/workspace/project/project.sqlite3
       b1b85f3e-4d72-4956-b519-6b30fee02fcc: manga02/runs/rd-r04-ppocr-lama-json/workspace/project/project.sqlite3
+    github_repository: alalapi-0/manga-localizer
   light-novel:
     adapter: novel
     validation_reports:
     - id: repository-gate
       path: reports/gate_result.json
       format: gate_arrays
+    github_repository: alalapi-0/jp-cn-novel-translation-pipeline
   novel-continuation-agent:
-    adapter: unmapped
+    adapter: continuation
     validation_reports:
     - id: repository-gate
       path: reports/gate_result.json
       format: gate_arrays
+    data_root: /Users/alalapi/NovelUniverseData
+    universe_id: novel_real_readiness_01
+    github_repository: alalapi-0/novel-continuation-agent
   wechat-article-scheduler:
     adapter: wechat
+    github_repository: alalapi-0/wechat-article-scheduler
   ai-anime-short-factory:
     adapter: anime
     metadata_root: /Volumes/AI_WORK_SSD/ProjectData/ai-anime-short-factory/runtime_assets/metadata
+    github_repository: alalapi-0/ai-anime-short-factory
   pixel-world-asset-forge:
     adapter: pixel
     metadata_root: /Volumes/AI_WORK_SSD/ProjectData/pixel-world-asset-forge/assets
+    github_repository: alalapi-0/pixel-world-asset-forge
   computer-study-plan:
     adapter: study
+    github_repository: alalapi-0/computer_study_plan
   story-faceless-utopia:
     adapter: story
+    github_repository: alalapi-0/story-faceless-utopia
   zarathustra-adaptation:
     adapter: zarathustra
     editorial_root: /Volumes/AI_WORK_SSD/Artifacts/zarathustra-adaptation/editorial-sources
+    github_repository: alalapi-0/zarathustra-adaptation
   cognitive-asset-library:
     adapter: cognitive
+    github_repository: alalapi-0/cognitive_asset_library
   audio-clone:
     adapter: unmapped
     validation_reports:
@@ -44,3 +56,23 @@ projects:
       root: /Volumes/AI_WORK_SSD/Artifacts/audio-clone/codex
       path: verify.json
       format: feature_report
+    github_repository: alalapi-0/audio_clone
+  ai-music-foundry:
+    adapter: music
+    data_root: /Volumes/AI_WORK_SSD/ProjectData/ai-music-foundry/workspace/projects
+    github_repository: alalapi-0/ai-music-foundry
+  storage_governance:
+    adapter: unmapped
+    github_repository: alalapi-0/personal-control-hub
+  personal-control-hub:
+    adapter: unmapped
+    github_repository: alalapi-0/personal-control-hub
+  universal-player:
+    adapter: unmapped
+    github_repository: alalapi-0/universal-player
+  resilient-personal-network:
+    adapter: unmapped
+    github_repository: alalapi-0/resilient-personal-network
+  mpv-clip-workbench:
+    adapter: unmapped
+    github_repository: alalapi-0/mpv-clip-workbench

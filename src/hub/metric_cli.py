@@ -12,7 +12,7 @@ from hub.connection_refresh import RefreshLedgerError
 from hub.connections import load_registry_at
 from hub.metric_collect import MetricCollector
 from hub.metric_store import MetricStore
-from hub.metrics import MAX_PAGE_SIZE, METRIC_FIELDS, VERSION, bounded_json
+from hub.metrics import MAX_PAGE_SIZE, METRIC_FIELDS, VERSION, bounded_json, metric
 from hub.paths import PROJECT_ROOT
 
 
@@ -24,6 +24,8 @@ def main(argv=None):
     collect = commands.add_parser("collect")
     collect.add_argument("--request-id", required=True)
     collect.add_argument("--project-id", action="append")
+    collect.add_argument("--remote-git", action="store_true", help="Read GitHub actual default branch and HEAD containment; no fetch or ref writes")
+    collect.add_argument("--github-ci", action="store_true", help="Read GitHub workflow runs for exact local HEAD; never run checks")
     summary = commands.add_parser("summary")
     summary.add_argument("--after", type=int, default=0)
     summary.add_argument("--limit", type=int, default=10)
@@ -48,7 +50,7 @@ def main(argv=None):
                 "grouping": ["project_id", "metric_id", "unit", "dimensions", "counting_basis"]}))
             return 0
         if args.command == "collect":
-            collector = MetricCollector(args.root)
+            collector = MetricCollector(args.root, remote_git=args.remote_git, github_ci=args.github_ci)
             store = MetricStore(args.root, args.db)
             receipts = collector.refresh(store, args.request_id, args.project_id)
             result = store.coverage(collector.registry)
@@ -93,6 +95,11 @@ def main(argv=None):
                     result = {"enabled": False, "write_back_allowed": False, "network_calls": 0,
                               "mapping": {field: field for field in sorted(METRIC_FIELDS)},
                               "record_key": ["project_id", "metric_id", "unit", "dimensions", "counting_basis"],
+                              "sample_kind": "synthetic_contract_example_not_project_data",
+                              "sample": metric("example-project", "example.backlog", None, "items",
+                                  "local:contract-example", "example-v1", "1970-01-01T00:00:00Z",
+                                  dimensions={"stage": "pending"}, reason="Example has no business source.",
+                                  counting_basis="Schema example only; never include in project coverage or totals."),
                               "coverage": result["coverage"]}
         print(bounded_json(result))
         return 0

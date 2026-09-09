@@ -23,48 +23,29 @@ all_projects_governance:
   status: ACTIVE
   route_version: 2
   execution_document: docs/all_projects_governance_execution.md
-  unit: domain_metadata_adapters
+  unit: domain_remote_data
   lane: DIRECT
   completed:
-  - 公共数值/变化查询与漫画修复均已交付
-  - 7领域/3验证报告接入；42新检查通过；删除2旧投影
-  coverage:
-    local: 24
-    removed_local: 2
-    cloud_excluded: 17
-    metrics: 989
-    numeric_metrics: 697
+  - 漫画重试与音乐修复已交付main/CI；11业务适配、远端Git/CI与飞书禁用样例可调用；48相关测试通过
+  coverage: {local: 24, removed_local: 2, cloud_excluded: 17, metrics: 1306, numeric_metrics: 928, unknown: 378, business_blockers: 58}
   unresolved:
-  - 15本地业务/运行结果映射及验证版本绑定待补
-  - 漫画56项实际重做未完成；费用/凭据未授权
-  - 子仓守卫及原有未交付内容待处理；无Git保持缺口
-  next_action: 修复音乐项目已复现的规范入口路径卡点并验证原有候选。
+  - 13本地业务/运行结果映射及验证版本绑定待补；漫画56项实际重做未授权
+  - 其他子仓守卫和原有内容待交付；无Git保持缺口
+  next_action: 提交Hub数据能力到main并核实CI。
   candidate_paths:
-  - src/hub/metric_collect.py
-  - src/hub/metric_wechat.py
-  - src/hub/metric_catalogs.py
-  - src/hub/metric_documents.py
-  - src/hub/metric_validation.py
-  - tests/test_metric_wechat.py
-  - tests/test_metric_catalogs.py
-  - tests/test_metric_documents.py
-  - tests/test_metric_validation.py
-  - data/connections/metric_sources.yaml
   - STATE.yaml
-  delivery:
-    status: both_main_verified_ci_pass
-    hub_commit: 6d5bafadaf4c6f527accc10fad7e5b9e995cb3c5
-    hub_ci: 34313296040
-    manga_commit: a761519b806736f016d8b71877b89a53d4fcdf3e
-    manga_ci: 34313957940
+  - src/hub/metric_music.py
+  - src/hub/metric_continuation.py
+  - src/hub/metric_remote.py
+  - src/hub/metric_collect.py
+  - src/hub/metric_cli.py
+  - data/connections/metric_sources.yaml
+  - tests/test_metric_music.py
+  - tests/test_metric_continuation.py
+  - tests/test_metric_remote.py
+  - tests/test_metric_delivery.py
+  delivery: {status: three_main_verified_ci_pass, hub_commit: 49b82226288ab6c0bc43f3eb62547c2143ac8a7b, hub_ci: 34316512748, manga_commit: a761519b806736f016d8b71877b89a53d4fcdf3e, manga_ci: 34313957940, music_commit: ced997e98c25e89295ff2dbcccd53ec125388474, music_ci: 34321539823}
   delivery_inventory: docs/reports/all-projects-governance/round-2026-09-09/delivery-inventory.json
-  recovery:
-    history_commit: 4529d853566e9204bf68bbef585aee414657c899
-    hub_worktree: /tmp/hub-data-v2-delivery
-    manga_unique: Primary .agent/CURSOR_LOOP_PROMPT.md preserved; not delivered
-  budget:
-    prior_visible_tokens: 14061875
-    coverage: Historical native observation; no reset
-    first_250k_rebaseline: completed
-    last_health: REPLAN at3903214; repaired
-    cooldown: 75000 tokens or30 active minutes plus eligible trigger
+  recovery: {history_commit: 4529d853566e9204bf68bbef585aee414657c899, manga_unique: Primary .agent/CURSOR_LOOP_PROMPT.md preserved; not delivered}
+  budget: {prior_visible_tokens: 14061875, coverage: Historical native observation; no reset, first_250k_rebaseline: completed, last_health: REPLAN at3903214; repaired, cooldown: 75000 tokens or30 active minutes plus eligible trigger, current_visible_tokens: 2280459}
+  validation: {request: data-v2-remote-domains-001, tests: 48, ledger_versions: 1366, replay_source_calls: 0}
