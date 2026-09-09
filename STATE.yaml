@@ -23,50 +23,45 @@ all_projects_governance:
   status: ACTIVE
   route_version: 2
   execution_document: docs/all_projects_governance_execution.md
-  unit: project_data_prerequisites
+  unit: domain_metadata_adapters
   lane: DIRECT
   completed:
-  - 24本地/2 removed_local处置，17云排除
-  - 漫画/轻小说真实metadata贯通；29新/29旧回归通过
+  - 公共数值/变化查询与漫画修复均已交付
+  - 7领域/3验证报告接入；42新检查通过；删除2旧投影
   coverage:
     local: 24
     removed_local: 2
     cloud_excluded: 17
-    metrics: 696
-    numeric_metrics: 433
+    metrics: 989
+    numeric_metrics: 697
   unresolved:
-  - 其他项目业务源及验证版本绑定待补
+  - 15本地业务/运行结果映射及验证版本绑定待补
   - 漫画56项实际重做未完成；费用/凭据未授权
-  - 各子仓及原有未交付内容仍待按单元交付；无Git保持缺口
-  next_action: 交付Hub数据单元，再验证漫画真实失败隔离副本。
+  - 子仓守卫及原有未交付内容待处理；无Git保持缺口
+  next_action: 修复音乐项目已复现的规范入口路径卡点并验证原有候选。
   candidate_paths:
-  - src/hub/connection_refresh.py
-  - scripts/hub_connections.py
-  - src/hub/metric_cli.py
   - src/hub/metric_collect.py
-  - src/hub/metric_git.py
-  - src/hub/metric_manga.py
-  - src/hub/metric_novel.py
-  - src/hub/metric_sources.py
-  - src/hub/metric_store.py
-  - src/hub/metrics.py
-  - tests/test_metric_git.py
-  - tests/test_metric_manga.py
-  - tests/test_metric_novel.py
-  - tests/test_metric_queries.py
-  - tests/test_metrics.py
+  - src/hub/metric_wechat.py
+  - src/hub/metric_catalogs.py
+  - src/hub/metric_documents.py
+  - src/hub/metric_validation.py
+  - tests/test_metric_wechat.py
+  - tests/test_metric_catalogs.py
+  - tests/test_metric_documents.py
+  - tests/test_metric_validation.py
   - data/connections/metric_sources.yaml
-  - docs/12_project_connections.md
   - STATE.yaml
   delivery:
-    status: partial_main_verified
-    source_commit: 762bd90847003fa8309d073a59d7e8fa35596e0d
+    status: both_main_verified_ci_pass
+    hub_commit: 6d5bafadaf4c6f527accc10fad7e5b9e995cb3c5
+    hub_ci: 34313296040
+    manga_commit: a761519b806736f016d8b71877b89a53d4fcdf3e
+    manga_ci: 34313957940
   delivery_inventory: docs/reports/all-projects-governance/round-2026-09-09/delivery-inventory.json
   recovery:
     history_commit: 4529d853566e9204bf68bbef585aee414657c899
-    manga_worktree: /Users/alalapi/.codex/worktrees/manga-reentry-omitted-parameters
-    manga_diff_sha256: 37f72b57911488855fe6253113edd0c2c6983385b4c961025bb5b65587d751c9
-    manga_checks: backend1101/frontend461/launcher40 PASS; unchanged diff
+    hub_worktree: /tmp/hub-data-v2-delivery
+    manga_unique: Primary .agent/CURSOR_LOOP_PROMPT.md preserved; not delivered
   budget:
     prior_visible_tokens: 14061875
     coverage: Historical native observation; no reset

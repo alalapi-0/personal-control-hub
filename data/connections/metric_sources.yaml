@@ -10,29 +10,37 @@ projects:
       b1b85f3e-4d72-4956-b519-6b30fee02fcc: manga02/runs/rd-r04-ppocr-lama-json/workspace/project/project.sqlite3
   light-novel:
     adapter: novel
+    validation_reports:
+    - id: repository-gate
+      path: reports/gate_result.json
+      format: gate_arrays
   novel-continuation-agent:
-    adapter: declared
-    sources:
-    - path: reports/gate_result.json
-      business_time: [timestamp]
-      metrics:
-      - id: validation.gate.passed
-        unit: checks
-        selector: [passed]
-        operation: length
-        counting_basis: Existing gate result entries; historical validation, not current product completion
-      - id: validation.gate.failed
-        unit: checks
-        selector: [failed]
-        operation: length
-        counting_basis: Existing gate result entries; historical validation, not current product completion
-      - id: validation.gate.blocked
-        unit: checks
-        selector: [blocked]
-        operation: length
-        counting_basis: Existing gate result entries; historical validation, not current product completion
-      - id: validation.gate.skipped
-        unit: checks
-        selector: [skipped]
-        operation: length
-        counting_basis: Existing gate result entries; historical validation, not current product completion
+    adapter: unmapped
+    validation_reports:
+    - id: repository-gate
+      path: reports/gate_result.json
+      format: gate_arrays
+  wechat-article-scheduler:
+    adapter: wechat
+  ai-anime-short-factory:
+    adapter: anime
+    metadata_root: /Volumes/AI_WORK_SSD/ProjectData/ai-anime-short-factory/runtime_assets/metadata
+  pixel-world-asset-forge:
+    adapter: pixel
+    metadata_root: /Volumes/AI_WORK_SSD/ProjectData/pixel-world-asset-forge/assets
+  computer-study-plan:
+    adapter: study
+  story-faceless-utopia:
+    adapter: story
+  zarathustra-adaptation:
+    adapter: zarathustra
+    editorial_root: /Volumes/AI_WORK_SSD/Artifacts/zarathustra-adaptation/editorial-sources
+  cognitive-asset-library:
+    adapter: cognitive
+  audio-clone:
+    adapter: unmapped
+    validation_reports:
+    - id: saved-verification
+      root: /Volumes/AI_WORK_SSD/Artifacts/audio-clone/codex
+      path: verify.json
+      format: feature_report

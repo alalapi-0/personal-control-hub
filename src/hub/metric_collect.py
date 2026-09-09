@@ -2,12 +2,24 @@
 from __future__ import annotations
 
 from pathlib import Path
+from importlib import import_module
 
-from hub.connection_records import RecordError, content_hash, require
+from hub.connection_records import RecordError, content_hash, identifier, require
 from hub.connection_sources import SourceResolver, _root_path_allowed
 from hub.connections import select_value
 from hub.metric_sources import read_structured
 from hub.metrics import VERSION, issue, metric, utcnow, validate_metric
+
+DOMAIN_ADAPTERS = {
+    "manga": ("hub.metric_manga", "collect_manga"),
+    "wechat": ("hub.metric_wechat", "collect_wechat"),
+    "anime": ("hub.metric_catalogs", "collect_anime"),
+    "pixel": ("hub.metric_catalogs", "collect_pixel"),
+    "study": ("hub.metric_documents", "collect_study"),
+    "story": ("hub.metric_documents", "collect_story"),
+    "zarathustra": ("hub.metric_documents", "collect_zarathustra"),
+    "cognitive": ("hub.metric_documents", "collect_cognitive"),
+}
 
 
 def collect_declared(root, project_id, observed_at, sources):
@@ -83,12 +95,26 @@ class MetricCollector:
         require(self.config.get("schema_version") == VERSION and type(self.config.get("projects")) is dict, "invalid metric source configuration")
         require(set(self.config["projects"]) <= set(self.projects), "metric config contains unknown projects")
         for pid, spec in self.config["projects"].items():
-            require(spec.get("adapter") in {"declared", "novel", "manga", "unmapped"}, "unsupported domain adapter")
+            require(type(spec) is dict, "project source declaration must be an object")
+            require(spec.get("adapter") in {"declared", "novel", "unmapped"} | set(DOMAIN_ADAPTERS), "unsupported domain adapter")
+            for key in ("metadata_root", "editorial_root", "data_root"):
+                require(key not in spec or type(spec[key]) is str and Path(spec[key]).is_absolute(),
+                        "external metadata root must be an explicit absolute path")
             for source in spec.get("sources", []):
                 require(type(source["path"]) is str and type(source["metrics"]) is list, "invalid metric source")
                 for m in source["metrics"]:
                     require(type(m["selector"]) is list and m.get("counting_basis") and m.get("unit"), "metric selector/basis/unit required")
                     require(m.get("operation", "number") in {"number", "length", "bool"}, "invalid numeric operation")
+            reports = spec.get("validation_reports", [])
+            require(type(reports) is list, "validation reports must be a list")
+            report_ids = []
+            for report in reports:
+                require(type(report) is dict and type(report.get("path")) is str, "invalid validation report")
+                identifier(report.get("id"), "validation report id")
+                require(report.get("format") in {"feature_report", "gate_arrays"}, "unsupported validation format")
+                require("root" not in report or type(report["root"]) is str and Path(report["root"]).is_absolute(), "invalid report root")
+                report_ids.append(report["id"])
+            require(len(report_ids) == len(set(report_ids)), "duplicate validation report ids")
 
     def collect(self, project_id):
         project = self.projects[project_id]
@@ -118,14 +144,18 @@ class MetricCollector:
         if spec["adapter"] == "novel":
             from hub.metric_novel import collect_novel
             groups.append(("business", lambda: collect_novel(root, project_id, observed)))
-        elif spec["adapter"] == "manga":
-            from hub.metric_manga import collect_manga
-            groups.append(("business", lambda: collect_manga(root, project_id, observed, spec)))
+        elif spec["adapter"] in DOMAIN_ADAPTERS:
+            module_name, function_name = DOMAIN_ADAPTERS[spec["adapter"]]
+            domain_function = getattr(import_module(module_name), function_name)
+            groups.append(("business", lambda: domain_function(root, project_id, observed, spec)))
         elif spec["adapter"] == "declared":
             groups.append(("business", lambda: collect_declared(root, project_id, observed, spec["sources"])))
         else:
             result["issues"].append(issue(project_id, "missing_business_mapping", "registry:" + project_id,
                 recovery_condition="Bind actual domain/run metadata; governance complete is not business progress."))
+        if spec.get("validation_reports"):
+            from hub.metric_validation import collect_validation
+            groups.append(("validation", lambda: collect_validation(root, project_id, observed, spec["validation_reports"])))
         for name, function in groups:
             try:
                 group = function()
@@ -138,6 +168,8 @@ class MetricCollector:
                 result["source_versions"][name] = group["source_version"]
                 if name == "business":
                     result["disposition"] = group["disposition"]
+                elif name == "validation" and group["disposition"] != "resolved":
+                    result["disposition"] = "partial"
                 elif group["disposition"] == "no_git":
                     result["issues"].append(issue(project_id, "no_git", "registry:root_path"))
             except (OSError, RecordError, ValueError, KeyError, TypeError) as exc:
