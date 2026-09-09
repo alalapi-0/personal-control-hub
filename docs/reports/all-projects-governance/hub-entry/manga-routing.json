@@ -3,7 +3,7 @@
   "contract_id": "ALL-PROJECTS-CODEX-GOVERNANCE-V1-HUB-MANGA-ROUTING-v1",
   "lane": "GOVERNED",
   "stage": "B",
-  "status": "Accepted installation; normal main receipt delivery pending",
+  "status": "Accepted installation and receipt delivered; overall rollout pending",
   "baseline_main": "deb2bc12cc6d0fc78ae7723db32b0961d3e4711c",
   "files": {
     "STATE.yaml": {
@@ -525,7 +525,7 @@
     }
   },
   "delivery": {
-    "status": "Stage A main/CI verified; Stage B accepted receipt pending",
+    "status": "Stage A and Stage B main/CI verified",
     "stage_a": {
       "status": "main_ci_verified",
       "commit": "6333a7cf5a5fc0bddc3c048ea21a6698fdcf3256",
@@ -579,7 +579,7 @@
     "budget"
   ],
   "stage_b": {
-    "status": "Accepted installation; normal main receipt delivery pending",
+    "status": "Accepted installation and receipt delivered; overall rollout pending",
     "source_commit": "6333a7cf5a5fc0bddc3c048ea21a6698fdcf3256",
     "preimages": {
       "src/hub/services/project_registry_service.py": {
@@ -1308,10 +1308,16 @@
     "semantic_sha256": "7f868e13e2ca8c0bfc270f0a2ed3e290de1b055ddb83d7d4a65019e0684fc526",
     "identity_recipe": "SHA256 sorted compact UTF8 JSON semantic_files; STATE normalized as YAML-to-JSON with only listed all_projects_governance decision/observation metadata omitted. Manifest/evidence/review/delivery JSON itself excluded to avoid self-reference.",
     "delivery": {
-      "status": "pending_main_receipt",
-      "remote": "https://github.com/alalapi-0/personal-control-hub",
+      "status": "main_ci_verified",
+      "commit": "4fdc5df551df4df265b39516f8f1e10a82fdef8c",
+      "observed_main": "4fdc5df551df4df265b39516f8f1e10a82fdef8c",
       "branch": "main",
-      "receipt_identity": "This metadata-only commit; exact commit and CI observation recorded in native Goal output after push, avoiding self-reference"
-    }
+      "remote": "https://github.com/alalapi-0/personal-control-hub",
+      "ci_run": 34232781792,
+      "ci_conclusion": "success",
+      "observed_at": "2026-09-08T13:36:39.386881+00:00",
+      "observation_location": "Canonical original Hub metadata plus native Goal output; post-push observation excluded from semantic identity; versionized implementation and acceptance receipt are in this commit"
+    },
+    "post_delivery_original_state_sha256": "17b9638ee7192623101d5c16684b5d929f9d859ac7e9ae986d03d7c657b136ee"
   }
 }

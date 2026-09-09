@@ -43,4 +43,4 @@ all_projects_governance:
   delivery_inventory: docs/reports/all-projects-governance/round-2026-09-09/delivery-inventory.json
   delivery:
     status: partial_main_verified
-    source_commit: 6333a7cf5a5fc0bddc3c048ea21a6698fdcf3256
+    source_commit: 762bd90847003fa8309d073a59d7e8fa35596e0d
