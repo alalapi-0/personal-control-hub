@@ -62,7 +62,9 @@ projects:
     data_root: /Volumes/AI_WORK_SSD/ProjectData/ai-music-foundry/workspace/projects
     github_repository: alalapi-0/ai-music-foundry
   storage_governance:
-    adapter: unmapped
+    adapter: storage_evidence
+    evidence_root: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_04_r1
+    evidence_path: POST_MIGRATION_VERIFICATION.yaml
     github_repository: alalapi-0/personal-control-hub
   personal-control-hub:
     adapter: hub_activity
@@ -77,7 +79,9 @@ projects:
       suite: core
       format: universal_player_guard_result_v1
   resilient-personal-network:
-    adapter: unmapped
+    adapter: client_fixture
+    report_root: /Volumes/AI_WORK_SSD/Artifacts/resilient-personal-network/validation
+    report_path: client-fixture.json
     github_repository: alalapi-0/resilient-personal-network
   mpv-clip-workbench:
     adapter: mpv
@@ -91,3 +95,8 @@ projects:
     adapter: downloader
   pycharm-agent-workspace:
     adapter: workspace_checks
+  desktop-jav-tools:
+    adapter: jav_batch
+    data_root: /Volumes/AI_WORK_SSD/ProjectData/desktop-jav-tools
+  desktop-magnet:
+    adapter: magnet_batch

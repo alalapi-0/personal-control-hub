@@ -17,35 +17,18 @@ legacy_context:
   source: origin/main:15a4971
   meaning: Preserved historical roadmap context; does not resume that task. Working checkout has later
     unmerged work preserved there.
-all_projects_governance:
-  task_id: ALL-PROJECTS-CODEX-GOVERNANCE-V1
-  native_task_id: 01a07ef7-735b-7270-9c21-3347e1232b5a
-  status: ACTIVE
-  route_version: 2
-  execution_document: docs/all_projects_governance_execution.md
-  unit: saved_service_and_work_results
-  lane: DIRECT
-  completed:
-  - 17源已接入；93检查通过；交付见delivery
-  - 播放器守卫94/Core128/全包build通过；58ad819远端包含已核实，无CI工作流
-  coverage: {local: 24, removed_local: 2, cloud_excluded: 17, metrics: 1429, numeric_metrics: 1034, unknown: 395, business_blockers: 58}
-  unresolved:
-  - 7本地业务/运行源仍缺映射，历史验证时间/版本绑定待补；漫画56项实际重做未授权
-  - 其他子仓守卫和原有内容待交付；无Git保持缺口
-  next_action: 交付17源与数据缺口分类修复。
-  candidate_paths:
-  - STATE.yaml
-  - src/hub/metric_hub_activity.py
-  - src/hub/metric_collect.py
-  - data/connections/metric_sources.yaml
-  - tests/test_metric_hub_activity.py
-  - src/hub/metric_mpv.py
-  - tests/test_metric_mpv.py
-  - src/hub/metric_documents.py
-  - src/hub/metric_store.py
-  - tests/test_metric_issue_kinds.py
-  - src/hub/metric_continuation.py
-  delivery: {status: four_main_verified, hub_commit: 8649e344c16e88d4ede4919dd33117817882c2c1, hub_ci: 34326488919, manga_commit: a761519b806736f016d8b71877b89a53d4fcdf3e, manga_ci: 34313957940, music_commit: ced997e98c25e89295ff2dbcccd53ec125388474, music_ci: 34321539823, universal_commit: 58ad819919402a76e03478c4f33c20ecf942d11d, universal_ci: not_configured}
-  delivery_inventory: docs/reports/all-projects-governance/round-2026-09-09/delivery-inventory.json
-  recovery: {history_commit: 4529d853566e9204bf68bbef585aee414657c899, manga_unique: Primary .agent/CURSOR_LOOP_PROMPT.md preserved; not delivered, request: data-v2-service-work-primary-001;1550 valid;replay=0}
-  budget: {prior_visible_tokens: 14061875, coverage: Historical native observation; no reset, first_250k_rebaseline: completed, last_health: REPLAN at3903214; repaired, cooldown: 75000 tokens or30 active minutes plus eligible trigger, current_visible_tokens: 3246338}
+all_projects_governance: {budget: {cooldown: 75000 tokens or30 active minutes plus eligible trigger, coverage: Historical native observation;
+      no reset, current_visible_tokens: 3591317, first_250k_rebaseline: completed, last_health: REPLAN at3903214;
+      repaired, prior_visible_tokens: 14061875}, candidate_paths: [STATE.yaml, data/connections/metric_sources.yaml,
+    src/hub/metric_collect.py, src/hub/metric_fixture_report.py, tests/test_metric_fixture_report.py, src/hub/metric_guard_report.py,
+    src/hub/metric_storage.py, tests/test_metric_storage.py, src/hub/metric_magnet.py, tests/test_metric_magnet.py],
+  completed: [21源/46检查；1631历史版本有效；RPN已交付；jav7检查/166项恢复], coverage: {business_blockers: 58, cloud_excluded: 17, local: 24,
+    metrics: 1488, numeric_metrics: 1082, removed_local: 2, unknown: 406}, delivery: {hub_ci: 34328459900, hub_commit: 1ec1759fbd77c45f643690afff62537256173f4b,
+    manga_ci: 34313957940, manga_commit: a761519b806736f016d8b71877b89a53d4fcdf3e, music_ci: 34321539823, music_commit: ced997e98c25e89295ff2dbcccd53ec125388474,
+    rpn_ci: not_configured, rpn_commit: 12495b46f5c33a0228d606fb36284dc4be0ccca8, status: five_main_verified, universal_ci: not_configured,
+    universal_commit: 58ad819919402a76e03478c4f33c20ecf942d11d}, delivery_inventory: docs/reports/all-projects-governance/round-2026-09-09/delivery-inventory.json,
+  execution_document: docs/all_projects_governance_execution.md, lane: DIRECT, native_task_id: 01a07ef7-735b-7270-9c21-3347e1232b5a,
+  next_action: 交付4组数据源；随后补工具里程碑及已证实入口卡点。, recovery: {history_commit: 4529d853566e9204bf68bbef585aee414657c899, jav: 46809abb;
+      prior=e4244db, manga_unique: Primary .agent/CURSOR_LOOP_PROMPT.md preserved; not delivered, request: data-v2-magnet-spaces-primary-001;1631
+      valid;replay=0}, route_version: 2, status: ACTIVE, task_id: ALL-PROJECTS-CODEX-GOVERNANCE-V1, unit: saved_fixture_storage_and_batches,
+  unresolved: [3本地源缺有效里程碑；漫画56项真实重做未授权, jav缺bs4与设备假设待修；子仓原有内容待交付；无Git保留缺口]}

@@ -81,12 +81,12 @@ def _latest(root, path, suite):
     return selected, signature
 
 
-def _current_files(root):
-    paths = {name: metadata_path(root, name) for name in CODE_PATHS}
+def _current_files(root, code_paths=CODE_PATHS):
+    paths = {name: metadata_path(root, name) for name in code_paths}
     before = {name: _signature(path) for name, path in paths.items()}
     require(sum(s[2] for s in before.values()) <= 32 * 1024 * 1024, "source byte budget")
     hashes = {}
-    for name in CODE_PATHS:
+    for name in code_paths:
         require(before[name][2] <= 4 * 1024 * 1024, "source file byte budget")
         _, metadata = read_metadata(root, name)
         hashes[name] = metadata["sha256"]

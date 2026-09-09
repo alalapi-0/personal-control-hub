@@ -26,6 +26,10 @@ DOMAIN_ADAPTERS = {
     "workspace_checks": ("hub.metric_saved_tools", "collect_workspace_checks"),
     "hub_activity": ("hub.metric_hub_activity", "collect_hub_activity"),
     "mpv": ("hub.metric_mpv", "collect_mpv"),
+    "client_fixture": ("hub.metric_fixture_report", "collect_fixture_report"),
+    "storage_evidence": ("hub.metric_storage", "collect_storage"),
+    "magnet_batch": ("hub.metric_magnet", "collect_magnet"),
+    "jav_batch": ("hub.metric_magnet", "collect_jav"),
 }
 
 
