@@ -84,9 +84,9 @@ def _get_round_context() -> dict[str, Any]:
         "task_unit": task.get("unit"),
         "task_next_action": task.get("next_action"),
         "work_status": work.get("status"),
-        "current_round": current_round.get("id"),
+        "current_round": task.get("unit") if selected_task() else current_round.get("id"),
         "current_round_name": current_round.get("name"),
-        "next_round": current_round.get("next_round"),
+        "next_round": None if selected_task() else current_round.get("next_round"),
         "current_phase": project.get("phase"),
     }
 
@@ -275,7 +275,7 @@ def mode_prepare_next() -> dict[str, Any]:
     context = check_result["context"]
     next_round_id = context.get("next_round")
     if selected_task():
-        print("Codex task next action:", context.get("task_next_action") or "bootstrap incomplete")
+        print("Project task next action:", context.get("task_next_action") or "bootstrap incomplete")
         return {"decision": check_result["decision"], "prompts_written": False, "previewed": True, "authority_granted": False}
 
     if not check_result["checks_passed"]:
@@ -305,40 +305,19 @@ def _candidate_paths() -> list[str]:
     task = state.get("all_projects_governance", {})
     if not isinstance(task, dict) or task.get("task_id") != selected_task():
         raise ValueError("Selected task lacks canonical candidate authority")
-    relative = task.get("candidate_manifest")
-    if not isinstance(relative, str):
-        raise ValueError("Current task candidate manifest is required")
-
-    def valid(path):
-        return (isinstance(path, str) and path and not Path(path).is_absolute()
-                and not any(part in {"..", "."} for part in path.split("/"))
-                and not excluded_path(path))
-
-    manifest_path = Path(relative)
-    if (not valid(relative) or manifest_path.suffix != ".json"
-            or manifest_path.parts[:3] != ("docs", "reports", "all-projects-governance")):
-        raise ValueError("Invalid current candidate manifest path")
-    current = ROOT
-    for part in manifest_path.parts:
-        current = current / part
-        if current.is_symlink():
-            raise ValueError("Candidate manifest cannot traverse symlinks")
-    manifest = json.loads(current.read_text(encoding="utf-8"))
-    files = manifest.get("files")
-    if isinstance(files, dict):
-        paths = list(files)
-    elif isinstance(files, list) and all(isinstance(item, dict) and "path" in item for item in files):
-        paths = [item["path"] for item in files]
-    else:
-        raise ValueError("Current candidate files must be an explicit manifest")
-    metadata = manifest.get("file_metadata_exclusions", [])
-    if not isinstance(metadata, list):
-        raise ValueError("Invalid candidate metadata paths")
-    paths += metadata
-    paths += [relative]
-    if not paths or not all(valid(path) for path in paths):
-        raise ValueError("Invalid candidate path for scoped Git check")
-    return sorted(set(paths))
+    paths = task.get("candidate_paths")
+    if not isinstance(paths, list) or not paths:
+        raise ValueError("Current task candidate_paths must list owned files")
+    for path in paths:
+        if (not isinstance(path, str) or not path or Path(path).is_absolute()
+                or any(part in {"..", ".", "", ".git"} for part in path.split("/"))):
+            raise ValueError("Invalid candidate path for scoped Git check")
+        current = ROOT
+        for part in Path(path).parts:
+            current = current / part
+            if current.is_symlink():
+                raise ValueError("Candidate path cannot traverse symlinks")
+    return sorted(set([*paths, "STATE.yaml"]))
 
 
 def _git_status_porcelain() -> tuple[int, str]:
@@ -381,9 +360,6 @@ def _scan_staged_sensitive(hard_blockers: list[str]) -> None:
             continue
         if _is_sensitive_path(rel):
             hard_blockers.append(f"疑似敏感文件准备提交：{rel}")
-            continue
-        if excluded_path(rel):
-            hard_blockers.append("Staged path is outside this task scope: " + rel)
             continue
         file_path = ROOT / rel
         if file_path.is_file():

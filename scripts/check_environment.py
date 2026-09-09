@@ -140,7 +140,7 @@ def run_check() -> dict[str, Any]:
 
     _check_directories(hard_blockers, warnings)
     mcp_info = ({"status": "not_probed", "runtime_available": None,
-                 "notes": "Codex-only scope; connector availability and authority are not inferred"}
+                 "notes": "Project checks do not require editor or connector runtimes"}
                 if selected_task() else _check_mcp_config(warnings))
 
     tools = {
@@ -163,7 +163,7 @@ def run_check() -> dict[str, Any]:
 
     if selected_task():
         tools.pop("cursor", None)
-        tools["codex"] = {"status": "runtime_unverified", "version": None}
+        tools.pop("codex", None)
 
     if hard_blockers:
         overall = "fail"

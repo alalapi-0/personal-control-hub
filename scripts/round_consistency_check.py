@@ -79,16 +79,26 @@ def run_check() -> dict[str, Any]:
     warnings: list[str] = []
 
     state = _load_yaml(FILES["state"], hard_blockers) or {}
-    round_tasks_data = _load_yaml(FILES["round_tasks"], hard_blockers) or {}
-    round_deps_data = _load_yaml(FILES["round_dependencies"], hard_blockers) or {}
-
     task = state.get("all_projects_governance") if isinstance(state, dict) else None
     if selected_task():
-        required = {"task_id", "status", "unit", "contract", "evidence", "delivery", "budget", "next_action"}
+        required = {"task_id", "status", "unit", "execution_document", "delivery", "next_action", "candidate_paths"}
         if not isinstance(task, dict) or not required <= task.keys() or task.get("task_id") != selected_task():
             hard_blockers.append("Selected task management entry is malformed")
-        elif not task.get("next_action"):
-            hard_blockers.append("Selected task requires exactly one next action")
+        else:
+            if not task.get("next_action"):
+                hard_blockers.append("Selected task requires exactly one next action")
+            if not (ROOT / task["execution_document"]).is_file():
+                hard_blockers.append("Selected task execution document is missing")
+            if not isinstance(task["candidate_paths"], list) or not task["candidate_paths"]:
+                hard_blockers.append("Selected task candidate_paths must list owned files")
+        if state.get("metadata", {}).get("authority") != "canonical":
+            hard_blockers.append("STATE.yaml must be canonical")
+        return {"result": "fail" if hard_blockers else "ok",
+                "current_round": task.get("unit") if isinstance(task, dict) else None,
+                "next_round": None, "current_phase": "data_prerequisites",
+                "warnings": [], "hard_blockers": hard_blockers}
+    round_tasks_data = _load_yaml(FILES["round_tasks"], hard_blockers) or {}
+    round_deps_data = _load_yaml(FILES["round_dependencies"], hard_blockers) or {}
     state_meta = state.get("metadata", {}) if isinstance(state, dict) else {}
     state_project = state.get("project", {}) if isinstance(state, dict) else {}
     state_round = state.get("current_round", {}) if isinstance(state, dict) else {}

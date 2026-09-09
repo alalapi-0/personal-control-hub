@@ -312,7 +312,7 @@ def run_gate(requested_round: str | None = None) -> dict[str, Any]:
         for file in ("governance/agent_policy.yaml", "data/gates/auto_advance_policy.yaml"):
             policy = _load_yaml(file, hard_blockers) or {}
             scope = policy.get("task_overrides", {}).get(selected_task(), {})
-            expected = {"executor": "codex", "cursor_access": "forbidden",
+            expected = {"governance_subject": "project", "editor_dependency": "none",
                         "activation": "current_owner_prompt_required", "runner_grants_authority": False,
                         "force_push": False, "bypass_protection": False, "real_feishu": "disabled"}
             if any(scope.get(k) != v for k, v in expected.items()):
@@ -323,9 +323,10 @@ def run_gate(requested_round: str | None = None) -> dict[str, Any]:
     boot = [ROOT / "AGENTS.md", ROOT / "STATE.yaml"]
     if all(p.is_file() for p in boot) and sum(p.stat().st_size for p in boot) > 8192:
         hard_blockers.append("Startup packet exceeds 8192 bytes")
-    rounds = _check_round_tasks(hard_blockers, soft_warnings)
+    rounds = [] if selected_task() else _check_round_tasks(hard_blockers, soft_warnings)
     _check_policy(hard_blockers)
-    _check_mcp_registry(hard_blockers)
+    if not selected_task():
+        _check_mcp_registry(hard_blockers)
 
     if not (ROOT / "docs/14_ui_console_plan.md").is_file():
         soft_warnings.append("docs/14_ui_console_plan.md 不存在，UI 计划尚未落地")

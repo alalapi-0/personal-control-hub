@@ -130,8 +130,8 @@ task_overrides:
     activation: current_owner_prompt_required
     execution_document: docs/all_projects_governance_execution.md
     state_entry: STATE.yaml#all_projects_governance
-    executor: codex
-    cursor_access: forbidden
+    governance_subject: project
+    editor_dependency: none
     external_project_writes: current_task_document_scope_only
     git_delivery: accepted_unit_to_verified_default_branch
     force_push: false

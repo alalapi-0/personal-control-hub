@@ -20,27 +20,45 @@ legacy_context:
 all_projects_governance:
   task_id: ALL-PROJECTS-CODEX-GOVERNANCE-V1
   native_task_id: 01a07ef7-735b-7270-9c21-3347e1232b5a
-  status: ACTIVE
-  unit: repository_delivery_and_hub_rollout
-  lane: GOVERNED
-  evidence: docs/reports/all-projects-governance/hub-entry/manga-routing.json
-  candidate_manifest: docs/reports/all-projects-governance/hub-entry/manga-routing.json
-  candidate_status: Stage D Manga receipt; six main deliveries verified; rollout pending
-  next_action: After fresh review capacity, filter the Hub candidate and resume the first exact project recovery.
+  status: PREPARED
+  unit: project_data_prerequisites
+  lane: risk_based
+  candidate_status: Route prepared; data implementation not started; no charts/UI in this phase
+  next_action: 发送 prompts/all_projects_governance_goal_mode.md 启动实施；先复用现有采集层贯通漫画与异构项目真实指标。
   coverage:
     local: 24
     removed_local: 2
     cloud_excluded: 17
   budget:
-    native_tokens: 10204538
-    native_seconds: 37512
-    coverage: cumulative native Goal; cost/cap unavailable
+    native_tokens: 14061875
+    native_seconds: 55628
+    coverage: Prior native Goal observation; not current billing or a new budget; no reset
     first_250k_rebaseline: completed
     last_health: REPLAN at3903214; repaired; no reset
     cooldown: 75000tokens or30active minutes plus eligible trigger
-  history_ref: docs/reports/all-projects-governance/hub-entry/baseline.json#preserved_goal_history
-  contract: docs/reports/all-projects-governance/hub-entry/manga-routing-contract.md
   delivery_inventory: docs/reports/all-projects-governance/round-2026-09-09/delivery-inventory.json
   delivery:
     status: partial_main_verified
     source_commit: 762bd90847003fa8309d073a59d7e8fa35596e0d
+  route_version: 2
+  execution_document: docs/all_projects_governance_execution.md
+  candidate_paths:
+  - AGENTS.md
+  - STATE.yaml
+  - docs/all_projects_governance_execution.md
+  - prompts/all_projects_governance_goal_mode.md
+  - docs/12_project_connections.md
+  - governance/agent_policy.yaml
+  - data/gates/auto_advance_policy.yaml
+  - scripts/governance_scope.py
+  - scripts/agent_gate.py
+  - scripts/check_environment.py
+  - scripts/auto_advance_runner.py
+  - scripts/round_consistency_check.py
+  - tests/test_governance_bootstrap.py
+  - docs/reports/all-projects-governance
+  recovery:
+    history_commit: 4529d853566e9204bf68bbef585aee414657c899
+    manga_worktree: /Users/alalapi/.codex/worktrees/manga-reentry-omitted-parameters
+    manga_diff_sha256: 37f72b57911488855fe6253113edd0c2c6983385b4c961025bb5b65587d751c9
+    manga_checks: backend1101/frontend461/launcher40 passed; review and actual redo pending

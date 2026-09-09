@@ -16,7 +16,7 @@ def selected_task() -> str | None:
 
 def add_scope_argument(parser):
     parser.add_argument('--task-id', choices=[TASK_ID], default=selected_task(),
-                        help='Select Codex-only checks; does not authorize effects')
+                        help='Select project governance checks; does not authorize effects')
 
 
 def activate_scope(value):
@@ -29,5 +29,14 @@ def activate_scope(value):
 
 
 def excluded_path(path: str | Path) -> bool:
-    # No stat/resolve is needed to reject a path owned by the excluded host.
-    return bool(selected_task()) and any('cursor' in part.lower() for part in Path(path).parts)
+    # Optional workstation integrations are not project check prerequisites.
+    # This is not an author/editor filter: ordinary project paths stay visible.
+    parts = Path(path).parts
+    optional = {
+        'docs/08_codex_cursor_workflow.md', 'docs/13_cursor_mcp_workspace_setup.md',
+        'prompts/codex_project_driver.md', 'prompts/cursor_project_driver.md',
+        'prompts/cursor_mcp_usage_prompt.md', 'data/codex_queue',
+    }
+    return bool(selected_task()) and bool(parts) and (
+        parts[0] in {'.cursor', '.codex'} or str(path) in optional
+    )

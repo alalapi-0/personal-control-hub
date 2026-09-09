@@ -1,9 +1,0 @@
-{
-  "governor": "/root/startup_governor",
-  "contract": "ALL-PROJECTS-CODEX-GOVERNANCE-V1-BOOTSTRAP-v1",
-  "candidate": "54d0ac90c5bff4a36b1f2a64ff49c82a29a04e846f89a9ccca7dca178d068d31",
-  "decision": "APPROVE",
-  "judge": "/root/bootstrap_judge_v3",
-  "authority": "Owner explicitly authorized accepted scoped main delivery; no force or protection bypass",
-  "remaining": "Root commit, normal push and remote ancestry verification"
-}

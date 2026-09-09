@@ -1,7 +1,7 @@
 # 项目状态统一入口
 
 读者：只从 Personal Control Hub 接手的 Agent，以及负责维护项目状态源的 Agent。
-更新条件：接入契约、读取命令或错误语义变化时更新。业务事实始终在项目自己的唯一状态源中。
+更新条件：接入契约、读取命令或错误语义变化时更新。业务事实始终在项目自身的权威源中。本页描述现有接口；多源指标、变化查询和有限摘要属于 docs/all_projects_governance_execution.md v2 的待实现能力，本阶段不生成图表。
 
 先读 Hub 的 `AGENTS.md`、`STATE.yaml`。运行以下只读命令取得所有登记项：
 
@@ -74,8 +74,6 @@ python3 scripts/hub_refresh.py rebuild
 
 `src/hub/web/connection_view.mjs` 提供现有页面使用的 `attention`、`freshness`、`refreshable` 三个纯函数：已移除项目明确显示“已从本地移除”且不能刷新；最新失败保持可见，即使存在历史成功或例外。回归命令为 `node --test tests/test_hub_connection_view.mjs`。
 
-原工作目录的安装只把这三个函数接入已有 `hub.js`，并在 HTTP 静态资源名单增加该模块的单一映射；保留其余页面、设计逻辑及 `OwnerAction`、`ArtifactResponse` 服务类型。安装配方须记录精确原文件哈希和定点差异；真实页面与26项刷新验证属于安装阶段，不能由纯函数测试代替。
-
 ## 仓库检查与本机可用性
 
 ```sh
@@ -87,7 +85,7 @@ python3 scripts/check_registry.py --metadata-only
 
 `--metadata-only` 用于无法拥有本机项目盘的 CI：仍验证全部登记、路由和存储契约，并明确输出 `path_availability_checked: false`。它不声称本机路径可用；路径缺失拒绝由临时样例回归覆盖，真实来源结果由显式刷新验证。
 
-治理 runner 从 `STATE.yaml` 的 `all_projects_governance.candidate_manifest` 读取本轮登记的文件范围。候选缺失、非法或越界时失败，不回退到首轮 bootstrap 清单；选定范围仍不产生任何动作授权。
+治理 runner 从STATE.all_projects_governance.candidate_paths读取当前文件范围，无需外部候选报告。缺失或越界时失败；作者/编辑器名称不改变范围，选定范围不产生动作授权。
 
 ## 项目声明模板与校验
 

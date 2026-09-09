@@ -1,4 +1,4 @@
-"""Behavior checks for the Codex-only bootstrap; subprocesses are instrumented."""
+"""Behavior checks for project governance scope; subprocesses are instrumented."""
 import hashlib
 import importlib.util
 import json
@@ -26,7 +26,15 @@ def guarded(original):
             text = os.fsdecode(path)
         except TypeError:
             text = ''
-        if any('cursor' in p.lower() for p in Path(text).parts):
+        candidate = Path(os.path.abspath(text))
+        try:
+            parts = candidate.relative_to(Path(os.environ['HUB_TEST_REPOSITORY'])).parts
+        except ValueError:
+            try:
+                parts = candidate.relative_to(Path.home()).parts
+            except ValueError:
+                parts = ()
+        if parts and parts[0] in {'.cursor', '.codex'}:
             with _original_open(trace, 'a') as out:
                 out.write(original.__name__ + ':' + text + '\n')
             raise RuntimeError('excluded host path accessed')
@@ -54,13 +62,32 @@ def module(name):
 
 
 class BootstrapTests(unittest.TestCase):
-    def test_runner_and_children_never_access_excluded_host(self):
+    def test_runtime_guard_allows_worktree_under_editor_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            tmp = Path(directory)
+            repo = tmp / '.codex' / 'worktrees' / 'project'
+            (repo / '.cursor').mkdir(parents=True)
+            (repo / 'STATE.yaml').write_text('project: fixture')
+            (repo / '.cursor' / 'settings.json').write_text('{}')
+            (tmp / 'sitecustomize.py').write_text(GUARD)
+            env = dict(os.environ, PYTHONPATH=str(tmp), HUB_ACCESS_TRACE=str(tmp / 'trace'),
+                       HUB_TEST_REPOSITORY=str(repo.resolve()), PYTHONDONTWRITEBYTECODE='1')
+            result = subprocess.run([sys.executable, '-c',
+                "from pathlib import Path; assert Path('STATE.yaml').read_text() == 'project: fixture'; "
+                "Path('.cursor/settings.json').read_text()"],
+                cwd=repo, env=env, text=True, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('excluded host path accessed', result.stderr)
+            self.assertEqual((tmp / 'trace').read_text().splitlines(),
+                             ['open:.cursor/settings.json'])
+
+    def test_runner_is_read_only_and_editor_runtime_independent(self):
         with tempfile.TemporaryDirectory() as directory:
             tmp = Path(directory)
             (tmp / 'sitecustomize.py').write_text(GUARD)
             trace = tmp / 'access.txt'
             env = dict(os.environ, PYTHONPATH=os.pathsep.join([str(tmp), *sys.path]), HUB_ACCESS_TRACE=str(trace),
-                       PYTHONDONTWRITEBYTECODE='1')
+                       PYTHONDONTWRITEBYTECODE='1', HUB_TEST_REPOSITORY=str(ROOT))
             watched = ['data/logs/auto_advance_log.jsonl', 'data/logs/environment_check_log.jsonl',
                        'data/runtime/toolchain_status.yaml', 'data/codex_queue/next_round_prompt.md']
             before = {p: (ROOT / p).read_bytes() for p in watched if (ROOT / p).is_file()}
@@ -82,7 +109,7 @@ class BootstrapTests(unittest.TestCase):
                 self.assertIn("--", call)
                 paths = call[call.index("--") + 1:]
                 self.assertTrue(paths)
-                self.assertTrue(all(path.startswith(":(literal)") and "cursor" not in path.lower() for path in paths))
+                self.assertTrue(all(path.startswith(":(literal)") for path in paths))
                 self.assertEqual(paths, expected)
             self.assertTrue(all(call[1] not in {"add", "commit", "push"} for call in git_calls))
             self.assertGreaterEqual(len(Path(str(trace) + ".installed").read_text().splitlines()), 14)
@@ -92,10 +119,7 @@ class BootstrapTests(unittest.TestCase):
         runner = module("auto_advance_runner")
         with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, HUB_GOVERNANCE_TASK=TASK):
             tmp = Path(directory)
-            evidence = tmp / "docs/reports/all-projects-governance/bootstrap"
-            evidence.mkdir(parents=True)
-            (evidence / "candidate.json").write_text(json.dumps({"files": {"task.txt": "fixture"}}))
-            (tmp / "STATE.yaml").write_text("all_projects_governance:\n  task_id: " + TASK + "\n  candidate_manifest: docs/reports/all-projects-governance/bootstrap/candidate.json\n")
+            (tmp / "STATE.yaml").write_text("all_projects_governance:\n  task_id: " + TASK + "\n  candidate_paths: [task.txt]\n")
             (tmp / "task.txt").write_text("owned fixture")
             unrelated = tmp / "unrelated.txt"
             unrelated.write_text(runner.SENSITIVE_CONTENT_MARKERS[0])
@@ -112,24 +136,17 @@ class BootstrapTests(unittest.TestCase):
             self.assertEqual(result["hard_blockers"], [])
             self.assertEqual(result["decision"], "continue")
 
-    def test_excluded_subtree_is_pruned_before_stat_or_descent(self):
+    def test_editor_names_do_not_hide_project_files(self):
         gate = module("agent_gate")
         with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, HUB_GOVERNANCE_TASK=TASK):
             tmp = Path(directory)
-            forbidden = tmp / "docs" / "cursor-synthetic-boundary"
-            forbidden.mkdir(parents=True)
-            (forbidden / "payload.md").write_text("synthetic fixture, never read")
-            (tmp / "docs" / "allowed.md").write_text("allowed")
-            original_stat = Path.stat
-            original_scan = os.scandir
-            def no_stat(path, *args, **kwargs):
-                self.assertNotIn("cursor-synthetic-boundary", str(path))
-                return original_stat(path, *args, **kwargs)
-            def no_scan(path):
-                self.assertNotIn("cursor-synthetic-boundary", str(path))
-                return original_scan(path)
-            with patch.object(gate, "ROOT", tmp), patch.object(Path, "stat", no_stat), patch.object(os, "scandir", no_scan):
-                self.assertEqual(gate._iter_scan_files(), [tmp / "docs" / "allowed.md"])
+            (tmp / "docs").mkdir()
+            files = [tmp / "docs" / name for name in ("cursor-project.md", "codex-project.md")]
+            for path in files:
+                path.write_text("ghp_" + "X" * 30)
+            with patch.object(gate, "ROOT", tmp):
+                self.assertEqual(set(gate._iter_scan_files()), set(files))
+                self.assertEqual(len(gate._scan_for_secrets()), 2)
 
     def test_state_is_scanned_for_tokens_by_both_entrypoints(self):
         gate = module("agent_gate")
@@ -151,43 +168,34 @@ class BootstrapTests(unittest.TestCase):
             self.assertIn("STATE.yaml: contains suspected token", output.getvalue())
             self.assertNotIn(fake, output.getvalue())
 
-    def test_candidate_git_scope_follows_current_state_not_bootstrap_history(self):
+    def test_candidate_scope_uses_state_without_report_or_editor_filter(self):
         runner = module("auto_advance_runner")
         with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, HUB_GOVERNANCE_TASK=TASK):
             tmp = Path(directory)
-            for unit, files in [("bootstrap", {"old.txt": "old"}),
-                                ("current", [{"path": "new.txt", "sha256": "pending"}])]:
-                folder = tmp / "docs/reports/all-projects-governance" / unit
-                folder.mkdir(parents=True)
-                (folder / "candidate.json").write_text(json.dumps({"files": files}))
             state = tmp / "STATE.yaml"
             state.write_text("all_projects_governance:\n  task_id: " + TASK +
-                             "\n  candidate_manifest: docs/reports/all-projects-governance/current/candidate.json\n")
+                             "\n  candidate_paths: [new.txt, docs/cursor-project.md]\n")
             with patch.object(runner, "ROOT", tmp):
-                paths = runner._candidate_paths()
-                self.assertIn("new.txt", paths)
-                self.assertNotIn("old.txt", paths)
+                self.assertEqual(runner._candidate_paths(), ["STATE.yaml", "docs/cursor-project.md", "new.txt"])
                 state.write_text("all_projects_governance:\n  task_id: " + TASK + "\n")
                 with self.assertRaises(ValueError):
                     runner._candidate_paths()
 
-    def test_candidate_pointer_cannot_escape_or_follow_symlinks(self):
+    def test_candidate_scope_rejects_escape_git_internals_and_symlinks(self):
         runner = module("auto_advance_runner")
         with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, HUB_GOVERNANCE_TASK=TASK):
             tmp = Path(directory)
-            outside = tmp / "not-a-candidate.json"
+            outside = tmp / "outside.txt"
             outside.write_text("never opened")
-            folder = tmp / "docs/reports/all-projects-governance/current"
-            folder.mkdir(parents=True)
-            (folder / "candidate.json").symlink_to(outside)
-            for pointer in ["../not-a-candidate.json", "docs/cursor-fixture/candidate.json",
-                            "docs/reports/all-projects-governance/current/candidate.json"]:
-                (tmp / "STATE.yaml").write_text("all_projects_governance:\n  task_id: " + TASK +
-                                               "\n  candidate_manifest: " + pointer + "\n")
+            (tmp / "alias.txt").symlink_to(outside)
+            for paths in [[], ["../outside.txt"], ["/absolute"], [".git/config"], ["alias.txt"], ["a//b"]]:
+                import yaml
+                (tmp / "STATE.yaml").write_text(yaml.safe_dump({"all_projects_governance": {
+                    "task_id": TASK, "candidate_paths": paths}}))
                 original = Path.read_text
                 def guarded(path, *args, **kwargs):
                     self.assertNotEqual(path, outside)
-                    self.assertNotEqual(path, folder / "candidate.json")
+                    self.assertNotEqual(path, tmp / "alias.txt")
                     return original(path, *args, **kwargs)
                 with patch.object(runner, "ROOT", tmp), patch.object(Path, "read_text", guarded):
                     with self.assertRaises(ValueError):
