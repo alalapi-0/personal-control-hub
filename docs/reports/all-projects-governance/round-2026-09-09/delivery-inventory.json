@@ -167,6 +167,8 @@
   },
   "hub_metadata_delivery": {
     "commit": "322144717fbd34893e1c9ca8005ad07716e54dfa",
+    "latest_remote_main": "cb242eb8e35e3dfabbcc84e338c003ca21b6b006",
+    "latest_remote_main_verified": true,
     "remote_main_verified": true,
     "scope": "STATE.yaml delivery projection and this inventory receipt only"
   }
