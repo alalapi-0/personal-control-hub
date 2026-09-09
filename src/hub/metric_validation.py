@@ -50,8 +50,14 @@ def _records(data, format_name):
 
 def collect_validation(root, project_id, observed_at, reports):
     rows, problems = [], []
-    head, current_clean = _git_state(root)
+    head, current_clean = _git_state(root) if any(r["format"] != "universal_player_guard_result_v1" for r in reports) else (None, None)
     for spec in reports:
+        if spec["format"] == "universal_player_guard_result_v1":
+            from hub.metric_guard_report import collect_guard_report
+            group = collect_guard_report(root, project_id, observed_at, spec)
+            rows.extend(group["metrics"])
+            problems.extend(group["issues"])
+            continue
         report_id, path = spec["id"], spec["path"]
         dimensions = {"report_id": report_id}
         source = "validation:" + report_id + ":" + path
@@ -155,3 +161,8 @@ def collect_validation(root, project_id, observed_at, reports):
                                   recovery_condition="Producer must record the tested candidate; saved success is historical evidence."))
     return {"metrics": rows, "issues": problems, "disposition": "partial" if problems else "resolved",
             "source_version": content_hash([r["source_version"] for r in rows])}
+
+
+def collect_validation_runs(root, project_id, observed_at, spec):
+    """A tool's real saved functional runs, using the shared report collector."""
+    return collect_validation(root, project_id, observed_at, spec["validation_reports"])

@@ -68,11 +68,21 @@ projects:
     adapter: unmapped
     github_repository: alalapi-0/personal-control-hub
   universal-player:
-    adapter: unmapped
+    adapter: validation_runs
     github_repository: alalapi-0/universal-player
+    validation_reports:
+    - id: guard-core
+      root: /Volumes/AI_WORK_SSD/Temp
+      path: universal-player-guard-*/results/core-*.json
+      suite: core
+      format: universal_player_guard_result_v1
   resilient-personal-network:
     adapter: unmapped
     github_repository: alalapi-0/resilient-personal-network
   mpv-clip-workbench:
     adapter: unmapped
     github_repository: alalapi-0/mpv-clip-workbench
+  youtube-hq-downloader:
+    adapter: downloader
+  pycharm-agent-workspace:
+    adapter: workspace_checks

@@ -21,6 +21,9 @@ DOMAIN_ADAPTERS = {
     "cognitive": ("hub.metric_documents", "collect_cognitive"),
     "music": ("hub.metric_music", "collect_music"),
     "continuation": ("hub.metric_continuation", "collect_continuation"),
+    "validation_runs": ("hub.metric_validation", "collect_validation_runs"),
+    "downloader": ("hub.metric_saved_tools", "collect_downloader"),
+    "workspace_checks": ("hub.metric_saved_tools", "collect_workspace_checks"),
 }
 
 
@@ -112,11 +115,14 @@ class MetricCollector:
                     require(m.get("operation", "number") in {"number", "length", "bool"}, "invalid numeric operation")
             reports = spec.get("validation_reports", [])
             require(type(reports) is list, "validation reports must be a list")
+            require(spec["adapter"] != "validation_runs" or bool(reports), "functional run reports required")
             report_ids = []
             for report in reports:
                 require(type(report) is dict and type(report.get("path")) is str, "invalid validation report")
                 identifier(report.get("id"), "validation report id")
-                require(report.get("format") in {"feature_report", "gate_arrays"}, "unsupported validation format")
+                require(report.get("format") in {"feature_report", "gate_arrays", "universal_player_guard_result_v1"}, "unsupported validation format")
+                if report.get("format") == "universal_player_guard_result_v1":
+                    require(type(report.get("suite")) is str and report["suite"] in {"core", "vlckit", "media", "raw"}, "guard suite required")
                 require("root" not in report or type(report["root"]) is str and Path(report["root"]).is_absolute(), "invalid report root")
                 report_ids.append(report["id"])
             require(len(report_ids) == len(set(report_ids)), "duplicate validation report ids")
@@ -162,7 +168,7 @@ class MetricCollector:
         else:
             result["issues"].append(issue(project_id, "missing_business_mapping", "registry:" + project_id,
                 recovery_condition="Bind actual domain/run metadata; governance complete is not business progress."))
-        if spec.get("validation_reports"):
+        if spec.get("validation_reports") and spec["adapter"] != "validation_runs":
             from hub.metric_validation import collect_validation
             groups.append(("validation", lambda: collect_validation(root, project_id, observed, spec["validation_reports"])))
         for name, function in groups:
