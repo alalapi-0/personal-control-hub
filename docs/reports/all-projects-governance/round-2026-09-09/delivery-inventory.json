@@ -80,7 +80,7 @@
     {
       "project_id": "personal-control-hub",
       "branch": "agent/governance-closure-20260812",
-      "remote_main": "4fdc5df551df4df265b39516f8f1e10a82fdef8c",
+      "remote_main": "322144717fbd34893e1c9ca8005ad07716e54dfa",
       "worktree": "dirty governance candidate preserved",
       "checks": "repo, registry, round consistency, schema, refresh validation, 193 Python tests and 7 Node tests pass",
       "blocker": "Current candidate includes the all-project rollout and is GOVERNED; fresh Governor/Judge capacity is unavailable. The old feature branch also contains historical UI work and Cursor/generated paths that require explicit filtering before any main delivery.",
@@ -164,5 +164,10 @@
   "review_capacity": {
     "status": "blocked",
     "reason": "Fresh Judge/Governor dispatches returned the native usage-limit boundary; no reset was used and no independent approval was simulated."
+  },
+  "hub_metadata_delivery": {
+    "commit": "322144717fbd34893e1c9ca8005ad07716e54dfa",
+    "remote_main_verified": true,
+    "scope": "STATE.yaml delivery projection and this inventory receipt only"
   }
 }
