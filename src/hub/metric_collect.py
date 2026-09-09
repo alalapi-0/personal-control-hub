@@ -24,6 +24,8 @@ DOMAIN_ADAPTERS = {
     "validation_runs": ("hub.metric_validation", "collect_validation_runs"),
     "downloader": ("hub.metric_saved_tools", "collect_downloader"),
     "workspace_checks": ("hub.metric_saved_tools", "collect_workspace_checks"),
+    "hub_activity": ("hub.metric_hub_activity", "collect_hub_activity"),
+    "mpv": ("hub.metric_mpv", "collect_mpv"),
 }
 
 

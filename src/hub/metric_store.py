@@ -119,6 +119,7 @@ class MetricStore(RefreshLedger):
                              "metrics": sum(r["metrics"] for r in rows), "numeric": sum(r["numeric"] for r in rows),
                              "unknown": sum(r["metrics"] - r["numeric"] for r in rows),
                              "read_errors": sum(i.get("kind", "read_failure") in {"read_failure", "invalid_enum"} for p in registry["projects"] for i in stored.get(p["id"], {}).get("issues", [])),
+                             "data_gaps": sum(i.get("kind") == "data_gap" for p in registry["projects"] for i in stored.get(p["id"], {}).get("issues", [])),
                              "business_blockers": sum(i.get("kind") == "business_blocker" for p in registry["projects"] for i in stored.get(p["id"], {}).get("issues", [])),
                              "issues": sum(r["issues"] for r in rows)}, "projects": [], "projects_total": len(rows), "next_cursor": None}
         for row in rows[after:after + limit]:

@@ -50,7 +50,7 @@ projects:
     adapter: cognitive
     github_repository: alalapi-0/cognitive_asset_library
   audio-clone:
-    adapter: unmapped
+    adapter: validation_runs
     validation_reports:
     - id: saved-verification
       root: /Volumes/AI_WORK_SSD/Artifacts/audio-clone/codex
@@ -65,7 +65,7 @@ projects:
     adapter: unmapped
     github_repository: alalapi-0/personal-control-hub
   personal-control-hub:
-    adapter: unmapped
+    adapter: hub_activity
     github_repository: alalapi-0/personal-control-hub
   universal-player:
     adapter: validation_runs
@@ -80,8 +80,13 @@ projects:
     adapter: unmapped
     github_repository: alalapi-0/resilient-personal-network
   mpv-clip-workbench:
-    adapter: unmapped
+    adapter: mpv
     github_repository: alalapi-0/mpv-clip-workbench
+    project_files:
+    - .local-runtime/f02-F-H264-LAND-A/projects/working.mpvclip.json
+    - .local-runtime/f03-F-HEVC-PORT-B/projects/working.mpvclip.json
+    - .local-runtime/f04-F-HEVC-4K-C/projects/working.mpvclip.json
+    - .local-runtime/f05-F-HEVC-PORT-B/projects/working.mpvclip.json
   youtube-hq-downloader:
     adapter: downloader
   pycharm-agent-workspace:

@@ -34,8 +34,8 @@ class ContinuationProjection(Projection):
     def reference(self, path):
         return path if path.startswith('adapter:') else str(Path(self.root).absolute() / path)
 
-    def problem(self, path):
-        super().problem(self.reference(path))
+    def problem(self, path, *, kind='read_failure'):
+        super().problem(self.reference(path), kind=kind)
 
     def emit(self, name, value, unit, path, semantic=None, dims=None, **kwargs):
         digest = self.source_bindings.get((dims or {}).get('import_id'))

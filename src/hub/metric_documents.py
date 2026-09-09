@@ -17,9 +17,9 @@ class Projection:
         self.rows, self.problems = [], []
         self.dimensions = {}
 
-    def problem(self, path):
+    def problem(self, path, *, kind='read_failure'):
         self.problems.append(issue(self.pid, self.prefix + '_metadata_unknown', path,
-            recovery_condition='Repair the selected authoritative metadata and recollect.'))
+            kind=kind, recovery_condition='Repair the selected authoritative metadata and recollect.'))
 
     def read(self, path, structured=False, metadata_root=None):
         try:
@@ -39,7 +39,7 @@ class Projection:
                 self.problem(path + "#invalid_business_time")
                 business_at = None
         if value is None:
-            self.problem(path + '#' + name)
+            self.problem(path + '#' + name, kind='data_gap')
         self.rows.append(metric(self.pid, self.prefix + '.' + name, value, unit, path,
             content_hash([name, value, semantic, business_at]), self.observed,
             dimensions={**self.dimensions, **(dims or {})}, business_at=business_at,

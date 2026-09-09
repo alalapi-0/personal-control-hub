@@ -23,26 +23,29 @@ all_projects_governance:
   status: ACTIVE
   route_version: 2
   execution_document: docs/all_projects_governance_execution.md
-  unit: tool_run_data_adapters
+  unit: saved_service_and_work_results
   lane: DIRECT
   completed:
-  - Hub采集/查询及14真实源映射可调用；漫画、音乐、播放器已交付main；本单元41检查通过
+  - 17源已接入；93检查通过；交付见delivery
   - 播放器守卫94/Core128/全包build通过；58ad819远端包含已核实，无CI工作流
-  coverage: {local: 24, removed_local: 2, cloud_excluded: 17, metrics: 1373, numeric_metrics: 982, unknown: 391, business_blockers: 58}
+  coverage: {local: 24, removed_local: 2, cloud_excluded: 17, metrics: 1429, numeric_metrics: 1034, unknown: 395, business_blockers: 58}
   unresolved:
-  - 10本地业务/运行源仍缺映射，历史验证时间/版本绑定待补；漫画56项实际重做未授权
+  - 7本地业务/运行源仍缺映射，历史验证时间/版本绑定待补；漫画56项实际重做未授权
   - 其他子仓守卫和原有内容待交付；无Git保持缺口
-  next_action: 交付Hub三类真实运行数据采集候选。
+  next_action: 交付17源与数据缺口分类修复。
   candidate_paths:
   - STATE.yaml
+  - src/hub/metric_hub_activity.py
   - src/hub/metric_collect.py
-  - src/hub/metric_validation.py
-  - src/hub/metric_guard_report.py
-  - src/hub/metric_saved_tools.py
   - data/connections/metric_sources.yaml
-  - tests/test_metric_guard_report.py
-  - tests/test_metric_saved_tools.py
-  delivery: {status: four_main_verified, hub_commit: a5e3fa5fa49f793c12eee079465b35bf8e9f96ce, hub_ci: 34322999161, manga_commit: a761519b806736f016d8b71877b89a53d4fcdf3e, manga_ci: 34313957940, music_commit: ced997e98c25e89295ff2dbcccd53ec125388474, music_ci: 34321539823, universal_commit: 58ad819919402a76e03478c4f33c20ecf942d11d, universal_ci: not_configured}
+  - tests/test_metric_hub_activity.py
+  - src/hub/metric_mpv.py
+  - tests/test_metric_mpv.py
+  - src/hub/metric_documents.py
+  - src/hub/metric_store.py
+  - tests/test_metric_issue_kinds.py
+  - src/hub/metric_continuation.py
+  delivery: {status: four_main_verified, hub_commit: 8649e344c16e88d4ede4919dd33117817882c2c1, hub_ci: 34326488919, manga_commit: a761519b806736f016d8b71877b89a53d4fcdf3e, manga_ci: 34313957940, music_commit: ced997e98c25e89295ff2dbcccd53ec125388474, music_ci: 34321539823, universal_commit: 58ad819919402a76e03478c4f33c20ecf942d11d, universal_ci: not_configured}
   delivery_inventory: docs/reports/all-projects-governance/round-2026-09-09/delivery-inventory.json
-  recovery: {history_commit: 4529d853566e9204bf68bbef585aee414657c899, manga_unique: Primary .agent/CURSOR_LOOP_PROMPT.md preserved; not delivered, request: data-v2-saved-tools-001;1455 versions valid;restart source_calls=0/new_versions=0}
-  budget: {prior_visible_tokens: 14061875, coverage: Historical native observation; no reset, first_250k_rebaseline: completed, last_health: REPLAN at3903214; repaired, cooldown: 75000 tokens or30 active minutes plus eligible trigger, current_visible_tokens: 2721587}
+  recovery: {history_commit: 4529d853566e9204bf68bbef585aee414657c899, manga_unique: Primary .agent/CURSOR_LOOP_PROMPT.md preserved; not delivered, request: data-v2-service-work-primary-001;1550 valid;replay=0}
+  budget: {prior_visible_tokens: 14061875, coverage: Historical native observation; no reset, first_250k_rebaseline: completed, last_health: REPLAN at3903214; repaired, cooldown: 75000 tokens or30 active minutes plus eligible trigger, current_visible_tokens: 3246338}
