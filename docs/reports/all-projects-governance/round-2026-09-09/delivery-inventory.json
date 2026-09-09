@@ -1,0 +1,168 @@
+{
+  "task_id": "ALL-PROJECTS-CODEX-GOVERNANCE-V1",
+  "observed_at": "2026-09-09T02:10:00Z",
+  "scope": {
+    "local_registered": 24,
+    "removed_local": 2,
+    "cloud_excluded": 17,
+    "cursor": "excluded"
+  },
+  "delivery_rule": "Only candidates with their required checks and review evidence were pushed normally to the repository main branch; unresolved candidates remain staged or dirty and are not reported as delivered.",
+  "delivered_main": [
+    {
+      "project_id": "manga-localizer",
+      "repository": "https://github.com/alalapi-0/manga-localizer",
+      "branch": "main",
+      "commit": "ede1049f9b255aff45d4c37d853d8492460e8c0d",
+      "remote_verified": true,
+      "ci": "34262876795 success (frontend, backend, e2e)"
+    },
+    {
+      "project_id": "story-faceless-utopia",
+      "repository": "https://github.com/alalapi-0/story-faceless-utopia",
+      "branch": "main",
+      "commit": "310725f71cc6370cbd70a23fb8b571997ec4384a",
+      "remote_verified": true,
+      "checks": "storage check, storage tests, validation and full storage test pass"
+    },
+    {
+      "project_id": "mpv-clip-workbench",
+      "repository": "https://github.com/alalapi-0/mpv-clip-workbench",
+      "branch": "main",
+      "commit": "85c505eea6e4758fef403c12fdbf227dbfc93f14",
+      "remote_verified": true,
+      "checks": "cmake build clean; ctest 31/31 pass"
+    },
+    {
+      "project_id": "cognitive-asset-library",
+      "repository": "https://github.com/alalapi-0/cognitive_asset_library",
+      "branch": "main",
+      "commit": "01bab92d7bc0d8636a9ad0a9b1c18a809cfb2f5a",
+      "remote_verified": true,
+      "checks": "pytest 42 pass; diff check pass"
+    },
+    {
+      "project_id": "resilient-personal-network",
+      "repository": "https://github.com/alalapi-0/resilient-personal-network",
+      "branch": "main",
+      "commit": "e6d52407b8b624bd895288175a831ad4142d58cb",
+      "remote_verified": true,
+      "checks": "shell syntax, client-generation guard and placeholder cases pass"
+    },
+    {
+      "project_id": "wechat-article-scheduler",
+      "repository": "https://github.com/alalapi-0/wechat-article-scheduler",
+      "branch": "main",
+      "commit": "4a4b9fd0ad6a32263e613977f0ba1ed7021ac3c1",
+      "remote_verified": true,
+      "checks": "storage check, contract check and 13 tests pass"
+    }
+  ],
+  "deferred_candidates": [
+    {
+      "project_id": "audio-clone",
+      "branch": "main",
+      "remote_main": "56d693770f2d5cde154cfcb375153916c1c19053",
+      "worktree": "staged candidate; .artifacts symlink intentionally untracked",
+      "checks": "90 unittest pass; unified verify exit 0 with accurate PARTIAL/HUMAN_ONLY limits",
+      "blocker": "Independent Judge is unavailable/INCONCLUSIVE under the project Definition of Done; no fresh acceptance review is available.",
+      "resume": "Obtain a fresh independent Judge/Governor review, then commit and push the frozen candidate normally."
+    },
+    {
+      "project_id": "light-novel",
+      "branch": "main",
+      "remote_main": "698e075df35f81d8e0252f9c305d9297d13e9735",
+      "worktree": "dirty candidate preserved; transient .agent_runtime/locks excluded",
+      "checks": "npm run test:ui: 35 passed, 3 skipped; check:tooling blocked by missing project .venv",
+      "blocker": "Fresh Judge follow-up is unavailable under the current execution quota; branch is four commits behind remote main and must be reconciled before delivery.",
+      "resume": "Restore/verify the project venv, run the complete Codex tooling gate, reconcile main ancestry, obtain fresh Judge/Governor review, then push."
+    },
+    {
+      "project_id": "personal-control-hub",
+      "branch": "agent/governance-closure-20260812",
+      "remote_main": "4fdc5df551df4df265b39516f8f1e10a82fdef8c",
+      "worktree": "dirty governance candidate preserved",
+      "checks": "repo, registry, round consistency, schema, refresh validation, 193 Python tests and 7 Node tests pass",
+      "blocker": "Current candidate includes the all-project rollout and is GOVERNED; fresh Governor/Judge capacity is unavailable. The old feature branch also contains historical UI work and Cursor/generated paths that require explicit filtering before any main delivery.",
+      "resume": "Freeze a filtered non-Cursor candidate from verified origin/main, obtain fresh roles, then commit/push and verify remote main."
+    }
+  ],
+  "blocked_candidates": [
+    {
+      "project_id": "universal-player",
+      "remote_main": "bf0e6dfce882cff74799c300ff6c1c9b54615463",
+      "failure": "Scripts/external-build --check exit 78: noncanonical entrypoint because the registered /Users path is a symlink to the SSD.",
+      "resume": "Governed canonical-path contract repair, then build/tests and fresh roles."
+    },
+    {
+      "project_id": "ai-anime-short-factory",
+      "remote_main": "ff6db1c3051d709272fff35f37a5af30e4f708d4",
+      "failure": "Full pytest 998 passed/5 failed: four environment-comparability locator failures and one runtime_assets directory-boundary assertion.",
+      "resume": "Repair locators and slash-boundary ignore rules, rerun full checks and fresh roles."
+    },
+    {
+      "project_id": "ai-music-foundry",
+      "remote_main": "4be8ed1b34a8ae3e2f831d6425bfab1f124caeda",
+      "failure": "External storage guard scripts fail zsh parsing at the '<->' conditional pattern.",
+      "resume": "Govern and test an equivalent numeric-directory matcher, then fresh roles."
+    },
+    {
+      "project_id": "novel-continuation-agent",
+      "remote_main": "3ae029cff0ccde97c651c2d4d6e6fe7b73f0ef77",
+      "failure": "Required .venv/jsonschema runtime is missing; active R53 contract forbids commit/stage/ref/fetch/push.",
+      "resume": "Preserve the contract and environment blocker; continue only under a successor contract with the required runtime."
+    },
+    {
+      "project_id": "pixel-world-asset-forge",
+      "remote_main": "ce3639e214f97f7f91a80667a07a7bc23243aa4b",
+      "failure": "External storage guard exit 78: wrapper location is rejected because the registered canonical root is a symlink.",
+      "resume": "Govern canonical-path handling and rerun storage/test gates."
+    },
+    {
+      "project_id": "zarathustra-adaptation",
+      "remote_main": "0a7f0b9ca61f273806e8566db521e7ccb482b5de",
+      "failure": "External Python guard exit 78: fixed-path provenance rejects the registered symlink root.",
+      "resume": "Govern canonical-path handling, preserve editorial sources, then rerun required checks."
+    },
+    {
+      "project_id": "computer-study-plan",
+      "remote_main": "924fbc84648dc674766a4462624183106cd2e997",
+      "failure": "Progress gate and 26 progress tests pass, but external UI Python guard exit 78 rejects the symlinked canonical path; real browser gate cannot be run through the guard.",
+      "resume": "Govern the canonical-path contract, then run the real UI gate and review."
+    }
+  ],
+  "no_git_delivery": [
+    "desktop-jav-tools",
+    "desktop-tool",
+    "pycharm-agent-workspace",
+    "youtube-hq-downloader",
+    "desktop-magnet",
+    "pycharm-misc-project",
+    "desktop-downloads-scripts"
+  ],
+  "removed_local": ["game-removed-local", "manga-removed-local"],
+  "hub_checks": {
+    "entry_gate": "python3 scripts/auto_advance_runner.py --mode check --task-id ALL-PROJECTS-CODEX-GOVERNANCE-V1 exit 0 (warn_and_continue; no hard blocker)",
+    "repo": "pass",
+    "registry": "26 entries; 23 enabled; pass",
+    "round_consistency": "pass",
+    "schema": "pass",
+    "refresh_validate": "pass; 2 declarations resolved, remaining declarations intentionally visible as missing",
+    "python_tests": "193 pass",
+    "node_tests": "7 pass"
+  },
+  "manga_failure_receipt": {
+    "status": "bounded_failure_receipt",
+    "database_rows": 199,
+    "valid_heads": 54,
+    "g8_rejected": 51,
+    "g7_pending": 3,
+    "no_existing_head": [47, 151],
+    "root_cause": "Existing selector is fail-closed for ambiguous or nonmatching parameter/revision bindings; default-only repair request cannot safely reopen custom-parameter heads.",
+    "verified": "No-write read-only classification preserved schema/table digests; old rejected heads remain rejected; actual generation was not invoked."
+  },
+  "review_capacity": {
+    "status": "blocked",
+    "reason": "Fresh Judge/Governor dispatches returned the native usage-limit boundary; no reset was used and no independent approval was simulated."
+  }
+}

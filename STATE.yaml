@@ -21,12 +21,12 @@ all_projects_governance:
   task_id: ALL-PROJECTS-CODEX-GOVERNANCE-V1
   native_task_id: 01a07ef7-735b-7270-9c21-3347e1232b5a
   status: ACTIVE
-  unit: hub_manga_routing
+  unit: repository_delivery_and_hub_rollout
   lane: GOVERNED
   evidence: docs/reports/all-projects-governance/hub-entry/manga-routing.json
   candidate_manifest: docs/reports/all-projects-governance/hub-entry/manga-routing.json
-  candidate_status: Stage B accepted; receipt pending
-  next_action: Deliver receipt, then resume Manga page134 actual recovery.
+  candidate_status: Stage D Manga receipt; six main deliveries verified; rollout pending
+  next_action: After fresh review capacity, filter the Hub candidate and resume the first exact project recovery.
   coverage:
     local: 24
     removed_local: 2
@@ -40,6 +40,7 @@ all_projects_governance:
     cooldown: 75000tokens or30active minutes plus eligible trigger
   history_ref: docs/reports/all-projects-governance/hub-entry/baseline.json#preserved_goal_history
   contract: docs/reports/all-projects-governance/hub-entry/manga-routing-contract.md
+  delivery_inventory: docs/reports/all-projects-governance/round-2026-09-09/delivery-inventory.json
   delivery:
-    status: main_verified
+    status: partial_main_verified
     source_commit: 6333a7cf5a5fc0bddc3c048ea21a6698fdcf3256
