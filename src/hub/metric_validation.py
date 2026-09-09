@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import re
+import hashlib
+import json
 from datetime import datetime
 from pathlib import Path
 
@@ -12,6 +14,28 @@ from hub.metrics import issue, metric
 
 STATUSES = ("PASS", "FAIL", "BLOCKED", "HUMAN_ONLY", "SKIPPED")
 MAX_CHECKS = 10000
+
+
+def _selected_code(root, data, selected):
+    """Bind only the explicitly configured files; never follow report file paths."""
+    from hub.metric_guard_report import _current_files
+    code = data.get('code', {})
+    code = code if type(code) is dict else {}
+    files = code.get('files')
+    valid = (type(files) is dict and set(files) == set(selected)
+             and all(type(v) is str and re.fullmatch('[0-9a-f]{64}', v) for v in files.values()))
+    digest = None
+    if valid:
+        digest = hashlib.sha256((json.dumps(files, sort_keys=True, separators=(',', ':'),
+                                           ensure_ascii=False) + '\n').encode()).hexdigest()
+        valid = code.get('stable') is True and digest == code.get('sha256')
+    if not valid:
+        return None, None, None
+    try:
+        current = _current_files(root, selected)
+    except (OSError, RecordError, ValueError, TypeError):
+        return None, digest, None
+    return int(files == current), digest, current
 
 
 def _git_state(root):
@@ -67,6 +91,10 @@ def collect_validation(root, project_id, observed_at, reports):
             require(report_root.resolve(strict=True) == report_root, "report root must be canonical")
             data, _ = read_json(report_root, path)
             require(type(data) is dict, "report must be an object")
+            if 'source_files' in spec:
+                require(data.get('schema_version') == 'tool.functional-result.v1'
+                        and data.get('project_id') == project_id
+                        and data.get('test_scope') == spec['test_scope'], 'functional report identity')
         except (OSError, RecordError, ValueError):
             data = None
             reason = "Declared validation report unavailable or invalid."
@@ -96,6 +124,11 @@ def collect_validation(root, project_id, observed_at, reports):
         report_clean = not report_tree if type(report_tree) is str else None
         provenance = [commit, env, report_clean]
         reference = source + "@code=" + (commit or "unknown") + ";environment=" + content_hash(env)
+        selected_bound, selected_digest, current_files = None, None, None
+        if 'source_files' in spec:
+            selected_bound, selected_digest, current_files = _selected_code(root, data, spec['source_files'])
+            provenance.append(selected_digest)
+            reference += ';selected_code=' + (selected_digest or 'unknown')
 
         def emit(mid, value, unit, basis, *, scope=None, selected=None, why=None):
             dims = dimensions | (scope or {})
@@ -145,6 +178,21 @@ def collect_validation(root, project_id, observed_at, reports):
         emit("validation.report.bound_to_current_code", bound, "boolean",
              "Report names current HEAD and both report and current Git worktrees are clean; environment equality is not asserted",
              selected=[head, current_clean], why="A clean candidate binding is not recorded.")
+        if 'source_files' in spec:
+            selected_scope = {'binding_scope': 'selected_source_files'}
+            emit('validation.report.bound_to_selected_code', selected_bound, 'boolean',
+                 'Configured source file hashes match a stable producer snapshot; not whole-repository or runtime equality.',
+                 scope=selected_scope, selected=current_files,
+                 why='The selected source snapshot is missing, invalid, or unavailable.')
+            passed = None
+            if selected_bound == 1 and known and records and not invalid_status:
+                all_passed = all(status == 'PASS' for _, status in records)
+                if data.get('status') == ('PASS' if all_passed else 'FAIL'):
+                    passed = int(all_passed)
+            emit('validation.report.current_selected_code_passed', passed, 'boolean',
+                 'All saved checks passed on the selected current files only; blocked, failed, or unbound checks cannot approve them.',
+                 scope=selected_scope, selected=current_files,
+                 why='The saved report does not establish passing checks for the selected current files.')
         emit("validation.report.environment_recorded", int(len(env) == 2) if data else None, "boolean",
              "Saved report contains platform and Python version strings; not a current environment comparison",
              why="Report unavailable.")
@@ -156,7 +204,7 @@ def collect_validation(root, project_id, observed_at, reports):
                 age = None
         emit("validation.report.age", age, "seconds", "Collection time minus the report's timezone-qualified business time",
              why="Report time is unknown or later than collection time.")
-        if bound != 1:
+        if (selected_bound if 'source_files' in spec else bound) != 1:
             problems.append(issue(project_id, "validation_candidate_binding_unverified", source,
                                   recovery_condition="Producer must record the tested candidate; saved success is historical evidence."))
     return {"metrics": rows, "issues": problems, "disposition": "partial" if problems else "resolved",

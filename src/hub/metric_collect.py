@@ -129,6 +129,14 @@ class MetricCollector:
                 require(report.get("format") in {"feature_report", "gate_arrays", "universal_player_guard_result_v1"}, "unsupported validation format")
                 if report.get("format") == "universal_player_guard_result_v1":
                     require(type(report.get("suite")) is str and report["suite"] in {"core", "vlckit", "media", "raw"}, "guard suite required")
+                if 'source_files' in report:
+                    selected = report['source_files']
+                    require(report['format'] == 'feature_report' and type(selected) is list
+                            and 0 < len(selected) <= 64 and all(type(name) is str and 0 < len(name) <= 300
+                            and not Path(name).is_absolute() and '..' not in Path(name).parts
+                            and not any(c in name for c in '*?[]') for name in selected)
+                            and len(set(selected)) == len(selected), 'invalid selected source file scope')
+                    identifier(report.get('test_scope'), 'functional report test scope')
                 require("root" not in report or type(report["root"]) is str and Path(report["root"]).is_absolute(), "invalid report root")
                 report_ids.append(report["id"])
             require(len(report_ids) == len(set(report_ids)), "duplicate validation report ids")

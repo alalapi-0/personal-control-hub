@@ -100,3 +100,21 @@ projects:
     data_root: /Volumes/AI_WORK_SSD/ProjectData/desktop-jav-tools
   desktop-magnet:
     adapter: magnet_batch
+  desktop-tool:
+    adapter: validation_runs
+    validation_reports:
+    - id: saved-functional
+      root: /Volumes/AI_WORK_SSD/Artifacts/desktop-tool/validation
+      path: offline-html.json
+      format: feature_report
+      test_scope: offline_html_pipeline
+      source_files: [html_crawler.py, validate_html_pipeline.py]
+  pycharm-misc-project:
+    adapter: validation_runs
+    validation_reports:
+    - id: saved-functional
+      root: /Volumes/AI_WORK_SSD/Artifacts/pycharm-misc-project/validation
+      path: offline-file-tools.json
+      format: feature_report
+      test_scope: isolated_file_tools
+      source_files: [fix_mojibake_names.py, collect_by_ext.py, validate_file_tools.py]
