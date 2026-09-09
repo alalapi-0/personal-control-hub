@@ -1,7 +1,35 @@
 # 项目状态统一入口
 
 读者：只从 Personal Control Hub 接手的 Agent，以及负责维护项目状态源的 Agent。
-更新条件：接入契约、读取命令或错误语义变化时更新。业务事实始终在项目自身的权威源中。本页描述现有接口；多源指标、变化查询和有限摘要属于 docs/all_projects_governance_execution.md v2 的待实现能力，本阶段不生成图表。
+更新条件：接入契约、读取命令或错误语义变化时更新。业务事实始终在项目自身的权威源中。本阶段提供数值接口，不生成图表。
+
+## 程序指标入口（v2 数据前置）
+
+```sh
+python3 scripts/hub_connections.py metrics schema
+python3 scripts/hub_connections.py metrics collect --request-id UNIQUE_ID
+python3 scripts/hub_connections.py metrics summary
+python3 scripts/hub_connections.py metrics summary --after 10 --limit 10
+python3 scripts/hub_connections.py metrics query --project-id manga-localizer --metric-id review_count --stage issues
+python3 scripts/hub_connections.py metrics changes --project-id light-novel --since 2026-09-01T00:00:00Z
+python3 scripts/hub_connections.py metrics issues --project-id manga-localizer --limit 5
+python3 scripts/hub_connections.py metrics validate
+python3 scripts/hub_connections.py metrics feishu
+```
+
+`collect`只读登记项目的明确元数据与本地Git状态，在原连接SQLite账本的metric表中写入投影。加`--project-id`可只采集一项。原请求ID重放使用已提交结果；输入/采集器版本变化需新ID。云项目排除；removed_local在解析或探测根路径之前结束。查询、校验、摘要和飞书映射均无需模型、不运行项目检查、不触发业务任务、不联网。
+
+所有输出上限8KiB。摘要始终保留全部登记分母、处置、数值/未知及错误计数，项目页默认10项；指标/问题页默认10项且按字节自动缩小。用next_cursor作为下页的--after，不能把第一页当作全部明细。
+
+`data/connections/metric_sources.yaml`保存来源选择。当前漫画读取真实review/project SQLite只读事务，按当前items而非历史artifact累加；轻小说读取章节清单、导出清单和生产批次metadata。治理completed不能成为业务完成指标。未接领域源的项目仍有Git观察及明确缺口；历史验证不代表当前代码验收。当前登记项全部有处置不等于全部业务接入完成。
+
+指标含稳定project_id/metric_id、数值或null、unit、dimensions、observed_at、business_at（未知为null）、source_ref、相关输入指纹source_version、quality/reason及counting_basis。独立字段失败保留其他有效指标。总数、待审、失败、排队和版本各有口径；运行链active不等于活跃worker。真实连续阻塞起点无证据时年龄为null，不用首次采集时间冒充。
+
+变化按project_id、metric_id、unit、dimensions和口径分别查询；页、章、任务与测试不混加。delta及change_per_second只来自同一指标实际观察，历史不足为null；它们不声称业务因果或真实生产速度。远端指标仅观察本地tracking refs，明确remote_verified=false；成功采集不等于新的GitHub交付复核。
+
+账本只新增语义变化，重复刷新更新观察时间；失败前的成功仍在历史中保留原时间。当前登记撤销读取或改变绑定后，查询将旧值标为历史，不能作为当前成功。`metrics prune --before ISO_TIMESTAMP`是显式本地历史保留操作，保留当前值及计算变化所需前驱；不会删除项目原始数据。飞书输出固定enabled=false、write_back_allowed=false，仅本地映射。
+
+以下为仍供原服务使用的单状态连接接口，与数值指标共享登记和账本。
 
 先读 Hub 的 `AGENTS.md`、`STATE.yaml`。运行以下只读命令取得所有登记项：
 

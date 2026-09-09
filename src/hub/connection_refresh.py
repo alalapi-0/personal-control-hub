@@ -225,7 +225,9 @@ class RefreshLedger:
                 tables = {row[0] for row in connection.execute(
                     "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
                 owned = {"ledger_meta", "refresh_requests", "refresh_events", "refresh_results"}
-                if tables == owned:
+                metric_tables = {"metric_requests", "metric_receipts", "metric_projects",
+                                 "metric_changes", "metric_current"}
+                if owned <= tables and tables <= owned | metric_tables:
                     self._check_schema(connection)
                     return
                 if tables:

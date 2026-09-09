@@ -20,45 +20,56 @@ legacy_context:
 all_projects_governance:
   task_id: ALL-PROJECTS-CODEX-GOVERNANCE-V1
   native_task_id: 01a07ef7-735b-7270-9c21-3347e1232b5a
-  status: PREPARED
+  status: ACTIVE
+  route_version: 2
+  execution_document: docs/all_projects_governance_execution.md
   unit: project_data_prerequisites
-  lane: risk_based
-  candidate_status: Route prepared; data implementation not started; no charts/UI in this phase
-  next_action: 发送 prompts/all_projects_governance_goal_mode.md 启动实施；先复用现有采集层贯通漫画与异构项目真实指标。
+  lane: DIRECT
+  completed:
+  - 24本地/2 removed_local处置，17云排除
+  - 漫画/轻小说真实metadata贯通；29新/29旧回归通过
   coverage:
     local: 24
     removed_local: 2
     cloud_excluded: 17
-  budget:
-    native_tokens: 14061875
-    native_seconds: 55628
-    coverage: Prior native Goal observation; not current billing or a new budget; no reset
-    first_250k_rebaseline: completed
-    last_health: REPLAN at3903214; repaired; no reset
-    cooldown: 75000tokens or30active minutes plus eligible trigger
-  delivery_inventory: docs/reports/all-projects-governance/round-2026-09-09/delivery-inventory.json
+    metrics: 696
+    numeric_metrics: 433
+  unresolved:
+  - 其他项目业务源及验证版本绑定待补
+  - 漫画56项实际重做未完成；费用/凭据未授权
+  - 各子仓及原有未交付内容仍待按单元交付；无Git保持缺口
+  next_action: 交付Hub数据单元，再验证漫画真实失败隔离副本。
+  candidate_paths:
+  - src/hub/connection_refresh.py
+  - scripts/hub_connections.py
+  - src/hub/metric_cli.py
+  - src/hub/metric_collect.py
+  - src/hub/metric_git.py
+  - src/hub/metric_manga.py
+  - src/hub/metric_novel.py
+  - src/hub/metric_sources.py
+  - src/hub/metric_store.py
+  - src/hub/metrics.py
+  - tests/test_metric_git.py
+  - tests/test_metric_manga.py
+  - tests/test_metric_novel.py
+  - tests/test_metric_queries.py
+  - tests/test_metrics.py
+  - data/connections/metric_sources.yaml
+  - docs/12_project_connections.md
+  - STATE.yaml
   delivery:
     status: partial_main_verified
     source_commit: 762bd90847003fa8309d073a59d7e8fa35596e0d
-  route_version: 2
-  execution_document: docs/all_projects_governance_execution.md
-  candidate_paths:
-  - AGENTS.md
-  - STATE.yaml
-  - docs/all_projects_governance_execution.md
-  - prompts/all_projects_governance_goal_mode.md
-  - docs/12_project_connections.md
-  - governance/agent_policy.yaml
-  - data/gates/auto_advance_policy.yaml
-  - scripts/governance_scope.py
-  - scripts/agent_gate.py
-  - scripts/check_environment.py
-  - scripts/auto_advance_runner.py
-  - scripts/round_consistency_check.py
-  - tests/test_governance_bootstrap.py
-  - docs/reports/all-projects-governance
+  delivery_inventory: docs/reports/all-projects-governance/round-2026-09-09/delivery-inventory.json
   recovery:
     history_commit: 4529d853566e9204bf68bbef585aee414657c899
     manga_worktree: /Users/alalapi/.codex/worktrees/manga-reentry-omitted-parameters
     manga_diff_sha256: 37f72b57911488855fe6253113edd0c2c6983385b4c961025bb5b65587d751c9
-    manga_checks: backend1101/frontend461/launcher40 passed; review and actual redo pending
+    manga_checks: backend1101/frontend461/launcher40 PASS; unchanged diff
+  budget:
+    prior_visible_tokens: 14061875
+    coverage: Historical native observation; no reset
+    first_250k_rebaseline: completed
+    last_health: REPLAN at3903214; repaired
+    cooldown: 75000 tokens or30 active minutes plus eligible trigger

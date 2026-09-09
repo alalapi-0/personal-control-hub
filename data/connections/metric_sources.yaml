@@ -1,0 +1,38 @@
+schema_version: '1.0'
+projects:
+  manga-localizer:
+    adapter: manga
+    data_root: /Volumes/AI_WORK_SSD/ProjectData/manga-localizer/real-data
+    batch_id: a734c596-faae-4875-ae61-f694a3c26d4a
+    review_db: final-review/all-199-pages/final-review/final-review.sqlite3
+    project_dbs:
+      63ac150e-b071-41d9-af18-6d31d10f4590: manga01/runs/round8-clean-plate-final/workspace/project/project.sqlite3
+      b1b85f3e-4d72-4956-b519-6b30fee02fcc: manga02/runs/rd-r04-ppocr-lama-json/workspace/project/project.sqlite3
+  light-novel:
+    adapter: novel
+  novel-continuation-agent:
+    adapter: declared
+    sources:
+    - path: reports/gate_result.json
+      business_time: [timestamp]
+      metrics:
+      - id: validation.gate.passed
+        unit: checks
+        selector: [passed]
+        operation: length
+        counting_basis: Existing gate result entries; historical validation, not current product completion
+      - id: validation.gate.failed
+        unit: checks
+        selector: [failed]
+        operation: length
+        counting_basis: Existing gate result entries; historical validation, not current product completion
+      - id: validation.gate.blocked
+        unit: checks
+        selector: [blocked]
+        operation: length
+        counting_basis: Existing gate result entries; historical validation, not current product completion
+      - id: validation.gate.skipped
+        unit: checks
+        selector: [skipped]
+        operation: length
+        counting_basis: Existing gate result entries; historical validation, not current product completion
