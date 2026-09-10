@@ -30,5 +30,6 @@ jobs:
       - name: Registry and template validation
         run: |
           python scripts/check_registry.py --metadata-only
+          python scripts/check_project_data_v3.py
           python scripts/hub_connections.py schema
           python scripts/hub_connections.py validate-declaration data/connections/hub.connection.template.yaml
