@@ -1,16 +1,11 @@
 # Hub 项目入口
 
-默认读取本文件与STATE.yaml（合计≤8192 bytes）；只使用当前任务条目，不恢复其他任务。以项目事实为治理对象，执行者/编辑器不决定范围。
+默认读AGENTS.md和STATE.yaml，合计≤8192 bytes。STATE保存当前执行事实，registry保存项目身份；不恢复无关任务。
 
-- 本任务：docs/all_projects_governance_execution.md v2；状态all_projects_governance。先程序采集/汇总，再模型分析；本阶段不生成图表或改造UI。未变证据复用，不读全历史。
-- 名单/状态：data/registry/external_projects.yaml、docs/12_project_connections.md。业务事实在项目权威源，Hub保存可重建投影。
-- 存储：先读data/programs/storage_governance_goal.yaml，再沿适配器进入唯一执行状态；本任务不迁移或清理存储。
-- 其他任务按明确范围路由；NORTH_STAR管方向，STATE管当前管理状态。
+当前版本以STATE.all_projects_governance为准。v3计划在docs/all_projects_governance_execution.md和data/roadmap/project_data_v3.yaml；只有所有者明确启动才切换，准备/阅读不启动实施。每轮只读当前阶段/项目，复用未变证据。
 
-只修改明确归属文件，保护其他工作与原始数据。不读真实凭据，不操作编辑器/账号运行时。removed_local不读写，云项目排除。
+来源沿data/registry/external_projects.yaml、docs/12_project_connections.md、data/connections/metric_sources.yaml读取。Hub留本地；独立项目迁移先按V3-01核对存储入口，再进入唯一执行状态。云项目排除，removed_local禁读写。不做图表/UI或无关全盘清理。
 
-普通工作：实现→相关检查→一次差异复核。真正高影响/安全边界变化才加独立审查；不默认生成逐轮合同、报告或收据。检查不授权。
+保护其他工作、原始数据与凭据，不操作编辑器/账号运行时。首次写入前运行python3 scripts/auto_advance_runner.py --mode check --task-id ALL-PROJECTS-CODEX-GOVERNANCE-V1；候选列STATE.candidate_paths。
 
-本任务首次写入前运行 python3 scripts/auto_advance_runner.py --mode check --task-id ALL-PROJECTS-CODEX-GOVERNANCE-V1，输入未变复用。候选直接列STATE.candidate_paths，不要求额外清单文档。串行完成每仓库写入、验证和交付。
-
-按所有者授权交付对应仓库真实主分支，核对远端包含关系；禁止强推、改远端或绕过保护。无变化不造commit，交付元数据不引发收据循环。用STATE一条记录保存恢复点。
+普通工作实现→相关检查→差异复核，真实高影响边界才加必要独立审查，不造逐轮报告/收据。跨仓写入/验证/交付串行；依所有者授权正常交付对应main并核对远端，禁强推/绕过保护。STATE保留验收、阻塞、去重轮次和唯一下一步。
