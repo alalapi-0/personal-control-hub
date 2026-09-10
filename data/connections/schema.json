@@ -325,6 +325,7 @@
     "writer": "hub.metric_export.export_metric_snapshot",
     "reader": "hub.metric_import.read_metric_snapshot",
     "importer": "hub.metric_import.import_metric_snapshot",
+    "batch_importer": "hub.metric_import.import_metric_snapshots",
     "relative_path": ".hub/status.json",
     "snapshot_fields": [
       "disposition",
@@ -366,7 +367,12 @@
     "max_bytes": 8388608,
     "max_metrics": 10000,
     "max_issues": 1000,
-    "boundary": "exporter reads project sources; importer reads only .hub/status.json"
+    "default_import_timeout_seconds": 5.0,
+    "min_import_timeout_seconds": 0.001,
+    "max_import_timeout_seconds": 300.0,
+    "boundary": "exporter reads project sources; importer reads only .hub/status.json",
+    "request_identity_rule": "batch identity freezes project bindings and canonical snapshot roots; completed receipts are immutable",
+    "resume_rule": "retry reads only projects without durable receipts"
   },
   "review_contract": {
     "schema_version": "review-flow.v1",

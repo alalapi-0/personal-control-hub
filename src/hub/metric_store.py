@@ -87,6 +87,12 @@ class MetricStore(RefreshLedger):
             receipt = {k: summary[k] for k in ("project_id", "observed_at", "disposition", "metric_count", "numeric_count", "changed_metrics")}
             receipt["issue_count"] = len(summary["issues"])
             db.execute("INSERT INTO metric_receipts VALUES(?,?,?)", (request_id, pid, json.dumps(receipt)))
+            self._fault("save_metric_result", {
+                "request_id": request_id,
+                "project_id": pid,
+                "metric_count": len(rows),
+                "changed_metrics": changed,
+            })
             return receipt
 
     def coverage(self, registry, now=None, *, after=0, limit=10):

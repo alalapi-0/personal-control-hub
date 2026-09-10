@@ -21,6 +21,9 @@ SNAPSHOT_RELATIVE_PATH = ".hub/status.json"
 MAX_SNAPSHOT_BYTES = 8 * 1024 * 1024
 MAX_SNAPSHOT_METRICS = 10_000
 MAX_SNAPSHOT_ISSUES = 1_000
+DEFAULT_IMPORT_TIMEOUT_SECONDS = 5.0
+MIN_IMPORT_TIMEOUT_SECONDS = 0.001
+MAX_IMPORT_TIMEOUT_SECONDS = 300.0
 SNAPSHOT_DISPOSITIONS = {
     "resolved",
     "partial",
@@ -67,6 +70,7 @@ def metric_snapshot_contract_schema():
         "writer": "hub.metric_export.export_metric_snapshot",
         "reader": "hub.metric_import.read_metric_snapshot",
         "importer": "hub.metric_import.import_metric_snapshot",
+        "batch_importer": "hub.metric_import.import_metric_snapshots",
         "relative_path": SNAPSHOT_RELATIVE_PATH,
         "snapshot_fields": sorted(SNAPSHOT_FIELDS),
         "exporter_fields": sorted(EXPORTER_FIELDS),
@@ -75,7 +79,12 @@ def metric_snapshot_contract_schema():
         "max_bytes": MAX_SNAPSHOT_BYTES,
         "max_metrics": MAX_SNAPSHOT_METRICS,
         "max_issues": MAX_SNAPSHOT_ISSUES,
+        "default_import_timeout_seconds": DEFAULT_IMPORT_TIMEOUT_SECONDS,
+        "min_import_timeout_seconds": MIN_IMPORT_TIMEOUT_SECONDS,
+        "max_import_timeout_seconds": MAX_IMPORT_TIMEOUT_SECONDS,
         "boundary": "exporter reads project sources; importer reads only .hub/status.json",
+        "request_identity_rule": "batch identity freezes project bindings and canonical snapshot roots; completed receipts are immutable",
+        "resume_rule": "retry reads only projects without durable receipts",
     }
 
 
