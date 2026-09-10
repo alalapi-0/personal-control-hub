@@ -12,7 +12,8 @@ from hub.connection_refresh import RefreshLedgerError
 from hub.connections import load_registry_at
 from hub.metric_collect import MetricCollector
 from hub.metric_store import MetricStore
-from hub.metrics import MAX_PAGE_SIZE, METRIC_FIELDS, VERSION, bounded_json, metric
+from hub.metrics import (MAX_PAGE_SIZE, METRIC_FIELDS, METRIC_KEY_FIELDS, bounded_json, metric,
+                         metric_contract_schema)
 from hub.paths import PROJECT_ROOT
 
 
@@ -44,10 +45,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         if args.command == "schema":
-            print(bounded_json({"version": VERSION, "metric_fields": sorted(METRIC_FIELDS),
-                "quality": ["good", "unknown", "invalid"], "summary_byte_limit": 8192,
-                "max_page_size": MAX_PAGE_SIZE, "history": "semantic changes only; explicit prune retains current and predecessor",
-                "grouping": ["project_id", "metric_id", "unit", "dimensions", "counting_basis"]}))
+            print(bounded_json(metric_contract_schema()))
             return 0
         if args.command == "collect":
             collector = MetricCollector(args.root, remote_git=args.remote_git, github_ci=args.github_ci)
@@ -94,7 +92,7 @@ def main(argv=None):
                 if args.command == "feishu":
                     result = {"enabled": False, "write_back_allowed": False, "network_calls": 0,
                               "mapping": {field: field for field in sorted(METRIC_FIELDS)},
-                              "record_key": ["project_id", "metric_id", "unit", "dimensions", "counting_basis"],
+                              "record_key": list(METRIC_KEY_FIELDS),
                               "sample_kind": "synthetic_contract_example_not_project_data",
                               "sample": metric("example-project", "example.backlog", None, "items",
                                   "local:contract-example", "example-v1", "1970-01-01T00:00:00Z",

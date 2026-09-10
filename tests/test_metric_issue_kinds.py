@@ -4,6 +4,7 @@ import unittest
 
 from hub.metric_documents import Projection
 from hub.metric_store import MetricStore
+from hub.metrics import metric_catalog
 
 
 class IssueKindsTests(unittest.TestCase):
@@ -19,7 +20,8 @@ class IssueKindsTests(unittest.TestCase):
             store = MetricStore(root)
             store.begin('issue-kind-check', ['sample'], 'fixture')
             store.save('issue-kind-check', dict(project_id='sample', observed_at=p.observed,
-                disposition='partial', metrics=p.rows, issues=p.problems))
+                disposition='partial', metrics=p.rows, metric_definitions=metric_catalog(p.rows),
+                issues=p.problems))
             coverage = store.coverage({'projects': [{'id': 'sample', 'enabled': True}]})['coverage']
             self.assertEqual(coverage['read_errors'], 1)
             self.assertEqual(coverage['data_gaps'], 1)

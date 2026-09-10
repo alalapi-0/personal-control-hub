@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 from hub.connection_records import RecordError
 from hub.metric_store import MetricStore
-from hub.metrics import bounded_json, metric, validate_metric
+from hub.metrics import bounded_json, metric, metric_catalog, validate_metric
 
 EARLY = "2026-09-08T00:00:00Z"
 LATE = "2026-09-09T00:00:00Z"
@@ -27,7 +27,8 @@ class MetricQueryRegressionTests(unittest.TestCase):
                      counting_basis="Unique current page IDs")
         self.store.begin(request, ["p"], "test-identity")
         self.store.save(request, {"project_id": "p", "observed_at": observed,
-            "disposition": "resolved", "metrics": [row], "issues": [], "source_versions": {}})
+            "disposition": "resolved", "metrics": [row],
+            "metric_definitions": metric_catalog([row]), "issues": [], "source_versions": {}})
         return row
 
     def test_revoked_and_removed_reads_are_explicitly_historical(self):

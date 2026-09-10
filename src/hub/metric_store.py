@@ -12,7 +12,7 @@ from contextlib import closing
 
 from hub.connection_records import content_hash, require
 from hub.connection_refresh import RefreshLedger
-from hub.metrics import (MAX_PAGE_SIZE, bounded_json, eligibility, freshness, metric_key,
+from hub.metrics import (MAX_PAGE_SIZE, bounded_json, eligibility, freshness, metric_catalog, metric_key,
                          semantic_metric, utcnow, validate_metric)
 
 
@@ -57,6 +57,8 @@ class MetricStore(RefreshLedger):
         rows = result["metrics"]
         keys = [metric_key(validate_metric(row)) for row in rows]
         require(len(keys) == len(set(keys)), "duplicate metric identities")
+        require(result.get("metric_definitions") == metric_catalog(rows),
+                "metric definition catalog does not match facts")
         pid, observed = result["project_id"], result["observed_at"]
         require(all(row["project_id"] == pid for row in rows), "metric project identity mismatch")
         with self._write() as db:

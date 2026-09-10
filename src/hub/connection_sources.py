@@ -9,8 +9,9 @@ from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Callable
 
-from hub.connection_records import (FIELDS, VERSION, RecordError, content_hash, empty_business,
-                                    put_field, record_schema, relative_path, require, update_key,
+from hub.connection_records import (FIELDS, VERSION, RecordError, content_hash,
+                                    credential_path_component, empty_business, put_field,
+                                    record_schema, relative_path, require, update_key,
                                     validate_declaration, validate_result)
 from hub.connections import parse_source, select_value, validate_registry_value
 
@@ -31,7 +32,8 @@ def now() -> str:
 def _root_path_allowed(path: Path) -> None:
     require(path.is_absolute(), "registered root must be absolute")
     forbidden = {".cursor", "cursor", ".codex", ".ssh", "credentials", "secrets", "cookies"}
-    if any(part.lower() in forbidden or part.lower().startswith(".env") for part in path.parts):
+    if any(part.lower() in forbidden or part.lower().startswith(".env")
+           or credential_path_component(part) for part in path.parts):
         raise SourceFailure("unsafe_path", "Protected root or authority alias is outside connection scope.")
 
 

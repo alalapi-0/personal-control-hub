@@ -71,10 +71,29 @@ class SourceBoundaryTests(unittest.TestCase):
         with mock.patch.object(Path, "resolve", side_effect=AssertionError("direct protected root resolved")):
             self.assertEqual("unsafe_path", resolver.refresh("a")["disposition"])
 
+    def test_credential_named_roots_are_denied_before_declaration_access(self):
+        for component in (
+            "auth", "api_keys", "private_keys", "password", "api key",
+            "private key", "service account", "client secret", "access token",
+        ):
+            protected = self.fixture.base / component
+            protected.mkdir(exist_ok=True)
+            self.fixture.projects[0]["root_path"] = str(protected)
+            self.fixture.save_registry()
+            resolver = self.fixture.resolver()
+            with mock.patch(
+                "hub.connection_sources._safe_relative_read",
+                side_effect=AssertionError("credential root content read"),
+            ):
+                self.assertEqual("unsafe_path", resolver.refresh("a")["disposition"])
+
     def test_credential_filenames_are_rejected_without_opening_the_source(self):
         for filename in ("auth.json", "tokens.json", "AUTH.yaml", "token-store.json", "service_account.json",
                          "SERVICE_ACCOUNT.json", "service-account.json", "service.account.json", "serviceaccount.json",
-                         "gcp-service_account-key.json", "private-key.json"):
+                         "gcp-service_account-key.json", "private-key.json", "auth/data.json",
+                         "api_keys/data.json", "private_keys/data.json", "nested/password/store.json",
+                         "api key/data.json", "private key/data.json", "service account/data.json",
+                         "client secret/data.json", "access token/data.json"):
             declaration = copy.deepcopy(self.declaration)
             declaration["source_refs"][0].update(path=filename, format="json" if filename.endswith(".json") else "yaml")
             (self.root / "hub.connection.yaml").write_text(yaml.safe_dump(declaration))

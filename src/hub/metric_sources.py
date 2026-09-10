@@ -7,7 +7,7 @@ import stat
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 
-from hub.connection_records import RecordError, require
+from hub.connection_records import RecordError, credential_path_component, require
 from hub.connection_sources import _root_path_allowed
 from hub.connections import parse_source
 
@@ -18,12 +18,15 @@ PROTECTED = {".git", ".ssh", ".codex", ".cursor", "credentials", "secrets", "coo
 def metadata_path(root, relative):
     path = PurePosixPath(relative)
     require(not path.is_absolute() and path.parts and ".." not in path.parts, "metadata path must be relative")
-    require(not any(p.lower() in PROTECTED or p.lower().startswith(".env") for p in path.parts), "protected metadata path")
-    require(not any(word in path.name.lower() for word in ("credential", "secret", "cookie", "token", "auth.json")), "protected metadata filename")
+    require(not any(p.lower() in PROTECTED or p.lower().startswith(".env")
+                    or credential_path_component(p) for p in path.parts),
+            "protected metadata path")
     root = Path(root)
     _root_path_allowed(root)
     base = root.resolve(strict=True)
     _root_path_allowed(base)
+    require(not any(credential_path_component(part) for part in base.parts),
+            "protected metadata root")
     cursor = base
     for part in path.parts:
         cursor /= part

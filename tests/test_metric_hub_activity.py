@@ -114,7 +114,8 @@ class HubActivityTests(unittest.TestCase):
         self.assertEqual(result['disposition'], 'partial')
 
     def test_bad_rows_do_not_erase_valid_classifications(self):
-        rows = ['not json', '{"quality":"unknown","value":null}', '{"quality":"invalid","value":null}',
+        rows = ['not json', '{"quality":"unknown","value":null}', '{"quality":"missing","value":null}',
+                '{"quality":"not_applicable","value":null}', '{"quality":"invalid","value":null}',
                 '{"quality":"unknown","quality":"unknown","value":null}', '{"quality":"good","value":true}']
         with self.store._write() as db:
             for seq, raw in enumerate(rows, 2):
@@ -124,7 +125,12 @@ class HubActivityTests(unittest.TestCase):
         result, rows = self.collect()
         self.assertEqual(rows['current_numeric_metrics']['value'],1)
         self.assertEqual(rows['current_unknown_metrics']['value'],1)
+        self.assertEqual(rows['current_missing_metrics']['value'],1)
+        self.assertEqual(rows['current_not_applicable_metrics']['value'],1)
         self.assertEqual(rows['current_invalid_metrics']['value'],1)
         self.assertEqual(rows['malformed_current_metric_records']['value'],3)
-        self.assertEqual(sum(rows[k]['value'] for k in ('current_numeric_metrics','current_unknown_metrics','current_invalid_metrics','malformed_current_metric_records')),rows['current_metric_records']['value'])
+        self.assertEqual(sum(rows[k]['value'] for k in (
+            'current_numeric_metrics','current_missing_metrics','current_unknown_metrics',
+            'current_not_applicable_metrics','current_invalid_metrics',
+            'malformed_current_metric_records')),rows['current_metric_records']['value'])
         self.assertEqual(result['disposition'],'partial')

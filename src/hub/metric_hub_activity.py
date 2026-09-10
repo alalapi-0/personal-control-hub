@@ -5,7 +5,7 @@ import sqlite3
 from contextlib import closing
 from datetime import datetime
 
-from hub.connection_records import content_hash, timestamp
+from hub.connection_records import METRIC_QUALITY_SEMANTICS, content_hash, timestamp
 from hub.connection_refresh import RefreshLedgerError
 from hub.metric_documents import Projection
 from hub.metric_store import MetricStore
@@ -20,6 +20,7 @@ COUNTS = {'saved_requests': ('metric_requests', 'requests'),
           'saved_metric_versions': ('metric_changes', 'metric_versions')}
 DERIVED = {'complete_saved_requests': 'requests', 'incomplete_saved_requests': 'requests',
            'current_numeric_metrics': 'metrics', 'current_unknown_metrics': 'metrics',
+           'current_missing_metrics': 'metrics', 'current_not_applicable_metrics': 'metrics',
            'current_invalid_metrics': 'metrics', 'malformed_current_metric_records': 'metrics',
            'service_observed_issues': 'issues'}
 
@@ -118,17 +119,20 @@ def collect_hub_activity(root, pid, observed_at, spec=None):
             try:
                 join = 'metric_current c LEFT JOIN metric_changes h ON c.seq=h.seq'
                 _bounded(db, join, 'length(CAST(h.value AS BLOB))')
-                quality = dict(good=[], unknown=[], invalid=[], malformed=[])
+                quality = {name: [] for name in METRIC_QUALITY_SEMANTICS}
+                quality['malformed'] = []
                 for key, project, seq, valid, q, value, value_type, keys in db.execute(
                     "SELECT c.key,c.project_id,c.seq,json_valid(h.value), json_extract(CASE WHEN json_valid(h.value) THEN h.value ELSE '{}' END,'$.quality'), "
                     "json_extract(CASE WHEN json_valid(h.value) THEN h.value ELSE '{}' END,'$.value'), "
                     "json_type(CASE WHEN json_valid(h.value) THEN h.value ELSE '{}' END,'$.value'), "
                     "(SELECT count(*) FROM json_each(CASE WHEN json_valid(h.value) THEN h.value ELSE '{}' END) WHERE key IN ('quality','value')) FROM " + join):
                     valid_number = value_type in ('integer', 'real') and type(value) in (int, float) and math.isfinite(value)
-                    valid_fields = (valid and keys == 2 and q in ('good', 'unknown', 'invalid') and
+                    valid_fields = (valid and keys == 2 and q in METRIC_QUALITY_SEMANTICS and
                                     ((q == 'good' and valid_number) or (q != 'good' and value is None and value_type == 'null')))
                     quality[q if valid_fields else 'malformed'].append([key, project, seq])
                 for name, category in [('current_numeric_metrics', 'good'), ('current_unknown_metrics', 'unknown'),
+                                       ('current_missing_metrics', 'missing'),
+                                       ('current_not_applicable_metrics', 'not_applicable'),
                                        ('current_invalid_metrics', 'invalid'), ('malformed_current_metric_records', 'malformed')]:
                     values[name] = len(quality[category])
                     semantics[name] = content_hash(sorted(quality[category]))
@@ -161,6 +165,6 @@ def collect_hub_activity(root, pid, observed_at, spec=None):
     for name, unit in DERIVED.items():
         basis = ('Saved requests whose unique expected project set exactly equals saved receipt coverage; dispositions may include partial or failed collection. Incomplete means saved coverage only, never currently executing. Request creation time is not persisted and remains unknown.'
                  if name.endswith('saved_requests') else
-                 'Validated saved records in one bounded snapshot: numeric, unknown, invalid and malformed classifications partition all current metric rows. Malformed rows are counted separately, never normal unknowns. Issues describe service observations, not underlying project business facts. Business time is latest persisted dependency observation, not creation or execution time.')
+                 'Validated saved records in one bounded snapshot: numeric, missing, unknown, not-applicable, invalid and malformed classifications partition all current metric rows. Malformed rows are counted separately, never normal unknowns. Issues describe service observations, not underlying project business facts. Business time is latest persisted dependency observation, not creation or execution time.')
         p.emit(name, values.get(name), unit, SOURCE, semantic=semantics.get(name), business_at=times.get(name), basis=basis)
     return p.finish()

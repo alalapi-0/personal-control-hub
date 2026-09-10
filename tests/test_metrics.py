@@ -1,3 +1,4 @@
+import copy
 import json
 from pathlib import Path
 import tempfile
@@ -5,9 +6,26 @@ import unittest
 from unittest.mock import patch
 
 from hub.connection_records import METRIC_QUALITY_SEMANTICS, RecordError
-from hub.metric_collect import MetricCollector, collect_declared
+from hub.metric_collect import (
+    MetricCollector,
+    collect_declared,
+    metric_source_contract_schema,
+    validate_metric_source_config,
+)
 from hub.metric_store import MetricStore
-from hub.metrics import bounded_json, metric, metric_key, validate_metric
+from hub.metric_sources import metadata_path
+from hub.metrics import (
+    METRIC_DEFINITION_FIELDS,
+    METRIC_FIELDS,
+    bounded_json,
+    metric,
+    metric_catalog,
+    metric_contract_schema,
+    metric_definition,
+    metric_key,
+    validate_metric_definition,
+    validate_metric,
+)
 
 AT = "2026-09-09T00:00:00Z"
 LATER = "2026-09-10T00:00:01Z"
@@ -27,7 +45,7 @@ class MetricsTests(unittest.TestCase):
     def save(self, request, rows, observed=AT):
         self.store.begin(request, ["p"], "code/input-v1")
         return self.store.save(request, dict(project_id="p", observed_at=observed, disposition="partial",
-                  metrics=rows, issues=[], source_versions={}))
+                  metrics=rows, metric_definitions=metric_catalog(rows), issues=[], source_versions={}))
 
     def test_history_delta_idempotency_and_restart(self):
         first = self.save("first", [self.row()])
@@ -90,6 +108,144 @@ class MetricsTests(unittest.TestCase):
         ):
             with self.assertRaises(RecordError):
                 validate_metric(row)
+
+    def test_metric_definition_fields_are_separate_from_dynamic_facts(self):
+        row = self.row()
+        self.assertEqual(set(row), METRIC_FIELDS)
+        definition = metric_definition(row)
+        changed = dict(row, value=9, observed_at=LATER, source_version="changed")
+        self.assertEqual(metric_definition(changed), definition)
+        for invalid_row in (
+            dict(row, dimensions={"scope": 1}),
+            dict(row, dimensions={"bad key": "value"}),
+        ):
+            with self.assertRaises(RecordError):
+                validate_metric(invalid_row)
+        contract = metric_contract_schema()
+        self.assertEqual(set(contract["record_fields"]), METRIC_FIELDS)
+        self.assertEqual(set(contract["catalog_definition_fields"]), METRIC_DEFINITION_FIELDS)
+        self.assertEqual(len(metric_catalog([row, changed])), 1)
+        conflict = dict(changed, counting_basis="A different stable denominator")
+        self.assertEqual(len(metric_catalog([row, conflict])), 2)
+
+        counter = metric_definition(
+            row,
+            metric_kind="counter",
+            counter_reset="window",
+            aggregation="sum",
+            window={"kind": "rolling", "timezone": "UTC", "size_seconds": 86400},
+        )
+        self.assertEqual(validate_metric_definition(counter)["metric_kind"], "counter")
+        for invalid in (
+            dict(definition, counter_reset="never"),
+            dict(counter, counter_reset="not_applicable"),
+            dict(definition, aggregation="weighted_ratio"),
+            dict(definition, window={"kind": "rolling", "timezone": "UTC", "size_seconds": None}),
+            dict(definition, metric_kind=[]),
+            dict(definition, dimension_keys=[[]]),
+        ):
+            with self.assertRaises(RecordError):
+                validate_metric_definition(invalid)
+
+    def test_metric_source_declarations_reject_dynamic_or_unknown_facts(self):
+        source = {
+            "path": "facts.json",
+            "business_time": ["observed_at"],
+            "metrics": [
+                {
+                    "id": "work.done",
+                    "unit": "items",
+                    "selector": ["done"],
+                    "counting_basis": "Unique completed item IDs",
+                    "dimensions": {"scope": "current"},
+                }
+            ],
+        }
+        config = {
+            "schema_version": "1.0",
+            "projects": {"p": {"adapter": "declared", "sources": [source]}},
+        }
+        self.assertIs(validate_metric_source_config(config, {"p": {}}), config)
+        mutations = (
+            lambda value: value.update(observed_at=AT),
+            lambda value: value["projects"]["p"].update(value=99),
+            lambda value: value["projects"]["p"].update(adapter=[]),
+            lambda value: value["projects"]["p"]["sources"][0].update(status="complete"),
+            lambda value: value["projects"]["p"]["sources"][0]["metrics"][0].update(value=99),
+            lambda value: value["projects"]["p"]["sources"][0]["metrics"][0].update(operation=[]),
+            lambda value: value["projects"]["p"]["sources"][0]["metrics"][0]["dimensions"].update(status="complete"),
+            lambda value: value["projects"]["p"]["sources"][0]["metrics"][0]["dimensions"].update(scope="not a stable id"),
+        )
+        for mutate in mutations:
+            candidate = copy.deepcopy(config)
+            mutate(candidate)
+            with self.assertRaises(RecordError):
+                validate_metric_source_config(candidate, {"p": {}})
+        for field in ("value", "status", "time", "version", "source_version"):
+            candidate = copy.deepcopy(config)
+            candidate["projects"]["p"]["sources"][0]["metrics"][0]["dimensions"][field] = "dynamic"
+            with self.subTest(dimension=field), self.assertRaises(RecordError):
+                validate_metric_source_config(candidate, {"p": {}})
+        protected_paths = (
+            "auth.yaml",
+            "api_key.json",
+            "passwords.yaml",
+            "client-secret.json",
+            "auth/data.json",
+            "api_keys/data.json",
+            "private_keys/data.json",
+            "nested/password/store.json",
+            "api key/data.json",
+            "private key/data.json",
+            "service account/data.json",
+            "client secret/data.json",
+            "access token/data.json",
+        )
+        for path in protected_paths:
+            candidate = copy.deepcopy(config)
+            candidate["projects"]["p"]["sources"][0]["path"] = path
+            with self.subTest(path=path), self.assertRaises(RecordError):
+                validate_metric_source_config(candidate, {"p": {}})
+            with self.subTest(runtime_path=path), self.assertRaises(RecordError):
+                metadata_path(self.root, path)
+        for component in (
+            "auth", "api_keys", "private_keys", "password", "api key",
+            "private key", "service account", "client secret", "access token",
+        ):
+            root_config = {
+                "schema_version": "1.0",
+                "projects": {
+                    "p": {
+                        "adapter": "jav_batch",
+                        "data_root": str(self.root / component),
+                    }
+                },
+            }
+            with self.subTest(root=component), self.assertRaises(RecordError):
+                validate_metric_source_config(root_config, {"p": {}})
+            with self.subTest(runtime_root=component), self.assertRaises(RecordError):
+                metadata_path(self.root / component, "data.json")
+
+        report = {
+            "schema_version": "1.0",
+            "projects": {
+                "p": {
+                    "adapter": "validation_runs",
+                    "validation_reports": [
+                        {"id": "saved", "path": "report.json", "format": "feature_report"}
+                    ],
+                }
+            },
+        }
+        validate_metric_source_config(report, {"p": {}})
+        report["projects"]["p"]["validation_reports"][0]["status"] = "PASS"
+        with self.assertRaises(RecordError):
+            validate_metric_source_config(report, {"p": {}})
+        report["projects"]["p"]["validation_reports"][0].pop("status")
+        report["projects"]["p"]["validation_reports"][0]["format"] = []
+        with self.assertRaises(RecordError):
+            validate_metric_source_config(report, {"p": {}})
+        self.assertIn("value", metric_source_contract_schema()["forbidden_dynamic_fact_fields"])
 
     def test_bounded_paging_coverage_and_retention(self):
         rows = [self.row(name="work." + str(i)) for i in range(60)]

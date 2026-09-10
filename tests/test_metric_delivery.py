@@ -1,3 +1,4 @@
+import copy
 from contextlib import redirect_stdout
 import io
 import json
@@ -6,7 +7,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from hub.connection_records import RecordError
+from hub.connection_records import RecordError, record_schema
 from hub.metric_cli import main
 from hub.metric_collect import MetricCollector
 from hub.metric_store import MetricStore
@@ -65,6 +66,27 @@ class MetricDeliveryTests(unittest.TestCase):
         self.assertEqual(result["metrics"][0]["value"], 3)
         self.assertEqual(result["disposition"], "partial")
 
+    def test_collector_exports_one_bound_catalog_not_row_copies(self):
+        collector = MetricCollector(self.root, clock=lambda: NOW)
+        result = collector.collect("p")
+        self.assertEqual(len(result["metrics"]), 1)
+        self.assertEqual(len(result["metric_definitions"]), 1)
+        definition = result["metric_definitions"][0]
+        self.assertNotIn("value", definition)
+        self.assertNotIn("observed_at", definition)
+        self.assertNotIn("metric_kind", result["metrics"][0])
+
+        self.store.begin("catalog", ["p"], collector.identity)
+        tampered = copy.deepcopy(result)
+        tampered["metric_definitions"][0]["display_name"] = "forged"
+        with self.assertRaises(RecordError):
+            self.store.save("catalog", tampered)
+        missing = copy.deepcopy(result)
+        del missing["metric_definitions"]
+        with self.assertRaises(RecordError):
+            self.store.save("catalog", missing)
+        self.assertEqual(self.store.save("catalog", result)["metric_count"], 1)
+
     def test_feishu_mapping_and_example_are_local_disabled_bounded(self):
         output = io.StringIO()
         with patch("subprocess.Popen", side_effect=AssertionError("external process")), redirect_stdout(output):
@@ -79,3 +101,10 @@ class MetricDeliveryTests(unittest.TestCase):
         self.assertEqual(data["coverage"]["metrics"], 0)
         self.assertEqual(data["coverage"]["registered"], 3)
         self.assertLessEqual(len(bounded_json(data).encode()), 8192)
+
+    def test_metric_cli_schema_is_the_shared_executable_contract(self):
+        output = io.StringIO()
+        with redirect_stdout(output):
+            code = main(["schema"])
+        self.assertEqual(code, 0)
+        self.assertEqual(json.loads(output.getvalue()), record_schema()["metric_contract"])

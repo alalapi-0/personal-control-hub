@@ -50,6 +50,255 @@
     "invalid": "error"
   },
   "metric_value_rule": "good requires a finite number and null reason; every other quality requires null value and a reason",
+  "metric_contract": {
+    "schema_version": "2.0",
+    "record_validator": "hub.metrics.validate_metric",
+    "definition_projector": "hub.metrics.metric_definition",
+    "catalog_projector": "hub.metrics.metric_catalog",
+    "record_fields": [
+      "business_at",
+      "counting_basis",
+      "dimensions",
+      "metric_id",
+      "observed_at",
+      "project_id",
+      "quality",
+      "reason",
+      "source_ref",
+      "source_version",
+      "unit",
+      "value"
+    ],
+    "record_identity_fields": [
+      "project_id",
+      "metric_id"
+    ],
+    "record_key_fields": [
+      "project_id",
+      "metric_id",
+      "unit",
+      "dimensions",
+      "counting_basis"
+    ],
+    "record_definition_selectors": [
+      "unit",
+      "dimension keys",
+      "dimensions.scope",
+      "counting_basis"
+    ],
+    "record_dynamic_fact_fields": [
+      "value",
+      "dimension values except dimensions.scope",
+      "observed_at",
+      "business_at",
+      "source_ref",
+      "source_version",
+      "quality",
+      "reason"
+    ],
+    "catalog_definition_fields": [
+      "aggregation",
+      "counter_reset",
+      "counting_basis",
+      "definition_id",
+      "description",
+      "dimension_keys",
+      "display_name",
+      "metric_id",
+      "metric_kind",
+      "scope_id",
+      "unit",
+      "window"
+    ],
+    "metric_kinds": [
+      "counter",
+      "duration",
+      "gauge",
+      "ratio",
+      "timestamp"
+    ],
+    "aggregations": [
+      "latest",
+      "max",
+      "min",
+      "none",
+      "sum",
+      "weighted_ratio"
+    ],
+    "counter_resets": [
+      "never",
+      "not_applicable",
+      "source_defined",
+      "window"
+    ],
+    "window_kinds": [
+      "calendar",
+      "event",
+      "instant",
+      "lifetime",
+      "rolling"
+    ],
+    "quality_semantics": {
+      "good": "valid",
+      "missing": "missing",
+      "unknown": "unknown",
+      "not_applicable": "not_applicable",
+      "invalid": "error"
+    },
+    "scope_rule": "dimensions.scope is an optional stable identifier; all dimension keys are identifiers",
+    "catalog_rule": "one shared definition per metric_id/unit/scope_id/dimension-key/counting-basis identity; dynamic values never enter definitions"
+  },
+  "metric_source_contract": {
+    "schema_version": "1.0",
+    "config_validator": "hub.metric_collect.validate_metric_source_config",
+    "top_level_fields": [
+      "schema_version",
+      "projects"
+    ],
+    "project_common_fields": [
+      "adapter",
+      "github_repository",
+      "validation_reports"
+    ],
+    "adapter_project_fields": {
+      "declared": [
+        "sources"
+      ],
+      "novel": [],
+      "unmapped": [],
+      "manga": [
+        "batch_id",
+        "data_root",
+        "project_dbs",
+        "review_db"
+      ],
+      "wechat": [],
+      "anime": [
+        "metadata_root"
+      ],
+      "pixel": [
+        "metadata_root"
+      ],
+      "study": [],
+      "story": [],
+      "zarathustra": [
+        "editorial_root"
+      ],
+      "cognitive": [],
+      "music": [
+        "data_root"
+      ],
+      "continuation": [
+        "data_root",
+        "universe_id"
+      ],
+      "validation_runs": [],
+      "downloader": [],
+      "workspace_checks": [],
+      "hub_activity": [],
+      "mpv": [
+        "project_files"
+      ],
+      "client_fixture": [
+        "report_path",
+        "report_root"
+      ],
+      "storage_evidence": [
+        "evidence_path",
+        "evidence_root"
+      ],
+      "magnet_batch": [],
+      "jav_batch": [
+        "data_root"
+      ]
+    },
+    "declared_source_fields": [
+      "business_time",
+      "metrics",
+      "path"
+    ],
+    "declared_metric_fields": [
+      "counting_basis",
+      "dimensions",
+      "id",
+      "operation",
+      "selector",
+      "unit"
+    ],
+    "validation_report_fields": {
+      "feature_report": [
+        "format",
+        "id",
+        "path",
+        "root",
+        "source_files",
+        "test_scope"
+      ],
+      "gate_arrays": [
+        "format",
+        "id",
+        "path",
+        "root"
+      ],
+      "universal_player_guard_result_v1": [
+        "format",
+        "id",
+        "path",
+        "root",
+        "suite"
+      ]
+    },
+    "forbidden_dynamic_fact_fields": [
+      "accepted",
+      "business_at",
+      "candidate_revision",
+      "completed",
+      "delivery",
+      "observed_at",
+      "quality",
+      "reason",
+      "rework_count",
+      "source_version",
+      "status",
+      "submission_attempt",
+      "value"
+    ],
+    "forbidden_dynamic_dimension_fields": [
+      "accepted",
+      "business_at",
+      "business_time",
+      "candidate_revision",
+      "completed",
+      "completed_at",
+      "count",
+      "created_at",
+      "decision",
+      "delivery",
+      "finished_at",
+      "observed_at",
+      "phase",
+      "progress",
+      "quality",
+      "reason",
+      "result",
+      "revision",
+      "rework_count",
+      "round",
+      "source_version",
+      "started_at",
+      "status",
+      "submission_attempt",
+      "time",
+      "timestamp",
+      "total",
+      "updated_at",
+      "value",
+      "verdict",
+      "version"
+    ],
+    "path_rule": "all relative components and absolute roots use hub.connection_records.credential_path_component",
+    "fact_rule": "configuration selects sources and definitions; values/status/times/versions are generated by collectors"
+  },
   "read_statuses": [
     "authority_drift",
     "disabled",
@@ -63,8 +312,9 @@
     "unsafe_path"
   ],
   "source_contract": "one relative current_state source; typed path or exact Markdown heading/label",
+  "declaration_fact_rule": "declaration contains stable source selection/mapping only; business values/status/times are generated by the resolver",
   "permission_rule": "explicit connection_read_allowed=false denies before root access; absent field falls back to enabled",
-  "protected_sources": "no .codex/.cursor/.ssh roots, unsafe aliases, environment or credential/token source filenames",
+  "protected_sources": "no control/environment/credential path components in roots or sources; aliases are rechecked",
   "output_shell": "exact snapshot/row/authority/head/coverage/freshness fields; valid project IDs, nonempty names, strict numeric/boolean types",
   "value_maps": "all declared and provenance targets must match the field type, including unselected entries",
   "review_contract": {
