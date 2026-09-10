@@ -67,5 +67,64 @@
   "protected_sources": "no .codex/.cursor/.ssh roots, unsafe aliases, environment or credential/token source filenames",
   "output_shell": "exact snapshot/row/authority/head/coverage/freshness fields; valid project IDs, nonempty names, strict numeric/boolean types",
   "value_maps": "all declared and provenance targets must match the field type, including unselected entries",
+  "review_contract": {
+    "schema_version": "review-flow.v1",
+    "case_factory": "hub.review_contract.new_review_case",
+    "event_reducer": "hub.review_contract.apply_review_event",
+    "record_validator": "hub.review_contract.validate_review_case",
+    "required_review_stage_sets": [
+      [
+        "first_review"
+      ],
+      [
+        "first_review",
+        "second_review"
+      ]
+    ],
+    "states": [
+      "awaiting_submission",
+      "under_review",
+      "pending_rework",
+      "rework_in_progress",
+      "awaiting_acceptance"
+    ],
+    "event_types": [
+      "submit",
+      "decide",
+      "claim_rework",
+      "complete_rework"
+    ],
+    "verdicts": [
+      "approve",
+      "reject"
+    ],
+    "version_binding": {
+      "case_fields": [
+        "project_id",
+        "item_id",
+        "required_review_stages",
+        "initial_candidate_revision",
+        "initial_candidate_hash"
+      ],
+      "submission_fields": [
+        "candidate_revision",
+        "candidate_hash"
+      ],
+      "decision_fields": [
+        "submission_id",
+        "candidate_revision",
+        "candidate_hash"
+      ],
+      "history_binding": "ordered_full_event_replay",
+      "rework_restart_stage": "first_review",
+      "acceptance_state": "awaiting_acceptance"
+    },
+    "concurrency": {
+      "event_identity_field": "event_id",
+      "compare_and_swap_field": "expected_sequence",
+      "duplicate_policy": "same_event_is_idempotent",
+      "conflict_policy": "reject"
+    }
+  },
   "lifecycle": "completed, accepted and delivery.status are independent source facts"
 }

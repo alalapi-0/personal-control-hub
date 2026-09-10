@@ -214,6 +214,8 @@ def get_field(business: dict, field: str) -> Any:
 
 def record_schema() -> dict:
     """Executable-schema index; validation is shared by CLI, reader and ledger."""
+    from hub.review_contract import review_contract_schema
+
     return {"schema_version": VERSION, "schema_language": "hub-typed-validator-v2",
             "declaration_validator": "hub.connection_records.validate_declaration",
             "record_validator": "hub.connection_records.validate_result",
@@ -226,6 +228,7 @@ def record_schema() -> dict:
             "value_maps": "all declared and provenance targets must match the field type, including unselected entries",
             "metric_quality_semantics": METRIC_QUALITY_SEMANTICS,
             "metric_value_rule": "good requires a finite number and null reason; every other quality requires null value and a reason",
+            "review_contract": review_contract_schema(),
             "lifecycle": "completed, accepted and delivery.status are independent source facts"}
 
 
