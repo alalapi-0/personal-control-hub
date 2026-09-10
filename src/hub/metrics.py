@@ -5,7 +5,13 @@ import json
 import math
 from datetime import datetime, timezone
 
-from hub.connection_records import content_hash, identifier, require, timestamp
+from hub.connection_records import (
+    METRIC_QUALITY_SEMANTICS,
+    content_hash,
+    identifier,
+    require,
+    timestamp,
+)
 
 VERSION = "1.0"
 MAX_SUMMARY_BYTES = 8192
@@ -41,10 +47,10 @@ def validate_metric(row):
         timestamp(row["business_at"], "business_at")
     value = row["value"]
     require(value is None or type(value) in (int, float) and math.isfinite(value), "metric needs finite number or null")
-    require(row["quality"] in {"good", "unknown", "invalid"}, "invalid metric quality")
+    require(row["quality"] in METRIC_QUALITY_SEMANTICS, "invalid metric quality")
     require((value is not None) == (row["quality"] == "good"), "invalid metric value/quality")
     require(row["reason"] is None and row["quality"] == "good" or
-            type(row["reason"]) is str and 0 < len(row["reason"]) <= 500, "unknown/invalid metric needs reason")
+            type(row["reason"]) is str and 0 < len(row["reason"]) <= 500, "non-good metric needs reason")
     require(len(json.dumps(row, ensure_ascii=False).encode()) <= 6000, "metric too large for bounded detail page")
     return row
 

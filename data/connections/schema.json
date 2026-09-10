@@ -42,6 +42,14 @@
       "unknown"
     ]
   },
+  "metric_quality_semantics": {
+    "good": "valid",
+    "missing": "missing",
+    "unknown": "unknown",
+    "not_applicable": "not_applicable",
+    "invalid": "error"
+  },
+  "metric_value_rule": "good requires a finite number and null reason; every other quality requires null value and a reason",
   "read_statuses": [
     "authority_drift",
     "disabled",

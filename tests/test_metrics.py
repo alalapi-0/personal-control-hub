@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from hub.connection_records import RecordError
+from hub.connection_records import METRIC_QUALITY_SEMANTICS, RecordError
 from hub.metric_collect import MetricCollector, collect_declared
 from hub.metric_store import MetricStore
 from hub.metrics import bounded_json, metric, metric_key, validate_metric
@@ -64,6 +64,32 @@ class MetricsTests(unittest.TestCase):
             invalid["value"] = value
             with self.assertRaises(RecordError):
                 validate_metric(invalid)
+
+    def test_quality_contract_distinguishes_five_outcomes(self):
+        self.assertEqual(
+            METRIC_QUALITY_SEMANTICS,
+            {
+                "good": "valid",
+                "missing": "missing",
+                "unknown": "unknown",
+                "not_applicable": "not_applicable",
+                "invalid": "error",
+            },
+        )
+        valid = self.row()
+        self.assertEqual(validate_metric(valid)["quality"], "good")
+        for quality in ("missing", "unknown", "not_applicable", "invalid"):
+            with self.subTest(quality=quality):
+                row = dict(valid, value=None, quality=quality, reason=f"{quality} evidence")
+                self.assertEqual(validate_metric(row)["quality"], quality)
+        for row in (
+            dict(valid, quality="missing"),
+            dict(valid, value=None, quality="good", reason="missing"),
+            dict(valid, value=None, quality="unknown", reason=None),
+            dict(valid, value=None, quality="invented", reason="invalid enum"),
+        ):
+            with self.assertRaises(RecordError):
+                validate_metric(row)
 
     def test_bounded_paging_coverage_and_retention(self):
         rows = [self.row(name="work." + str(i)) for i in range(60)]

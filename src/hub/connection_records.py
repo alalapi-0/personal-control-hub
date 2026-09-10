@@ -35,6 +35,13 @@ ENUMS = {"status": {"active", "paused", "blocked", "complete", "unknown"},
          "delivery": {"local", "pending_delivery", "delivered", "unknown"}}
 READ_STATUSES = {"resolved", "removed_local", "disabled", "missing_declaration", "missing_source",
                  "offline", "permission_denied", "invalid", "unsafe_path", "authority_drift"}
+METRIC_QUALITY_SEMANTICS = {
+    "good": "valid",
+    "missing": "missing",
+    "unknown": "unknown",
+    "not_applicable": "not_applicable",
+    "invalid": "error",
+}
 SECRET = re.compile(r"-----BEGIN (?:[A-Z ]*PRIVATE KEY)-----|\b(?:sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9]{20,})|"
                     r"(?i:\b(?:password|api[_-]?key|access[_-]?token|client[_-]?secret)\s*[:=]\s*[\"']?[^\s\"']{8,})")
 
@@ -217,6 +224,8 @@ def record_schema() -> dict:
             "protected_sources": "no .codex/.cursor/.ssh roots, unsafe aliases, environment or credential/token source filenames",
             "output_shell": "exact snapshot/row/authority/head/coverage/freshness fields; valid project IDs, nonempty names, strict numeric/boolean types",
             "value_maps": "all declared and provenance targets must match the field type, including unselected entries",
+            "metric_quality_semantics": METRIC_QUALITY_SEMANTICS,
+            "metric_value_rule": "good requires a finite number and null reason; every other quality requires null value and a reason",
             "lifecycle": "completed, accepted and delivery.status are independent source facts"}
 
 
