@@ -25,11 +25,11 @@ python3 scripts/hub_connections.py metrics feishu
 
 指标含稳定project_id/metric_id、数值或null、unit、dimensions、observed_at、business_at（未知为null）、source_ref、相关输入指纹source_version、quality/reason及counting_basis。独立字段失败保留其他有效指标。总数、待审、失败、排队和版本各有口径；运行链active不等于活跃worker。真实连续阻塞起点无证据时年龄为null，不用首次采集时间冒充。
 
-项目普通 Python 脚本通过 `hub.metric_export.export_metric_snapshot` 调用显式只读统计函数，并原子写入唯一标准快照 `.hub/status.json`。Hub 侧仅通过 `hub.metric_import.import_metric_snapshot_file` 读取该快照并写入现有指标 ledger；导入模块不加载领域适配器，也不接受业务源路径。
+项目普通 Python 脚本通过 `hub.metric_export.export_metric_snapshot` 调用显式只读统计函数，并原子写入唯一标准快照 `.hub/status.json`。v2 快照同时携带经 `validate_result` 验证的 21 字段管理投影和数值指标，两者绑定同一 `snapshot_id`、`observed_at` 与 `source_versions`。Hub 侧仅通过 `hub.metric_import.import_metric_snapshot_file` 读取该快照并写入现有指标 ledger；导入模块不加载领域适配器，也不接受业务源路径。
 
 批量入口 `hub.metric_import.import_metric_snapshots` 冻结项目绑定和快照根；每个项目独立事务提交，已有 receipt 的项目恢复时不再读取。无效/离线/超时快照只形成当次安全错误，其余项目继续；同一快照跨请求只更新观察 receipt，不增加指标变化历史。
 
-变化按project_id、metric_id、unit、dimensions和口径分别查询；页、章、任务与测试不混加。delta及change_per_second只来自同一指标实际观察，历史不足为null；它们不声称业务因果或真实生产速度。远端指标仅观察本地tracking refs，明确remote_verified=false；成功采集不等于新的GitHub交付复核。
+`MetricStore.project_snapshot` 在一个 SQLite 读事务中返回该快照的管理投影和分页业务指标；没有标准快照身份的旧直采记录不能冒充这一视图。变化按project_id、metric_id、unit、dimensions和口径分别查询；页、章、任务与测试不混加。delta及change_per_second只来自同一指标实际观察，历史不足为null；它们不声称业务因果或真实生产速度。远端指标仅观察本地tracking refs，明确remote_verified=false；成功采集不等于新的GitHub交付复核。
 
 账本只新增语义变化，重复刷新更新观察时间；失败前的成功仍在历史中保留原时间。当前登记撤销读取或改变绑定后，查询将旧值标为历史，不能作为当前成功。`metrics prune --before ISO_TIMESTAMP`是显式本地历史保留操作，保留当前值及计算变化所需前驱；不会删除项目原始数据。飞书输出固定enabled=false、write_back_allowed=false，仅本地映射。
 

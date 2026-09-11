@@ -29,6 +29,36 @@ class ConnectionContractTests(unittest.TestCase):
         self.assertEqual(record_schema(), json.loads((root / "data/connections/schema.json").read_text()))
         validate_declaration(parse_source((root / "data/connections/hub.connection.template.yaml").read_bytes(), "yaml"))
 
+    def test_metric_export_is_a_stable_python_entry_not_a_shell_command(self):
+        declaration = copy.deepcopy(self.declaration)
+        declaration["metric_export"] = {
+            "entry": "scripts/export_hub_metric_snapshot.py",
+            "snapshot": ".hub/status.json",
+        }
+        validate_declaration(declaration, "a")
+        for entry in (
+            "/tmp/export.py",
+            "../export.py",
+            "scripts/../export.py",
+            ".cursor/export.py",
+            "scripts/token/export.py",
+            "scripts/export.sh",
+            "scripts/export.py --live",
+            "scripts/$(id).py",
+            "scripts/`id`.py",
+            "scripts/export;id.py",
+            "scripts/export|id.py",
+        ):
+            with self.subTest(entry=entry):
+                invalid = copy.deepcopy(declaration)
+                invalid["metric_export"]["entry"] = entry
+                with self.assertRaises(RecordError):
+                    validate_declaration(invalid, "a")
+        invalid = copy.deepcopy(declaration)
+        invalid["metric_export"]["snapshot"] = "status.json"
+        with self.assertRaises(RecordError):
+            validate_declaration(invalid, "a")
+
     def test_unknown_fields_and_identity_are_exhaustive(self):
         for mutate in (lambda d: d.update(extra=True), lambda d: d.update(schema_version="1.0"),
                        lambda d: d.update(project_id="../a"), lambda d: d["unknown_fields"].pop("blockers"),

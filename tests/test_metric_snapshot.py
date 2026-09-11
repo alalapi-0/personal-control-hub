@@ -10,7 +10,15 @@ import time
 import unittest
 from unittest.mock import patch
 
-from hub.connection_records import RecordError, content_hash, record_schema
+from hub.connection_records import (
+    FIELDS,
+    RecordError,
+    content_hash,
+    empty_business,
+    record_schema,
+    update_key,
+    validate_result,
+)
 from hub.connection_refresh import PrecommitFaultError
 from hub.metric_export import export_metric_snapshot
 from hub.metric_import import (
@@ -60,6 +68,55 @@ class MetricSnapshotTests(unittest.TestCase):
             "source_version": version,
         }
 
+    @staticmethod
+    def management(project_id, observed_at):
+        result = {
+            "schema_version": "2.0",
+            "kind": "source_resolution",
+            "project_id": project_id,
+            "name": "Fixture " + project_id,
+            "observed_at": observed_at,
+            "success": True,
+            "disposition": "resolved",
+            "authority": {
+                "registry_hash": "a" * 64,
+                "schema_hash": "b" * 64,
+                "adapter_version": "2.0",
+            },
+            "business": empty_business(),
+            "sources": [{
+                "id": "state",
+                "path": "STATE.yaml",
+                "format": "yaml",
+                "role": "current_state",
+                "sha256": "c" * 64,
+                "bytes": 2,
+                "modified_at": observed_at,
+            }],
+            "declaration": {
+                "path": "hub.connection.yaml",
+                "sha256": "d" * 64,
+                "schema_version": "2.0",
+            },
+            "field_provenance": {},
+            "unknown_fields": {
+                field: "Fixture does not publish this management field."
+                for field in FIELDS
+            },
+            "validation_entry": ["python3 scripts/check_state.py"],
+            "freshness": {
+                "read_status": "resolved",
+                "stale": False,
+                "reason": None,
+                "max_read_age_seconds": 3600,
+                "root_binding": "e" * 64,
+            },
+            "errors": [],
+            "update_key": "",
+        }
+        result["update_key"] = update_key(result)
+        return validate_result(result)
+
     def export(self, observed_at=NOW):
         return export_metric_snapshot(
             self.project_root,
@@ -67,10 +124,11 @@ class MetricSnapshotTests(unittest.TestCase):
             {"business": self.collect_business},
             exporter_id="fixture-export",
             exporter_version="1.0",
+            management=self.management("p", observed_at),
             clock=lambda: observed_at,
         )
 
-    def exported_project(self, project_id, value):
+    def exported_project(self, project_id, value, unit="items"):
         root = self.root / project_id
         root.mkdir()
         (root / "facts.json").write_text(json.dumps({"done": value}))
@@ -84,7 +142,7 @@ class MetricSnapshotTests(unittest.TestCase):
                         pid,
                         "work.done",
                         data["done"],
-                        "items",
+                        unit,
                         "facts.json#done",
                         version,
                         observed_at,
@@ -102,6 +160,7 @@ class MetricSnapshotTests(unittest.TestCase):
             {"business": collect},
             exporter_id="fixture-export",
             exporter_version="1.0",
+            management=self.management(project_id, NOW),
             clock=lambda: NOW,
         )
         return root
@@ -161,6 +220,17 @@ class MetricSnapshotTests(unittest.TestCase):
         forged["metric_definitions"][0]["display_name"] = "forged"
         with self.assertRaises(RecordError):
             validate_metric_snapshot(forged)
+        detached = copy.deepcopy(second)
+        detached["source_versions"]["management"] = "f" * 64
+        detached["snapshot_id"] = content_hash(
+            {
+                key: value
+                for key, value in detached.items()
+                if key != "snapshot_id"
+            }
+        )
+        with self.assertRaises(RecordError):
+            validate_metric_snapshot(detached)
 
     def test_exact_byte_limit_round_trips_without_writer_overhead(self):
         snapshot = self.export()
@@ -199,13 +269,17 @@ class MetricSnapshotTests(unittest.TestCase):
             {"business": self.collect_business, "validation": unavailable},
             exporter_id="fixture-export",
             exporter_version="1.0",
+            management=self.management("p", NOW),
             clock=lambda: NOW,
         )
 
         self.assertEqual(snapshot["disposition"], "partial")
         self.assertEqual(snapshot["metrics"][0]["value"], 3)
         self.assertEqual(snapshot["issues"][0]["code"], "collector_failure")
-        self.assertEqual(set(snapshot["source_versions"]), {"business", "validation"})
+        self.assertEqual(
+            set(snapshot["source_versions"]),
+            {"management", "business", "validation"},
+        )
 
     def test_repeated_snapshot_never_duplicates_metric_history(self):
         snapshot = self.export()
@@ -262,7 +336,7 @@ class MetricSnapshotTests(unittest.TestCase):
     def test_incompatible_snapshot_version_never_reaches_ledger(self):
         snapshot = self.export()
         incompatible = copy.deepcopy(snapshot)
-        incompatible["schema_version"] = "2.0"
+        incompatible["schema_version"] = "3.0"
         incompatible["snapshot_id"] = content_hash(
             {
                 key: value
@@ -386,6 +460,7 @@ class MetricSnapshotTests(unittest.TestCase):
             {"business": self.collect_business},
             exporter_id="fixture-export",
             exporter_version="1.0",
+            management=self.management("p-a", NOW),
             clock=lambda: NOW,
         )
         roots = {"p-a": original_root}
@@ -445,6 +520,170 @@ class MetricSnapshotTests(unittest.TestCase):
         self.assertTrue(result["complete"])
         self.assertEqual(set(result["receipts"]), {"p-a"})
 
+    def test_heterogeneous_units_share_one_snapshot_view_and_restart_history(self):
+        roots = {
+            "pages": self.exported_project("pages", 8, "pages"),
+            "chapters": self.exported_project("chapters", 3, "chapters"),
+        }
+        projects = {
+            project_id: {"id": project_id, "name": project_id}
+            for project_id in roots
+        }
+        snapshots = {
+            project_id: read_metric_snapshot(root)
+            for project_id, root in roots.items()
+        }
+        for root in roots.values():
+            (root / "facts.json").unlink()
+
+        hub_root = self.root / "hub"
+        hub_root.mkdir()
+        store = MetricStore(hub_root)
+        allowed = {
+            (root / ".hub/status.json").resolve()
+            for root in roots.values()
+        }
+        real_open = Path.open
+        opened = []
+
+        def snapshot_only(path, *args, **kwargs):
+            candidate = Path(path).resolve()
+            opened.append(candidate)
+            if candidate not in allowed:
+                raise AssertionError("importer opened a non-snapshot project file")
+            return real_open(path, *args, **kwargs)
+
+        with patch.object(Path, "open", snapshot_only):
+            imported = import_metric_snapshots(
+                store,
+                "heterogeneous-units",
+                roots,
+                expected_projects=projects,
+            )
+        self.assertTrue(imported["complete"])
+        self.assertEqual(opened, sorted(allowed, key=str))
+
+        reopened = MetricStore(hub_root)
+        with patch(
+            "hub.metric_import.read_metric_snapshot",
+            side_effect=AssertionError("completed receipt reread its snapshot"),
+        ):
+            repeated = import_metric_snapshots(
+                reopened,
+                "heterogeneous-units",
+                roots,
+                expected_projects=projects,
+            )
+        self.assertEqual(repeated, imported)
+
+        replay = import_metric_snapshots(
+            reopened,
+            "heterogeneous-units-replay",
+            roots,
+            expected_projects=projects,
+        )
+        self.assertTrue(replay["complete"])
+        self.assertTrue(
+            all(receipt["changed_metrics"] == 0
+                for receipt in replay["receipts"].values())
+        )
+        self.assertEqual(reopened.validate()["metric_versions"], 2)
+
+        views = {
+            project_id: reopened.project_snapshot(project_id)
+            for project_id in roots
+        }
+        self.assertEqual(
+            {view["snapshot_schema_version"] for view in views.values()},
+            {"2.0"},
+        )
+        self.assertEqual(
+            {
+                project_id: view["snapshot_id"]
+                for project_id, view in views.items()
+            },
+            {
+                project_id: snapshot["snapshot_id"]
+                for project_id, snapshot in snapshots.items()
+            },
+        )
+        self.assertEqual(
+            {
+                project_id: view["business"]["items"][0]["metric"]["unit"]
+                for project_id, view in views.items()
+            },
+            {"pages": "pages", "chapters": "chapters"},
+        )
+        for project_id, view in views.items():
+            self.assertEqual(view["management"], snapshots[project_id]["management"])
+            self.assertEqual(view["source_versions"], snapshots[project_id]["source_versions"])
+            self.assertEqual(view["business"]["metric_count"], 1)
+            self.assertIsNone(
+                view["management"]["business"]["current_work"]["accepted"]
+            )
+            self.assertIn(
+                "current_work.accepted",
+                view["management"]["unknown_fields"],
+            )
+
+    def test_direct_store_cannot_forge_a_standard_snapshot_view(self):
+        snapshot = self.export()
+        hub_root = self.root / "hub"
+        hub_root.mkdir()
+        store = MetricStore(hub_root)
+        result = {
+            "project_id": "p",
+            "observed_at": snapshot["observed_at"],
+            "disposition": snapshot["disposition"],
+            "metrics": snapshot["metrics"],
+            "metric_definitions": snapshot["metric_definitions"],
+            "management": snapshot["management"],
+            "issues": snapshot["issues"],
+            "source_versions": snapshot["source_versions"],
+            "registry_binding": content_hash({"id": "p"}),
+            "collector_identity": content_hash(snapshot["exporter"]),
+            "exporter": snapshot["exporter"],
+            "snapshot_id": "f" * 64,
+            "snapshot_kind": snapshot["kind"],
+            "snapshot_schema_version": snapshot["schema_version"],
+        }
+        store.begin("forged-direct-result", ["p"], "direct-collector")
+        store.save("forged-direct-result", result)
+        with self.assertRaises(RecordError):
+            store.project_snapshot("p")
+        with self.assertRaises(RecordError):
+            store.validate()
+
+    def test_legacy_v1_summary_remains_valid_but_cannot_claim_unified_view(self):
+        snapshot = self.export()
+        hub_root = self.root / "hub"
+        hub_root.mkdir()
+        store = MetricStore(hub_root)
+        import_metric_snapshot(
+            store,
+            "legacy-fixture",
+            snapshot,
+            expected_project={"id": "p"},
+        )
+        with store._write() as db:
+            stored = db.execute(
+                "SELECT result FROM metric_projects WHERE project_id='p'"
+            ).fetchone()
+            summary = json.loads(stored["result"])
+            for field in ("management", "exporter", "snapshot_kind"):
+                del summary[field]
+            summary["snapshot_schema_version"] = "1.0"
+            summary["snapshot_id"] = "a" * 64
+            db.execute(
+                "UPDATE metric_projects SET result=? WHERE project_id='p'",
+                (json.dumps(summary),),
+            )
+
+        reopened = MetricStore(hub_root)
+        self.assertEqual(reopened.validate()["metric_versions"], 1)
+        with self.assertRaises(RecordError):
+            reopened.project_snapshot("p")
+
     def test_fresh_plain_python_process_needs_no_agent_mcp_or_site_package(self):
         hub_root = self.root / "hub"
         hub_root.mkdir()
@@ -462,6 +701,7 @@ class MetricSnapshotTests(unittest.TestCase):
 
             project_root = Path({project_root!r})
             hub_root = Path({hub_root!r})
+            management = {management}
 
             def collect(root, project_id, observed_at):
                 data = json.loads((root / "facts.json").read_text())
@@ -479,6 +719,7 @@ class MetricSnapshotTests(unittest.TestCase):
             export_metric_snapshot(
                 project_root, "p", {{"business": collect}},
                 exporter_id="fixture-export", exporter_version="1.0",
+                management=management,
                 clock=lambda: {observed_at!r},
             )
             (project_root / "facts.json").unlink()
@@ -491,6 +732,7 @@ class MetricSnapshotTests(unittest.TestCase):
         ).format(
             project_root=str(self.project_root),
             hub_root=str(hub_root),
+            management=repr(self.management("p", NOW)),
             observed_at=NOW,
         )
         environment = {

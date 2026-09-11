@@ -5,6 +5,9 @@ source_refs:
   path: STATE.yaml
   format: yaml
   role: current_state
+metric_export:
+  entry: scripts/export_hub_metric_snapshot.py
+  snapshot: .hub/status.json
 mapping:
   current_work.status:
     source_ref: state

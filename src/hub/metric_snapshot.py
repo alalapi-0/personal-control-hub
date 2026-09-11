@@ -11,11 +11,12 @@ from hub.connection_records import (
     identifier,
     require,
     timestamp,
+    validate_result,
 )
 from hub.metrics import metric_catalog, metric_key, validate_metric
 
 
-SNAPSHOT_SCHEMA_VERSION = "1.0"
+SNAPSHOT_SCHEMA_VERSION = "2.0"
 SNAPSHOT_KIND = "project_metric_snapshot"
 SNAPSHOT_RELATIVE_PATH = ".hub/status.json"
 MAX_SNAPSHOT_BYTES = 8 * 1024 * 1024
@@ -38,6 +39,7 @@ SNAPSHOT_FIELDS = {
     "project_id",
     "observed_at",
     "exporter",
+    "management",
     "disposition",
     "metrics",
     "metric_definitions",
@@ -83,6 +85,7 @@ def metric_snapshot_contract_schema():
         "min_import_timeout_seconds": MIN_IMPORT_TIMEOUT_SECONDS,
         "max_import_timeout_seconds": MAX_IMPORT_TIMEOUT_SECONDS,
         "boundary": "exporter reads project sources; importer reads only .hub/status.json",
+        "management_rule": "the validated 21-field source-resolution record and numeric facts share one snapshot_id and observed_at",
         "request_identity_rule": "batch identity freezes project bindings and canonical snapshot roots; completed receipts are immutable",
         "resume_rule": "retry reads only projects without durable receipts",
     }
@@ -94,20 +97,23 @@ def make_metric_snapshot(
     *,
     exporter_id,
     exporter_version,
+    management,
     disposition,
     metrics,
     issues,
     source_versions,
 ):
+    rows = sorted(metrics, key=metric_key)
     payload = {
         "schema_version": SNAPSHOT_SCHEMA_VERSION,
         "kind": SNAPSHOT_KIND,
         "project_id": project_id,
         "observed_at": observed_at,
         "exporter": {"id": exporter_id, "version": exporter_version},
+        "management": management,
         "disposition": disposition,
-        "metrics": metrics,
-        "metric_definitions": metric_catalog(metrics),
+        "metrics": rows,
+        "metric_definitions": metric_catalog(rows),
         "issues": issues,
         "source_versions": source_versions,
     }
@@ -127,6 +133,12 @@ def validate_metric_snapshot(value):
     exact(value["exporter"], EXPORTER_FIELDS, "snapshot exporter")
     identifier(value["exporter"]["id"], "snapshot exporter")
     identifier(value["exporter"]["version"], "snapshot exporter version")
+    management = validate_result(value["management"])
+    require(
+        management["project_id"] == value["project_id"]
+        and management["observed_at"] == value["observed_at"],
+        "snapshot management binding mismatch",
+    )
     require(
         type(value["disposition"]) is str
         and value["disposition"] in SNAPSHOT_DISPOSITIONS,
@@ -148,6 +160,7 @@ def validate_metric_snapshot(value):
         )
         keys.append(metric_key(row))
     require(len(keys) == len(set(keys)), "duplicate snapshot metric identities")
+    require(keys == sorted(keys), "snapshot metrics must use canonical identity order")
     require(
         value["metric_definitions"] == metric_catalog(rows),
         "snapshot metric catalog does not match facts",
@@ -164,6 +177,10 @@ def validate_metric_snapshot(value):
             type(version) is str and 0 < len(version) <= 1000,
             "invalid snapshot source version",
         )
+    require(
+        versions.get("management") == management["update_key"],
+        "snapshot management source version mismatch",
+    )
 
     issues = value["issues"]
     require(

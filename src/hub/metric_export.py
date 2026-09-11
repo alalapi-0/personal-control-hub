@@ -6,7 +6,14 @@ import os
 import tempfile
 from pathlib import Path
 
-from hub.connection_records import RecordError, content_hash, exact, identifier, require
+from hub.connection_records import (
+    RecordError,
+    content_hash,
+    exact,
+    identifier,
+    require,
+    validate_result,
+)
 from hub.metric_snapshot import (
     SNAPSHOT_DISPOSITIONS,
     SNAPSHOT_RELATIVE_PATH,
@@ -26,6 +33,7 @@ def export_metric_snapshot(
     *,
     exporter_id,
     exporter_version,
+    management,
     clock=utcnow,
 ):
     """Run explicit project collectors and atomically replace `.hub/status.json`."""
@@ -36,6 +44,7 @@ def export_metric_snapshot(
         collectors,
         exporter_id=exporter_id,
         exporter_version=exporter_version,
+        management=management,
         observed_at=clock(),
     )
     _write_metric_snapshot(root, snapshot)
@@ -49,16 +58,26 @@ def collect_metric_snapshot(
     *,
     exporter_id,
     exporter_version,
+    management,
     observed_at,
 ):
     """Build a standard snapshot; collectors are ordinary project Python callables."""
     root = _project_root(project_root)
     identifier(project_id, "export project")
     require(
-        type(collectors) is dict and 0 < len(collectors) <= 32,
+        type(collectors) is dict and 0 < len(collectors) <= 31,
         "metric export needs bounded explicit collectors",
     )
-    rows, issues, versions, dispositions = [], [], {}, []
+    require("management" not in collectors, "management is a reserved export group")
+    management = validate_result(management)
+    require(
+        management["project_id"] == project_id
+        and management["observed_at"] == observed_at,
+        "metric export management binding mismatch",
+    )
+    rows, issues = [], []
+    versions = {"management": management["update_key"]}
+    dispositions = ["resolved" if management["success"] else "partial"]
     for group in sorted(collectors):
         identifier(group, "metric export group")
         collector = collectors[group]
@@ -107,6 +126,7 @@ def collect_metric_snapshot(
         observed_at,
         exporter_id=exporter_id,
         exporter_version=exporter_version,
+        management=management,
         disposition=disposition,
         metrics=rows,
         issues=issues,

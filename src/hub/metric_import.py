@@ -175,11 +175,14 @@ def _metric_result(snapshot, expected_project):
         "disposition": snapshot["disposition"],
         "metrics": snapshot["metrics"],
         "metric_definitions": snapshot["metric_definitions"],
+        "management": snapshot["management"],
         "issues": snapshot["issues"],
         "source_versions": snapshot["source_versions"],
         "registry_binding": content_hash(expected_project),
         "collector_identity": content_hash(snapshot["exporter"]),
+        "exporter": snapshot["exporter"],
         "snapshot_id": snapshot["snapshot_id"],
+        "snapshot_kind": snapshot["kind"],
         "snapshot_schema_version": snapshot["schema_version"],
     }
 

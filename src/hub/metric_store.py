@@ -10,7 +10,11 @@ import json
 from collections import Counter
 from contextlib import closing
 
-from hub.connection_records import content_hash, require
+from hub.connection_records import (
+    content_hash,
+    identifier,
+    require,
+)
 from hub.connection_refresh import RefreshLedger
 from hub.metrics import (MAX_PAGE_SIZE, bounded_json, eligibility, freshness, metric_catalog, metric_key,
                          semantic_metric, utcnow, validate_metric)
@@ -140,6 +144,113 @@ class MetricStore(RefreshLedger):
         result["next_cursor"] = end if end < len(rows) else None
         return result
 
+    def project_snapshot(self, project_id, *, after=0, limit=10):
+        """Read management and business facts from one imported snapshot transaction."""
+        from hub.metric_snapshot import (
+            SNAPSHOT_SCHEMA_VERSION,
+            validate_metric_snapshot,
+        )
+
+        identifier(project_id, "snapshot view project")
+        require(
+            type(limit) is int and 1 <= limit <= MAX_PAGE_SIZE and after >= 0,
+            "invalid snapshot view page",
+        )
+        with closing(self._connect()) as db:
+            db.execute("BEGIN")
+            stored = db.execute(
+                "SELECT observed_at,result FROM metric_projects WHERE project_id=?",
+                (project_id,),
+            ).fetchone()
+            require(stored is not None, "project has no imported metric snapshot")
+            summary = json.loads(stored["result"])
+            required = {
+                "snapshot_id",
+                "snapshot_kind",
+                "snapshot_schema_version",
+                "exporter",
+                "management",
+                "source_versions",
+                "metric_definitions",
+                "issues",
+                "disposition",
+                "observed_at",
+                "metric_count",
+                "numeric_count",
+            }
+            require(
+                required <= set(summary)
+                and summary["snapshot_schema_version"] == SNAPSHOT_SCHEMA_VERSION,
+                "project was not imported from the current standard snapshot",
+            )
+            current = db.execute(
+                """SELECT h.seq,h.key,h.value,c.observed_at
+                   FROM metric_current c
+                   JOIN metric_changes h ON h.seq=c.seq
+                   WHERE c.project_id=?""",
+                (project_id,),
+            ).fetchall()
+            entries = []
+            for item in current:
+                row = json.loads(item["value"])
+                row["observed_at"] = item["observed_at"]
+                validate_metric(row)
+                require(
+                    row["project_id"] == project_id
+                    and row["observed_at"] == stored["observed_at"]
+                    and item["key"] == metric_key(row),
+                    "stored business metric is outside its snapshot",
+                )
+                entries.append({"sequence": item["seq"], "metric": row})
+            total = len(entries)
+            require(total == summary["metric_count"], "stored snapshot metric count diverged")
+            snapshot = validate_metric_snapshot({
+                "schema_version": summary["snapshot_schema_version"],
+                "kind": summary["snapshot_kind"],
+                "project_id": project_id,
+                "observed_at": stored["observed_at"],
+                "exporter": summary["exporter"],
+                "management": summary["management"],
+                "disposition": summary["disposition"],
+                "metrics": sorted(
+                    (entry["metric"] for entry in entries),
+                    key=metric_key,
+                ),
+                "metric_definitions": summary["metric_definitions"],
+                "issues": summary["issues"],
+                "source_versions": summary["source_versions"],
+                "snapshot_id": summary["snapshot_id"],
+            })
+            eligible = sorted(
+                (entry for entry in entries if entry["sequence"] > after),
+                key=lambda entry: entry["sequence"],
+            )
+            remaining = len(eligible)
+            items = eligible[:limit]
+            return {
+                "schema_version": "1.0",
+                "kind": "metric_project_snapshot_view",
+                "project_id": project_id,
+                "snapshot_id": summary["snapshot_id"],
+                "snapshot_schema_version": summary["snapshot_schema_version"],
+                "source_versions": snapshot["source_versions"],
+                "management": snapshot["management"],
+                "business": {
+                    "metric_count": total,
+                    "numeric_count": summary["numeric_count"],
+                    "issue_count": len(summary["issues"]),
+                    "disposition": summary["disposition"],
+                    "items": items,
+                    "returned": len(items),
+                    "remaining": remaining,
+                    "next_cursor": (
+                        items[-1]["sequence"]
+                        if items and len(items) < remaining
+                        else None
+                    ),
+                },
+            }
+
     def page(self, *, project_id=None, metric_id=None, stage=None, after=0, limit=10, history=False, since=None,
              current_projects=None, now=None):
         now = now or utcnow()
@@ -192,14 +303,33 @@ class MetricStore(RefreshLedger):
                 "next_cursor": rows[-1]["sequence"] if len(rows) < total and rows else None}
 
     def validate(self):
+        from hub.metric_snapshot import SNAPSHOT_SCHEMA_VERSION
+
+        current_snapshots = []
         with closing(self._connect()) as db:
             require(db.execute("PRAGMA quick_check").fetchone()[0] == "ok", "metric ledger integrity failed")
             require(not db.execute("PRAGMA foreign_key_check").fetchall(), "metric references invalid")
+            for stored in db.execute(
+                "SELECT project_id,observed_at,result FROM metric_projects"
+            ):
+                summary = json.loads(stored["result"])
+                if "snapshot_id" not in summary:
+                    continue
+                version = summary.get("snapshot_schema_version")
+                if version == "1.0":
+                    continue
+                require(
+                    version == SNAPSHOT_SCHEMA_VERSION,
+                    "stored metric snapshot version unsupported",
+                )
+                current_snapshots.append(stored["project_id"])
             count = 0
             for row in db.execute("SELECT key,version,value FROM metric_changes"):
                 value = validate_metric(json.loads(row["value"]))
                 require(row["key"] == metric_key(value) and row["version"] == content_hash(semantic_metric(value)), "metric history identity invalid")
                 count += 1
+        for project_id in current_snapshots:
+            self.project_snapshot(project_id, limit=1)
         return {"valid": True, "metric_versions": count}
 
     def prune(self, before):
