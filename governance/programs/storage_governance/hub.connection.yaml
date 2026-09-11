@@ -1,0 +1,112 @@
+schema_version: '2.0'
+project_id: storage_governance
+source_refs:
+- id: state
+  path: STATE.yaml
+  format: yaml
+  role: current_state
+metric_export:
+  entry: scripts/export_hub_metric_snapshot.py
+  snapshot: .hub/status.json
+mapping:
+  current_work.objective:
+    source_ref: state
+    selector:
+      path: [goal, objective]
+    value_map: null
+  current_work.phase:
+    source_ref: state
+    selector:
+      path: [goal, phase]
+    value_map: null
+  current_work.round:
+    source_ref: state
+    selector:
+      path: [inventory_epoch, id]
+    value_map: null
+  current_work.status:
+    source_ref: state
+    selector:
+      path: [goal, status]
+    value_map:
+      PAUSED: paused
+      STOPPED: paused
+      WAITING_FOR_USER: blocked
+      READY: active
+      PREPARING: active
+      EFFECT_AUTHORIZED: active
+      VERIFYING: active
+      ACCEPTED: complete
+      FAILED_RECOVERABLE: blocked
+      BLOCKED: blocked
+      COMPLETE: complete
+      COMPLETE_WITH_OWNER_REMOVAL: complete
+  current_work.completed:
+    source_ref: state
+    selector:
+      path: [closure, all_scoped_projects_terminal]
+    value_map: null
+  current_work.accepted:
+    source_ref: state
+    selector:
+      path: [control_plane_review, state]
+    value_map:
+      ACCEPTED: true
+      PENDING: false
+      REJECTED: false
+  current_work.next_action:
+    source_ref: state
+    selector:
+      path: [next_action, description]
+    value_map: null
+  verification.status:
+    source_ref: state
+    selector:
+      path: [control_plane_review, state]
+    value_map: null
+  verification.accepted_basis:
+    source_ref: state
+    selector:
+      path: [goal, completion_basis]
+    value_map: null
+  delivery.status:
+    source_ref: state
+    selector:
+      path: [closure, state]
+    value_map:
+      ACCEPTED: delivered
+      COMPLETE: delivered
+      COMPLETE_WITH_OWNER_REMOVAL: delivered
+      READY: pending_delivery
+      VERIFYING: pending_delivery
+      FAILED_RECOVERABLE: pending_delivery
+  delivery.receipt_ref:
+    source_ref: state
+    selector:
+      path: [closure, final_report]
+    value_map: null
+unknown_fields:
+  current_work.objective: The sole execution state does not publish a usable current objective.
+  current_work.phase: The sole execution state does not publish a usable current phase.
+  current_work.round: The frozen inventory epoch is unavailable.
+  current_work.status: The sole execution state does not publish a recognized lifecycle state.
+  current_work.completed: Terminal coverage is not explicitly established.
+  current_work.accepted: The current control-plane review does not establish acceptance.
+  current_work.next_action: The sole execution state does not publish a next-action description.
+  current_work.owner_role: The storage program does not publish one current owner-role string.
+  progress.completed: Category counts must not be summed into an inferred completed total.
+  progress.total: The historical candidate count is not a current homogeneous progress denominator.
+  progress.counting_basis: No current homogeneous progress numerator and denominator are published.
+  progress.milestones: The storage program does not publish a canonical milestone array.
+  blockers: Closed authorities and zero pending projects do not substitute for a blocker array.
+  verification.status: The current control-plane review state is unavailable.
+  verification.evidence_refs: Evidence pointers are structured fields, not one canonical string array.
+  verification.accepted_basis: The sole execution state does not publish a completion basis.
+  delivery.status: The closure state does not establish a recognized delivery status.
+  delivery.remote: Historical repository prose does not establish one current delivery remote.
+  delivery.branch: The storage migration result is not one Git branch delivery.
+  delivery.commit: The storage migration result is not bound to one current delivery commit.
+  delivery.receipt_ref: The closure does not publish an exact final-report pointer.
+validation_entry:
+- python3 scripts/export_hub_metric_snapshot.py --help
+max_read_age_seconds: 604800

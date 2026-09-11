@@ -19,6 +19,7 @@ venv/
 data/connections/*.sqlite3
 data/connections/*.sqlite3-*
 data/connections/preview/
+governance/programs/storage_governance/.hub/status.json
 
 # 编辑器与系统
 .DS_Store

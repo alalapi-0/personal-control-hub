@@ -77,6 +77,8 @@ projects:
   - AGENTS.md
   - STATE.yaml
   - STORAGE_GOVERNANCE.md
+  - hub.connection.yaml
+  - scripts/export_hub_metric_snapshot.py
   authority_files:
   - STATE.yaml
   - STORAGE_GOVERNANCE.md
