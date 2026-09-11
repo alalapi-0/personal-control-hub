@@ -42,7 +42,7 @@ python3 hub.py sync --request-id UNIQUE_ID --project-id light-novel
 
 批量入口 `hub.metric_import.import_metric_snapshots` 冻结项目绑定和快照根；每个项目独立事务提交，已有 receipt 的项目恢复时不再读取。无效/离线/超时快照只形成当次安全错误，其余项目继续；同一快照跨请求只更新观察 receipt，不增加指标变化历史。
 
-`MetricStore.project_snapshot` 在一个 SQLite 读事务中返回该快照的管理投影和分页业务指标；没有标准快照身份的旧直采记录不能冒充这一视图。变化按project_id、metric_id、unit、dimensions和口径分别查询；页、章、任务与测试不混加。delta及change_per_second只来自同一指标实际观察，历史不足为null；它们不声称业务因果或真实生产速度。远端指标仅观察本地tracking refs，明确remote_verified=false；成功采集不等于新的GitHub交付复核。
+`MetricStore.project_snapshot` 在一个 SQLite 读事务中返回该快照的管理投影和分页业务指标；没有标准快照身份的旧直采记录不能冒充这一视图。变化按project_id、metric_id、unit、dimensions和口径分别查询；页、章、任务与测试不混加。delta及change_per_second只来自同一指标实际观察，历史不足为null；它们不声称业务因果或真实生产速度。默认Git指标仅观察本地tracking refs并明确remote_verified=false；显式启用`--remote-git`或`--github-ci`后，共享只读客户端才按`metric_sources.yaml`仓库绑定查询GitHub。同仓请求在有效期内复用并以ETag重验，分页受限、权限不足或限流时结果保持unknown，同时保留已验证页数、已观察run数和provider报告总数。Actions统计绑定采集时的本地HEAD，口径是该候选的全部workflow runs，不声称required checks齐全、脏工作区已测试或已完成新的GitHub交付复核。
 
 账本只新增语义变化，重复刷新更新观察时间；失败前的成功仍在历史中保留原时间。当前登记撤销读取或改变绑定后，查询将旧值标为历史，不能作为当前成功。`metrics prune --before ISO_TIMESTAMP`是显式本地历史保留操作，保留当前值及计算变化所需前驱；不会删除项目原始数据。飞书输出固定enabled=false、write_back_allowed=false，仅本地映射。
 

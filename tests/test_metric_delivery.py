@@ -63,6 +63,7 @@ class MetricDeliveryTests(unittest.TestCase):
             result = collector.collect("p")
         self.assertTrue(remote.call_args.kwargs["github_ci"])
         self.assertFalse(remote.call_args.kwargs["remote_git"])
+        self.assertIs(remote.call_args.kwargs["client"], collector.github_client)
         self.assertEqual(result["metrics"][0]["value"], 3)
         self.assertEqual(result["disposition"], "partial")
 

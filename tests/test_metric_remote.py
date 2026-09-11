@@ -4,7 +4,7 @@ import subprocess
 import sys
 from unittest.mock import patch
 
-from hub.metric_remote import collect_remote, RemoteError, _api
+from hub.metric_remote import ApiResponse, GitHubSharedClient, collect_remote, RemoteError, _api
 from hub.metrics import validate_metric
 
 HEAD, PRIMARY, OTHER = 'a' * 40, 'b' * 40, 'c' * 40
@@ -111,6 +111,9 @@ class RemoteTests(unittest.TestCase):
         self.assertEqual(values['github_ci.complete'], 0)
         self.assertIsNone(values['github_ci.runs.total'])
         self.assertIsNone(values['github_ci.runs.success'])
+        self.assertEqual(values['github_ci.runs.reported_total'], 301)
+        self.assertEqual(values['github_ci.runs.observed'], 300)
+        self.assertEqual(values['github_ci.pages.observed'], 3)
 
     def test_schema_and_target_corruption(self):
         for key, bad in [('head_sha', PRIMARY), ('run_attempt', True)]:
@@ -119,7 +122,12 @@ class RemoteTests(unittest.TestCase):
             client, _ = self.client([record])
             result = self.collect(client, github_ci=True)
             self.assertTrue(result['issues'])
-            self.assertTrue(all(m['value'] is None for m in result['metrics']))
+            values = self.values(result)
+            self.assertTrue(all(values[mid] is None for mid in (
+                'github_ci.runs.total', 'github_ci.runs.success', 'github_ci.runs.failure',
+                'github_ci.runs.pending', 'github_ci.runs.cancelled', 'github_ci.runs.other')))
+            self.assertEqual(values['github_ci.complete'], 0)
+            self.assertEqual(values['github_ci.pages.observed'], 0)
 
     def test_optional_times_preserve_count_facts(self):
         for key in ('created_at', 'updated_at', 'run_started_at'):
@@ -185,10 +193,19 @@ class RemoteTests(unittest.TestCase):
                 calls.append((argv, kwargs))
                 return original([sys.executable, '-c', code], **kwargs)
             return fake
-        with patch('hub.metric_remote.subprocess.Popen', side_effect=spawn('print("{}")')):
-            self.assertEqual(_api('repos/owner/repo'), {})
-        self.assertEqual(calls[0][0], ['gh', 'api', '--hostname', 'github.com', '--method', 'GET', 'repos/owner/repo'])
+        response_text = 'HTTP/2 200 OK\nETag: "v1"\nX-RateLimit-Remaining: 10\n\n{}'
+        with patch('hub.metric_remote.subprocess.Popen', side_effect=spawn(f'print({response_text!r})')):
+            response = _api('repos/owner/repo')
+            self.assertEqual(response.payload, {})
+            self.assertEqual(response.status, 200)
+            self.assertEqual(response.headers['etag'], '"v1"')
+        self.assertEqual(calls[0][0], ['gh', 'api', '--hostname', 'github.com', '--method', 'GET', '--include', 'repos/owner/repo'])
         self.assertEqual(calls[0][1]['stderr'], subprocess.DEVNULL)
+        not_modified = 'HTTP/2 304 Not Modified\nCache-Control: max-age=60\n\n'
+        with patch('hub.metric_remote.subprocess.Popen', side_effect=spawn(f'print({not_modified!r})')):
+            response = _api('repos/owner/repo', {'If-None-Match': '"v1"'})
+            self.assertEqual(response.status, 304)
+        self.assertEqual(calls[1][0][-3:], ['--header', 'If-None-Match: "v1"', 'repos/owner/repo'])
         with patch('hub.metric_remote.subprocess.Popen', side_effect=spawn('print("x" * 1000)')), patch('hub.metric_remote.MAX_OUTPUT_BYTES', 100):
             with self.assertRaisesRegex(RemoteError, '^github_output_limit$'):
                 _api('repos/owner/repo')
@@ -206,6 +223,112 @@ class RemoteTests(unittest.TestCase):
         self.assertNotEqual(a['source_version'], b['source_version'])
         for row in a['metrics']:
             self.assertNotIn(HEAD, str(row['dimensions']))
+        ci = [row for row in a['metrics'] if row['metric_id'].startswith('github_ci')]
+        self.assertTrue(all(row['dimensions']['candidate_binding'] == 'exact_commit' for row in ci))
+        self.assertTrue(all(row['dimensions']['check_scope'] == 'all_workflow_runs' for row in ci))
+        self.assertTrue(all(row['dimensions']['required_checks_claimed'] is False for row in ci))
+        self.assertTrue(all(row['source_ref'].endswith('@' + HEAD) for row in ci))
+
+    def test_complete_two_page_listing(self):
+        calls = []
+        def request(path):
+            calls.append(path)
+            page = int(path.rsplit('=', 1)[1])
+            records = ([run_record(i) for i in range(1, 101)] if page == 1
+                       else [run_record(i) for i in range(101, 151)])
+            return dict(total_count=150, workflow_runs=records)
+        values = self.values(self.collect(request, github_ci=True))
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(values['github_ci.complete'], 1)
+        self.assertEqual(values['github_ci.runs.total'], 150)
+        self.assertEqual(values['github_ci.runs.reported_total'], 150)
+        self.assertEqual(values['github_ci.runs.observed'], 150)
+        self.assertEqual(values['github_ci.pages.observed'], 2)
+
+    def test_rate_limit_mid_pagination_preserves_coverage_not_results(self):
+        calls = []
+        def request(path):
+            calls.append(path)
+            if path.endswith('page=2'):
+                raise RemoteError('github_rate_limited')
+            return dict(total_count=150, workflow_runs=[run_record(i) for i in range(1, 101)])
+        result = self.collect(request, github_ci=True)
+        values = self.values(result)
+        self.assertEqual(len(calls), 2)
+        self.assertEqual(values['github_ci.complete'], 0)
+        self.assertEqual(values['github_ci.runs.reported_total'], 150)
+        self.assertEqual(values['github_ci.runs.observed'], 100)
+        self.assertEqual(values['github_ci.pages.observed'], 1)
+        self.assertTrue(all(values['github_ci.runs.' + key] is None for key in
+                            ('total', 'success', 'failure', 'pending', 'cancelled', 'other')))
+        self.assertIn('github_rate_limited', [item['code'] for item in result['issues']])
+
+    def test_shared_client_deduplicates_and_revalidates_etag(self):
+        clock = [0.0]
+        calls = []
+        payload = {'default_branch': 'trunk'}
+        def transport(endpoint, headers):
+            calls.append((endpoint, headers))
+            if len(calls) == 1:
+                return ApiResponse(200, {'etag': '"v1"', 'cache-control': 'max-age=10'}, payload)
+            return ApiResponse(304, {'cache-control': 'max-age=20'}, None)
+        client = GitHubSharedClient(transport, monotonic=lambda: clock[0], wallclock=lambda: 0)
+        self.assertEqual(client('repos/owner/repo'), payload)
+        payload['default_branch'] = 'mutated'
+        self.assertEqual(client('repos/owner/repo'), {'default_branch': 'trunk'})
+        self.assertEqual(len(calls), 1)
+        clock[0] = 11
+        self.assertEqual(client('repos/owner/repo'), {'default_branch': 'trunk'})
+        self.assertEqual(calls[1][1], {'If-None-Match': '"v1"'})
+        clock[0] = 25
+        self.assertEqual(client('repos/owner/repo'), {'default_branch': 'trunk'})
+        self.assertEqual(len(calls), 2)
+
+    def test_same_repository_collections_share_all_requests(self):
+        backend, backend_calls = self.client([run_record()])
+        transport_calls = []
+        def transport(endpoint, headers):
+            transport_calls.append((endpoint, headers))
+            return ApiResponse(200, {'etag': '"stable"', 'cache-control': 'max-age=60'}, backend(endpoint))
+        shared = GitHubSharedClient(transport, monotonic=lambda: 0, wallclock=lambda: 0)
+        first = self.collect(shared, remote_git=True, github_ci=True)
+        second = self.collect(shared, remote_git=True, github_ci=True)
+        self.assertEqual(self.values(first), self.values(second))
+        self.assertEqual(len(backend_calls), 4)
+        self.assertEqual(len(transport_calls), 4)
+
+    def test_shared_client_rate_backoff_blocks_new_requests(self):
+        clock = [0.0]
+        calls = []
+        def transport(endpoint, headers):
+            calls.append((endpoint, headers))
+            return ApiResponse(200, {'x-ratelimit-remaining': '0', 'retry-after': '30'}, {'ok': True})
+        client = GitHubSharedClient(transport, monotonic=lambda: clock[0], wallclock=lambda: 0)
+        self.assertEqual(client('repos/owner/first'), {'ok': True})
+        with self.assertRaisesRegex(RemoteError, '^github_rate_limited$'):
+            client('repos/owner/second')
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(client('repos/owner/first'), {'ok': True})
+
+    def test_rate_backoff_starts_after_response_and_covers_secondary_limit(self):
+        for status, headers in (
+            (429, {'retry-after': '5'}),
+            (403, {'retry-after': '5', 'x-ratelimit-remaining': '4999'}),
+        ):
+            with self.subTest(status=status):
+                clock = [0.0]
+                calls = []
+                def transport(endpoint, request_headers):
+                    calls.append((endpoint, request_headers))
+                    clock[0] = 10.0
+                    return ApiResponse(status, headers, {'message': 'not retained'})
+                client = GitHubSharedClient(transport, monotonic=lambda: clock[0], wallclock=lambda: 0)
+                with self.assertRaisesRegex(RemoteError, '^github_rate_limited$'):
+                    client('repos/owner/first')
+                clock[0] = 14.0
+                with self.assertRaisesRegex(RemoteError, '^github_rate_limited$'):
+                    client('repos/owner/second')
+                self.assertEqual(len(calls), 1)
 
 
 if __name__ == '__main__':

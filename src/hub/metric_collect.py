@@ -128,9 +128,8 @@ def _validate_project_config(spec, adapter):
         if key in spec:
             _root_path_allowed(Path(spec[key]))
     if "github_repository" in spec:
-        require(type(spec["github_repository"]) is str
-                and bool(re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", spec["github_repository"])),
-                "invalid github repository binding")
+        from hub.metric_remote import valid_repository_binding
+        require(valid_repository_binding(spec["github_repository"]), "invalid github repository binding")
     for key in ("batch_id", "universe_id"):
         if key in spec:
             identifier(spec[key], key)
@@ -314,13 +313,19 @@ def collect_declared(root, project_id, observed_at, sources):
 
 
 class MetricCollector:
-    def __init__(self, root, *, clock=utcnow, remote_git=False, github_ci=False):
+    def __init__(self, root, *, clock=utcnow, remote_git=False, github_ci=False, github_client=None):
         self.resolver = SourceResolver(Path(root))
         self.registry = self.resolver.registry
         self.projects = self.resolver.projects
         self.clock = clock
         require(type(remote_git) is bool and type(github_ci) is bool, "remote options must be boolean")
         self.remote_git, self.github_ci = remote_git, github_ci
+        if remote_git or github_ci:
+            from hub.metric_remote import GitHubSharedClient
+            self.github_client = github_client or GitHubSharedClient()
+        else:
+            require(github_client is None, "GitHub client requires an enabled remote option")
+            self.github_client = None
         path = Path(root) / "data/connections/metric_sources.yaml"
         self.config, _ = read_structured(Path(root), str(path.relative_to(root)))
         self.validate_config()
@@ -362,7 +367,7 @@ class MetricCollector:
         if self.remote_git or self.github_ci:
             from hub.metric_remote import collect_remote
             groups.append(("remote", lambda: collect_remote(root, project_id, observed, spec,
-                remote_git=self.remote_git, github_ci=self.github_ci)))
+                remote_git=self.remote_git, github_ci=self.github_ci, client=self.github_client)))
         if spec["adapter"] == "novel":
             from hub.metric_novel import collect_novel
             groups.append(("business", lambda: collect_novel(root, project_id, observed)))
