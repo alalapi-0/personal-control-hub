@@ -813,7 +813,7 @@ projects:
   supporting_authority_paths:
   - /Users/alalapi/Desktop/magnet/README.md
 - id: pycharm-misc-project
-  hub_connection_exception:
+  legacy_hub_connection_exception:
     status: AUTHORIZED_EXCEPTION
     authority_ref: owner-turn:01a071cc-f2c6-76c2-bc43-f300db610b0b/01a073d2-9296-7743-84f8-17cec1f9bffc#source-absence-exceptions
     reason: 所有者批准无当前状态源的可见管理例外；保留登记和未知业务状态，不扩大读取或写入权限。
@@ -829,14 +829,17 @@ projects:
   priority_source: user
   watch_paths:
   - .
+  - hub.connection.yaml
+  - scripts/export_hub_metric_snapshot.py
   access_profile: registered_project_read
   external_write_allowed: false
   storage_governance:
     scope: project_candidate
     authority_source: sole_storage_execution_state
   rules_paths: []
-  current_state_paths: []
-  current_state_status: no_rules_or_current_state_declared
+  current_state_paths:
+  - hub.connection.yaml
+  current_state_status: hub_declaration_not_typed_business_state
   supporting_authority_paths: []
 - id: desktop-downloads-scripts
   hub_connection_exception:
