@@ -638,6 +638,8 @@ projects:
   watch_paths:
   - README.md
   - html_crawler.py
+  - hub.connection.yaml
+  - scripts/export_hub_metric_snapshot.py
   - main.py
   - metastudioxr-video-annotation.user.js
   access_profile: registered_project_read
