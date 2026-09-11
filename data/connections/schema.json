@@ -199,7 +199,9 @@
         "project_dbs",
         "review_db"
       ],
-      "wechat": [],
+      "wechat": [
+        "data_root"
+      ],
       "anime": [
         "metadata_root"
       ],

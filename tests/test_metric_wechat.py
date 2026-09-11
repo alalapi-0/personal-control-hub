@@ -47,6 +47,32 @@ class WechatMetricsTest(unittest.TestCase):
         self.assertTrue(any(i['kind'] == 'unverified_publication' for i in result['issues']))
         self.assertTrue(all(r['business_at'] is None for r in result['metrics']))
 
+    def test_registered_data_root_replaces_in_repository_state(self):
+        repository = Path(tempfile.mkdtemp(dir=self.temp.name))
+        (repository / 'data').mkdir()
+        with closing(sqlite3.connect(repository / 'data/app.sqlite3')) as db, db:
+            db.executescript('''
+                CREATE TABLE articles(id INTEGER PRIMARY KEY, deleted_at TEXT);
+                INSERT INTO articles VALUES(1,NULL),(2,NULL),(3,NULL);
+            ''')
+        stale = self.metrics(collect_wechat(repository, 'wechat', '2026-09-09T00:00:00Z', {}))
+        self.assertEqual(stale['articles_total']['value'], 3)
+        rows = self.metrics(collect_wechat(
+            repository, 'wechat', '2026-09-09T00:00:00Z', {'data_root': str(self.root)}))
+        self.assertEqual(rows['articles_total']['value'], 2)
+        self.assertEqual(rows['articles_total']['source_ref'], str(self.path) + '#articles_total')
+
+    def test_missing_registered_data_root_is_unknown_not_repository_state(self):
+        repository = Path(tempfile.mkdtemp(dir=self.temp.name))
+        (repository / 'data').mkdir()
+        with closing(sqlite3.connect(repository / 'data/app.sqlite3')) as db, db:
+            db.executescript('CREATE TABLE articles(id INTEGER PRIMARY KEY, deleted_at TEXT);'
+                             'INSERT INTO articles VALUES(1,NULL);')
+        result = collect_wechat(repository, 'wechat', '2026-09-09T00:00:00Z',
+                                {'data_root': str(self.root / 'absent')})
+        self.assertTrue(all(r['value'] is None for r in result['metrics']))
+        self.assertTrue(any(i['code'] == 'wechat_database_unavailable' for i in result['issues']))
+
     def test_bad_status_preserves_independent_denominators(self):
         with closing(sqlite3.connect(self.path)) as db, db:
             db.execute("UPDATE publish_jobs SET status='bad' WHERE id=1")

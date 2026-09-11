@@ -27,6 +27,7 @@ projects:
     github_repository: alalapi-0/novel-continuation-agent
   wechat-article-scheduler:
     adapter: wechat
+    data_root: /Volumes/AI_WORK_SSD/ProjectData/wechat-article-scheduler/mock
     github_repository: alalapi-0/wechat-article-scheduler
   ai-anime-short-factory:
     adapter: anime

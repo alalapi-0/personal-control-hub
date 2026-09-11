@@ -2,6 +2,7 @@
 import sqlite3
 import stat
 from datetime import datetime, timezone
+from pathlib import Path
 import re
 
 from hub.connection_records import content_hash
@@ -14,11 +15,15 @@ JOB_STATES = {'pending', 'running', 'failed', 'done', 'waiting_confirmation', 'c
 
 
 def collect_wechat(root, project_id, observed_at, spec=None):
-    relative = (spec or {}).get('path', 'data/app.sqlite3')
+    spec = spec or {}
+    # The registered runtime store may live outside the repository; legacy in-repo state is not current.
+    base = Path(spec.get('data_root', root))
+    relative = spec.get('path', 'data/app.sqlite3')
+    source = str(base / relative)
     rows, problems, projections = [], [], {}
 
     def problem(code, kind='read_failure'):
-        problems.append(issue(project_id, 'wechat_' + code, relative,
+        problems.append(issue(project_id, 'wechat_' + code, source,
             kind=kind, recovery_condition='Refresh or repair authoritative metadata and recollect.'))
 
     times = {}
@@ -33,18 +38,18 @@ def collect_wechat(root, project_id, observed_at, spec=None):
         business_at = max(selected) if selected and all(selected) else None
         value = len(data) if data is not None else None
         reason = reason or ('Required metadata is missing or invalid.' if data is None else None)
-        rows.append(metric(project_id, 'wechat.' + name, value, unit, relative + '#' + name,
+        rows.append(metric(project_id, 'wechat.' + name, value, unit, source + '#' + name,
             content_hash([name, data, reason, business_at]), observed_at, business_at=business_at, dimensions={'scope': scope},
             reason=reason, counting_basis=basis))
 
     conn = None
     try:
-        path = metadata_path(root, relative)
+        path = metadata_path(base, relative)
         before = path.stat()
         if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1:
             raise ValueError('ordinary database required')
         for suffix in ('-wal', '-shm', '-journal'):
-            metadata_path(root, relative + suffix)
+            metadata_path(base, relative + suffix)
         conn = sqlite3.connect(path.as_uri() + '?mode=ro', uri=True, timeout=1)
         conn.execute('PRAGMA query_only=ON')
         conn.execute('PRAGMA trusted_schema=OFF')

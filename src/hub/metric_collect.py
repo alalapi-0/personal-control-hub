@@ -39,7 +39,7 @@ ADAPTER_PROJECT_FIELDS = {
     "novel": set(),
     "unmapped": set(),
     "manga": {"data_root", "batch_id", "review_db", "project_dbs"},
-    "wechat": set(),
+    "wechat": {"data_root"},
     "anime": {"metadata_root"},
     "pixel": {"metadata_root"},
     "study": set(),
