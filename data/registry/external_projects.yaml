@@ -213,9 +213,11 @@ projects:
   priority_source: user
   watch_paths:
   - AGENTS.md
+  - hub.connection.yaml
   - README.md
   - package.json
   - requirements.txt
+  - scripts/export_hub_metric_snapshot.py
   - .agent_runtime/agent-state.json
   - governance/repo_protocol_standard.yaml
   - docs/product_final_state_spec.md
