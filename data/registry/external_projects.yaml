@@ -337,6 +337,8 @@ projects:
   - project.yaml
   - README.md
   - pyproject.toml
+  - hub.connection.yaml
+  - scripts/export_hub_metric_snapshot.py
   - governance/project-contract.yaml
   - governance/directory-roles.yaml
   - governance/canon-policy.yaml
