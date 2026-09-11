@@ -32,7 +32,7 @@ def main(argv=None):
     summary.add_argument("--limit", type=int, default=10)
     for name in ("validate", "schema", "feishu"):
         commands.add_parser(name)
-    for name in ("query", "changes", "issues"):
+    for name in ("query", "changes", "issues", "aggregate"):
         query = commands.add_parser(name)
         query.add_argument("--project-id")
         query.add_argument("--metric-id")
@@ -60,6 +60,9 @@ def main(argv=None):
                 result = store.validate()
             elif args.command == "prune":
                 result = store.prune(args.before)
+            elif args.command == "aggregate":
+                result = store.aggregate(project_id=args.project_id, metric_id=args.metric_id,
+                                         after=args.after, limit=args.limit)
             elif args.command in {"query", "changes"}:
                 try:
                     registry = load_registry_at(args.root / "data/registry/external_projects.yaml")

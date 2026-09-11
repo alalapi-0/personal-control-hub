@@ -21,6 +21,7 @@ from hub.connection_records import (
     timestamp,
 )
 from hub.connection_refresh import RefreshLedger
+from hub.metric_analytics import aggregate_current, observation_change
 from hub.metrics import (MAX_PAGE_SIZE, bounded_json, eligibility, freshness, metric_catalog, metric_key,
                          semantic_metric, utcnow, validate_metric)
 
@@ -856,13 +857,10 @@ class MetricStore(RefreshLedger):
                 value["observed_at"] = item["observed_at"]
                 previous = db.execute("SELECT value FROM metric_changes WHERE key=? AND seq<? ORDER BY seq DESC LIMIT 1", (metric_key(value), item["seq"])).fetchone()
                 prior = json.loads(previous[0]) if previous else None
-                delta = value["value"] - prior["value"] if prior and prior["value"] is not None and value["value"] is not None else None
-                entry = dict(sequence=item["seq"], metric=value, delta=delta,
+                entry = dict(sequence=item["seq"], metric=value,
                              previous_observed_at=prior["observed_at"] if prior else None)
-                from datetime import datetime
-                elapsed = ((datetime.fromisoformat(item["changed_at"].replace("Z", "+00:00")) -
-                            datetime.fromisoformat(prior["observed_at"].replace("Z", "+00:00"))).total_seconds()) if prior else None
-                entry.update(changed_at=item["changed_at"], change_per_second=delta / elapsed if delta is not None and elapsed and elapsed > 0 else None)
+                entry.update(observation_change(value, prior, changed_at=item["changed_at"]))
+                entry.update(changed_at=item["changed_at"])
                 project = current_projects.get(value["project_id"]) if current_projects is not None else None
                 allowed = eligibility(project) if project is not None else "authority_unknown"
                 status = freshness(value["observed_at"], now) if allowed == "eligible" else allowed
@@ -879,6 +877,54 @@ class MetricStore(RefreshLedger):
                 rows.append(entry)
         return {"total_remaining": total, "items": rows, "returned": len(rows),
                 "next_cursor": rows[-1]["sequence"] if len(rows) < total and rows else None}
+
+    def aggregate(self, *, project_id=None, metric_id=None, after=0, limit=10):
+        require(type(limit) is int and 1 <= limit <= MAX_PAGE_SIZE and after >= 0, "invalid page bounds")
+        sql = ("SELECT h.value,c.observed_at FROM metric_current c "
+               "JOIN metric_changes h ON h.seq=c.seq")
+        clauses, args = [], []
+        for column, value in (("h.project_id", project_id), ("json_extract(h.value,'$.metric_id')", metric_id)):
+            if value is not None:
+                clauses.append(column + "=?")
+                args.append(value)
+        where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
+        with closing(self._connect()) as db:
+            values = db.execute(sql + where + " ORDER BY h.project_id,h.seq", args).fetchall()
+            catalogs = {}
+            for stored in db.execute("SELECT project_id,result FROM metric_projects"):
+                payload = json.loads(stored["result"])
+                catalogs[stored["project_id"]] = payload.get("metric_definitions") or []
+        rows = []
+        for item in values:
+            value = json.loads(item["value"])
+            value["observed_at"] = item["observed_at"]
+            validate_metric(value)
+            rows.append(value)
+        computed = aggregate_current(rows, catalogs)
+        groups = computed["groups"]
+        page = []
+        for group in groups[after:]:
+            candidate = {**computed, "groups": page + [group], "returned": len(page) + 1,
+                         "total_remaining": len(groups) - after, "next_cursor": after + len(page) + 1}
+            try:
+                bounded_json(candidate)
+            except RecordError:
+                break
+            page.append(group)
+        end = after + len(page)
+        return {
+            **computed,
+            "groups": page,
+            "returned": len(page),
+            "total_remaining": len(groups) - after,
+            "next_cursor": end if end < len(groups) else None,
+            "distribution": {
+                "groups": len(groups),
+                "good": sum(1 for group in groups if group["quality"] == "good"),
+                "unknown": sum(1 for group in groups if group["quality"] != "good"),
+                "rejected": len(computed["rejected"]),
+            },
+        }
 
     def validate(self):
         from hub.metric_snapshot import SNAPSHOT_SCHEMA_VERSION

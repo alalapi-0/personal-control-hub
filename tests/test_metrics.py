@@ -56,6 +56,10 @@ class MetricsTests(unittest.TestCase):
         self.save("change", [self.row(4, observed=LATER)], LATER)
         result = self.store.page(project_id="p")
         self.assertEqual(result["items"][0]["delta"], 2)
+        self.assertIsNone(result["items"][0]["change_per_second"])
+        self.assertIsNone(result["items"][0]["throughput"])
+        self.assertFalse(result["items"][0]["throughput_claimed"])
+        self.assertEqual(result["items"][0]["change_kind"], "net_delta")
         self.assertEqual(result["items"][0]["metric"]["observed_at"], LATER)
         self.assertEqual(self.store.validate()["metric_versions"], 2)
         with self.assertRaises(RecordError):

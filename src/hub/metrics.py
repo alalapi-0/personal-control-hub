@@ -29,6 +29,14 @@ METRIC_KINDS = {"gauge", "counter", "ratio", "duration", "timestamp"}
 AGGREGATIONS = {"none", "sum", "min", "max", "latest", "weighted_ratio"}
 COUNTER_RESETS = {"not_applicable", "never", "window", "source_defined"}
 WINDOW_KINDS = {"instant", "lifetime", "rolling", "calendar", "event"}
+AGGREGATE_RULES = (
+    "scope_and_unit_compatible",
+    "ratios_keep_numerator_denominator",
+    "net_delta_is_not_throughput",
+    "no_mean_of_percentiles",
+    "unknown_not_zero",
+    "cost_from_telemetry_only",
+)
 
 
 def metric_contract_schema():
@@ -53,6 +61,7 @@ def metric_contract_schema():
         "aggregations": sorted(AGGREGATIONS),
         "counter_resets": sorted(COUNTER_RESETS),
         "window_kinds": sorted(WINDOW_KINDS),
+        "aggregate_rules": list(AGGREGATE_RULES),
         "quality_semantics": METRIC_QUALITY_SEMANTICS,
         "scope_rule": "dimensions.scope is an optional stable identifier; all dimension keys are identifiers",
         "catalog_rule": "one shared definition per metric_id/unit/scope_id/dimension-key/counting-basis identity; dynamic values never enter definitions",
