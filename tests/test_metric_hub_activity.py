@@ -1,13 +1,21 @@
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import yaml
+
+from hub.connection_records import validate_declaration
+from hub.connection_sources import SourceResolver
+from hub.metric_import import read_metric_snapshot
 from hub.metric_hub_activity import collect_hub_activity
 from hub.metric_store import MetricStore
 
 NOW = '2026-09-09T00:00:00Z'
+ROOT = Path(__file__).resolve().parents[1]
 
 
 class HubActivityTests(unittest.TestCase):
@@ -134,3 +142,90 @@ class HubActivityTests(unittest.TestCase):
             'current_not_applicable_metrics','current_invalid_metrics',
             'malformed_current_metric_records')),rows['current_metric_records']['value'])
         self.assertEqual(result['disposition'],'partial')
+
+    def test_project_entry_exports_bound_standard_snapshot(self):
+        declaration = yaml.safe_load((ROOT / 'hub.connection.yaml').read_text())
+        validate_declaration(declaration, 'personal-control-hub')
+        entry = ROOT / declaration['metric_export']['entry']
+        script = entry.read_text()
+        config = yaml.safe_load((ROOT / 'data/connections/metric_sources.yaml').read_text())
+        self.assertEqual(config['projects']['personal-control-hub']['adapter'], 'hub_activity')
+        registry = yaml.safe_load((ROOT / 'data/registry/external_projects.yaml').read_text())
+        registered = next(item for item in registry['projects'] if item['id'] == 'personal-control-hub')
+        self.assertIn('hub.connection.yaml', registered['watch_paths'])
+        self.assertIn(declaration['metric_export']['entry'], registered['watch_paths'])
+        self.assertIn('.hub/status.json', (ROOT / '.gitignore').read_text().splitlines())
+
+        (self.root / 'src').symlink_to(ROOT / 'src', target_is_directory=True)
+        (self.root / 'scripts').mkdir()
+        (self.root / 'data/registry').mkdir(parents=True)
+        (self.root / 'hub.connection.yaml').write_text(yaml.safe_dump(declaration, sort_keys=False))
+        (self.root / declaration['metric_export']['entry']).write_text(script)
+        state = {
+            'schema_version': '1.1',
+            'all_projects_governance': {
+                'task_id': 'ALL-PROJECTS-CODEX-GOVERNANCE-V1',
+                'status': 'ACTIVE',
+                'next_action': 'Continue the next minimum project unit.',
+                'v3': {
+                    'stage_id': 'V3-08',
+                    'unit_id': 'V3-08/personal-control-hub',
+                    'acceptance': {
+                        'accepted_count': 19,
+                        'latest': {'evidence': 'The latest route criterion has independent evidence.'},
+                    },
+                    'review': {'verdict': 'PASS'},
+                    'delivery': {'status': 'DELIVERED', 'main_commit': 'a' * 40},
+                },
+            },
+        }
+        (self.root / 'STATE.yaml').write_text(yaml.safe_dump(state, sort_keys=False))
+        fixture_registry = {'projects': [{
+            'id': 'personal-control-hub', 'name': 'personal-control-hub',
+            'root_path': str(self.root), 'enabled': True, 'connection_read_allowed': True,
+            'current_state_paths': ['STATE.yaml'],
+        }]}
+        (self.root / 'data/registry/external_projects.yaml').write_text(
+            yaml.safe_dump(fixture_registry, sort_keys=False)
+        )
+        management = SourceResolver(self.root, clock=lambda: NOW).refresh('personal-control-hub')
+        self.assertTrue(management['success'], management['errors'])
+        environment = {
+            'PATH': '', 'PYTHONNOUSERSITE': '1', 'PYTHONSAFEPATH': '1',
+            'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONUTF8': '1',
+        }
+        other = self.root / 'other'
+        other.mkdir()
+        rejected = subprocess.run(
+            [sys.executable, '-I', '-B', '-', '--hub-root', str(self.root),
+             '--project-root', str(other)],
+            input=script.encode(), cwd=self.root, env=environment,
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False, timeout=5,
+        )
+        self.assertEqual(rejected.returncode, 2)
+        self.assertFalse((other / '.hub').exists())
+        result = subprocess.run(
+            [sys.executable, '-I', '-B', '-', '--hub-root', str(self.root),
+             '--project-root', str(self.root)],
+            input=script.encode(), cwd=self.root, env=environment,
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False, timeout=5,
+        )
+        self.assertEqual(result.returncode, 0)
+        snapshot = read_metric_snapshot(self.root)
+        self.assertEqual(snapshot['project_id'], 'personal-control-hub')
+        self.assertEqual(snapshot['exporter']['id'], 'personal-control-hub-export')
+        self.assertIsNone(snapshot['management']['business']['current_work']['objective'])
+        self.assertEqual(snapshot['management']['business']['current_work']['status'], 'active')
+        self.assertIsNone(snapshot['management']['business']['current_work']['completed'])
+        self.assertIsNone(snapshot['management']['business']['progress']['completed'])
+        self.assertIsNone(snapshot['management']['business']['progress']['total'])
+        self.assertIsNone(snapshot['management']['business']['verification']['status'])
+        self.assertIsNone(snapshot['management']['business']['delivery']['status'])
+        self.assertIsNone(snapshot['management']['business']['delivery']['commit'])
+        values = {row['metric_id']: row['value'] for row in snapshot['metrics']}
+        self.assertEqual(values['hub_activity.saved_requests'], 1)
+        self.assertEqual(values['hub_activity.current_numeric_metrics'], 1)
+        self.assertEqual(values['hub_activity.service_observed_issues'], 1)
+        payload = json.dumps(snapshot)
+        self.assertNotIn('PRIVATE', payload)
+        self.assertNotIn('SECRET', payload)

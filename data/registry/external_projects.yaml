@@ -112,9 +112,11 @@ projects:
   - AGENTS.md
   - STATE.yaml
   - project.yaml
+  - hub.connection.yaml
   - data/registry/external_projects.yaml
   - governance/adapters/storage_governance.yaml
   - data/programs/storage_governance_goal.yaml
+  - scripts/export_hub_metric_snapshot.py
   access_profile: bounded_management_records_only
   external_write_allowed: false
   storage_governance:

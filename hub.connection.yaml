@@ -1,0 +1,62 @@
+schema_version: '2.0'
+project_id: personal-control-hub
+source_refs:
+- id: state
+  path: STATE.yaml
+  format: yaml
+  role: current_state
+metric_export:
+  entry: scripts/export_hub_metric_snapshot.py
+  snapshot: .hub/status.json
+mapping:
+  current_work.phase:
+    source_ref: state
+    selector:
+      path: [all_projects_governance, v3, stage_id]
+    value_map: null
+  current_work.round:
+    source_ref: state
+    selector:
+      path: [all_projects_governance, v3, unit_id]
+    value_map: null
+  current_work.status:
+    source_ref: state
+    selector:
+      path: [all_projects_governance, status]
+    value_map:
+      ACTIVE: active
+      PAUSED: paused
+      BLOCKED: blocked
+      WAITING_FOR_USER: blocked
+      COMPLETE: complete
+      STOPPED: paused
+  current_work.next_action:
+    source_ref: state
+    selector:
+      path: [all_projects_governance, next_action]
+    value_map: null
+unknown_fields:
+  current_work.objective: The compact state publishes task identifiers but not one objective statement.
+  current_work.phase: The active V3 stage identifier is unavailable.
+  current_work.round: The active V3 project-unit identifier is unavailable.
+  current_work.status: The Hub state does not publish a recognized lifecycle status.
+  current_work.completed: Lifecycle status is not an independent completion boolean.
+  current_work.accepted: Project-unit review does not establish whole-goal acceptance.
+  current_work.next_action: The canonical Hub state does not publish one next action.
+  current_work.owner_role: The canonical Hub state does not publish one owner-role string.
+  progress.completed: The accepted count has no paired source counting basis in compact state and is not exported alone.
+  progress.total: The acceptance denominator belongs to the versioned roadmap and is not duplicated here.
+  progress.counting_basis: The compact state does not duplicate the roadmap criterion definition.
+  progress.milestones: Acceptance history is hash-linked state history, not a current milestone array.
+  blockers: Compact unresolved summaries are not typed blocker records.
+  verification.status: The latest review belongs to the prior completed unit and is not rebound to the active cursor.
+  verification.evidence_refs: Review and delivery evidence remain structured state fields, not one string array.
+  verification.accepted_basis: Prior-unit acceptance evidence is not current-unit verification.
+  delivery.status: The latest delivery belongs to the prior completed unit, not the active cursor.
+  delivery.remote: The compact state does not duplicate the configured Git remote.
+  delivery.branch: The compact state does not duplicate the configured target branch.
+  delivery.commit: A prior-unit main commit is not the active unit's delivery commit.
+  delivery.receipt_ref: CI identity is structured delivery metadata, not a string receipt pointer.
+validation_entry:
+- python3 scripts/export_hub_metric_snapshot.py --help
+max_read_age_seconds: 604800
