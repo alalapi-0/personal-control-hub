@@ -531,6 +531,8 @@ projects:
   - extract_jav.py
   - fetch_magnets.py
   - storage_runtime.py
+  - hub.connection.yaml
+  - scripts/export_hub_metric_snapshot.py
   access_profile: registered_project_read
   external_write_allowed: false
   storage_governance:
