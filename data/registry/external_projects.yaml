@@ -886,6 +886,8 @@ projects:
   - modules
   - contracts
   - docs
+  - hub.connection.yaml
+  - scripts/export_hub_metric_snapshot.py
   access_profile: registered_external_project_read
   external_write_allowed: false
   storage_governance:
