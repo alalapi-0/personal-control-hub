@@ -738,6 +738,8 @@ projects:
   watch_paths:
   - README.md
   - VERSION.yaml
+  - hub.connection.yaml
+  - scripts/export_hub_metric_snapshot.py
   - docs/AGENT_TOOLING_STANDARD.md
   associated_paths:
   - /Users/alalapi/PycharmProjects/.agent
