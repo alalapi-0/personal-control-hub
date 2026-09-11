@@ -17,6 +17,15 @@ python3 scripts/hub_connections.py metrics validate
 python3 scripts/hub_connections.py metrics feishu
 ```
 
+Hub 数据启动与显式手动同步使用既有根 CLI：
+
+```sh
+python3 hub.py start --project-id light-novel
+python3 hub.py sync --request-id UNIQUE_ID --project-id light-novel
+```
+
+两条命令都先输出一行 `phase=cache` 的 Hub 本地投影并立即 flush，再输出一行 `phase=sync` 的结果。同步只读取登记声明中的安全相对 Python `metric_export.entry`，通过无 shell、无继承环境、固定参数和单项目超时的子进程运行；不执行 `validation_entry`，也不调用 Agent、模型、MCP、生成器、测试、Git、provider、scheduler、业务队列或审批入口。Hub 在导出前后复核 registry、项目根、声明和脚本身份，只把固定 `.hub/status.json` 交给导入器。重放同一请求会复用已提交的项目收据，不再次运行其导出器。
+
 `collect`只读登记项目的明确元数据与本地Git状态，在原连接SQLite账本的metric表中写入投影。加`--project-id`可只采集一项。原请求ID重放使用已提交结果；输入/采集器版本变化需新ID。云项目排除；removed_local在解析或探测根路径之前结束。查询、校验、摘要和飞书映射均无需模型、不运行项目检查、不触发业务任务、不联网。
 
 所有输出上限8KiB。摘要始终保留全部登记分母、处置、数值/未知及错误计数，项目页默认10项；指标/问题页默认10项且按字节自动缩小。用next_cursor作为下页的--after，不能把第一页当作全部明细。
