@@ -701,6 +701,8 @@ projects:
   - AGENTS.md
   - README.md
   - pyproject.toml
+  - hub.connection.yaml
+  - scripts/export_hub_metric_snapshot.py
   - docs/roadmap.md
   - NORTH_STAR.md
   - docs/decisions/BLOCKERS.md
