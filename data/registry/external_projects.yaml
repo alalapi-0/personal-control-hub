@@ -255,7 +255,9 @@ projects:
   - README.md
   - pyproject.toml
   - Makefile
+  - hub.connection.yaml
   - scripts
+  - scripts/export_hub_metric_snapshot.py
   - docs/STATUS.md
   - docs/FINAL_VISION.md
   - docs/PRODUCT_SPEC.md
