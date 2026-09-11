@@ -498,6 +498,8 @@ projects:
   - agent_layer.yaml
   - docs/AGENT_LAYER.md
   - ROUND_PROGRESS.md
+  - hub.connection.yaml
+  - scripts/export_hub_metric_snapshot.py
   access_profile: registered_project_read
   external_write_allowed: false
   storage_governance:
