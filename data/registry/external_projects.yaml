@@ -668,6 +668,7 @@ projects:
   - README.md
   - pyproject.toml
   - Makefile
+  - hub.connection.yaml
   - scripts
   - SAFETY.md
   - docs/codex/project-tools.yaml
