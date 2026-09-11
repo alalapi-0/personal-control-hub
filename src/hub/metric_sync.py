@@ -31,11 +31,15 @@ from hub.connection_sources import (
     _safe_relative_read,
 )
 from hub.connections import parse_source
-from hub.metric_import import import_metric_snapshot_file
-from hub.metric_store import MetricStore
+from hub.metric_import import (
+    MetricSnapshotPersistenceError,
+    import_metric_snapshot_file,
+)
+from hub.metric_store import MetricStore, compact_metric_receipt
+from hub.metrics import MAX_PAGE_SIZE, MAX_SUMMARY_BYTES, bounded_json, utcnow
 
 
-SYNC_SCHEMA_VERSION = "1.0"
+SYNC_SCHEMA_VERSION = "1.1"
 DEFAULT_EXPORT_TIMEOUT_SECONDS = 15.0
 MIN_EXPORT_TIMEOUT_SECONDS = 0.01
 MAX_EXPORT_TIMEOUT_SECONDS = 60.0
@@ -129,6 +133,7 @@ class MetricSyncCoordinator:
         db: Path | str | None = None,
         registry_path: Path | None = None,
         python_executable: Path | str | None = None,
+        clock: Callable[[], str] = utcnow,
     ) -> None:
         self.root = Path(root).absolute()
         self.db = db
@@ -136,6 +141,7 @@ class MetricSyncCoordinator:
         self.python_executable = str(
             Path(python_executable or sys.executable).absolute()
         )
+        self.clock = clock
 
     def _resolver(self) -> SourceResolver:
         return SourceResolver(self.root, registry_path=self.registry_path)
@@ -167,6 +173,13 @@ class MetricSyncCoordinator:
 
     def read_cache(self, *, after: int = 0, limit: int = 10) -> dict:
         """Read Hub-local projection only; a missing cache is an explicit value."""
+        if (
+            type(after) is not int
+            or after < 0
+            or type(limit) is not int
+            or not 1 <= limit <= MAX_PAGE_SIZE
+        ):
+            raise RecordError("invalid metric synchronization cache page")
         resolver = self._resolver()
         try:
             store = MetricStore(self.root, self.db, read_only=True)
@@ -174,6 +187,25 @@ class MetricSyncCoordinator:
                 resolver.registry,
                 after=after,
                 limit=limit,
+            )
+            while projection["projects"]:
+                try:
+                    bounded_json(
+                        {
+                            "schema_version": SYNC_SCHEMA_VERSION,
+                            "kind": "metric_sync_cache",
+                            "available": True,
+                            "reason": None,
+                            **projection,
+                        },
+                        limit=MAX_SUMMARY_BYTES - 512,
+                    )
+                    break
+                except ValueError:
+                    projection["projects"].pop()
+            end = after + len(projection["projects"])
+            projection["next_cursor"] = (
+                end if end < projection["projects_total"] else None
             )
             available, reason = True, None
         except (OSError, RecordError, RefreshLedgerError, sqlite3.Error):
@@ -203,6 +235,44 @@ class MetricSyncCoordinator:
         return "metric-sync-" + content_hash(
             ["metric_sync_unit", request_id, project_id]
         )[:24]
+
+    @staticmethod
+    def _validate_result_budget(request_id: str, project_ids: list[str]) -> None:
+        """Reject a batch before source access if its largest result cannot fit."""
+        observed_at = "2000-01-01T00:00:00." + ("0" * 38) + "+00:00"
+        worst_receipt = {
+            "project_id": "",
+            "observed_at": observed_at,
+            "disposition": "unavailable",
+            "metric_count": 10000,
+            "numeric_count": 10000,
+            "changed_metrics": 10000,
+            "issue_count": 1000,
+        }
+        results = {}
+        for project_id in project_ids:
+            receipt = dict(worst_receipt, project_id=project_id)
+            results[project_id] = {
+                "status": "imported",
+                "receipt": receipt,
+            }
+        candidate = {
+            "schema_version": SYNC_SCHEMA_VERSION,
+            "kind": "metric_sync_result",
+            "request_id": request_id,
+            "requested": len(project_ids),
+            "completed": len(project_ids),
+            "results": results,
+            "skipped": {},
+            "errors": {},
+            "complete": True,
+        }
+        try:
+            bounded_json(candidate, limit=MAX_SUMMARY_BYTES - 512)
+        except ValueError as exc:
+            raise RecordError(
+                "metric sync result exceeds byte limit; select fewer projects"
+            ) from exc
 
     def _binding(self, resolver: SourceResolver, project_id: str) -> dict:
         project = resolver.projects[project_id]
@@ -363,6 +433,35 @@ class MetricSyncCoordinator:
         except (OSError, RecordError, TypeError, ValueError, KeyError) as exc:
             raise MetricSyncUnitError("export_binding_changed") from exc
 
+    def _finish_attempt(
+        self,
+        store: MetricStore,
+        sequence: int | None,
+        error: str,
+        *,
+        skipped: bool = False,
+    ) -> bool:
+        if sequence is None:
+            return False
+        try:
+            store.finish_sync_attempt(
+                sequence,
+                self.clock(),
+                error,
+                skipped=skipped,
+            )
+            return True
+        except (
+            OSError,
+            RecordError,
+            RefreshLedgerError,
+            sqlite3.Error,
+            TypeError,
+            ValueError,
+            KeyError,
+        ):
+            return False
+
     def synchronize(
         self,
         request_id: str,
@@ -395,6 +494,7 @@ class MetricSyncCoordinator:
             selected = sorted(project_ids)
         if len(selected) > MAX_SYNC_PROJECTS:
             raise RecordError("metric sync project set exceeds the supported bound")
+        self._validate_result_budget(request_id, selected)
 
         store = MetricStore(self.root, self.db)
         results: dict[str, dict] = {}
@@ -404,9 +504,18 @@ class MetricSyncCoordinator:
             unit_request_id = self._unit_request_id(request_id, project_id)
             previous = store.receipt(unit_request_id, project_id)
             if previous is not None:
-                results[project_id] = {"status": "reused", "receipt": previous}
+                results[project_id] = {
+                    "status": "reused",
+                    "receipt": compact_metric_receipt(previous),
+                }
                 continue
+            attempt_sequence = None
             try:
+                attempt_sequence = store.begin_sync_attempt(
+                    request_id,
+                    project_id,
+                    self.clock(),
+                )
                 binding = self._binding(resolver, project_id)
                 self._run_export(binding, timeout)
                 self._assert_binding_current(binding)
@@ -415,17 +524,37 @@ class MetricSyncCoordinator:
                     unit_request_id,
                     binding["root"],
                     expected_project=binding["project"],
+                    sync_attempt_sequence=attempt_sequence,
+                    clock=self.clock,
                 )
-                results[project_id] = {"status": "imported", "receipt": receipt}
+                results[project_id] = {
+                    "status": "imported",
+                    "receipt": compact_metric_receipt(receipt),
+                }
             except MetricSyncUnitError as exc:
-                if exc.code in {
+                is_skipped = exc.code in {
                     "removed_local",
                     "project_export_disabled",
                     "metric_export_not_declared",
-                }:
+                }
+                if not self._finish_attempt(
+                    store,
+                    attempt_sequence,
+                    exc.code,
+                    skipped=is_skipped,
+                ):
+                    errors[project_id] = "sync_attempt_store_failed"
+                elif is_skipped:
                     skipped[project_id] = exc.code
                 else:
                     errors[project_id] = exc.code
+            except MetricSnapshotPersistenceError:
+                self._finish_attempt(
+                    store,
+                    attempt_sequence,
+                    "sync_attempt_store_failed",
+                )
+                errors[project_id] = "sync_attempt_store_failed"
             except (
                 OSError,
                 RecordError,
@@ -435,7 +564,14 @@ class MetricSyncCoordinator:
                 ValueError,
                 KeyError,
             ):
-                errors[project_id] = "snapshot_import_failed"
+                if self._finish_attempt(
+                    store,
+                    attempt_sequence,
+                    "snapshot_import_failed",
+                ):
+                    errors[project_id] = "snapshot_import_failed"
+                else:
+                    errors[project_id] = "sync_attempt_store_failed"
         return {
             "schema_version": SYNC_SCHEMA_VERSION,
             "kind": "metric_sync_result",

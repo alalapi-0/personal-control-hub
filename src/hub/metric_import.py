@@ -6,9 +6,11 @@ import json
 import math
 from pathlib import Path
 import signal
+import sqlite3
 import threading
 
 from hub.connection_records import RecordError, content_hash, identifier, require
+from hub.connection_refresh import RefreshLedgerError
 from hub.metric_snapshot import (
     DEFAULT_IMPORT_TIMEOUT_SECONDS,
     MAX_IMPORT_TIMEOUT_SECONDS,
@@ -22,6 +24,10 @@ from hub.metric_snapshot import (
 
 class SnapshotImportTimeout(RuntimeError):
     """One canonical snapshot read exceeded its bounded deadline."""
+
+
+class MetricSnapshotPersistenceError(RuntimeError):
+    """A validated synchronized snapshot could not commit to the Hub ledger."""
 
 
 def read_metric_snapshot(project_root):
@@ -58,6 +64,8 @@ def import_metric_snapshot_file(
     project_root,
     *,
     expected_project,
+    sync_attempt_sequence=None,
+    clock=None,
 ):
     snapshot = read_metric_snapshot(project_root)
     return import_metric_snapshot(
@@ -65,10 +73,20 @@ def import_metric_snapshot_file(
         request_id,
         snapshot,
         expected_project=expected_project,
+        sync_attempt_sequence=sync_attempt_sequence,
+        clock=clock,
     )
 
 
-def import_metric_snapshot(store, request_id, snapshot, *, expected_project):
+def import_metric_snapshot(
+    store,
+    request_id,
+    snapshot,
+    *,
+    expected_project,
+    sync_attempt_sequence=None,
+    clock=None,
+):
     """Validate and persist snapshot facts without resolving any project source."""
     result = _metric_result(snapshot, expected_project)
     request_identity = content_hash(
@@ -79,8 +97,47 @@ def import_metric_snapshot(store, request_id, snapshot, *, expected_project):
             snapshot["exporter"],
         ]
     )
-    store.begin(request_id, [result["project_id"]], request_identity)
-    return store.save(request_id, result)
+    sync_attempt = None
+    if sync_attempt_sequence is not None:
+        require(
+            type(sync_attempt_sequence) is int
+            and sync_attempt_sequence > 0
+            and callable(clock),
+            "metric synchronization completion binding invalid",
+        )
+        sync_attempt = {
+            "sequence": sync_attempt_sequence,
+            "finished_at": clock(),
+        }
+    else:
+        require(clock is None, "metric synchronization clock is unbound")
+        store.begin(request_id, [result["project_id"]], request_identity)
+    try:
+        return store.save(
+            request_id,
+            result,
+            sync_attempt=sync_attempt,
+            request_identity=(
+                request_identity
+                if sync_attempt_sequence is not None
+                else None
+            ),
+            rebind_uncommitted_request=sync_attempt_sequence is not None,
+        )
+    except (
+        OSError,
+        RecordError,
+        RefreshLedgerError,
+        sqlite3.Error,
+        TypeError,
+        ValueError,
+        KeyError,
+    ) as exc:
+        if sync_attempt_sequence is None:
+            raise
+        raise MetricSnapshotPersistenceError(
+            "synchronized metric snapshot persistence failed"
+        ) from exc
 
 
 def import_metric_snapshots(

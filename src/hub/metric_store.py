@@ -9,15 +9,175 @@ from __future__ import annotations
 import json
 from collections import Counter
 from contextlib import closing
+from datetime import datetime
 
 from hub.connection_records import (
+    RecordError,
     content_hash,
+    exact,
+    fingerprint,
     identifier,
     require,
+    timestamp,
 )
 from hub.connection_refresh import RefreshLedger
 from hub.metrics import (MAX_PAGE_SIZE, bounded_json, eligibility, freshness, metric_catalog, metric_key,
                          semantic_metric, utcnow, validate_metric)
+
+SYNC_ATTEMPT_FIELDS = {
+    "sequence",
+    "project_id",
+    "request_id",
+    "status",
+    "started_at",
+    "finished_at",
+    "error",
+    "snapshot",
+}
+SYNC_SNAPSHOT_FIELDS = {
+    "id",
+    "schema_version",
+    "observed_at",
+    "exporter",
+    "source_versions",
+    "disposition",
+}
+SYNC_ATTEMPT_STATUSES = {"running", "success", "failed", "skipped"}
+MAX_SYNC_STATUS_PROJECTS = 1000
+
+
+def _parsed_timestamp(value):
+    return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def _compact_timestamp(value):
+    if value is None or len(value) <= 64:
+        return value
+    return _parsed_timestamp(value).isoformat(timespec="microseconds")
+
+
+def validate_sync_attempt(value):
+    """Validate one durable synchronization attempt without source access."""
+    exact(value, SYNC_ATTEMPT_FIELDS, "metric synchronization attempt")
+    require(type(value["sequence"]) is int and value["sequence"] > 0,
+            "metric synchronization attempt sequence invalid")
+    identifier(value["project_id"], "metric synchronization project")
+    identifier(value["request_id"], "metric synchronization request")
+    require(
+        type(value["status"]) is str
+        and value["status"] in SYNC_ATTEMPT_STATUSES,
+        "metric synchronization attempt status invalid",
+    )
+    timestamp(value["started_at"], "metric synchronization start")
+    if value["finished_at"] is not None:
+        timestamp(value["finished_at"], "metric synchronization finish")
+        require(
+            _parsed_timestamp(value["finished_at"]) >=
+            _parsed_timestamp(value["started_at"]),
+            "metric synchronization finish precedes start",
+        )
+
+    status = value["status"]
+    if status == "running":
+        require(
+            value["finished_at"] is None
+            and value["error"] is None
+            and value["snapshot"] is None,
+            "running synchronization attempt has terminal data",
+        )
+    elif status == "success":
+        require(
+            value["finished_at"] is not None
+            and value["error"] is None
+            and type(value["snapshot"]) is dict,
+            "successful synchronization attempt is incomplete",
+        )
+    else:
+        require(
+            value["finished_at"] is not None
+            and value["snapshot"] is None,
+            "unsuccessful synchronization attempt has snapshot data",
+        )
+        identifier(value["error"], "metric synchronization error")
+
+    snapshot = value["snapshot"]
+    if snapshot is not None:
+        exact(snapshot, SYNC_SNAPSHOT_FIELDS, "metric synchronization snapshot")
+        fingerprint(snapshot["id"], "metric synchronization snapshot identity")
+        identifier(
+            snapshot["schema_version"],
+            "metric synchronization snapshot schema",
+        )
+        timestamp(
+            snapshot["observed_at"],
+            "metric synchronization snapshot observation",
+        )
+        exact(snapshot["exporter"], {"id", "version"},
+              "metric synchronization exporter")
+        identifier(snapshot["exporter"]["id"], "metric synchronization exporter")
+        identifier(
+            snapshot["exporter"]["version"],
+            "metric synchronization exporter version",
+        )
+        require(
+            type(snapshot["source_versions"]) is dict
+            and len(snapshot["source_versions"]) <= 32,
+            "metric synchronization source versions invalid",
+        )
+        for group, version in snapshot["source_versions"].items():
+            identifier(group, "metric synchronization source group")
+            require(
+                type(version) is str and 0 < len(version) <= 1000,
+                "metric synchronization source version invalid",
+            )
+        identifier(snapshot["disposition"], "metric synchronization disposition")
+    return value
+
+
+def compact_sync_attempt(attempt):
+    """Keep cache rows bounded while retaining deterministic version identity."""
+    if attempt is None:
+        return None
+    value = {
+        key: json.loads(json.dumps(attempt[key]))
+        for key in (
+            "sequence",
+            "request_id",
+            "status",
+            "error",
+        )
+    }
+    value["started_at"] = _compact_timestamp(attempt["started_at"])
+    value["finished_at"] = _compact_timestamp(attempt["finished_at"])
+    snapshot = attempt["snapshot"]
+    if snapshot is None:
+        value["snapshot"] = None
+    else:
+        versions = snapshot["source_versions"]
+        value["snapshot"] = {
+            key: json.loads(json.dumps(snapshot[key]))
+            for key in (
+                "id",
+                "schema_version",
+                "exporter",
+                "disposition",
+            )
+        }
+        value["snapshot"]["observed_at"] = _compact_timestamp(
+            snapshot["observed_at"]
+        )
+        value["snapshot"].update(
+            source_versions_identity=content_hash(versions),
+            source_versions_count=len(versions),
+        )
+    return value
+
+
+def compact_metric_receipt(receipt):
+    """Return the same receipt facts with a bounded equivalent observation time."""
+    value = dict(receipt)
+    value["observed_at"] = _compact_timestamp(receipt["observed_at"])
+    return value
 
 
 class MetricStore(RefreshLedger):
@@ -31,6 +191,10 @@ class MetricStore(RefreshLedger):
                 db.execute("CREATE TABLE IF NOT EXISTS metric_changes (seq INTEGER PRIMARY KEY, project_id TEXT NOT NULL, key TEXT NOT NULL, version TEXT NOT NULL, observed_at TEXT NOT NULL, value TEXT NOT NULL)")
                 db.execute("CREATE INDEX IF NOT EXISTS metric_change_key ON metric_changes(key,seq)")
                 db.execute("CREATE TABLE IF NOT EXISTS metric_current (key TEXT PRIMARY KEY, project_id TEXT NOT NULL, seq INTEGER NOT NULL REFERENCES metric_changes(seq), observed_at TEXT NOT NULL)")
+                db.execute("CREATE TABLE IF NOT EXISTS metric_sync_attempts (sequence INTEGER PRIMARY KEY, project_id TEXT NOT NULL, request_id TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('running','success','failed','skipped')), started_at TEXT NOT NULL, finished_at TEXT, record TEXT NOT NULL)")
+                db.execute("CREATE INDEX IF NOT EXISTS metric_sync_project ON metric_sync_attempts(project_id,sequence)")
+                db.execute("CREATE INDEX IF NOT EXISTS metric_sync_status ON metric_sync_attempts(project_id,status,sequence)")
+                db.execute("CREATE UNIQUE INDEX IF NOT EXISTS metric_sync_running_project ON metric_sync_attempts(project_id) WHERE status='running'")
         with closing(self._connect()) as db:
             for table, expected in {
                 "metric_requests": {"id", "identity", "projects"},
@@ -41,23 +205,353 @@ class MetricStore(RefreshLedger):
             }.items():
                 require({r["name"] for r in db.execute("PRAGMA table_info(" + table + ")")} == expected,
                         "metric ledger uninitialized or unsupported schema")
+            sync_table = db.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' "
+                "AND name='metric_sync_attempts'"
+            ).fetchone()
+            if sync_table is not None:
+                require(
+                    {
+                        row["name"]
+                        for row in db.execute(
+                            "PRAGMA table_info(metric_sync_attempts)"
+                        )
+                    }
+                    == {
+                        "sequence",
+                        "project_id",
+                        "request_id",
+                        "status",
+                        "started_at",
+                        "finished_at",
+                        "record",
+                    },
+                    "metric synchronization ledger has unsupported schema",
+                )
 
-    def begin(self, request_id, projects, identity):
-        from hub.connection_records import identifier
-        identifier(request_id, "request_id")
+    @staticmethod
+    def _begin_request(
+        db,
+        request_id,
+        projects,
+        identity,
+        *,
+        rebind_uncommitted=False,
+    ):
         projects = sorted(set(projects))
         digest = content_hash([projects, identity])
+        old = db.execute(
+            "SELECT identity,projects FROM metric_requests WHERE id=?",
+            (request_id,),
+        ).fetchone()
+        if old is not None and old["identity"] != digest:
+            can_rebind = False
+            if rebind_uncommitted:
+                # Pre-atomic sync versions could leave only this registration.
+                # Never rebind a different project set or any committed receipt.
+                try:
+                    old_projects = json.loads(old["projects"])
+                except (TypeError, json.JSONDecodeError) as exc:
+                    raise RecordError(
+                        "metric request project binding is invalid"
+                    ) from exc
+                can_rebind = (
+                    old_projects == projects
+                    and db.execute(
+                        "SELECT 1 FROM metric_receipts WHERE request_id=?",
+                        (request_id,),
+                    ).fetchone()
+                    is None
+                )
+            require(
+                can_rebind,
+                "request identity changed; use a new request ID",
+            )
+            db.execute(
+                "UPDATE metric_requests SET identity=?,projects=? WHERE id=?",
+                (digest, json.dumps(projects), request_id),
+            )
+            return
+        db.execute(
+            "INSERT OR IGNORE INTO metric_requests VALUES (?,?,?)",
+            (request_id, digest, json.dumps(projects)),
+        )
+
+    def begin(self, request_id, projects, identity):
+        identifier(request_id, "request_id")
         with self._write() as db:
-            old = db.execute("SELECT identity FROM metric_requests WHERE id=?", (request_id,)).fetchone()
-            require(old is None or old[0] == digest, "request identity changed; use a new request ID")
-            db.execute("INSERT OR IGNORE INTO metric_requests VALUES (?,?,?)", (request_id, digest, json.dumps(projects)))
+            self._begin_request(db, request_id, projects, identity)
 
     def receipt(self, request_id, project_id):
         with closing(self._connect()) as db:
             row = db.execute("SELECT result FROM metric_receipts WHERE request_id=? AND project_id=?", (request_id, project_id)).fetchone()
             return json.loads(row[0]) if row else None
 
-    def save(self, request_id, result):
+    @staticmethod
+    def _attempt_from_row(row):
+        attempt = validate_sync_attempt(json.loads(row["record"]))
+        require(
+            attempt["sequence"] == row["sequence"]
+            and attempt["project_id"] == row["project_id"]
+            and attempt["request_id"] == row["request_id"]
+            and attempt["status"] == row["status"]
+            and attempt["started_at"] == row["started_at"]
+            and attempt["finished_at"] == row["finished_at"],
+            "metric synchronization attempt columns disagree",
+        )
+        return attempt
+
+    @staticmethod
+    def _attempt_json(attempt):
+        validate_sync_attempt(attempt)
+        return json.dumps(
+            attempt,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
+
+    def begin_sync_attempt(self, request_id, project_id, started_at):
+        """Persist an attempt before source access and retire an interrupted predecessor."""
+        identifier(request_id, "metric synchronization request")
+        identifier(project_id, "metric synchronization project")
+        timestamp(started_at, "metric synchronization start")
+        with self._write() as db:
+            for row in db.execute(
+                "SELECT * FROM metric_sync_attempts "
+                "WHERE project_id=? AND status='running' ORDER BY sequence",
+                (project_id,),
+            ):
+                interrupted = self._attempt_from_row(row)
+                interrupted.update(
+                    status="failed",
+                    finished_at=started_at,
+                    error="sync_interrupted",
+                )
+                db.execute(
+                    "UPDATE metric_sync_attempts "
+                    "SET status=?,finished_at=?,record=? WHERE sequence=?",
+                    (
+                        interrupted["status"],
+                        interrupted["finished_at"],
+                        self._attempt_json(interrupted),
+                        interrupted["sequence"],
+                    ),
+                )
+            sequence = db.execute(
+                "SELECT COALESCE(MAX(sequence),0)+1 FROM metric_sync_attempts"
+            ).fetchone()[0]
+            attempt = {
+                "sequence": sequence,
+                "project_id": project_id,
+                "request_id": request_id,
+                "status": "running",
+                "started_at": started_at,
+                "finished_at": None,
+                "error": None,
+                "snapshot": None,
+            }
+            db.execute(
+                "INSERT INTO metric_sync_attempts VALUES(?,?,?,?,?,?,?)",
+                (
+                    sequence,
+                    project_id,
+                    request_id,
+                    attempt["status"],
+                    started_at,
+                    None,
+                    self._attempt_json(attempt),
+                ),
+            )
+            return sequence
+
+    def finish_sync_attempt(
+        self,
+        sequence,
+        finished_at,
+        error,
+        *,
+        skipped=False,
+    ):
+        """Finish one failed or intentionally skipped attempt without replacing success."""
+        require(type(sequence) is int and sequence > 0,
+                "metric synchronization attempt sequence invalid")
+        timestamp(finished_at, "metric synchronization finish")
+        identifier(error, "metric synchronization error")
+        require(type(skipped) is bool, "metric synchronization skip flag invalid")
+        with self._write() as db:
+            row = db.execute(
+                "SELECT * FROM metric_sync_attempts WHERE sequence=?",
+                (sequence,),
+            ).fetchone()
+            require(row is not None, "metric synchronization attempt missing")
+            attempt = self._attempt_from_row(row)
+            require(
+                attempt["status"] == "running",
+                "metric synchronization attempt already finished",
+            )
+            attempt.update(
+                status="skipped" if skipped else "failed",
+                finished_at=finished_at,
+                error=error,
+            )
+            db.execute(
+                "UPDATE metric_sync_attempts "
+                "SET status=?,finished_at=?,record=? WHERE sequence=?",
+                (
+                    attempt["status"],
+                    finished_at,
+                    self._attempt_json(attempt),
+                    sequence,
+                ),
+            )
+            return attempt
+
+    def _finish_sync_success(self, db, sequence, finished_at, result):
+        row = db.execute(
+            "SELECT * FROM metric_sync_attempts WHERE sequence=?",
+            (sequence,),
+        ).fetchone()
+        require(row is not None, "metric synchronization attempt missing")
+        attempt = self._attempt_from_row(row)
+        require(
+            attempt["status"] == "running"
+            and attempt["project_id"] == result["project_id"],
+            "metric synchronization success binding invalid",
+        )
+        attempt.update(
+            status="success",
+            finished_at=finished_at,
+            snapshot={
+                "id": result["snapshot_id"],
+                "schema_version": result["snapshot_schema_version"],
+                "observed_at": result["observed_at"],
+                "exporter": result["exporter"],
+                "source_versions": result["source_versions"],
+                "disposition": result["disposition"],
+            },
+        )
+        db.execute(
+            "UPDATE metric_sync_attempts "
+            "SET status=?,finished_at=?,record=? WHERE sequence=?",
+            (
+                attempt["status"],
+                finished_at,
+                self._attempt_json(attempt),
+                sequence,
+            ),
+        )
+        return attempt
+
+    def sync_status(self, project_ids):
+        """Return latest attempt and durable last success for bounded projects."""
+        require(
+            type(project_ids) is list
+            and len(project_ids) <= MAX_SYNC_STATUS_PROJECTS,
+            "invalid synchronization status project set",
+        )
+        for project_id in project_ids:
+            identifier(project_id, "metric synchronization project")
+        require(
+            len(project_ids) == len(set(project_ids)),
+            "invalid synchronization status project set",
+        )
+        status = {
+            project_id: {"latest_attempt": None, "last_success": None}
+            for project_id in project_ids
+        }
+        if not project_ids:
+            return status
+        with closing(self._connect()) as db:
+            exists = db.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' "
+                "AND name='metric_sync_attempts'"
+            ).fetchone()
+            if exists is None:
+                return status
+            for project_id in project_ids:
+                latest = db.execute(
+                    "SELECT * FROM metric_sync_attempts "
+                    "WHERE project_id=? ORDER BY sequence DESC LIMIT 1",
+                    (project_id,),
+                ).fetchone()
+                successful = db.execute(
+                    "SELECT * FROM metric_sync_attempts "
+                    "WHERE project_id=? AND status='success' "
+                    "ORDER BY sequence DESC LIMIT 1",
+                    (project_id,),
+                ).fetchone()
+                if latest is not None:
+                    status[project_id]["latest_attempt"] = (
+                        self._attempt_from_row(latest)
+                    )
+                if successful is not None:
+                    status[project_id]["last_success"] = (
+                        self._attempt_from_row(successful)
+                    )
+        return status
+
+    def sync_attempts(self, project_id, *, after=0, limit=10):
+        """Read bounded attempt history in durable sequence order."""
+        identifier(project_id, "metric synchronization project")
+        require(
+            type(after) is int
+            and after >= 0
+            and type(limit) is int
+            and 1 <= limit <= MAX_PAGE_SIZE,
+            "invalid synchronization attempt page",
+        )
+        with closing(self._connect()) as db:
+            exists = db.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' "
+                "AND name='metric_sync_attempts'"
+            ).fetchone()
+            if exists is None:
+                return {
+                    "total_remaining": 0,
+                    "items": [],
+                    "returned": 0,
+                    "next_cursor": None,
+                }
+            total = db.execute(
+                "SELECT count(*) FROM metric_sync_attempts "
+                "WHERE project_id=? AND sequence>?",
+                (project_id, after),
+            ).fetchone()[0]
+            rows = []
+            for row in db.execute(
+                "SELECT * FROM metric_sync_attempts "
+                "WHERE project_id=? AND sequence>? "
+                "ORDER BY sequence LIMIT ?",
+                (project_id, after, limit),
+            ):
+                rows.append(self._attempt_from_row(row))
+        return {
+            "total_remaining": total,
+            "items": rows,
+            "returned": len(rows),
+            "next_cursor": (
+                rows[-1]["sequence"]
+                if len(rows) < total and rows
+                else None
+            ),
+        }
+
+    def save(
+        self,
+        request_id,
+        result,
+        *,
+        sync_attempt=None,
+        request_identity=None,
+        rebind_uncommitted_request=False,
+    ):
+        identifier(request_id, "request_id")
+        require(
+            type(rebind_uncommitted_request) is bool,
+            "metric request rebind flag invalid",
+        )
         rows = result["metrics"]
         keys = [metric_key(validate_metric(row)) for row in rows]
         require(len(keys) == len(set(keys)), "duplicate metric identities")
@@ -65,11 +559,43 @@ class MetricStore(RefreshLedger):
                 "metric definition catalog does not match facts")
         pid, observed = result["project_id"], result["observed_at"]
         require(all(row["project_id"] == pid for row in rows), "metric project identity mismatch")
+        if sync_attempt is not None:
+            exact(
+                sync_attempt,
+                {"sequence", "finished_at"},
+                "metric synchronization success",
+            )
+            require(
+                type(sync_attempt["sequence"]) is int
+                and sync_attempt["sequence"] > 0,
+                "metric synchronization attempt sequence invalid",
+            )
+            timestamp(
+                sync_attempt["finished_at"],
+                "metric synchronization finish",
+            )
+        if request_identity is not None:
+            fingerprint(request_identity, "metric request identity")
         with self._write() as db:
+            if request_identity is not None:
+                self._begin_request(
+                    db,
+                    request_id,
+                    [pid],
+                    request_identity,
+                    rebind_uncommitted=rebind_uncommitted_request,
+                )
             request = db.execute("SELECT projects FROM metric_requests WHERE id=?", (request_id,)).fetchone()
             require(request is not None and pid in json.loads(request[0]), "unregistered collection result")
             previous = db.execute("SELECT result FROM metric_receipts WHERE request_id=? AND project_id=?", (request_id, pid)).fetchone()
             if previous:
+                if sync_attempt is not None:
+                    self._finish_sync_success(
+                        db,
+                        sync_attempt["sequence"],
+                        sync_attempt["finished_at"],
+                        result,
+                    )
                 return json.loads(previous[0])
             changed = 0
             # Current membership is replaced; historical success remains queryable after failures.
@@ -91,6 +617,13 @@ class MetricStore(RefreshLedger):
             receipt = {k: summary[k] for k in ("project_id", "observed_at", "disposition", "metric_count", "numeric_count", "changed_metrics")}
             receipt["issue_count"] = len(summary["issues"])
             db.execute("INSERT INTO metric_receipts VALUES(?,?,?)", (request_id, pid, json.dumps(receipt)))
+            if sync_attempt is not None:
+                self._finish_sync_success(
+                    db,
+                    sync_attempt["sequence"],
+                    sync_attempt["finished_at"],
+                    result,
+                )
             self._fault("save_metric_result", {
                 "request_id": request_id,
                 "project_id": pid,
@@ -104,6 +637,14 @@ class MetricStore(RefreshLedger):
         now = now or utcnow()
         with closing(self._connect()) as db:
             stored = {r[0]: json.loads(r[1]) for r in db.execute("SELECT project_id,result FROM metric_projects")}
+        project_ids = [project["id"] for project in registry["projects"]]
+        synchronization = {}
+        for start in range(0, len(project_ids), MAX_SYNC_STATUS_PROJECTS):
+            synchronization.update(
+                self.sync_status(
+                    project_ids[start:start + MAX_SYNC_STATUS_PROJECTS]
+                )
+            )
         counts, quality = Counter(), Counter()
         local = removed = 0
         rows = []
@@ -119,10 +660,47 @@ class MetricStore(RefreshLedger):
             row = dict(project_id=pid, disposition=disposition, metrics=value["metric_count"] if value else 0,
                        numeric=value["numeric_count"] if value else 0,
                        issues=len(value["issues"]) if value else 0,
-                       observed_at=value["observed_at"] if value else None)
+                       observed_at=_compact_timestamp(value["observed_at"]) if value else None)
             row["freshness"] = freshness(row["observed_at"], now) if value and allowed == "eligible" else disposition
             if value and value.get("registry_binding") and value["registry_binding"] != content_hash(project):
                 row["freshness"] = allowed if allowed != "eligible" else "authority_changed"
+            project_status = synchronization[pid]
+            latest = compact_sync_attempt(project_status["latest_attempt"])
+            last_success = compact_sync_attempt(project_status["last_success"])
+            row["latest_attempt"] = latest
+            row["last_success"] = last_success
+            if latest is None:
+                if value is None:
+                    row["view_role"] = "unavailable"
+                elif row["freshness"] == "fresh":
+                    row["view_role"] = "current_untracked"
+                else:
+                    row["view_role"] = "historical_untracked"
+            elif latest["status"] == "success":
+                current_snapshot = (
+                    value is not None
+                    and latest["snapshot"] is not None
+                    and value.get("snapshot_id") == latest["snapshot"]["id"]
+                )
+                row["view_role"] = (
+                    "current"
+                    if current_snapshot and row["freshness"] == "fresh"
+                    else "historical"
+                )
+                if not current_snapshot and allowed == "eligible":
+                    row["freshness"] = "sync_state_mismatch"
+            else:
+                if row["freshness"] not in {
+                    "removed_local",
+                    "disabled",
+                    "authority_changed",
+                }:
+                    row["freshness"] = "sync_" + latest["status"]
+                row["view_role"] = (
+                    "historical"
+                    if last_success is not None
+                    else "unavailable"
+                )
             quality[row["freshness"]] += 1
             rows.append(row)
         result = {"coverage": {"registered": len(rows), "local": local, "removed_local": removed,
@@ -306,6 +884,7 @@ class MetricStore(RefreshLedger):
         from hub.metric_snapshot import SNAPSHOT_SCHEMA_VERSION
 
         current_snapshots = []
+        synchronization_attempts = 0
         with closing(self._connect()) as db:
             require(db.execute("PRAGMA quick_check").fetchone()[0] == "ok", "metric ledger integrity failed")
             require(not db.execute("PRAGMA foreign_key_check").fetchall(), "metric references invalid")
@@ -328,9 +907,30 @@ class MetricStore(RefreshLedger):
                 value = validate_metric(json.loads(row["value"]))
                 require(row["key"] == metric_key(value) and row["version"] == content_hash(semantic_metric(value)), "metric history identity invalid")
                 count += 1
+            sync_table = db.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' "
+                "AND name='metric_sync_attempts'"
+            ).fetchone()
+            running = set()
+            if sync_table is not None:
+                for row in db.execute(
+                    "SELECT * FROM metric_sync_attempts ORDER BY sequence"
+                ):
+                    attempt = self._attempt_from_row(row)
+                    if attempt["status"] == "running":
+                        require(
+                            attempt["project_id"] not in running,
+                            "multiple running synchronization attempts",
+                        )
+                        running.add(attempt["project_id"])
+                    synchronization_attempts += 1
         for project_id in current_snapshots:
             self.project_snapshot(project_id, limit=1)
-        return {"valid": True, "metric_versions": count}
+        return {
+            "valid": True,
+            "metric_versions": count,
+            "synchronization_attempts": synchronization_attempts,
+        }
 
     def prune(self, before):
         """Explicit local retention, preserving current and immediate predecessor."""

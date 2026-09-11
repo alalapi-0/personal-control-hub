@@ -26,6 +26,10 @@ python3 hub.py sync --request-id UNIQUE_ID --project-id light-novel
 
 两条命令都先输出一行 `phase=cache` 的 Hub 本地投影并立即 flush，再输出一行 `phase=sync` 的结果。同步只读取登记声明中的安全相对 Python `metric_export.entry`，通过无 shell、无继承环境、固定参数和单项目超时的子进程运行；不执行 `validation_entry`，也不调用 Agent、模型、MCP、生成器、测试、Git、provider、scheduler、业务队列或审批入口。Hub 在导出前后复核 registry、项目根、声明和脚本身份，只把固定 `.hub/status.json` 交给导入器。重放同一请求会复用已提交的项目收据，不再次运行其导出器。
 
+同步集合先按实际项目 ID 与最大合法 receipt 预检完整结果的 8KiB 上限；放不下时须拆分项目列表，并在创建账本或访问项目根前失败。每次未提交项目单元在访问项目根前先写入 Hub 本地 attempt；成功快照、项目 request/receipt 与 attempt 成功状态在同一 SQLite 事务提交。离线、超时、绑定变化、无效快照及未声明/禁用处置只结束各自 attempt，不阻塞集合中的其他项目；持久化故障单独记为 `sync_attempt_store_failed`，不伪装成快照无效。进程中断留下的 running attempt 会在该项目下一次真实尝试时准确结束为 `sync_interrupted`；同请求中已有 receipt 的项目在此之前即复用，不创建新 attempt。升级前遗留的同项目 request 只有在没有任何 receipt 时才允许于成功事务内重绑定新快照身份，已提交身份不可改写。
+
+缓存项目行明确返回 `latest_attempt`、`last_success` 与 `view_role`。最近尝试失败但存在旧成功时，旧值保留为 `historical` 且 freshness 为 `sync_failed`，不能显示为当前成功；首次失败则为 `unavailable`。`MetricStore.sync_status` 和分页 `sync_attempts` 保留精确开始/结束时间、错误、snapshot ID/schema、导出器版本、源版本及快照观察时间；受 8KiB 限制的启动摘要只返回源版本集合的确定性身份与数量，不复制完整版本映射。超长但有效的 ISO 时间在账本保留原文，缓存中规范化为语义等价的微秒 ISO 表示，避免单行阻塞分页。
+
 `collect`只读登记项目的明确元数据与本地Git状态，在原连接SQLite账本的metric表中写入投影。加`--project-id`可只采集一项。原请求ID重放使用已提交结果；输入/采集器版本变化需新ID。云项目排除；removed_local在解析或探测根路径之前结束。查询、校验、摘要和飞书映射均无需模型、不运行项目检查、不触发业务任务、不联网。
 
 所有输出上限8KiB。摘要始终保留全部登记分母、处置、数值/未知及错误计数，项目页默认10项；指标/问题页默认10项且按字节自动缩小。用next_cursor作为下页的--after，不能把第一页当作全部明细。
