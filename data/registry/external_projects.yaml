@@ -455,7 +455,9 @@ projects:
   watch_paths:
   - AGENTS.md
   - README.md
+  - hub.connection.yaml
   - scripts
+  - scripts/export_hub_metric_snapshot.py
   - templates
   - docs/00_project_overview.md
   - docs/02_architecture.md
