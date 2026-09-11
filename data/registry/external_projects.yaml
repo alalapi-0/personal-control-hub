@@ -178,6 +178,7 @@ projects:
   priority_source: user
   watch_paths:
   - AGENTS.md
+  - hub.connection.yaml
   - Package.swift
   - README.md
   - Scripts
