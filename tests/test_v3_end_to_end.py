@@ -43,6 +43,10 @@ class V3EndToEndTests(unittest.TestCase):
             result["handoff"]["v3_08_remaining"]["blocked"],
             ["novel-continuation-agent"],
         )
+        self.assertEqual(
+            set(result["handoff"]["v3_08_remaining"]["skipped_condition_unchanged"]),
+            {"computer-study-plan"},
+        )
         self.assertIn("mcp_host_events", result["unverified_host_events"])
         self.assertTrue(result["real_business_not_replaced_by_fixture"])
 
@@ -58,6 +62,10 @@ class V3EndToEndTests(unittest.TestCase):
         self.assertEqual(
             result["handoff"]["v3_08_remaining"]["blocked"],
             ["novel-continuation-agent"],
+        )
+        self.assertEqual(
+            set(result["handoff"]["v3_08_remaining"]["skipped_condition_unchanged"]),
+            {"computer-study-plan"},
         )
         self.assertEqual(result["mapping"]["canonical_state"], "STATE.yaml#all_projects_governance")
         self.assertTrue(result["coverage"]["valid"])

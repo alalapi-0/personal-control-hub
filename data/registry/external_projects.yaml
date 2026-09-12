@@ -774,6 +774,8 @@ projects:
   - README.md
   - tests
   - PROJECT_STATUS.md
+  - hub.connection.yaml
+  - scripts/export_hub_metric_snapshot.py
   access_profile: registered_project_read_with_credential_boundary
   external_write_allowed: false
   storage_governance:

@@ -1,7 +1,14 @@
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+import yaml
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
 from hub.metric_saved_tools import collect_downloader, collect_workspace_checks, LOG_BYTES, LOG_LINES
 
 NOW = '2026-09-09T00:00:00Z'
@@ -41,13 +48,16 @@ class SavedToolsTests(unittest.TestCase):
 
     def test_saved_semantics_privacy_event_multiplicity(self):
         self.downloader()
+        self.put('state/tokens.json', {'access_token': 'SECRETTOKEN'})
         result, rows = self.collect(collect_downloader)
         for name, n in [('saved_latest_failure_records',1),('saved_failure_partial_records',0),('saved_event_lines',3),('saved_event_download_start',2),('saved_event_download_success',0),('saved_log_coverage_complete',1)]:
             self.assertEqual(rows[name]['value'], n)
         self.assertIsNotNone(rows['saved_failure_latest_at']['business_at'])
         self.assertIsNone(rows['current_code_bound']['value'])
-        self.assertNotIn('PRIVATE', json.dumps(result))
-        self.assertNotIn('SECRET', json.dumps(result))
+        payload = json.dumps(result)
+        self.assertNotIn('PRIVATE', payload)
+        self.assertNotIn('SECRET', payload)
+        self.assertNotIn('SECRETTOKEN', payload)
 
     def test_semantic_versions(self):
         self.downloader()
@@ -211,6 +221,19 @@ class SavedToolsTests(unittest.TestCase):
         result, rows = self.collect(collect_workspace_checks)
         self.assertEqual(rows['protocol_presence_present']['dimensions']['target_protocol_version'], 'unknown')
         self.assertNotIn('SECRET', json.dumps(result))
+
+
+class YoutubeBindingTests(unittest.TestCase):
+    def test_registry_watches_declaration_and_export(self):
+        registry = yaml.safe_load((ROOT / 'data/registry/external_projects.yaml').read_text())
+        registered = next(item for item in registry['projects'] if item['id'] == 'youtube-hq-downloader')
+        self.assertIn('hub.connection.yaml', registered['watch_paths'])
+        self.assertIn('scripts/export_hub_metric_snapshot.py', registered['watch_paths'])
+        self.assertEqual(registered['access_profile'], 'registered_project_read_with_credential_boundary')
+        sources = yaml.safe_load((ROOT / 'data/connections/metric_sources.yaml').read_text())
+        spec = sources['projects']['youtube-hq-downloader']
+        self.assertEqual(spec['adapter'], 'downloader')
+        self.assertNotIn('github_repository', spec)
 
 
 if __name__ == '__main__':
