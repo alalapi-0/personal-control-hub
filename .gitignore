@@ -34,3 +34,5 @@ data/connections/preview/
 # Local browser captures and runtime locks
 .playwright-mcp/
 data/design_governance/*.lock
+data/design_governance/*.sqlite3
+*.json.lock
