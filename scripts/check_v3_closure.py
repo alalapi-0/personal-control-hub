@@ -97,9 +97,7 @@ def _v3_08_remaining(unresolved: list[str]) -> dict[str, list[str]]:
     skipped: list[str] = []
     blocked: list[str] = []
     for item in unresolved:
-        if "学习计划" in item and "computer-study-plan" not in skipped:
-            skipped.append("computer-study-plan")
-        elif ("续写" in item or "governed-wip" in item) and "novel-continuation-agent" not in blocked:
+        if ("续写" in item or "governed-wip" in item) and "novel-continuation-agent" not in blocked:
             blocked.append("novel-continuation-agent")
     return {"skipped_condition_unchanged": skipped, "blocked": blocked}
 
@@ -200,7 +198,7 @@ def run_check(
         dead["unexpectedly_present"]
         or dead["duplicate_current_state"]
         or remaining["blocked"] != ["novel-continuation-agent"]
-        or set(remaining["skipped_condition_unchanged"]) != {"computer-study-plan"}
+        or remaining["skipped_condition_unchanged"] != []
         or len(unresolved) != 11
         or result["goal_complete"]
     ):

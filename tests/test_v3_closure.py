@@ -35,10 +35,7 @@ class V3ClosureTests(unittest.TestCase):
             result["handoff"]["v3_08_remaining"]["blocked"],
             ["novel-continuation-agent"],
         )
-        self.assertEqual(
-            set(result["handoff"]["v3_08_remaining"]["skipped_condition_unchanged"]),
-            {"computer-study-plan"},
-        )
+        self.assertEqual(result["handoff"]["v3_08_remaining"]["skipped_condition_unchanged"], [])
         self.assertIn("youtube-hq-downloader", result["protected_local_io"])
         self.assertEqual(len(result["unresolved"]), 11)
 

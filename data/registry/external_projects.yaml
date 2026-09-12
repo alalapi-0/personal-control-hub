@@ -608,6 +608,8 @@ projects:
   - docs/NEXT_ACTIONS.md
   - docs/ARCHITECTURE.md
   - progress.json
+  - hub.connection.yaml
+  - scripts/export_hub_metric_snapshot.py
   access_profile: registered_project_read
   external_write_allowed: false
   storage_governance:

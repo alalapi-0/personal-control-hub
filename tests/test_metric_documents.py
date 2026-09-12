@@ -1,7 +1,14 @@
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+import yaml
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
 from hub.metric_documents import collect_study, collect_story, collect_zarathustra, collect_cognitive
 
 NOW='2026-09-09T00:00:00Z'
@@ -165,3 +172,15 @@ class DocumentMetricsTests(unittest.TestCase):
             self.put('outputs/topic/topic_card.json',{'id':'KB-001','status':state})
             _,rows=self.run_adapter(collect_cognitive)
             self.assertEqual(rows['cognitive.topics_published'],int(state=='published'))
+
+
+class StudyBindingTests(unittest.TestCase):
+    def test_registry_watches_declaration_and_export(self):
+        registry = yaml.safe_load((ROOT / 'data/registry/external_projects.yaml').read_text())
+        registered = next(item for item in registry['projects'] if item['id'] == 'computer-study-plan')
+        self.assertIn('hub.connection.yaml', registered['watch_paths'])
+        self.assertIn('scripts/export_hub_metric_snapshot.py', registered['watch_paths'])
+        sources = yaml.safe_load((ROOT / 'data/connections/metric_sources.yaml').read_text())
+        spec = sources['projects']['computer-study-plan']
+        self.assertEqual(spec['adapter'], 'study')
+        self.assertEqual(spec.get('github_repository'), 'alalapi-0/computer_study_plan')
