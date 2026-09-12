@@ -12,6 +12,9 @@ python3 scripts/hub_connections.py metrics summary
 python3 scripts/hub_connections.py metrics summary --after 10 --limit 10
 python3 scripts/hub_connections.py metrics query --project-id manga-localizer --metric-id review_count --stage issues
 python3 scripts/hub_connections.py metrics aggregate --project-id manga-localizer --metric-id review_count
+python3 scripts/hub_connections.py metrics management
+python3 scripts/hub_connections.py metrics reviews --axis review_stage --view current
+# reviews 按 review_stage/rework_count/submission_attempt/candidate_revision 单轴查询；current 与 history 不混计，无历史时 coverage.history_status=empty。
 python3 scripts/hub_connections.py metrics changes --project-id light-novel --since 2026-09-01T00:00:00Z
 python3 scripts/hub_connections.py metrics issues --project-id manga-localizer --limit 5
 python3 scripts/hub_connections.py metrics validate

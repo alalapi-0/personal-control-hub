@@ -454,5 +454,38 @@
       "conflict_policy": "reject"
     }
   },
+  "management_contract": {
+    "schema_version": "1.0",
+    "config_path": "data/connections/management_config.yaml",
+    "config_validator": "hub.metric_management.validate_management_config",
+    "review_query": "hub.metric_management.query_review_records",
+    "axes": [
+      "review_stage",
+      "rework_count",
+      "submission_attempt",
+      "candidate_revision"
+    ],
+    "views": [
+      "current",
+      "history"
+    ],
+    "dimensions": [
+      "identity_and_goal",
+      "scope_and_progress",
+      "workflow",
+      "artifacts",
+      "time_and_backlog",
+      "window_flow",
+      "quality_and_rework",
+      "issues_and_dependencies",
+      "development_and_delivery",
+      "operation",
+      "resource_and_cost",
+      "data_quality"
+    ],
+    "history_rule": "current and historical candidates are queried separately; missing history is an empty page",
+    "write_back_allowed": false,
+    "ui_rule": "machine-readable pages only; no chart or UI implementation"
+  },
   "lifecycle": "completed, accepted and delivery.status are independent source facts"
 }

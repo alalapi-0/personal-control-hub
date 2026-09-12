@@ -12,6 +12,13 @@ from hub.connection_refresh import RefreshLedgerError
 from hub.connections import load_registry_at
 from hub.metric_collect import MetricCollector
 from hub.metric_store import MetricStore
+from hub.metric_management import (
+    REVIEW_AXES,
+    REVIEW_VIEWS,
+    load_management_config,
+    management_summary,
+    query_review_records,
+)
 from hub.metrics import (MAX_PAGE_SIZE, METRIC_FIELDS, METRIC_KEY_FIELDS, bounded_json, metric,
                          metric_contract_schema)
 from hub.paths import PROJECT_ROOT
@@ -42,10 +49,32 @@ def main(argv=None):
         query.add_argument("--since")
     prune = commands.add_parser("prune")
     prune.add_argument("--before", required=True)
+    management = commands.add_parser("management")
+    management.add_argument("--after", type=int, default=0)
+    management.add_argument("--limit", type=int, default=10)
+    reviews = commands.add_parser("reviews")
+    reviews.add_argument("--axis", required=True, choices=REVIEW_AXES)
+    reviews.add_argument("--value")
+    reviews.add_argument("--view", default="current", choices=REVIEW_VIEWS)
+    reviews.add_argument("--project-id")
+    reviews.add_argument("--after", type=int, default=0)
+    reviews.add_argument("--limit", type=int, default=10)
     args = parser.parse_args(argv)
     try:
         if args.command == "schema":
             print(bounded_json(metric_contract_schema()))
+            return 0
+        if args.command == "management":
+            config, _ = load_management_config(args.root)
+            print(bounded_json(management_summary(config, after=args.after, limit=args.limit)))
+            return 0
+        if args.command == "reviews":
+            parsed = args.value
+            if args.axis != "review_stage" and parsed is not None:
+                parsed = int(parsed)
+            print(bounded_json(query_review_records(
+                [], axis=args.axis, value=parsed, view=args.view,
+                after=args.after, limit=args.limit, project_id=args.project_id)))
             return 0
         if args.command == "collect":
             collector = MetricCollector(args.root, remote_git=args.remote_git, github_ci=args.github_ci)

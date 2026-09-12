@@ -1,0 +1,51 @@
+schema_version: '1.0'
+kind: hub_management_config
+write_back_allowed: false
+freshness:
+  max_age_seconds: 86400
+  labels:
+    fresh: 新鲜
+    stale: 过期
+    unknown: 未知
+axes:
+  review_stage:
+    display_name: 审核阶段
+    unit: stage
+  rework_count:
+    display_name: 重做次数
+    unit: counts
+  submission_attempt:
+    display_name: 提交次数
+    unit: counts
+  candidate_revision:
+    display_name: 候选版本
+    unit: revision
+dimensions:
+  identity_and_goal: 身份与目标
+  scope_and_progress: 范围与进度
+  workflow: 流程
+  artifacts: 产物
+  time_and_backlog: 时间与积压
+  window_flow: 窗口流量
+  quality_and_rework: 质量与返工
+  issues_and_dependencies: 问题与依赖
+  development_and_delivery: 开发交付
+  operation: 运行
+  resource_and_cost: 资源成本
+  data_quality: 数据质量
+watch:
+- id: unknown_metrics
+  display_name: 未知指标数
+  metric_id: coverage.unknown
+  threshold: null
+  threshold_reason: 未知分母不得设成零目标
+  recovery: 按项目补齐来源映射后重采集
+- id: freshness
+  display_name: 新鲜度
+  metric_id: coverage.freshness
+  threshold:
+    kind: max_age_seconds
+    value: 86400
+  threshold_reason: 超过同步有效期即过期
+  recovery: 重新同步该项目快照
+projects: {}

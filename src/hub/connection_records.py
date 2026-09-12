@@ -275,6 +275,7 @@ def record_schema() -> dict:
     from hub.metric_collect import metric_source_contract_schema
     from hub.metric_snapshot import metric_snapshot_contract_schema
     from hub.metrics import metric_contract_schema
+    from hub.metric_management import management_contract_schema
     from hub.review_contract import review_contract_schema
 
     return {"schema_version": VERSION, "schema_language": "hub-typed-validator-v2",
@@ -300,6 +301,7 @@ def record_schema() -> dict:
             "metric_source_contract": metric_source_contract_schema(),
             "metric_snapshot_contract": metric_snapshot_contract_schema(),
             "review_contract": review_contract_schema(),
+            "management_contract": management_contract_schema(),
             "lifecycle": "completed, accepted and delivery.status are independent source facts"}
 
 
