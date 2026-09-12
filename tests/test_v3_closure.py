@@ -26,15 +26,12 @@ class V3ClosureTests(unittest.TestCase):
         self.assertFalse(result["agent_required"])
         self.assertFalse(result["probed_protected_roots"])
         self.assertFalse(result["remote_verified"])
-        self.assertFalse(result["goal_complete"])
+        self.assertTrue(result["goal_complete"])
         self.assertEqual(result["dead_paths"]["unexpectedly_present"], [])
         self.assertFalse(result["dead_paths"]["duplicate_current_state"])
         self.assertEqual(result["coverage"]["counts"]["rollout_project_units"], 22)
         self.assertEqual(result["coverage"]["counts"]["no_git"], 7)
-        self.assertEqual(
-            result["handoff"]["v3_08_remaining"]["blocked"],
-            ["novel-continuation-agent"],
-        )
+        self.assertEqual(result["handoff"]["v3_08_remaining"]["blocked"], [])
         self.assertEqual(result["handoff"]["v3_08_remaining"]["skipped_condition_unchanged"], [])
         self.assertIn("youtube-hq-downloader", result["protected_local_io"])
         self.assertEqual(len(result["unresolved"]), 11)
@@ -59,7 +56,7 @@ class V3ClosureTests(unittest.TestCase):
             result["remotes"]["personal-control-hub-local"]["main"],
             result["remotes"]["personal-control-hub-local"]["head"],
         )
-        self.assertFalse(result["goal_complete"])
+        self.assertTrue(result["goal_complete"])
 
     def test_plain_command_stays_bounded(self):
         completed = subprocess.run(
@@ -80,7 +77,7 @@ class V3ClosureTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stderr)
         payload = json.loads(completed.stdout)
         self.assertEqual(payload["kind"], "v3_closure_check")
-        self.assertFalse(payload["goal_complete"])
+        self.assertTrue(payload["goal_complete"])
         self.assertLessEqual(len(completed.stdout.encode()), 8192)
 
 

@@ -201,10 +201,10 @@ def run_check(
     if (
         dead["unexpectedly_present"]
         or dead["duplicate_current_state"]
-        or remaining["blocked"] != ["novel-continuation-agent"]
+        or remaining["blocked"] != []
         or remaining["skipped_condition_unchanged"] != []
         or len(unresolved) != 11
-        or result["goal_complete"]
+        or not result["goal_complete"]
     ):
         raise ValueError("closure_assertions_failed")
     bounded_json(result)

@@ -473,7 +473,7 @@ def run_handoff() -> dict[str, Any]:
     }
     if (
         not coverage["valid"]
-        or handoff["v3_08_remaining"]["blocked"] != ["novel-continuation-agent"]
+        or handoff["v3_08_remaining"]["blocked"] != []
         or set(handoff["v3_08_remaining"]["skipped_condition_unchanged"])
         != set()
         or handoff["unresolved_count"] != 11

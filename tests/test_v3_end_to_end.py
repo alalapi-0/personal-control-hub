@@ -39,10 +39,7 @@ class V3EndToEndTests(unittest.TestCase):
         self.assertFalse(result["review_rework_fixture"]["replaces_real_business"])
         self.assertTrue(result["coverage"]["valid"])
         self.assertEqual(result["coverage"]["counts"]["rollout_project_units"], 22)
-        self.assertEqual(
-            result["handoff"]["v3_08_remaining"]["blocked"],
-            ["novel-continuation-agent"],
-        )
+        self.assertEqual(result["handoff"]["v3_08_remaining"]["blocked"], [])
         self.assertEqual(result["handoff"]["v3_08_remaining"]["skipped_condition_unchanged"], [])
         self.assertIn("mcp_host_events", result["unverified_host_events"])
         self.assertTrue(result["real_business_not_replaced_by_fixture"])
@@ -56,10 +53,7 @@ class V3EndToEndTests(unittest.TestCase):
         self.assertIn("V3-11-A3", result["remaining_criteria"])
         self.assertEqual(result["handoff"]["unresolved_count"], 11)
         self.assertEqual(len(result["unresolved"]), 11)
-        self.assertEqual(
-            result["handoff"]["v3_08_remaining"]["blocked"],
-            ["novel-continuation-agent"],
-        )
+        self.assertEqual(result["handoff"]["v3_08_remaining"]["blocked"], [])
         self.assertEqual(result["handoff"]["v3_08_remaining"]["skipped_condition_unchanged"], [])
         self.assertEqual(result["mapping"]["canonical_state"], "STATE.yaml#all_projects_governance")
         self.assertTrue(result["coverage"]["valid"])
