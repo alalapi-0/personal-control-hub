@@ -1,0 +1,37 @@
+{
+  "commit": "db2aa530532f8132318772654ee0151a716aeb79",
+  "remote": "origin",
+  "branch": "agent/governance-closure-20260812",
+  "normal_push": "PASS",
+  "remote_exact_sha": "db2aa530532f8132318772654ee0151a716aeb79",
+  "verification": "git ls-remote --exit-code origin refs/heads/agent/governance-closure-20260812",
+  "owned_paths": 9,
+  "global_config_in_git": false,
+  "active_descendants": 0,
+  "runtime_discovery": "ABSENT_AFTER_LOCAL_ENABLE_IN_NEXT_GOAL_TURN",
+  "oauth": "UNVERIFIED",
+  "overall_goal_complete": false,
+  "observed_at": "2026-09-06T00:54:43.739070+00:00",
+  "runtime_observation": {
+    "local_enabled": true,
+    "accepted_postimage_unchanged": true,
+    "backend_installed": true,
+    "backend_user_enabled": true,
+    "app_permission": "Allow all actions",
+    "root_figma_tools": 0,
+    "independent_context": "/root/tc4_judge",
+    "independent_figma_tools": 0,
+    "tool_search_or_reload_capability": false,
+    "oauth": "UNVERIFIED",
+    "official_recovery_reference": "https://learn.chatgpt.com/docs/plugins#install-and-use-a-plugin",
+    "blocker_turns_since_repair": 3,
+    "shared_conversation_review": {
+      "conversation_id": "6a589715-e534-83ee-965a-c7ac302d22ed",
+      "screenshot_observed": "Figma selected in ChatGPT Work; generic network error",
+      "figma_received_request": "UNVERIFIED",
+      "api_key_fault": "UNVERIFIED",
+      "does_not_load_connector_here": true
+    },
+    "blocker_fingerprint": "figma_runtime_tools_absent_after_enabled_true"
+  }
+}
