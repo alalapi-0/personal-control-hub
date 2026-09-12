@@ -19,6 +19,9 @@ python3 scripts/hub_connections.py metrics changes --project-id light-novel --si
 python3 scripts/hub_connections.py metrics issues --project-id manga-localizer --limit 5
 python3 scripts/hub_connections.py metrics validate
 python3 scripts/hub_connections.py metrics feishu
+python3 scripts/check_v3_end_to_end.py
+# 普通命令完成隔离导出/启动同步/重放/源版本变动/离线隔离/失败恢复/查询/校验；不启动 Agent、模型或 MCP。
+# 未测试的宿主事件列在 unverified_host_events；真实业务完成不以夹具替代。
 ```
 
 Hub 数据启动与显式手动同步使用既有根 CLI：
