@@ -1,9 +1,12 @@
 import hashlib
 import json
+import sys
 from pathlib import Path
 
 import tempfile
 import unittest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from hub.metric_continuation import collect_continuation
 
@@ -52,6 +55,10 @@ JOB = 'universes/u1/runs/real_api_reverse/jobs/job1/job.json'
 
 def test_counts_union_and_semantic_stability(source):
     first = collect(source)
+    import re
+    ident = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$')
+    assert first['issues']
+    assert all(ident.fullmatch(item['code']) for item in first['issues'])
     assert val(first,'source_chapters') == [3]
     assert val(first,'imported_chapters') == [2]
     assert val(first,'characters') == [20]
@@ -180,3 +187,17 @@ def _case(function):
 for _name, _function in list(globals().items()):
     if _name.startswith('test_'):
         setattr(ContinuationTests, _name, _case(_function))
+
+
+class NovelBindingTests(unittest.TestCase):
+    def test_registry_watches_declaration_and_export(self):
+        import yaml
+        root = Path(__file__).resolve().parents[1]
+        registry = yaml.safe_load((root / 'data/registry/external_projects.yaml').read_text())
+        registered = next(item for item in registry['projects'] if item['id'] == 'novel-continuation-agent')
+        self.assertIn('hub.connection.yaml', registered['watch_paths'])
+        self.assertIn('scripts/export_hub_metric_snapshot.py', registered['watch_paths'])
+        sources = yaml.safe_load((root / 'data/connections/metric_sources.yaml').read_text())
+        spec = sources['projects']['novel-continuation-agent']
+        self.assertEqual(spec['adapter'], 'continuation')
+        self.assertEqual(spec.get('github_repository'), 'alalapi-0/novel-continuation-agent')

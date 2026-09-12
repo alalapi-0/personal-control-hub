@@ -301,6 +301,8 @@ projects:
   - governance/file_role_map.yaml
   - governance/novel_pipeline_contract.yaml
   - docs/product_final_state_spec.md
+  - hub.connection.yaml
+  - scripts/export_hub_metric_snapshot.py
   associated_paths:
   - /Users/alalapi/NovelUniverseData
   access_profile: registered_project_read

@@ -245,7 +245,11 @@ def _v3_08_remaining(unresolved: list[str]) -> dict[str, list[str]]:
     skipped: list[str] = []
     blocked: list[str] = []
     for item in unresolved:
-        if ("续写" in item or "governed-wip" in item) and "novel-continuation-agent" not in blocked:
+        if (
+            ("续写" in item or "governed-wip" in item)
+            and ("禁commit" in item or "条件变化前不重试" in item)
+            and "novel-continuation-agent" not in blocked
+        ):
             blocked.append("novel-continuation-agent")
     return {"skipped_condition_unchanged": skipped, "blocked": blocked}
 

@@ -172,7 +172,7 @@ def collect_continuation(root, pid, observed_at, spec):
                             require(age >= 0, 'future stop')
                         except (ValueError, TypeError, AttributeError): age = None
                         p.emit('blocker_age_days', age, 'days', apath, dims=ad, business_at=finished if age is not None else None, basis='Elapsed days since the currently registered blocked attempt finished_at; not continuous backlog age.')
-                        p.problems.append(issue(pid, 'continuation_current_attempt_blocked:' + code,
+                        p.problems.append(issue(pid, 'continuation_current_attempt_blocked.' + code.replace(':', '.'),
                             p.reference(apath), kind='business_blocker',
                             affected_items=len(set(requested)-set(committed)) if commit_ok else None,
                             started_at=finished if age is not None else None,
