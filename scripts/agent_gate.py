@@ -3,7 +3,10 @@
 
 from __future__ import annotations
 
+from governance_scope import add_scope_argument, activate_scope, selected_task, excluded_path
+
 import argparse
+import os
 import json
 import re
 import sys
@@ -60,6 +63,7 @@ REQUIRED_MCP_IDS = {
 }
 
 SCAN_ROOTS = [
+    "STATE.yaml",
     "README.md",
     "AGENTS.md",
     "project.yaml",
@@ -124,22 +128,30 @@ def _load_yaml(relative: str, hard_blockers: list[str]) -> Any:
 
 def _iter_scan_files() -> list[Path]:
     files: list[Path] = []
+
+    def visit(path: Path) -> None:
+        relative = path.relative_to(ROOT)
+        if excluded_path(relative) or any(part in SKIP_DIRS for part in relative.parts):
+            return
+        # Never follow aliases into another authority, including the excluded host.
+        if path.is_symlink():
+            return
+        if path.is_file():
+            if path.suffix in SCAN_SUFFIXES and not path.name.startswith(".env"):
+                files.append(path)
+            return
+        if not path.is_dir():
+            return
+        with os.scandir(path) as entries:
+            names = sorted(entry.name for entry in entries)
+        for name in names:
+            child = path / name
+            # Reject by name before any child stat, open or directory descent.
+            if not excluded_path(child.relative_to(ROOT)) and name not in SKIP_DIRS:
+                visit(child)
+
     for item in SCAN_ROOTS:
-        root = ROOT / item
-        if not root.exists():
-            continue
-        if root.is_file():
-            if root.suffix in SCAN_SUFFIXES and root.name != ".env":
-                files.append(root)
-            continue
-        for path in root.rglob("*"):
-            if not path.is_file():
-                continue
-            if any(part in SKIP_DIRS for part in path.relative_to(ROOT).parts):
-                continue
-            if path.name == ".env" or path.suffix not in SCAN_SUFFIXES:
-                continue
-            files.append(path)
+        visit(ROOT / item)
     return sorted(set(files))
 
 
@@ -163,7 +175,7 @@ def _scan_for_secrets() -> list[str]:
 
 
 def _check_core_files(hard_blockers: list[str]) -> None:
-    missing = [relative for relative in CORE_FILES if not (ROOT / relative).is_file()]
+    missing = [relative for relative in CORE_FILES if not excluded_path(relative) and not (ROOT / relative).is_file()]
     if missing:
         hard_blockers.extend(f"核心文件缺失：{relative}" for relative in missing)
 
@@ -282,6 +294,13 @@ def _check_mcp_registry(hard_blockers: list[str]) -> None:
         level = levels.get(level_id, {})
         if not isinstance(level, dict) or level.get("confirmation_required") is not True:
             hard_blockers.append(f"mcp_approval_policy: {level_id} 必须要求人工确认")
+    agent_policy = _load_yaml("governance/agent_policy.yaml", hard_blockers)
+    agent_levels = agent_policy.get("approval_levels", {}) if isinstance(agent_policy, dict) else {}
+    for source, level in (("mcp_approval_policy", levels.get("L1", {})),
+                          ("agent_policy", agent_levels.get("L1", {}) if isinstance(agent_levels, dict) else {})):
+        if not isinstance(level, dict) or any(level.get(key) is not expected for key, expected in
+                (("confirmation_required", False), ("logging_required", False), ("authority_required", True))):
+            hard_blockers.append(f"{source}: L1 必须复用当前授权、免重复确认且不强制日志；不得自动授予权限")
     l3 = levels.get("L3", {})
     if not isinstance(l3, dict) or l3.get("default_forbidden") is not True:
         hard_blockers.append("mcp_approval_policy: L3 具体高风险动作必须保持默认禁止")
@@ -317,9 +336,19 @@ def run_gate(requested_round: str | None = None) -> dict[str, Any]:
 
     _check_core_files(hard_blockers)
     _check_default_boot(hard_blockers)
-    rounds = _check_round_tasks(hard_blockers, soft_warnings)
+    if selected_task():
+        for file in ("governance/agent_policy.yaml", "data/gates/auto_advance_policy.yaml"):
+            policy = _load_yaml(file, hard_blockers) or {}
+            scope = policy.get("task_overrides", {}).get(selected_task(), {})
+            expected = {"governance_subject": "project", "editor_dependency": "none",
+                        "activation": "current_owner_prompt_required", "runner_grants_authority": False,
+                        "force_push": False, "bypass_protection": False, "real_feishu": "disabled"}
+            if any(scope.get(k) != v for k, v in expected.items()):
+                hard_blockers.append(file + ": task scope boundary drift")
+    rounds = [] if selected_task() else _check_round_tasks(hard_blockers, soft_warnings)
     _check_policy(hard_blockers)
-    _check_mcp_registry(hard_blockers)
+    if not selected_task():
+        _check_mcp_registry(hard_blockers)
 
     if not (ROOT / "docs/14_ui_console_plan.md").is_file():
         soft_warnings.append("docs/14_ui_console_plan.md 不存在，UI 计划尚未落地")
@@ -392,7 +421,9 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="personal-control-hub local agent gate")
     parser.add_argument("--round", dest="round_id", help="检查指定 round 是否可自动推进")
     parser.add_argument("--json", action="store_true", help="输出 JSON")
+    add_scope_argument(parser)
     args = parser.parse_args(argv)
+    activate_scope(args.task_id)
 
     result = run_gate(args.round_id)
     if args.json:

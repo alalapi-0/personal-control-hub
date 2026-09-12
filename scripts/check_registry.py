@@ -19,9 +19,11 @@ from hub.services.project_registry_service import validate_registry  # noqa: E40
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="external project registry check")
     parser.add_argument("--json", action="store_true", help="输出 JSON")
+    parser.add_argument("--metadata-only", action="store_true",
+                        help="Portable metadata/storage contract checks; source availability remains unverified")
     args = parser.parse_args(argv)
 
-    result = validate_registry()
+    result = validate_registry(check_paths=not args.metadata_only)
 
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
@@ -29,6 +31,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print("=== External Project Registry Check ===")
     print(f"项目数：{result['project_count']}")
+    print(f"本机路径可用性检查：{result['path_availability_checked']}")
     print(f"已启用：{result['enabled_count']}")
     print(f"结果：{'ok' if result['valid'] else 'fail'}")
     print(f"硬阻塞：{len(result['hard_blockers'])}")

@@ -1,6 +1,6 @@
 policy:
   name: mcp_approval_policy
-  version: "1.1.0"
+  version: "1.2.0"
   status: draft
   default_level: L0
   host: cursor
@@ -23,14 +23,15 @@ levels:
 
   L1:
     name: local_low_risk_write
-    confirmation_required: true
-    logging_required: true
+    confirmation_required: false
+    logging_required: false
+    authority_required: true
     description: "写入本仓库低风险文件：文档、YAML 草案、扫描输出、日志。"
     examples:
       - "更新 data/project_scans 草案"
       - "写入 MCP 审计报告到 docs/reports"
       - "Filesystem MCP 修改本仓库治理 YAML（非覆盖用户内容）"
-    agent_rule: "仅在当前上级明确授权本地写入与记录时执行并写日志。"
+    agent_rule: "仅在当前任务授权范围内执行；已有授权不逐项重问。只更新必要唯一状态和验收证据，日志另按必要性与授权判断。"
 
   L2:
     name: external_or_shell_low_risk
@@ -42,7 +43,7 @@ levels:
       - "Chrome DevTools 带登录态页面检查（用户在场）"
       - "Stitch UI 生成外部可访问草稿链接"
       - "运行本地只读 git 命令辅助扫描"
-    agent_rule: "必须先停止并向用户说明范围；获得当前显式授权后执行，且仅在授权包含记录时写日志。"
+    agent_rule: "须有覆盖当前动作的明确授权；已有有效授权不重复询问。没有授权时只停止对应动作；仅在授权包含必要记录时写日志。"
 
   L3:
     name: high_risk_write

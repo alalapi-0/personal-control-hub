@@ -1,0 +1,653 @@
+plan_id: PROJECT-DATA-PUBLISH-SYNC-V3
+version: 3
+kind: static_execution_roadmap
+reader:
+- owner
+- Codex
+- Cursor
+- project_maintainer
+purpose: 阶段依赖、验收单元和项目/数据源对应关系；不存当前执行状态
+update_when:
+- owner_scope_change
+- contract_change
+- registry_or_source_binding_change
+activation:
+  requires: explicit_owner_v3_start
+  preparation_is_execution: false
+  canonical_state: STATE.yaml#all_projects_governance
+  execution_document: docs/all_projects_governance_execution.md
+  prompt: prompts/all_projects_governance_goal_mode.md
+baseline:
+  observed_date: '2026-09-10'
+  git_base: aef562b11c57f3d0b21d8893c5bb42c24b97ba1b
+  registry_count: 26
+  local_count: 24
+  removed_local_count: 2
+  cloud_excluded_count: 17
+  source_binding_version: 5f64ad8a5b3f95094e90dedca8911014647b1cc1d7adf9ba1a1ab670890418cd
+  reuse: STATE中v2证据按原版本复用，不能直接算v3验收
+  preserved_gaps:
+  - 空来源项目
+  - 无Git/远端
+  - 漫画实际重做授权
+  - 已有历史CI失败
+contract:
+  snapshot_sections:
+  - identity
+  - publication
+  - source_versions
+  - management
+  - milestones
+  - metrics
+  - issues
+  - verification
+  - delivery
+  - completeness
+  mapping_fields:
+  - project_id
+  - source_ref
+  - selector_or_query_or_function
+  - target_field_or_metric_id
+  - conversion
+  - unit
+  - dimensions
+  - window
+  - scope_id
+  - counting_basis
+  - business_time
+  - version_binding
+  - missing_policy
+  - evidence_ref
+  metric_dimensions:
+  - identity_and_goal
+  - scope_and_progress
+  - workflow
+  - artifacts
+  - time_and_backlog
+  - window_flow
+  - quality_and_rework
+  - issues_and_dependencies
+  - development_and_delivery
+  - operation
+  - resource_and_cost
+  - data_quality
+  round_axes:
+  - stage_id
+  - execution_round
+  - review_stage
+  - submission_attempt
+  - rework_count
+  - candidate_revision
+  aggregate_rules:
+  - scope_and_unit_compatible
+  - ratios_keep_numerator_denominator
+  - net_delta_is_not_throughput
+  - no_mean_of_percentiles
+  - unknown_not_zero
+  - cost_from_telemetry_only
+  mandatory_boundaries:
+  - no_chart_or_ui_implementation
+  - no_agent_dependency_at_runtime
+  - no_editor_or_account_runtime_changes
+  - no_raw_business_data_in_hub_importer
+  - no_collection_triggered_business_effects
+  - no_removed_local_io
+  - no_unauthorized_generation_or_unrelated_storage_cleanup
+  review_transition:
+  - 一审未通过
+  - 待重做
+  - 重做中
+  - 新版本待提交一审
+  - 新版本待一审
+  - 一审中
+  - 一审通过
+  - 按配置进入真正二审或验收
+round_protocol:
+  select: 读取STATE游标；选择依赖已通过且尚未验收的最小阶段/项目单元；局部阻塞继续独立就绪项；迁移与契约可独立推进，各项目接入前确认本项目位置/连接就绪，不因一个迁移阻塞全局。
+  static_stages: 11
+  rollout_project_units: 22
+  forecast: 阶段和项目单元不是保证轮数；实际拆分/复用/阻塞决定逻辑轮，轮末按证据给区间及置信度
+  acceptance_key: stage acceptance_id；逐项目阶段追加project_id形成独立键
+  checkpoint_fields:
+  - plan_version
+  - stage_id
+  - project_id
+  - unit_id
+  - acceptance_versions_and_evidence
+  - failure_or_blocker
+  - delivery
+  - next_action
+  - deduplicated_execution_rounds
+  state_only: true
+  deliver_each_unit: true
+  no_new_round_reports: true
+project_map:
+- project_id: storage_governance
+  registry_ref: data/registry/external_projects.yaml#projects[id=storage_governance]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.storage_governance
+  profile: governance
+  cohort: hub_and_governance
+  stage_id: V3-08
+  unit_id: V3-08/storage_governance
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: null
+  location_baseline: hub_owned_keep_local
+- project_id: personal-control-hub
+  registry_ref: data/registry/external_projects.yaml#projects[id=personal-control-hub]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.personal-control-hub
+  profile: governance
+  cohort: hub_and_governance
+  stage_id: V3-08
+  unit_id: V3-08/personal-control-hub
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: null
+  location_baseline: hub_owned_keep_local
+- project_id: manga-localizer
+  registry_ref: data/registry/external_projects.yaml#projects[id=manga-localizer]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.manga-localizer
+  profile: content_pipeline
+  cohort: pilots
+  stage_id: V3-05
+  unit_id: V3-05/manga-localizer
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/manga-localizer
+  location_baseline: internal_pending_migration
+- project_id: universal-player
+  registry_ref: data/registry/external_projects.yaml#projects[id=universal-player]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.universal-player
+  profile: software_or_tool
+  cohort: apps_and_learning
+  stage_id: V3-08
+  unit_id: V3-08/universal-player
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/universal-player
+  location_baseline: already_external_reuse
+- project_id: ai-anime-short-factory
+  registry_ref: data/registry/external_projects.yaml#projects[id=ai-anime-short-factory]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.ai-anime-short-factory
+  profile: content_pipeline
+  cohort: content
+  stage_id: V3-08
+  unit_id: V3-08/ai-anime-short-factory
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/ai-anime-short-factory
+  location_baseline: already_external_reuse
+- project_id: ai-music-foundry
+  registry_ref: data/registry/external_projects.yaml#projects[id=ai-music-foundry]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.ai-music-foundry
+  profile: content_pipeline
+  cohort: content
+  stage_id: V3-08
+  unit_id: V3-08/ai-music-foundry
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/ai-music-foundry
+  location_baseline: already_external_reuse
+- project_id: novel-continuation-agent
+  registry_ref: data/registry/external_projects.yaml#projects[id=novel-continuation-agent]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.novel-continuation-agent
+  profile: content_pipeline
+  cohort: content
+  stage_id: V3-08
+  unit_id: V3-08/novel-continuation-agent
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/novel-continuation-agent
+  location_baseline: already_external_reuse
+- project_id: story-faceless-utopia
+  registry_ref: data/registry/external_projects.yaml#projects[id=story-faceless-utopia]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.story-faceless-utopia
+  profile: content_pipeline
+  cohort: content
+  stage_id: V3-08
+  unit_id: V3-08/story-faceless-utopia
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/story-faceless-utopia
+  location_baseline: already_external_reuse
+- project_id: light-novel
+  registry_ref: data/registry/external_projects.yaml#projects[id=light-novel]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.light-novel
+  profile: content_pipeline
+  cohort: pilots
+  stage_id: V3-06
+  unit_id: V3-06/light-novel
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/light-novel
+  location_baseline: already_external_reuse
+- project_id: wechat-article-scheduler
+  registry_ref: data/registry/external_projects.yaml#projects[id=wechat-article-scheduler]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.wechat-article-scheduler
+  profile: content_pipeline
+  cohort: content
+  stage_id: V3-08
+  unit_id: V3-08/wechat-article-scheduler
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/wechat-article-scheduler
+  location_baseline: already_external_reuse
+- project_id: resilient-personal-network
+  registry_ref: data/registry/external_projects.yaml#projects[id=resilient-personal-network]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.resilient-personal-network
+  profile: software_or_tool
+  cohort: apps_and_learning
+  stage_id: V3-08
+  unit_id: V3-08/resilient-personal-network
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/resilient-personal-network
+  location_baseline: already_external_reuse
+- project_id: pixel-world-asset-forge
+  registry_ref: data/registry/external_projects.yaml#projects[id=pixel-world-asset-forge]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.pixel-world-asset-forge
+  profile: content_pipeline
+  cohort: content
+  stage_id: V3-08
+  unit_id: V3-08/pixel-world-asset-forge
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/pixel-world-asset-forge
+  location_baseline: already_external_reuse
+- project_id: desktop-jav-tools
+  registry_ref: data/registry/external_projects.yaml#projects[id=desktop-jav-tools]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.desktop-jav-tools
+  profile: software_or_tool
+  cohort: local_tools
+  stage_id: V3-08
+  unit_id: V3-08/desktop-jav-tools
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/desktop-jav-tools
+  location_baseline: already_external_reuse
+- project_id: zarathustra-adaptation
+  registry_ref: data/registry/external_projects.yaml#projects[id=zarathustra-adaptation]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.zarathustra-adaptation
+  profile: content_pipeline
+  cohort: content
+  stage_id: V3-08
+  unit_id: V3-08/zarathustra-adaptation
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/zarathustra-adaptation
+  location_baseline: already_external_reuse
+- project_id: computer-study-plan
+  registry_ref: data/registry/external_projects.yaml#projects[id=computer-study-plan]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.computer-study-plan
+  profile: learning
+  cohort: apps_and_learning
+  stage_id: V3-08
+  unit_id: V3-08/computer-study-plan
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/computer-study-plan
+  location_baseline: already_external_reuse
+- project_id: desktop-tool
+  registry_ref: data/registry/external_projects.yaml#projects[id=desktop-tool]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.desktop-tool
+  profile: software_or_tool
+  cohort: local_tools
+  stage_id: V3-08
+  unit_id: V3-08/desktop-tool
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/desktop-tool
+  location_baseline: already_external_reuse
+- project_id: audio-clone
+  registry_ref: data/registry/external_projects.yaml#projects[id=audio-clone]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.audio-clone
+  profile: software_or_tool
+  cohort: apps_and_learning
+  stage_id: V3-08
+  unit_id: V3-08/audio-clone
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/audio-clone
+  location_baseline: already_external_reuse
+- project_id: cognitive-asset-library
+  registry_ref: data/registry/external_projects.yaml#projects[id=cognitive-asset-library]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.cognitive-asset-library
+  profile: content_pipeline
+  cohort: content
+  stage_id: V3-08
+  unit_id: V3-08/cognitive-asset-library
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/cognitive-asset-library
+  location_baseline: already_external_reuse
+- project_id: pycharm-agent-workspace
+  registry_ref: data/registry/external_projects.yaml#projects[id=pycharm-agent-workspace]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.pycharm-agent-workspace
+  profile: software_or_tool
+  cohort: local_tools
+  stage_id: V3-08
+  unit_id: V3-08/pycharm-agent-workspace
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/pycharm-agent-workspace
+  location_baseline: already_external_reuse
+- project_id: youtube-hq-downloader
+  registry_ref: data/registry/external_projects.yaml#projects[id=youtube-hq-downloader]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.youtube-hq-downloader
+  profile: software_or_tool
+  cohort: local_tools
+  stage_id: V3-08
+  unit_id: V3-08/youtube-hq-downloader
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/youtube-hq-downloader
+  location_baseline: already_external_reuse
+- project_id: desktop-magnet
+  registry_ref: data/registry/external_projects.yaml#projects[id=desktop-magnet]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.desktop-magnet
+  profile: software_or_tool
+  cohort: local_tools
+  stage_id: V3-08
+  unit_id: V3-08/desktop-magnet
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/desktop-magnet
+  location_baseline: already_external_reuse
+- project_id: pycharm-misc-project
+  registry_ref: data/registry/external_projects.yaml#projects[id=pycharm-misc-project]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.pycharm-misc-project
+  profile: software_or_tool
+  cohort: local_tools
+  stage_id: V3-08
+  unit_id: V3-08/pycharm-misc-project
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/pycharm-misc-project
+  location_baseline: already_external_reuse
+- project_id: desktop-downloads-scripts
+  registry_ref: data/registry/external_projects.yaml#projects[id=desktop-downloads-scripts]
+  source_binding_ref: null
+  profile: software_or_tool
+  cohort: local_tools
+  stage_id: V3-08
+  unit_id: V3-08/desktop-downloads-scripts
+  disposition_rule: source_gap_keep_denominator
+  migration_unit: V3-02/desktop-downloads-scripts
+  location_baseline: already_external_reuse
+- project_id: mpv-clip-workbench
+  registry_ref: data/registry/external_projects.yaml#projects[id=mpv-clip-workbench]
+  source_binding_ref: data/connections/metric_sources.yaml#projects.mpv-clip-workbench
+  profile: software_or_tool
+  cohort: apps_and_learning
+  stage_id: V3-08
+  unit_id: V3-08/mpv-clip-workbench
+  disposition_rule: verify_and_reuse_existing_binding
+  migration_unit: V3-02/mpv-clip-workbench
+  location_baseline: already_external_reuse
+- project_id: game-removed-local
+  registry_ref: data/registry/external_projects.yaml#projects[id=game-removed-local]
+  source_binding_ref: null
+  profile: excluded
+  cohort: removed_local
+  stage_id: null
+  unit_id: null
+  disposition_rule: removed_local_no_io
+  migration_unit: null
+  location_baseline: removed_local_no_probe
+- project_id: manga-removed-local
+  registry_ref: data/registry/external_projects.yaml#projects[id=manga-removed-local]
+  source_binding_ref: null
+  profile: excluded
+  cohort: removed_local
+  stage_id: null
+  unit_id: null
+  disposition_rule: removed_local_no_io
+  migration_unit: null
+  location_baseline: removed_local_no_probe
+legacy_mapping_seeds:
+- source: manga
+  reader: src/hub/metric_manga.py
+  field: verdict
+  values:
+    pending: review_pending
+    issues: correction_required
+    approved: review_approved
+  limits: 不据聚合计数/最大artifact_revision推断审核阶段/提交次数或最终验收；迁移须读取逐项版本与事件。
+- source: pixel
+  reader: src/hub/metric_catalogs.py
+  field: review decision/review_status/lifecycle_status
+  values:
+    pending: review_pending
+    under_review: review_in_progress
+    approved: review_approved
+    rejected: review_rejected
+    retry_needed: retry_required
+  limits: 三个源字段分别映射；legacy_review_status不替代决定，asset_id关联不等于审核版本绑定。
+- source: anime
+  reader: src/hub/metric_catalogs.py
+  field: reviews.decision
+  values:
+    approve: review_approved
+    reject: review_rejected
+    needs_correction: correction_required
+  limits: record.revision与内容version分开；运行状态不当审核轮，approved不当最终accepted。
+- source: music
+  reader: src/hub/metric_music.py
+  field: run status
+  values:
+    pending: production_pending
+    running: production_running
+    succeeded: production_succeeded
+    failed: production_failed
+    cancelled: production_cancelled
+  limits: 成功仅表示运行结果；provider_version不当作品候选版本；缺审核源保持unknown。
+- source: wechat
+  reader: src/hub/metric_wechat.py
+  field: queue status
+  values:
+    pending: queue_pending
+    running: queue_running
+    done: queue_done
+    failed: queue_failed
+    waiting_confirmation: queue_waiting_confirmation
+    cancelled: queue_cancelled
+  limits: done/real不能证明发布或验收；凭证和内容版本单独关联。
+stages:
+- id: V3-01
+  title: 基线、范围与项目/数据映射
+  depends_on: []
+  owned_scope: Hub；仅必要的项目只读核对
+  work:
+  - 按registry及现有来源绑定建立全登记对应关系；标明空项目、无Git、离线、移除和云排除。
+  - 把v2证据绑定其原版本；列出v3新增验收，不重做已有效的源验证。
+  - 存储入口目前在原工作区而不在基线main；先核对并接入必要的有效版本及状态指针，不复制历史全树或恢复过时权限。
+  acceptance:
+  - id: V3-01-A1
+    criterion: 全登记ID无遗漏/重复；removed_local不探测路径。
+  - id: V3-01-A2
+    criterion: 每项目已有源/适配器/仓库/缺口可追溯；无权威来源不猜数据。
+  - id: V3-01-A3
+    criterion: 迁移所需唯一状态/规则入口可访问且版本归属明确；main缺失依赖已处理或保留阻塞，未解决前不得搬移。
+  unit_key: V3-01/baseline；至少1个逻辑单元
+  evidence: 现有STATE单元记录中的版本/命令退出结果/证据引用/对应仓库交付；不另建逐轮报告
+- id: V3-02
+  title: 独立子项目外置盘迁移与路径重连
+  depends_on:
+  - V3-01
+  owned_scope: 逐个独立子项目；Hub只更新登记/入口，存储事实复用其唯一STATE
+  work:
+  - 按真实项目根和Git边界分类；已外置不搬，Hub内部模块留本地，removed_local不探测。
+  - 整目录复制/校验/切换路径，保留Git与未提交独有内容；用汇总程序检查替代逐文件模型阅读。
+  - 核对实际消费者、启动/导出入口、必要守卫与连接；目标有效后完成原目录清理，避免双份长期保留。
+  acceptance:
+  - id: V3-02-A1
+    criterion: 所有独立现存项目在外盘或有真实阻塞；原分母/移除处置保留，Hub未移动或拆仓。
+  - id: V3-02-A2
+    criterion: 目标完整性、Git身份/脏内容、数据一致性和必要入口有程序证据；失败不删源、不覆盖冲突目标。
+  - id: V3-02-A3
+    criterion: 权威路径与实际消费者一致；真实修改到对应main，无空提交或擅自建远端。
+  unit_key: V3-02/<project_id>；基线21项已外置、1项待迁，已完成有效证据复用
+  evidence: 现有StorageGovernance唯一STATE及程序汇总引用；Hub不复制逐文件清单或新建迁移账本
+- id: V3-03
+  title: 统一Schema、模板、指标与审核词义
+  depends_on:
+  - V3-01
+  owned_scope: Hub共享契约
+  work:
+  - 形成声明和生成快照的可执行Schema/校验器，统一现有管理字段与数值接口。
+  - 实现并验证候选版本、真正审核阶段、同阶段提交次数、重做次数、决定、验收和交付关联；未知历史保持未知。
+  - 明确12类维度、领域profile、时间窗口/聚合/缺失策略及展示配置；模板不执行任意代码。
+  acceptance:
+  - id: V3-03-A1
+    criterion: 合法/缺失/未知/不适用/错误样例可校验，契约无歧义。
+  - id: V3-03-A2
+    criterion: 一审不通过进入待重做，实际新版本生成并送审后回到待一审；真正二审只在配置及一审通过后进入；旧批准不放行新版本。
+  - id: V3-03-A3
+    criterion: Schema/指标定义为唯一权威；声明只有稳定配置，动态事实由导出生成。
+  unit_key: V3-03/contract；可按可独立验收的契约拆分
+  evidence: 现有STATE单元记录中的版本/命令退出结果/证据引用/对应仓库交付；不另建逐轮报告
+- id: V3-04
+  title: 共享导出器与快照导入
+  depends_on:
+  - V3-03
+  owned_scope: Hub共享库；选定项目入口单独串行
+  work:
+  - 复用现有读源/Git/校验代码，提供普通脚本可调用的共享导出接口。
+  - 建立原子快照写入和仅消费标准快照的Hub导入器；保留独立组错误与last_success。
+  acceptance:
+  - id: V3-04-A1
+    criterion: 离开Agent/MCP仍能导出/导入；导入器不能直接打开业务原始源。
+  - id: V3-04-A2
+    criterion: 重复输入不重复事件/历史；半写入、版本不兼容、超时与中断恢复受测。
+  unit_key: V3-04/export-import；每个仓库分开交付
+  evidence: 现有STATE单元记录中的版本/命令退出结果/证据引用/对应仓库交付；不另建逐轮报告
+- id: V3-05
+  title: 漫画真实返工回流与项目导出
+  depends_on:
+  - V3-04
+  owned_scope: manga-localizer；Hub集成单元另计
+  work:
+  - 复用真实失败ID及已有修复，补逐项候选/审核绑定、重做任务与退回意见引用，修复实际流程而非改名。
+  - 业务项目处理一审失败→重做→新版本重新一审；导出只读结果，Hub不触发业务事件。
+  - 验证实际失败案例及统一快照；付费真实生成未授权时保留该验收项阻塞。
+  acceptance:
+  - id: V3-05-A1
+    criterion: 真实失败记录副本完成一审退回、重做领取/执行、新版本送一审、通过后按配置二审/验收；重复/迟到/并发/恢复正确。
+  - id: V3-05-A2
+    criterion: 真实执行与副本/mock证据分开；实际重做未完成时不标整个闭环完成。
+  - id: V3-05-A3
+    criterion: 快照保留旧审核历史引用，审核阶段、重做/提交次数、候选版本与缺口可分别查询。
+  unit_key: V3-05/manga-contract 与 V3-05/manga-real-cycle；后者阻塞不阻止独立阶段
+  evidence: 现有STATE单元记录中的版本/命令退出结果/证据引用/对应仓库交付；不另建逐轮报告
+- id: V3-06
+  title: 异构项目试点：轻小说
+  depends_on:
+  - V3-04
+  owned_scope: light-novel；Hub集成单元另计
+  work:
+  - 复用章节/导出/批次数据映射，落地同一声明、项目导出入口及快照。
+  - 把草稿完成、审核、验收、导出分开；缺失审核源保留未知，不生成假进度。
+  acceptance:
+  - id: V3-06-A1
+    criterion: 源改变仅更新相关指标，重复刷新/重启保持一致。
+  - id: V3-06-A2
+    criterion: 相同共享Schema容纳页和章等不同单位；管理与业务来自同一快照，不双重采集。
+  unit_key: V3-06/light-novel
+  evidence: 现有STATE单元记录中的版本/命令退出结果/证据引用/对应仓库交付；不另建逐轮报告
+- id: V3-07
+  title: Hub启动/手动同步与共享API
+  depends_on:
+  - V3-04
+  - V3-06
+  owned_scope: Hub
+  work:
+  - 接入现有启动入口和同步入口：先读缓存，再有界调用项目导出并导入。
+  - 扩展/复用GitHub共享API，显式仓库绑定、同仓去重、分页/缓存/限流；本地Git留共享函数。
+  acceptance:
+  - id: V3-07-A1
+    criterion: 不运行Agent、模型或MCP，启动和手动同步均可完成；不触发生成/测试/提交。
+  - id: V3-07-A2
+    criterion: 离线或一个项目失败不阻塞其他项目；latest_attempt/last_success及版本时间准确。
+  - id: V3-07-A3
+    criterion: API受限/分页不全保持unknown与覆盖范围；CI绑定候选，不冒充required checks。
+  unit_key: V3-07/startup-sync 与 V3-07/shared-api
+  evidence: 现有STATE单元记录中的版本/命令退出结果/证据引用/对应仓库交付；不另建逐轮报告
+- id: V3-08
+  title: 其余项目分组接入
+  depends_on:
+  - V3-07
+  owned_scope: 按project_map逐仓串行
+  work:
+  - 按content、apps_and_learning、local_tools、hub_and_governance分组选择项目；每项目独立验收。
+  - 逐项目确认源→字段→单位/维度/窗口→审核/版本→缺失→证据映射，复用已有适配器。
+  - 修复已证实的接入/审核回流共因，不扩成产品全量重构；空项目保留显式缺口。
+  acceptance:
+  - id: V3-08-A1
+    criterion: 22个非试点本地登记项各有可追溯处置和接入结果；分母不因失败下降。
+  - id: V3-08-A2
+    criterion: 适用项目从自身入口产出统一快照，Hub不依赖其私有结构；不适用需有证据而非自动豁免。
+  - id: V3-08-A3
+    criterion: 移除2项保留身份不读写；有审核的项目完成版本绑定，无审核的项目明确适用性。
+  unit_key: V3-08/<project_id>；基线22个项目单元，不把整组当一个已完成单元
+  evidence: 现有STATE单元记录中的版本/命令退出结果/证据引用/对应仓库交付；不另建逐轮报告
+- id: V3-09
+  title: 汇总、变化与管理配置
+  depends_on:
+  - V3-07
+  owned_scope: Hub；缺源补映射仍回到具体项目
+  work:
+  - 补范围/里程碑、流程、产物、积压、窗口流量、质量、阻塞、开发交付、运行、成本、数据质量。
+  - 提供确定性聚合和筛选，配置中文含义、关注指标、目标阈值、依赖/恢复链接及新鲜度。
+  acceptance:
+  - id: V3-09-A1
+    criterion: 比例/窗口/分布遵循口径；net delta不冒充吞吐；不同单位不相加；成本未知不估算。
+  - id: V3-09-A2
+    criterion: 审核阶段、重做次数、提交次数、版本可分别查询，历史与当前候选不混计；历史不足明确为空。
+  - id: V3-09-A3
+    criterion: 无图表/UI实现要求；机器数据有边界/分页，模型摘要保留完整覆盖计数。
+  unit_key: V3-09/analytics 与 V3-09/management-config
+  evidence: 现有STATE单元记录中的版本/命令退出结果/证据引用/对应仓库交付；不另建逐轮报告
+- id: V3-10
+  title: 全链验证与执行者交接
+  depends_on:
+  - V3-05
+  - V3-06
+  - V3-08
+  - V3-09
+  - V3-02
+  owned_scope: Hub验证；需要项目验证时串行
+  work:
+  - 验证启动/离线/失败/恢复/重复事件、源版本变动、真实一审回流重做及外置盘入口和全登记覆盖。
+  - 用同一STATE游标和计划进行只读交接检查，不依赖Codex/Cursor私有会话历史或特定工具。
+  acceptance:
+  - id: V3-10-A1
+    criterion: 普通命令独立完成导出、同步、查询、验证，断开Agent后无能力缺失。
+  - id: V3-10-A2
+    criterion: 下一执行者仅凭STATE/当前阶段/映射即可继续，无需重跑已验收单元；未测试的宿主事件不报已验证。
+  - id: V3-10-A3
+    criterion: 全部适用验收与真实外部阻塞逐项列明，不能用测试副本替代真实业务完成。
+  unit_key: V3-10/end-to-end 与 V3-10/handoff
+  evidence: 现有STATE单元记录中的版本/命令退出结果/证据引用/对应仓库交付；不另建逐轮报告
+- id: V3-11
+  title: 清理与全仓交付收口
+  depends_on:
+  - V3-10
+  owned_scope: 对应仓库串行；Hub仅本仓内容
+  work:
+  - 确认消费者已迁移后删除旧直读路径、重复状态/模板/脚本和无用文档。
+  - 汇总各轮已经发生的主分支交付、仍未交付内容及边界，不补造逐轮收据。
+  acceptance:
+  - id: V3-11-A1
+    criterion: 必要改动均在各自主分支且远端包含已核对，相关检查符合真实保护要求。
+  - id: V3-11-A2
+    criterion: 无重复当前状态或未清理死路径；无Git/无远端/未授权生成/旧失败有准确处置和恢复点。
+  - id: V3-11-A3
+    criterion: 所有适用验收通过才报告完成；存在未解决必需项则继续或按真实阻塞保存恢复点。
+  unit_key: V3-11/closure；每轮交付不得推迟到本阶段
+  evidence: 现有STATE单元记录中的版本/命令退出结果/证据引用/对应仓库交付；不另建逐轮报告
+migration:
+  default_new_root: /Volumes/AI_WORK_SSD/Projects
+  already_external_policy: keep_valid_root_no_recopy
+  hub_policy: keep_local_including_internal_modules
+  state_adapter: governance/adapters/storage_governance.yaml
+  existing_parameters: data/programs/storage_governance_goal.yaml
+  execution_state: governance/programs/storage_governance/STATE.yaml
+  observation_only:
+    date: '2026-09-10'
+    external_independent: 21
+    internal_independent:
+    - manga-localizer
+    hub_owned:
+    - personal-control-hub
+    - storage_governance
+    removed_local: 2
+  verification: whole-directory tool copy plus necessary program integrity/Git/entry checks; no model-per-file audit
+  cutover: verify target then update authoritative paths/needed connections; remove original project directory only
+    after unique data is safe
+  not_authorized: unrelated global cleanup or deleting an unverified source
+  local_workspace_dependencies:
+    status: present_in_original_checkout_not_in_baseline_main
+    recovery_commit: 0ca1ee547990fd876e9917c8c6ee1fa7d2bb8142
+    paths:
+    - data/programs/storage_governance_goal.yaml
+    - governance/adapters/storage_governance.yaml
+    - governance/programs/storage_governance/STATE.yaml
+    required_before_effects: V3-01核对当前有效入口并完成必要的版本化接入；缺失不能绕过迁移约束，也不新建平行迁移账本。

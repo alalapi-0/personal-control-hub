@@ -17,15 +17,11 @@ from typing import Any, Callable, Iterator, Mapping, Sequence
 from urllib.parse import quote
 
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "2.0"
 GENESIS_HASH = "0" * 64
 ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,191}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
-AUTHORITY_FIELDS = {
-    "source_plan_id", "source_plan_hash", "manifest_id", "manifest_hash",
-    "registry_hash", "adapter_version", "adapter_hash",
-    "accepted_inventory_hash", "accepted_candidate",
-}
+AUTHORITY_FIELDS = {"registry_hash", "schema_hash", "adapter_version"}
 
 
 class RefreshLedgerError(RuntimeError):
@@ -119,10 +115,11 @@ def _validate_authority(value: Any) -> dict[str, Any]:
     for field in AUTHORITY_FIELDS:
         if not isinstance(capsule[field], str) or not capsule[field]:
             raise RequestConflictError(f"authority.{field}: nonempty string required")
-    for field in ("source_plan_hash", "manifest_hash", "registry_hash",
-                  "adapter_hash", "accepted_inventory_hash", "accepted_candidate"):
+    for field in ("registry_hash", "schema_hash"):
         if not SHA256.fullmatch(capsule[field]):
             raise RequestConflictError(f"authority.{field}: invalid sha256")
+    if capsule["adapter_version"] != SCHEMA_VERSION:
+        raise RequestConflictError("unsupported adapter version")
     _canonical(capsule)
     return capsule
 
@@ -131,9 +128,9 @@ def _safe_database_path(root: Path, path: Path | str | None, *, create: bool) ->
     root = Path(root).absolute()
     if root.is_symlink() or not root.is_dir():
         raise LedgerPathError("Hub root must be an existing ordinary directory")
-    allowed = (root / "data" / "design_governance",
-               root / "docs" / "reports" / "ui_design_governance")
-    candidate = (root / "data" / "design_governance" / "connection_refresh.sqlite3"
+    allowed = (root / "data" / "connections",
+               root / "docs" / "reports" / "all-projects-governance")
+    candidate = (root / "data" / "connections" / "connection_refresh.sqlite3"
                  if path is None else Path(path))
     if not candidate.is_absolute():
         candidate = root / candidate
@@ -228,7 +225,9 @@ class RefreshLedger:
                 tables = {row[0] for row in connection.execute(
                     "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
                 owned = {"ledger_meta", "refresh_requests", "refresh_events", "refresh_results"}
-                if tables == owned:
+                metric_tables = {"metric_requests", "metric_receipts", "metric_projects",
+                                 "metric_changes", "metric_current"}
+                if owned <= tables and tables <= owned | metric_tables:
                     self._check_schema(connection)
                     return
                 if tables:
@@ -432,7 +431,7 @@ class RefreshLedger:
             raise ResultValidationError("SourceResolver rejected the result") from exc
         if not isinstance(validated, dict) or _canonical(validated) != _canonical(result):
             raise ResultValidationError("validator must return the unchanged canonical result")
-        if (validated.get("schema_version") != "1.0"
+        if (validated.get("schema_version") != SCHEMA_VERSION
                 or validated.get("kind") != "source_resolution"
                 or type(validated.get("success")) is not bool):
             raise ResultValidationError("result has unsupported identity or success semantics")
@@ -778,9 +777,9 @@ def refresh(ledger: RefreshLedger, resolver: Any, request_id: str,
     request = ledger.history(request_id)["requests"][0]
     if not request["remaining_project_ids"]:
         request = ledger.finish_request(request_id)
-    # A ledger-level dispatcher can validate immutable results from older source
-    # plan revisions.  The active resolver validator only covers this request.
+    # A ledger-level dispatcher can validate immutable results from older schema/registry
+    # revisions.  The active resolver validator only covers this request.
     projection_validator = ledger.result_validator or validator
     return {"request": request, "appended_project_ids": appended,
             "resolver_errors": failures,
-            "projection": ledger.rebuild(validator=projection_validator)}
+            "projection": ledger.rebuild(current_authority=authority, validator=projection_validator)}

@@ -1,0 +1,63 @@
+{
+  "schema_version": "2.0",
+  "schema_language": "hub-typed-validator-v2",
+  "declaration_validator": "hub.connection_records.validate_declaration",
+  "record_validator": "hub.connection_records.validate_result",
+  "business_fields": {
+    "current_work.objective": "string",
+    "current_work.phase": "string",
+    "current_work.round": "string",
+    "current_work.status": "status",
+    "current_work.completed": "boolean",
+    "current_work.accepted": "boolean",
+    "current_work.next_action": "string",
+    "current_work.owner_role": "string",
+    "progress.completed": "integer",
+    "progress.total": "integer",
+    "progress.counting_basis": "string",
+    "progress.milestones": "milestones",
+    "blockers": "blockers",
+    "verification.status": "string",
+    "verification.evidence_refs": "strings",
+    "verification.accepted_basis": "string",
+    "delivery.status": "delivery",
+    "delivery.remote": "string",
+    "delivery.branch": "string",
+    "delivery.commit": "commit",
+    "delivery.receipt_ref": "string"
+  },
+  "nullable": "all fields; each null requires a reason",
+  "enums": {
+    "status": [
+      "active",
+      "blocked",
+      "complete",
+      "paused",
+      "unknown"
+    ],
+    "delivery": [
+      "delivered",
+      "local",
+      "pending_delivery",
+      "unknown"
+    ]
+  },
+  "read_statuses": [
+    "authority_drift",
+    "disabled",
+    "invalid",
+    "missing_declaration",
+    "missing_source",
+    "offline",
+    "permission_denied",
+    "removed_local",
+    "resolved",
+    "unsafe_path"
+  ],
+  "source_contract": "one relative current_state source; typed path or exact Markdown heading/label",
+  "permission_rule": "explicit connection_read_allowed=false denies before root access; absent field falls back to enabled",
+  "protected_sources": "no .codex/.cursor/.ssh roots, unsafe aliases, environment or credential/token source filenames",
+  "output_shell": "exact snapshot/row/authority/head/coverage/freshness fields; valid project IDs, nonempty names, strict numeric/boolean types",
+  "value_maps": "all declared and provenance targets must match the field type, including unselected entries",
+  "lifecycle": "completed, accepted and delivery.status are independent source facts"
+}

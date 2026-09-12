@@ -1,0 +1,2593 @@
+{
+  "schema_version": "1.0",
+  "kind": "multi_project_figma_redesign_queue",
+  "id": "multi-project-figma-redesign-v1",
+  "recorded_at": "2026-09-07T03:33:48Z",
+  "authority": {
+    "source": "owner_prompt_2026-09-06T16:01:00+08:00",
+    "effect_scope": [
+      "create_and_edit_task_dedicated_figma_files",
+      "create_task_pages_components_variables_and_sanitized_previews",
+      "update_task_owned_hub_design_records"
+    ],
+    "forbidden": [
+      "external_project_write",
+      "external_business_or_current_state_write",
+      "overwrite_delete_or_publish_existing_figma_assets",
+      "stitch_or_raster_substitution_for_editable_figma",
+      "paid_overage_or_project_api_key",
+      "commit_push_deploy_release",
+      "credential_or_sensitive_data_access"
+    ]
+  },
+  "goal": {
+    "milestone": "All 11 eligible unselected projects have five editable, materially distinct, reviewed Figma candidates and truthful Hub comparison records.",
+    "status": "ACTIVE",
+    "pause_reason": null,
+    "continuation_budget": {
+      "cycle": 2,
+      "started_at": "2026-09-06T23:36:58Z",
+      "used": 0,
+      "limit": 10,
+      "requested_limit": 20,
+      "requested_limit_disposition": "NOT_APPLIED_POLICY_CAP_10",
+      "policy": "One explicit Goal Mode activation permits at most 10 automatic continuations."
+    },
+    "continuation_history": [
+      {
+        "cycle": 1,
+        "used": 10,
+        "limit": 10,
+        "ended_at": "2026-09-06T18:28:19Z",
+        "outcome": "NEEDS_USER_BUDGET_EXHAUSTED"
+      }
+    ],
+    "stage_policy": "Advance one project by one verifiable stage per iteration; serialize all Figma writes.",
+    "qualified_project_count": 11,
+    "selection_ready_count": 0,
+    "unique_next_action": "Build universal-player Direction E — Adaptive Capsule as the fifth editable candidate on isolated page 11:2, preserving the locked P0/P1, state and macOS/iPhone platform contract while making its mobile-first cross-size capsule information architecture, 44–56 touch geometry, rounded typography, deep-green/coral/mint solid material and breakpoint morph feedback materially distinct from frozen Directions A through D; validate, freeze and independently review the exact identity."
+  },
+  "scope": {
+    "selected_or_retained": [
+      {
+        "project_id": "personal-control-hub",
+        "disposition": "SELECTED_AND_ACCEPTED"
+      },
+      {
+        "project_id": "computer-study-plan",
+        "disposition": "RETAIN_ORIGINAL_OWNER_DECISION"
+      }
+    ],
+    "not_applicable_without_new_gui_authority": [
+      "resilient-personal-network",
+      "desktop-jav-tools",
+      "desktop-tool",
+      "cognitive-asset-library",
+      "youtube-hq-downloader",
+      "desktop-magnet",
+      "pycharm-misc-project",
+      "desktop-downloads-scripts"
+    ],
+    "protected_no_access": [
+      "storage_governance",
+      "manga-localizer",
+      "pycharm-agent-workspace"
+    ]
+  },
+  "protected_work": {
+    "hub_preexisting_modified": [
+      "AGENTS.md",
+      "data/gates/auto_advance_policy.yaml",
+      "data/mcp/mcp_approval_policy.yaml",
+      "governance/agent_policy.yaml",
+      "prompts/codex_project_driver.md",
+      "prompts/cursor_project_driver.md",
+      "scripts/agent_gate.py",
+      "scripts/auto_advance_runner.py"
+    ],
+    "hub_preexisting_untracked": [
+      ".playwright-mcp/",
+      "data/design_governance/design-store.json.lock",
+      "docs/global_agent_governance_execution.md",
+      "docs/reports/ui_design_governance/figma-source-observation-v1.json",
+      "docs/reports/ui_design_governance/unit-08/delivery.json",
+      "docs/reports/ui_design_governance/unit-09/delivery.json",
+      "docs/reports/ui_design_governance/unit-10/delivery.json",
+      "docs/reports/ui_design_governance/unit-11/delivery.json",
+      "docs/reports/ui_design_governance/unit-13/delivery.json",
+      "docs/reports/ui_design_governance/unit-14/delivery.json"
+    ],
+    "external_project_policy": "All external working trees and their pre-existing changes remain read-only and protected."
+  },
+  "projects": [
+    {
+      "project_id": "universal-player",
+      "priority": 1,
+      "baseline_identity": {
+        "repository_root": "/Volumes/AI_WORK_SSD/Projects/universal-player",
+        "branch": "main",
+        "head_commit": "bf0e6dfce882cff74799c300ff6c1c9b54615463",
+        "working_tree": "PREEXISTING_DIRTY_READ_ONLY",
+        "sources": [
+          {
+            "path": "Sources/UniversalPlayerUI/UniversalPlayerView.swift",
+            "sha256": "517726ed7ca8e7a5049b5a573ee62c2ea860ee78410242447071a395b9a348d5"
+          },
+          {
+            "path": "docs/PRODUCT_SPEC.md",
+            "sha256": "1be6ff827bb419c97d288db50143484877728113798e098b05161f2a7bac913f"
+          },
+          {
+            "path": "docs/USER_GUIDE.md",
+            "sha256": "0d82826519c1cb056dc08d9319b7b43bf3d0cb47ab938b79f8d4f018b34ded58"
+          },
+          {
+            "path": "docs/ARCHITECTURE.md",
+            "sha256": "4594bd8f475f7005a8795418a0e6801658041d2ad2995e2838cf52c341ab396c"
+          },
+          {
+            "path": ".agent/STATE.md",
+            "sha256": "179938b45328db97a49965ada310a6d3f14789dde9d955c983f7ab4a29e99c09"
+          }
+        ],
+        "reference_figma": {
+          "file_key": "lURMGTfFpSzWQhVy0hBS3m",
+          "role": "REFERENCE_ONLY_NOT_OWNER_SELECTION",
+          "prior_observed_version": "2387346370768693436",
+          "live_pages": [
+            {
+              "node_id": "0:1",
+              "name": "00 Cover"
+            },
+            {
+              "node_id": "12:2",
+              "name": "01 Foundations"
+            },
+            {
+              "node_id": "12:3",
+              "name": "02 Components"
+            },
+            {
+              "node_id": "12:4",
+              "name": "03 Screens"
+            }
+          ],
+          "live_structure": {
+            "variable_collections": 3,
+            "variables": 57,
+            "text_styles": 13,
+            "effect_styles": 3,
+            "component_page_top_level_nodes": 31,
+            "screen_page_top_level_nodes": 42
+          }
+        },
+        "runtime_claim": "SOURCE_AND_PRIOR_PROJECT_EVIDENCE_ONLY; no external app launch or business data read in this stage."
+      },
+      "current_stage": "C_DIRECTION_E_READY_TO_BUILD",
+      "figma_file_key": "coCZiR1zIwk7AGshjJXPEr",
+      "figma_file": {
+        "file_key": "coCZiR1zIwk7AGshjJXPEr",
+        "file_url": "https://www.figma.com/design/coCZiR1zIwk7AGshjJXPEr",
+        "name": "Universal Player — Multi-Direction UI Redesign · Selection 2026-09",
+        "editor_type": "figma",
+        "role": "TASK_DEDICATED_EDITABLE",
+        "created_at": "2026-09-06T09:32:20Z",
+        "initial_page": {
+          "node_id": "0:1",
+          "name": "Page 1",
+          "child_count": 0
+        },
+        "planned_pages": [
+          "00 Baseline",
+          "01 UX Architecture",
+          "02 Foundations & Components",
+          "10 Direction A",
+          "20 Direction B",
+          "30 Direction C",
+          "40 Direction D",
+          "50 Direction E",
+          "80 Comparison",
+          "90 Selected Expansion"
+        ],
+        "discovery": {
+          "code_connect": "NONE_FOUND_FOR_REQUIRED_PROJECT_COMPONENTS",
+          "target_local_assets": {
+            "variable_collections": 0,
+            "variables": 0,
+            "components": 0,
+            "text_styles": 0,
+            "effect_styles": 0,
+            "paint_styles": 0
+          },
+          "relevant_subscribed_libraries": [
+            {
+              "name": "iOS and iPadOS 26",
+              "source": "community"
+            },
+            {
+              "name": "macOS 26",
+              "source": "community"
+            }
+          ],
+          "reuse_candidates": {
+            "ios_button_content_area": "aa1e2901a821ff24d484362e7e8e70378ee7d388",
+            "macos_push_button": "2da2c8736129ea4bede44178b6e3e22ad28a5322",
+            "ios_slider": "22810f28fce0d1cf97ba81b5a32d2d16b87d5ef7",
+            "macos_slider": "6a41d9b30f08e97771e508a2b8972f91651343c6",
+            "ios_row": "5587f1ebded12290ac2731cef9d68f98a4a0ac61",
+            "ios_sheets": "b983495e726edf5e938bf02913e13388acf588c8",
+            "macos_window": "41dcd0a129c47ad6c0104483d08fc690909e7fb8",
+            "macos_sidebar_item": "ad2fea28c80992abd050a968f884c4d53041a755",
+            "ios_background_primary": "039b9d935dc4bb8355a386faedf5de607afa115b",
+            "ios_body_regular_style": "61d8660a05c78e23eb7acac3bc9a0f327591ebe4",
+            "macos_body_regular_style": "e7fa93bb515a24cc2b87cfad12e274a684a7663b"
+          },
+          "gaps": [
+            "Exact Navigation Bar - iPhone (Compact Size Class) query returned no component.",
+            "General spacing query returned only component-specific macOS metrics, not a reusable spacing scale.",
+            "Shadow style query returned no style.",
+            "Project-specific player, transport, media viewport, status, recovery, caption, focus and danger components require a local system after scope lock."
+          ],
+          "compatibility_boundary": "Apple 26 assets are discovery candidates, not authority to raise macOS 13+ or iOS 17+ deployment targets or assume version-specific runtime materials."
+        },
+        "phase0_scope_lock": {
+          "id": "UP-P0-v2",
+          "status": "LOCKED",
+          "locked_at": "2026-09-06T11:46:46Z",
+          "plan_revision": {
+            "supersedes": "UP-P0-v1",
+            "reason": "The authenticated Figma Professional plan supports at most four modes per collection, so one five-mode semantic collection is not executable.",
+            "resolution": "Use one single-mode semantic collection per direction, plus shared primitives and metrics. This preserves five independent palettes without raw semantic values or reduced candidate scope."
+          },
+          "canvas_state": {
+            "page_id": "0:1",
+            "page_name": "Page 1",
+            "page_child_count": 0,
+            "local_variable_collections": 0,
+            "local_variables": 0,
+            "local_components": 0,
+            "local_text_styles": 0,
+            "local_effect_styles": 0,
+            "phase0_canvas_mutations": 0
+          },
+          "authority_precedence": [
+            "Owner campaign scope and prohibitions",
+            "Current SwiftUI source plus PRODUCT_SPEC and USER_GUIDE for behavior, platforms, shortcuts and data semantics",
+            "Reference Figma lURMGTfFpSzWQhVy0hBS3m for proven coverage and reusable design-system lessons only",
+            "Apple iOS/iPadOS 26 and macOS 26 community libraries for generic system-control construction candidates only"
+          ],
+          "scope_in": [
+            "Native macOS 13+ and iPhone iOS 17+ local-media experiences already supported by current product evidence",
+            "Recently Played, Now Playing, playback viewport, timeline, transport, fullscreen, resume, relink, Audio & Captions and history recovery",
+            "Empty, loading, ready, playing, paused, ended/replay, audio-only, warning, error, disabled, focused, success and dangerous-confirmation representations",
+            "Keyboard, pointer, touch, compact, portrait, landscape/fullscreen, reduced-motion and visible-focus design intent",
+            "Five materially distinct editable candidate systems using only synthetic media and track labels"
+          ],
+          "scope_out": [
+            "New media management, editing, tagging, playlists, streaming, accounts, cloud sync, diagnostics dashboards or codec promises",
+            "External-project implementation, runtime verification, business/private history reads and real filenames or media",
+            "Light-mode product behavior while current SwiftUI explicitly prefers dark",
+            "App icon redesign, deployment-target changes, Apple 26-only runtime materials and publication of any library"
+          ],
+          "candidate_frame_contract": [
+            "Foundations and direction rationale",
+            "macOS entry/overview with Recently Played and empty or selected context",
+            "macOS core workbench in playing state",
+            "macOS Audio & Captions detail/subtask",
+            "macOS ended/replay result state",
+            "macOS state matrix for loading, empty, error, disabled, focus, success and danger",
+            "iPhone Recently Played overview with persistent Now Playing bar where applicable",
+            "iPhone Now Playing portrait plus landscape/fullscreen adaptation",
+            "iPhone Audio & Captions and recovery-state compact layouts",
+            "P0/P1 coverage annotation and synthetic-data trust label"
+          ],
+          "direction_matrix": {
+            "A": {
+              "name": "夜航甲板 Night Deck",
+              "focus": "影院优先的当前播放任务",
+              "information_architecture": "macOS 保留窄侧栏与单一主画面；iPhone 延续列表到播放页的导航栈",
+              "geometry": "宽画面、悬浮底部控制轨、14–22 圆角与中等留白",
+              "typography": "SF Pro 28 Semibold 标题、克制的 SF Pro 正文和等宽时间码",
+              "material": "深海军蓝分层、半透明悬浮控制与清晰焦点光晕",
+              "motion_feedback": "控制条淡入上浮，三秒自动隐藏；reduced-motion 仅淡入淡出"
+            },
+            "B": {
+              "name": "目录画廊 Library Gallery",
+              "focus": "最近媒体选择与安心回到当前播放",
+              "information_architecture": "文本型最近记录成为较宽的阅读栏，主画面保持唯一工作区；次级设置进入抽屉或弹层",
+              "geometry": "温暖卡片、较小画面圆角、24–32 的段落节奏与更明确的列表行",
+              "typography": "SF Pro 24 Bold 编辑式标题、舒展正文和低密度辅助信息",
+              "material": "暖石墨与琥珀色表面、纸张式层级但不模拟真实材质",
+              "motion_feedback": "选中行轻微抬升并交叉淡化；reduced-motion 取消位移"
+            },
+            "C": {
+              "name": "精确播控 Precision Console",
+              "focus": "时间线、状态与精确控制",
+              "information_architecture": "主画面下方形成紧凑播控台，轨道和设置只在弹层中展开，不添加编辑或诊断功能",
+              "geometry": "8 点网格、紧凑矩形控件、清晰分隔和更长的可用时间线",
+              "typography": "SF Compact 22 Semibold 标题、较高信息密度和突出等宽数值",
+              "material": "冷青黑分层、低模糊度实色控件、明确描边与按压深度",
+              "motion_feedback": "数值就地更新、按压缩进与时间线进度反馈；reduced-motion 保留状态颜色和文字"
+            },
+            "D": {
+              "name": "静谧剧场 Quiet Theater",
+              "focus": "沉浸观看与最少默认控件",
+              "information_architecture": "播放态以画面为中心，最近记录保持可达但渐进收起；所有恢复信息在画面边缘内联",
+              "geometry": "大留白、低数量大控件、柔和椭圆与单层底部浮岛",
+              "typography": "SF Pro 28 Light 标题、稀疏文案和强化单一行动",
+              "material": "深紫黑背景、柔和体积光和受控玻璃层，不堆装饰",
+              "motion_feedback": "边缘控件缓慢显隐、手势反馈居中；reduced-motion 立即切换并保持焦点"
+            },
+            "E": {
+              "name": "流动舱 Adaptive Capsule",
+              "focus": "移动优先且跨尺寸连续的播放控制",
+              "information_architecture": "iPhone 以底部 Now Playing 舱和分层 sheet 为核心；macOS 将同一模块扩展为横向控制坞",
+              "geometry": "44–56 触控优先胶囊、模块化堆叠和明显的紧凑/宽屏重排",
+              "typography": "SF Pro Rounded 26 Semibold 标题、友好短标签与大触控数值",
+              "material": "深绿墨背景、珊瑚主强调与薄荷辅助强调、实色浮层",
+              "motion_feedback": "模块在断点间形态过渡、成功脉冲一次；reduced-motion 使用瞬时重排与静态确认"
+            }
+          },
+          "token_plan": {
+            "collections": [
+              {
+                "name": "UP Primitives",
+                "modes": ["Value"],
+                "variable_count": 87,
+                "rule": "Seven shared colors plus sixteen exact primitive color roles for each of directions a-e."
+              },
+              {
+                "name": "UP Semantic A Night Deck",
+                "modes": ["Value"],
+                "variable_count": 22,
+                "rule": "Each semantic color aliases the matching a/* or shared primitive."
+              },
+              {
+                "name": "UP Semantic B Library Gallery",
+                "modes": ["Value"],
+                "variable_count": 22,
+                "rule": "Each semantic color aliases the matching b/* or shared primitive."
+              },
+              {
+                "name": "UP Semantic C Precision Console",
+                "modes": ["Value"],
+                "variable_count": 22,
+                "rule": "Each semantic color aliases the matching c/* or shared primitive."
+              },
+              {
+                "name": "UP Semantic D Quiet Theater",
+                "modes": ["Value"],
+                "variable_count": 22,
+                "rule": "Each semantic color aliases the matching d/* or shared primitive."
+              },
+              {
+                "name": "UP Semantic E Adaptive Capsule",
+                "modes": ["Value"],
+                "variable_count": 22,
+                "rule": "Each semantic color aliases the matching e/* or shared primitive."
+              },
+              {
+                "name": "UP Metrics",
+                "modes": ["Value"],
+                "variable_count": 35,
+                "rule": "Spacing, radius and size variables use explicit GAP, CORNER_RADIUS or WIDTH_HEIGHT scopes."
+              }
+            ],
+            "primitive_namespaces": {
+              "shared": {
+                "black": "#000000",
+                "white": "#FFFFFF",
+                "error": "#FF6B6B",
+                "warning": "#FFC857",
+                "success": "#55D88A",
+                "scrim": "#000000A6",
+                "video-overlay": "#000000B8"
+              },
+              "a": {
+                "canvas": "#080D16",
+                "sidebar": "#0E1623",
+                "surface": "#131E2E",
+                "elevated": "#1B2940",
+                "control-overlay": "#101A2DD9",
+                "text-primary": "#F4F8FF",
+                "text-secondary": "#AEBED2",
+                "text-disabled": "#6C7A8C",
+                "text-inverse": "#07101C",
+                "accent-primary": "#6EB4FF",
+                "accent-secondary": "#76E4F7",
+                "separator": "#344760",
+                "control": "#23344D",
+                "control-hover": "#2E4669",
+                "control-pressed": "#3B5A84",
+                "focus": "#9ED1FF"
+              },
+              "b": {
+                "canvas": "#16110D",
+                "sidebar": "#201711",
+                "surface": "#2A1F17",
+                "elevated": "#37291E",
+                "control-overlay": "#21170FE6",
+                "text-primary": "#FFF8EF",
+                "text-secondary": "#D3C0A9",
+                "text-disabled": "#8D7B69",
+                "text-inverse": "#211409",
+                "accent-primary": "#F0B867",
+                "accent-secondary": "#FFD6A0",
+                "separator": "#584633",
+                "control": "#3A2C20",
+                "control-hover": "#503B28",
+                "control-pressed": "#684B30",
+                "focus": "#FFD08A"
+              },
+              "c": {
+                "canvas": "#061315",
+                "sidebar": "#0A1C20",
+                "surface": "#0E282C",
+                "elevated": "#15363C",
+                "control-overlay": "#081C20E6",
+                "text-primary": "#ECFFFC",
+                "text-secondary": "#A5CFCA",
+                "text-disabled": "#648681",
+                "text-inverse": "#031512",
+                "accent-primary": "#5CE6D2",
+                "accent-secondary": "#8EF6E8",
+                "separator": "#285159",
+                "control": "#183C42",
+                "control-hover": "#20515A",
+                "control-pressed": "#2B6872",
+                "focus": "#A5FFF3"
+              },
+              "d": {
+                "canvas": "#0C0812",
+                "sidebar": "#140D1D",
+                "surface": "#1C1328",
+                "elevated": "#281B38",
+                "control-overlay": "#160F22E6",
+                "text-primary": "#FBF7FF",
+                "text-secondary": "#C7B7D8",
+                "text-disabled": "#7E6C90",
+                "text-inverse": "#160B21",
+                "accent-primary": "#C6A2FF",
+                "accent-secondary": "#F0D5FF",
+                "separator": "#49365F",
+                "control": "#302141",
+                "control-hover": "#422D58",
+                "control-pressed": "#563A70",
+                "focus": "#E0C6FF"
+              },
+              "e": {
+                "canvas": "#051411",
+                "sidebar": "#0A1D19",
+                "surface": "#102923",
+                "elevated": "#173931",
+                "control-overlay": "#09201BE6",
+                "text-primary": "#F1FFF9",
+                "text-secondary": "#A9D1C4",
+                "text-disabled": "#66877D",
+                "text-inverse": "#0B1B15",
+                "accent-primary": "#FF8E79",
+                "accent-secondary": "#6FE3C2",
+                "separator": "#2C5148",
+                "control": "#1B3C34",
+                "control-hover": "#275149",
+                "control-pressed": "#33685C",
+                "focus": "#FFB7A9"
+              }
+            },
+            "semantic_color_variables": [
+              "background/canvas",
+              "background/sidebar",
+              "background/surface",
+              "background/elevated",
+              "background/video",
+              "background/control-overlay",
+              "label/primary",
+              "label/secondary",
+              "label/disabled",
+              "label/inverse",
+              "accent/primary",
+              "accent/secondary",
+              "focus/ring",
+              "separator/default",
+              "fill/control",
+              "fill/control-hover",
+              "fill/control-pressed",
+              "status/error",
+              "status/warning",
+              "status/success",
+              "status/danger",
+              "overlay/scrim"
+            ],
+            "semantic_alias_rules": {
+              "background/canvas": "{direction}/canvas",
+              "background/sidebar": "{direction}/sidebar",
+              "background/surface": "{direction}/surface",
+              "background/elevated": "{direction}/elevated",
+              "background/video": "{direction}/video",
+              "background/control-overlay": "{direction}/control-overlay",
+              "label/primary": "{direction}/text-primary",
+              "label/secondary": "{direction}/text-secondary",
+              "label/disabled": "{direction}/text-disabled",
+              "label/inverse": "{direction}/text-inverse",
+              "accent/primary": "{direction}/accent-primary",
+              "accent/secondary": "{direction}/accent-secondary",
+              "focus/ring": "{direction}/focus",
+              "separator/default": "{direction}/separator",
+              "fill/control": "{direction}/control",
+              "fill/control-hover": "{direction}/control-hover",
+              "fill/control-pressed": "{direction}/control-pressed",
+              "status/error": "shared/error",
+              "status/warning": "shared/warning",
+              "status/success": "shared/success",
+              "status/danger": "shared/error",
+              "overlay/scrim": "shared/scrim"
+            },
+            "code_syntax_policy": {
+              "platform": "iOS",
+              "format": "UPSelection.<Primitive|Metric|DirectionA|DirectionB|DirectionC|DirectionD|DirectionE>.<slash-name converted to lowerCamelCase>",
+              "classification": "PROPOSED_DESIGN_HANDOFF_IDENTIFIER_ONLY",
+              "honesty_boundary": "These identifiers do not claim corresponding external-project source exists and do not authorize implementation."
+            },
+            "metric_variables": {
+              "spacing/2": 2,
+              "spacing/4": 4,
+              "spacing/6": 6,
+              "spacing/8": 8,
+              "spacing/10": 10,
+              "spacing/12": 12,
+              "spacing/14": 14,
+              "spacing/16": 16,
+              "spacing/18": 18,
+              "spacing/20": 20,
+              "spacing/24": 24,
+              "spacing/28": 28,
+              "spacing/32": 32,
+              "spacing/40": 40,
+              "spacing/48": 48,
+              "spacing/64": 64,
+              "radius/0": 0,
+              "radius/6": 6,
+              "radius/10": 10,
+              "radius/12": 12,
+              "radius/14": 14,
+              "radius/18": 18,
+              "radius/22": 22,
+              "radius/full": 999,
+              "size/hit-mac": 28,
+              "size/hit-ios": 44,
+              "size/transport-primary": 56,
+              "size/sidebar-min": 220,
+              "size/sidebar-ideal": 260,
+              "size/sidebar-max": 300,
+              "size/mac-window-min-width": 900,
+              "size/mac-window-min-height": 560,
+              "size/settings-width-mac": 360,
+              "size/settings-max-height-mac": 500,
+              "size/subtitle-max-width": 560
+            },
+            "text_styles": [
+              {"name": "iOS/Large Title/Regular", "family": "SF Pro", "style": "Regular", "size": 34},
+              {"name": "iOS/Title 1/Emphasized", "family": "SF Pro", "style": "Semibold", "size": 28},
+              {"name": "iOS/Title 2/Regular", "family": "SF Pro", "style": "Regular", "size": 22},
+              {"name": "iOS/Title 2/Emphasized", "family": "SF Pro", "style": "Semibold", "size": 22},
+              {"name": "iOS/Title 3/Emphasized", "family": "SF Pro", "style": "Semibold", "size": 20},
+              {"name": "iOS/Headline/Emphasized", "family": "SF Pro", "style": "Semibold", "size": 17},
+              {"name": "iOS/Body/Regular", "family": "SF Pro", "style": "Regular", "size": 17},
+              {"name": "iOS/Body/Emphasized", "family": "SF Pro", "style": "Semibold", "size": 17},
+              {"name": "iOS/Callout/Regular", "family": "SF Pro", "style": "Regular", "size": 16},
+              {"name": "iOS/Subheadline/Emphasized", "family": "SF Pro", "style": "Semibold", "size": 15},
+              {"name": "iOS/Footnote/Regular", "family": "SF Pro", "style": "Regular", "size": 13},
+              {"name": "iOS/Caption 1/Regular", "family": "SF Pro", "style": "Regular", "size": 12},
+              {"name": "iOS/Caption 1/Emphasized", "family": "SF Pro", "style": "Semibold", "size": 12},
+              {"name": "macOS/Title 2/Emphasized", "family": "SF Pro", "style": "Semibold", "size": 17},
+              {"name": "macOS/Headline/Emphasized", "family": "SF Pro", "style": "Semibold", "size": 13},
+              {"name": "macOS/Body/Regular", "family": "SF Pro", "style": "Regular", "size": 13},
+              {"name": "macOS/Body/Emphasized", "family": "SF Pro", "style": "Semibold", "size": 13},
+              {"name": "macOS/Callout/Regular", "family": "SF Pro", "style": "Regular", "size": 12},
+              {"name": "macOS/Caption 1/Regular", "family": "SF Pro", "style": "Regular", "size": 10},
+              {"name": "macOS/Caption 1/Emphasized", "family": "SF Pro", "style": "Semibold", "size": 10},
+              {"name": "Player/Timecode", "family": "Roboto Mono", "style": "Medium", "size": 13},
+              {"name": "Direction A/Display", "family": "SF Pro", "style": "Semibold", "size": 28},
+              {"name": "Direction B/Display", "family": "SF Pro", "style": "Bold", "size": 24},
+              {"name": "Direction C/Display", "family": "SF Compact", "style": "Semibold", "size": 22},
+              {"name": "Direction D/Display", "family": "SF Pro", "style": "Light", "size": 28},
+              {"name": "Direction E/Display", "family": "SF Pro Rounded", "style": "Semibold", "size": 26}
+            ],
+            "effect_styles": {
+              "Player/Control Lift": "DROP_SHADOW x0 y4 blur16 spread0 #00000038",
+              "Player/Floating Rail": "DROP_SHADOW x0 y12 blur40 spread0 #0000004D",
+              "Player/Popover": "DROP_SHADOW x0 y20 blur60 spread0 #00000061 plus x0 y2 blur8 spread0 #00000033",
+              "Player/Focus Halo": "DROP_SHADOW x0 y0 blur0 spread3 #FFFFFF73"
+            },
+            "motion_spec": {
+              "control_press": "120ms ease-out, scale or depth only where pointer/touch feedback is needed",
+              "surface_transition": "220ms ease-in-out",
+              "chrome_auto_hide": "3000ms after playback starts, matching current source",
+              "skip_feedback": "700ms, matching current source",
+              "reduced_motion": "No scaling, spatial morph or parallax; preserve opacity, labels, focus and state colors."
+            },
+            "contrast_preflight": {
+              "method": "WCAG relative-luminance calculation against canvas, sidebar, surface and elevated backgrounds",
+              "minimum_primary_or_secondary_text_ratio": 7.57,
+              "minimum_inverse_text_on_primary_accent_ratio": 7.95,
+              "status": "PASS_FOR_LOCKED_PALETTES"
+            }
+          },
+          "component_plan": [
+            {"name": "Platform/App Chrome", "variants": "Platform=Mac|iPhone; Context=Library|Player|Fullscreen", "decision": "WRAP_GENERIC_APPLE_CHROME"},
+            {"name": "Player/Media Viewport", "variants": "Platform=Mac|iPhone; Phase=Empty|Loading|Ready|Playing|Paused|Ended|Failed|Audio", "decision": "LOCAL_APP_SPECIFIC"},
+            {"name": "Player/Recent Row", "variants": "Platform=Mac|iPhone; State=Default|HoverPressed|Selected|NeedsLocation", "decision": "LOCAL_WRAPPER_AROUND_GENERIC_ROW"},
+            {"name": "Player/Now Playing Bar", "variants": "Phase=Ready|Playing|Paused|Ended|Failed", "decision": "LOCAL_NEW_FROM_CURRENT_CODE"},
+            {"name": "Player/Status Pill", "variants": "Platform=Mac|iPhone; Phase=Idle|Loading|Ready|Playing|Paused|Ended|Failed", "decision": "LOCAL_APP_SPECIFIC"},
+            {"name": "Player/Timeline", "variants": "Platform=Mac|iPhone; State=Unknown|Ready|Dragging|Disabled|Focused", "decision": "LOCAL_APP_SPECIFIC"},
+            {"name": "Player/Transport Action", "variants": "Platform=Mac|iPhone; Emphasis=Primary|Secondary; State=Default|Pressed|Disabled|Focused; icon via INSTANCE_SWAP", "decision": "LOCAL_WRAPPER_AROUND_GENERIC_BUTTON"},
+            {"name": "Player/Transport Bar", "variants": "Platform=Mac|iPhone; Layout=Full|Compact|Stacked; Playback=Paused|Playing|Ended|Disabled", "decision": "LOCAL_APP_SPECIFIC"},
+            {"name": "Player/Volume Control", "variants": "State=Ready|Disabled|Focused", "decision": "WRAP_MACOS_SLIDER"},
+            {"name": "Player/Rate Menu", "variants": "Platform=Mac|iPhone; State=Default|Open|Disabled|Focused", "decision": "LOCAL_APP_SPECIFIC"},
+            {"name": "Player/Track Settings Trigger", "variants": "Platform=Mac|iPhone; State=Available|Active|Pending|Disabled|Focused", "decision": "LOCAL_APP_SPECIFIC"},
+            {"name": "Player/Track Choice Row", "variants": "Platform=Mac|iPhone; State=Default|Selected|Pending|Disabled|Focused", "decision": "LOCAL_APP_SPECIFIC"},
+            {"name": "Player/Track Settings Surface", "variants": "Platform=Mac|iPhone; State=Available|Embedded|External|Pending|Error|Unavailable", "decision": "LOCAL_CONTENT_WITH_APPLE_POPOVER_OR_SHEET_CHROME"},
+            {"name": "Player/Empty State", "variants": "Platform=Mac|iPhone; Context=NoMedia|NoRecents", "decision": "LOCAL_APP_SPECIFIC"},
+            {"name": "Player/Resume Notice", "variants": "Platform=Mac|iPhone", "decision": "LOCAL_APP_SPECIFIC"},
+            {"name": "Player/Relink Recovery", "variants": "Platform=Mac|iPhone; State=Required|Failed; PlaybackContext=Active|Empty", "decision": "LOCAL_APP_SPECIFIC"},
+            {"name": "Player/Feedback Banner", "variants": "Platform=Mac|iPhone; Type=PlaybackError|Warning|Subtitle; State=Static|Action|Focused", "decision": "LOCAL_UNIFIED_CURRENT_CODE"},
+            {"name": "Player/History Recovery", "variants": "Platform=Mac|iPhone; State=Unavailable|Failed", "decision": "LOCAL_APP_SPECIFIC"},
+            {"name": "Player/History Reset Confirmation", "variants": "Platform=Mac|iPhone", "decision": "LOCAL_CONTENT_WITH_APPLE_ALERT_CHROME"},
+            {"name": "Player/Subtitle Overlay", "variants": "Platform=Mac|iPhone; Lines=One|Two", "decision": "LOCAL_APP_SPECIFIC"},
+            {"name": "Player/Scrub Feedback", "variants": "Platform=Mac|iPhone; Mode=Seek|Fine|SkipBack|SkipForward", "decision": "LOCAL_NEW_FROM_CURRENT_CODE"}
+          ],
+          "library_reuse_policy": {
+            "reuse": [
+              "Generic Apple push-button geometry where properties remain compatible",
+              "Generic sliders, rows, sheets, windows and sidebar chrome as nested instances or visual references"
+            ],
+            "wrap": [
+              "All Apple assets that need Universal Player semantic variables, app-specific states or cross-minimum-OS annotations"
+            ],
+            "rebuild_local": [
+              "Player viewport, timeline, transport composition, status, resume/relink/history recovery, track arbitration, subtitle overlay and gesture feedback"
+            ],
+            "never_assume": [
+              "Apple 26 glass or navigation behavior exists on macOS 13 or iOS 17",
+              "A remote component proves runtime SwiftUI behavior",
+              "Remote components may be detached or republished"
+            ]
+          },
+          "gap_analysis": {
+            "code_not_in_blank_target": [
+              "All 232 locked variables, 26 text styles, 4 effect styles and 21 component families",
+              "iPhone persistent Now Playing bar and Back-without-unload navigation",
+              "Ended/replay semantics, skip flash, seek preview and fine-scrub feedback",
+              "Current-playback-preserving relink/replacement messaging and target-specific recovery",
+              "Unified Audio & Captions arbitration, pending/disabled/focused choices and external delay controls",
+              "Explicit history unavailable/reset confirmation/reset failure states",
+              "Pointer, keyboard, touch, landscape/fullscreen and reduced-motion annotations"
+            ],
+            "reference_figma_not_authoritative_for_current_target": [
+              "The prior file is approved historical project evidence but not an owner selection in this campaign.",
+              "Its Light semantic mode does not match the current SwiftUI preferred dark scheme.",
+              "Its Inter UI typography is a cloud-renderable metric proxy; SF Pro is now available in the target file.",
+              "Player/App Icon and implementation-status annotation are outside this candidate-screen milestone.",
+              "Older Subtitle Control/Menu naming is superseded by the current unified Audio & Captions surface."
+            ],
+            "library_or_reference_not_in_code": [
+              "Apple 26-specific materials and chrome are not minimum-OS product claims.",
+              "No playlist, cover-art browser, editing timeline, diagnostics dashboard or cloud surface is authorized.",
+              "No light theme or app-icon change is inferred."
+            ],
+            "resolved_conflicts": [
+              {"conflict": "Current code behavior versus reference visuals", "resolution": "Code and current product documents win for behavior and coverage; reference visuals remain nonbinding evidence."},
+              {"conflict": "Current forced dark scheme versus prior Light/Dark reference modes", "resolution": "Create five dark direction modes only for milestone one; do not invent light-mode product behavior."},
+              {"conflict": "System SwiftUI typography versus Inter/Roboto Mono proxy", "resolution": "Use verified SF Pro, SF Compact and SF Pro Rounded; retain Roboto Mono Medium only as an explicit timecode proxy because SF Mono was not available."},
+              {"conflict": "Apple 26 community assets versus macOS 13+/iOS 17+ targets", "resolution": "Reuse only generic geometry/chrome through wrappers and annotate compatibility; never raise deployment targets or claim version-specific runtime material."},
+              {"conflict": "Reference subtitle components versus current Audio & Captions contract", "resolution": "Current unified trigger, choice rows and platform popover/sheet win."},
+              {"conflict": "Reference coverage missing current Now Playing and gesture feedback", "resolution": "Add local Now Playing Bar and Scrub Feedback families without adding new business capability."},
+              {"conflict": "Blank task file versus mature reference design system", "resolution": "Rebuild an auditable task-owned system from the locked plan; do not copy, overwrite, detach or publish the reference library."}
+            ],
+            "unresolved_owner_decisions": []
+          },
+          "phase0_exit_checks": {
+            "code_baseline_analyzed": true,
+            "blank_target_verified": true,
+            "reference_figma_inspected_read_only": true,
+            "libraries_discovered_before_search": true,
+            "code_connect_checked": true,
+            "exact_token_set_locked": true,
+            "exact_component_set_locked": true,
+            "five_direction_contract_locked": true,
+            "conflicts_resolved_without_owner_fork": true,
+            "canvas_unchanged": true
+          }
+        }
+      },
+      "phase1_foundations": {
+        "id": "UP-P1-v1",
+        "status": "REOPENED_FOR_TYPOGRAPHY_RENDER_REPAIR",
+        "started_at": "2026-09-06T11:46:46Z",
+        "completed_at": "2026-09-06T12:01:09Z",
+        "plan_revision": "UP-P0-v2",
+        "figma_file_key": "coCZiR1zIwk7AGshjJXPEr",
+        "collections": [
+          {"name": "UP Primitives", "id": "VariableCollectionId:3:2", "mode_id": "3:0"},
+          {"name": "UP Semantic A Night Deck", "id": "VariableCollectionId:3:3", "mode_id": "3:1"},
+          {"name": "UP Semantic B Library Gallery", "id": "VariableCollectionId:3:4", "mode_id": "3:2"},
+          {"name": "UP Semantic C Precision Console", "id": "VariableCollectionId:3:5", "mode_id": "3:3"},
+          {"name": "UP Semantic D Quiet Theater", "id": "VariableCollectionId:3:6", "mode_id": "3:4"},
+          {"name": "UP Semantic E Adaptive Capsule", "id": "VariableCollectionId:3:7", "mode_id": "3:5"},
+          {"name": "UP Metrics", "id": "VariableCollectionId:3:8", "mode_id": "3:6"}
+        ],
+        "variables": {
+          "expected_total": 232,
+          "created_total": 232,
+          "ids_by_collection": {
+            "UP Primitives": {
+              "shared/black": "VariableID:4:2",
+              "shared/error": "VariableID:4:3",
+              "shared/warning": "VariableID:4:4",
+              "shared/success": "VariableID:4:5",
+              "shared/focus-blue": "VariableID:4:6",
+              "shared/scrim": "VariableID:4:7",
+              "shared/video-overlay": "VariableID:4:8",
+              "a/canvas": "VariableID:4:9",
+              "a/sidebar": "VariableID:4:10",
+              "a/surface": "VariableID:4:11",
+              "a/elevated": "VariableID:4:12",
+              "a/video": "VariableID:4:13",
+              "a/control-overlay": "VariableID:4:14",
+              "a/text-primary": "VariableID:4:15",
+              "a/text-secondary": "VariableID:4:16",
+              "a/text-disabled": "VariableID:4:17",
+              "a/text-inverse": "VariableID:4:18",
+              "a/accent-primary": "VariableID:4:19",
+              "a/accent-secondary": "VariableID:4:20",
+              "a/separator": "VariableID:4:21",
+              "a/control": "VariableID:4:22",
+              "a/control-hover": "VariableID:4:23",
+              "a/control-pressed": "VariableID:4:24",
+              "b/canvas": "VariableID:5:2",
+              "b/sidebar": "VariableID:5:3",
+              "b/surface": "VariableID:5:4",
+              "b/elevated": "VariableID:5:5",
+              "b/video": "VariableID:5:6",
+              "b/control-overlay": "VariableID:5:7",
+              "b/text-primary": "VariableID:5:8",
+              "b/text-secondary": "VariableID:5:9",
+              "b/text-disabled": "VariableID:5:10",
+              "b/text-inverse": "VariableID:5:11",
+              "b/accent-primary": "VariableID:5:12",
+              "b/accent-secondary": "VariableID:5:13",
+              "b/separator": "VariableID:5:14",
+              "b/control": "VariableID:5:15",
+              "b/control-hover": "VariableID:5:16",
+              "b/control-pressed": "VariableID:5:17",
+              "c/canvas": "VariableID:5:18",
+              "c/sidebar": "VariableID:5:19",
+              "c/surface": "VariableID:5:20",
+              "c/elevated": "VariableID:5:21",
+              "c/video": "VariableID:5:22",
+              "c/control-overlay": "VariableID:5:23",
+              "c/text-primary": "VariableID:5:24",
+              "c/text-secondary": "VariableID:5:25",
+              "c/text-disabled": "VariableID:5:26",
+              "c/text-inverse": "VariableID:5:27",
+              "c/accent-primary": "VariableID:5:28",
+              "c/accent-secondary": "VariableID:5:29",
+              "c/separator": "VariableID:5:30",
+              "c/control": "VariableID:5:31",
+              "c/control-hover": "VariableID:5:32",
+              "c/control-pressed": "VariableID:5:33",
+              "d/canvas": "VariableID:5:34",
+              "d/sidebar": "VariableID:5:35",
+              "d/surface": "VariableID:5:36",
+              "d/elevated": "VariableID:5:37",
+              "d/video": "VariableID:5:38",
+              "d/control-overlay": "VariableID:5:39",
+              "d/text-primary": "VariableID:5:40",
+              "d/text-secondary": "VariableID:5:41",
+              "d/text-disabled": "VariableID:5:42",
+              "d/text-inverse": "VariableID:5:43",
+              "d/accent-primary": "VariableID:5:44",
+              "d/accent-secondary": "VariableID:5:45",
+              "d/separator": "VariableID:5:46",
+              "d/control": "VariableID:5:47",
+              "d/control-hover": "VariableID:5:48",
+              "d/control-pressed": "VariableID:5:49",
+              "e/canvas": "VariableID:5:50",
+              "e/sidebar": "VariableID:5:51",
+              "e/surface": "VariableID:5:52",
+              "e/elevated": "VariableID:5:53",
+              "e/video": "VariableID:5:54",
+              "e/control-overlay": "VariableID:5:55",
+              "e/text-primary": "VariableID:5:56",
+              "e/text-secondary": "VariableID:5:57",
+              "e/text-disabled": "VariableID:5:58",
+              "e/text-inverse": "VariableID:5:59",
+              "e/accent-primary": "VariableID:5:60",
+              "e/accent-secondary": "VariableID:5:61",
+              "e/separator": "VariableID:5:62",
+              "e/control": "VariableID:5:63",
+              "e/control-hover": "VariableID:5:64",
+              "e/control-pressed": "VariableID:5:65"
+            },
+            "UP Metrics": {
+              "spacing/2": "VariableID:5:66",
+              "spacing/4": "VariableID:5:67",
+              "spacing/6": "VariableID:5:68",
+              "spacing/8": "VariableID:5:69",
+              "spacing/10": "VariableID:5:70",
+              "spacing/12": "VariableID:5:71",
+              "spacing/14": "VariableID:5:72",
+              "spacing/16": "VariableID:5:73",
+              "spacing/18": "VariableID:5:74",
+              "spacing/20": "VariableID:5:75",
+              "spacing/24": "VariableID:5:76",
+              "spacing/28": "VariableID:5:77",
+              "spacing/32": "VariableID:5:78",
+              "spacing/40": "VariableID:5:79",
+              "spacing/48": "VariableID:5:80",
+              "spacing/64": "VariableID:5:81",
+              "radius/0": "VariableID:5:82",
+              "radius/6": "VariableID:5:83",
+              "radius/10": "VariableID:5:84",
+              "radius/12": "VariableID:5:85",
+              "radius/14": "VariableID:5:86",
+              "radius/18": "VariableID:5:87",
+              "radius/22": "VariableID:5:88",
+              "radius/full": "VariableID:5:89",
+              "size/hit-mac": "VariableID:5:90",
+              "size/hit-ios": "VariableID:5:91",
+              "size/transport-primary": "VariableID:5:92",
+              "size/sidebar-min": "VariableID:5:93",
+              "size/sidebar-ideal": "VariableID:5:94",
+              "size/sidebar-max": "VariableID:5:95",
+              "size/mac-window-min-width": "VariableID:5:96",
+              "size/mac-window-min-height": "VariableID:5:97",
+              "size/settings-width-mac": "VariableID:5:98",
+              "size/settings-max-height-mac": "VariableID:5:99",
+              "size/subtitle-max-width": "VariableID:5:100"
+            },
+            "UP Semantic A Night Deck": {
+              "background/canvas": "VariableID:6:2",
+              "background/sidebar": "VariableID:6:3",
+              "background/surface": "VariableID:6:4",
+              "background/elevated": "VariableID:6:5",
+              "background/video": "VariableID:6:6",
+              "background/control-overlay": "VariableID:6:7",
+              "label/primary": "VariableID:6:8",
+              "label/secondary": "VariableID:6:9",
+              "label/disabled": "VariableID:6:10",
+              "label/inverse": "VariableID:6:11",
+              "accent/primary": "VariableID:6:12",
+              "accent/secondary": "VariableID:6:13",
+              "focus/ring": "VariableID:6:14",
+              "separator/default": "VariableID:6:15",
+              "fill/control": "VariableID:6:16",
+              "fill/control-hover": "VariableID:6:17",
+              "fill/control-pressed": "VariableID:6:18",
+              "status/error": "VariableID:6:19",
+              "status/warning": "VariableID:6:20",
+              "status/success": "VariableID:6:21",
+              "status/danger": "VariableID:6:22",
+              "overlay/scrim": "VariableID:6:23"
+            },
+            "UP Semantic B Library Gallery": {
+              "background/canvas": "VariableID:6:24",
+              "background/sidebar": "VariableID:6:25",
+              "background/surface": "VariableID:6:26",
+              "background/elevated": "VariableID:6:27",
+              "background/video": "VariableID:6:28",
+              "background/control-overlay": "VariableID:6:29",
+              "label/primary": "VariableID:6:30",
+              "label/secondary": "VariableID:6:31",
+              "label/disabled": "VariableID:6:32",
+              "label/inverse": "VariableID:6:33",
+              "accent/primary": "VariableID:6:34",
+              "accent/secondary": "VariableID:6:35",
+              "focus/ring": "VariableID:6:36",
+              "separator/default": "VariableID:6:37",
+              "fill/control": "VariableID:6:38",
+              "fill/control-hover": "VariableID:6:39",
+              "fill/control-pressed": "VariableID:6:40",
+              "status/error": "VariableID:6:41",
+              "status/warning": "VariableID:6:42",
+              "status/success": "VariableID:6:43",
+              "status/danger": "VariableID:6:44",
+              "overlay/scrim": "VariableID:6:45"
+            },
+            "UP Semantic C Precision Console": {
+              "background/canvas": "VariableID:6:46",
+              "background/sidebar": "VariableID:6:47",
+              "background/surface": "VariableID:6:48",
+              "background/elevated": "VariableID:6:49",
+              "background/video": "VariableID:6:50",
+              "background/control-overlay": "VariableID:6:51",
+              "label/primary": "VariableID:6:52",
+              "label/secondary": "VariableID:6:53",
+              "label/disabled": "VariableID:6:54",
+              "label/inverse": "VariableID:6:55",
+              "accent/primary": "VariableID:6:56",
+              "accent/secondary": "VariableID:6:57",
+              "focus/ring": "VariableID:6:58",
+              "separator/default": "VariableID:6:59",
+              "fill/control": "VariableID:6:60",
+              "fill/control-hover": "VariableID:6:61",
+              "fill/control-pressed": "VariableID:6:62",
+              "status/error": "VariableID:6:63",
+              "status/warning": "VariableID:6:64",
+              "status/success": "VariableID:6:65",
+              "status/danger": "VariableID:6:66",
+              "overlay/scrim": "VariableID:6:67"
+            },
+            "UP Semantic D Quiet Theater": {
+              "background/canvas": "VariableID:6:68",
+              "background/sidebar": "VariableID:6:69",
+              "background/surface": "VariableID:6:70",
+              "background/elevated": "VariableID:6:71",
+              "background/video": "VariableID:6:72",
+              "background/control-overlay": "VariableID:6:73",
+              "label/primary": "VariableID:6:74",
+              "label/secondary": "VariableID:6:75",
+              "label/disabled": "VariableID:6:76",
+              "label/inverse": "VariableID:6:77",
+              "accent/primary": "VariableID:6:78",
+              "accent/secondary": "VariableID:6:79",
+              "focus/ring": "VariableID:6:80",
+              "separator/default": "VariableID:6:81",
+              "fill/control": "VariableID:6:82",
+              "fill/control-hover": "VariableID:6:83",
+              "fill/control-pressed": "VariableID:6:84",
+              "status/error": "VariableID:6:85",
+              "status/warning": "VariableID:6:86",
+              "status/success": "VariableID:6:87",
+              "status/danger": "VariableID:6:88",
+              "overlay/scrim": "VariableID:6:89"
+            },
+            "UP Semantic E Adaptive Capsule": {
+              "background/canvas": "VariableID:6:90",
+              "background/sidebar": "VariableID:6:91",
+              "background/surface": "VariableID:6:92",
+              "background/elevated": "VariableID:6:93",
+              "background/video": "VariableID:6:94",
+              "background/control-overlay": "VariableID:6:95",
+              "label/primary": "VariableID:6:96",
+              "label/secondary": "VariableID:6:97",
+              "label/disabled": "VariableID:6:98",
+              "label/inverse": "VariableID:6:99",
+              "accent/primary": "VariableID:6:100",
+              "accent/secondary": "VariableID:6:101",
+              "focus/ring": "VariableID:6:102",
+              "separator/default": "VariableID:6:103",
+              "fill/control": "VariableID:6:104",
+              "fill/control-hover": "VariableID:6:105",
+              "fill/control-pressed": "VariableID:6:106",
+              "status/error": "VariableID:6:107",
+              "status/warning": "VariableID:6:108",
+              "status/success": "VariableID:6:109",
+              "status/danger": "VariableID:6:110",
+              "overlay/scrim": "VariableID:6:111"
+            }
+          }
+        },
+        "styles": {
+          "expected_text": 26,
+          "expected_effect": 4,
+          "created_text": 26,
+          "created_effect": 4,
+          "ids": {
+            "iOS/Large Title/Regular": "S:59229625a4fed7352394dcc4f8e5f80d4300364e,",
+            "iOS/Title 1/Emphasized": "S:5a9b697059bec50e452326d4ac306f5e3d3f891f,",
+            "iOS/Title 2/Regular": "S:8336eb5c4eeaa858b75ab729abe161dcbfb9c058,",
+            "iOS/Title 2/Emphasized": "S:7870914c0cd47f4862473e520ab296e4c17030ab,",
+            "iOS/Title 3/Emphasized": "S:2b9805285e693283ee9ef21080368ac8bdd09ea6,",
+            "iOS/Headline/Emphasized": "S:f61088aa80b7d5e787973b3a005d492fa7e78c77,",
+            "iOS/Body/Regular": "S:dec8c15fe9cf5a711ef05b2feaddb9a9de90b19d,",
+            "iOS/Body/Emphasized": "S:be78e6155f5f8fe447938e873f4dfa155bed9c74,",
+            "iOS/Callout/Regular": "S:349f0650fd872c5891d43217034c89e752daa24b,",
+            "iOS/Subheadline/Emphasized": "S:1ede5b37838e662b22365194da74cbd4cc0a5da5,",
+            "iOS/Footnote/Regular": "S:8150dcb458fca1ebbc7eb2cb3c509de5cddabb90,",
+            "iOS/Caption 1/Regular": "S:12f0560a6e35a06d3b25626f5c9d320e1467b72d,",
+            "iOS/Caption 1/Emphasized": "S:9aad382c1311602fdacbdacda1fdf7919339ca01,",
+            "macOS/Title 2/Emphasized": "S:107fd9941fa8d0341bce613d5043c83c0ac2f1c5,",
+            "macOS/Headline/Emphasized": "S:238c7d45f92dedad16d8e862293cd5da9991307b,",
+            "macOS/Body/Regular": "S:c7a1bb4d03637fe76033147a0a989f3c02874848,",
+            "macOS/Body/Emphasized": "S:ca421c2083211d707afc2a075f890ea20f152d98,",
+            "macOS/Callout/Regular": "S:b937768fe1726fc1feeb216ec7b90dc07d073775,",
+            "macOS/Caption 1/Regular": "S:7f2085cbb8cd7d3a10d7f221ea1fdf05f014618c,",
+            "macOS/Caption 1/Emphasized": "S:e7450e9457b14204f756d989888aeef06f4dc873,",
+            "Player/Timecode": "S:295329c96fce786fc6b11ab37bc1bb24b346b615,",
+            "Direction A/Display": "S:8f64d3c3037d5c4179a886a4fc1ad3d6deccddac,",
+            "Direction B/Display": "S:00af6e030947204591d89dd87fc6762abf168865,",
+            "Direction C/Display": "S:f7876509c801d99c6cdef2c8d7e392e27dc695cd,",
+            "Direction D/Display": "S:0112539063d2eae03f9dd1e21f7996db4b338400,",
+            "Direction E/Display": "S:2df42e33f54440dee8ffc740372ee50548803e65,",
+            "Elevation/Subtle": "S:7e55747fe917bb0e36d6e93c34f691f83c6c88c1,",
+            "Elevation/Floating": "S:8bf26b5c9727b85a1503509cb102d2220213bcce,",
+            "Focus/Light": "S:befb28a5fa69633239d33c6288b0862166a408b1,",
+            "Focus/Dark": "S:76b1639bb1328223584bd1ac3694effd4bc959ec,"
+          }
+        },
+        "metric_repair": {
+          "id": "UP-P1-METRIC-REPAIR-v1",
+          "detected_at": "2026-09-06T12:17:06Z",
+          "status": "VERIFIED",
+          "reason": "The live collection had 35 variables but its exact names and values did not match the locked Phase 0 metric set; the prior count-only result was insufficient.",
+          "repair_method": "Preserve all 35 variable IDs, replace name/value/scope/iOS syntax in ascending ID order, then rebind the already-created documentation nodes whose bindings used the old identities.",
+          "pre_repair_count": 35,
+          "target_source": "phase0_scope_lock.token_plan.metric_variables",
+          "completed_batches": [
+            {"id": "M1", "variable_ids": ["VariableID:5:66", "VariableID:5:67", "VariableID:5:68", "VariableID:5:69", "VariableID:5:70", "VariableID:5:71", "VariableID:5:72", "VariableID:5:73", "VariableID:5:74"]},
+            {"id": "M2", "variable_ids": ["VariableID:5:75", "VariableID:5:76", "VariableID:5:77", "VariableID:5:78", "VariableID:5:79", "VariableID:5:80", "VariableID:5:81", "VariableID:5:82", "VariableID:5:83"]},
+            {"id": "M3", "variable_ids": ["VariableID:5:84", "VariableID:5:85", "VariableID:5:86", "VariableID:5:87", "VariableID:5:88", "VariableID:5:89", "VariableID:5:90", "VariableID:5:91", "VariableID:5:92"]},
+            {"id": "M4", "variable_ids": ["VariableID:5:93", "VariableID:5:94", "VariableID:5:95", "VariableID:5:96", "VariableID:5:97", "VariableID:5:98", "VariableID:5:99", "VariableID:5:100"]}
+          ],
+          "rebinding_batches": [
+            {"id": "R1", "page_id": "0:1", "node_ids": ["12:2", "12:8"]},
+            {"id": "R2", "page_id": "10:2", "node_ids": ["13:2", "13:5", "13:7", "13:9"]},
+            {"id": "R3", "page_id": "10:3", "node_ids": ["14:2", "14:5", "14:6", "14:7", "14:8"]},
+            {"id": "R4", "page_id": "10:3", "node_ids": ["14:12", "14:13", "14:14", "14:15", "14:16", "14:17", "14:18"]},
+            {"id": "R5", "page_id": "10:3", "node_ids": ["14:19", "14:23", "14:24", "14:25", "14:26", "14:27", "14:28"]},
+            {"id": "R6", "page_id": "10:3", "node_ids": ["14:29", "14:33", "14:34", "14:35", "14:36", "14:37", "14:38"]},
+            {"id": "R7", "page_id": "10:3", "node_ids": ["15:4", "15:8", "15:9", "15:10", "15:11", "15:12", "15:13"]},
+            {"id": "R8", "page_id": "10:3", "node_ids": ["15:14", "15:18", "15:19", "15:20", "15:21", "15:22", "15:23"]},
+            {"id": "R9", "page_id": "10:3", "node_ids": ["16:2", "16:6", "16:7", "16:8", "16:9", "16:10", "16:11"]}
+          ],
+          "figma_file_key": "coCZiR1zIwk7AGshjJXPEr",
+          "verified_at": "2026-09-06T12:25:55Z",
+          "post_repair_count": 35,
+          "exact_metric_manifest_match": true,
+          "unexpected_metric_names": [],
+          "documentation_rebinding_status": "VERIFIED",
+          "documentation_rebound_node_count": 53,
+          "documentation_binding_validation": "PASS"
+        },
+        "typography_render_repair": {
+          "id": "UP-P1-TYPOGRAPHY-REPAIR-v1",
+          "detected_at": "2026-09-06T12:34:42Z",
+          "status": "VERIFIED",
+          "reason": "SF Pro, SF Compact and SF Pro Rounded were listable and loadable through the connector but remained hasMissingFont=true on persisted text nodes; a live Inter Semi Bold test rendered with nonzero bounds and hasMissingFont=false.",
+          "authority": "The universal-player project state already authorizes Inter as the cloud-renderable metric proxy for native SwiftUI system fonts.",
+          "mapping": {
+            "SF Pro Regular": "Inter Regular",
+            "SF Pro Semibold": "Inter Semi Bold",
+            "SF Pro Bold": "Inter Bold",
+            "SF Pro Light": "Inter Light",
+            "SF Compact Semibold": "Inter Semi Bold",
+            "SF Pro Rounded Semibold": "Inter Semi Bold",
+            "Roboto Mono Medium": "Roboto Mono Medium"
+          },
+          "completed_style_batches": [
+            {"id": "T1", "style_count": 9, "style_ids": ["S:59229625a4fed7352394dcc4f8e5f80d4300364e,", "S:5a9b697059bec50e452326d4ac306f5e3d3f891f,", "S:8336eb5c4eeaa858b75ab729abe161dcbfb9c058,", "S:7870914c0cd47f4862473e520ab296e4c17030ab,", "S:2b9805285e693283ee9ef21080368ac8bdd09ea6,", "S:f61088aa80b7d5e787973b3a005d492fa7e78c77,", "S:dec8c15fe9cf5a711ef05b2feaddb9a9de90b19d,", "S:be78e6155f5f8fe447938e873f4dfa155bed9c74,", "S:349f0650fd872c5891d43217034c89e752daa24b,"]},
+            {"id": "T2", "style_count": 9, "style_ids": ["S:1ede5b37838e662b22365194da74cbd4cc0a5da5,", "S:8150dcb458fca1ebbc7eb2cb3c509de5cddabb90,", "S:12f0560a6e35a06d3b25626f5c9d320e1467b72d,", "S:9aad382c1311602fdacbdacda1fdf7919339ca01,", "S:107fd9941fa8d0341bce613d5043c83c0ac2f1c5,", "S:238c7d45f92dedad16d8e862293cd5da9991307b,", "S:c7a1bb4d03637fe76033147a0a989f3c02874848,", "S:ca421c2083211d707afc2a075f890ea20f152d98,", "S:b937768fe1726fc1feeb216ec7b90dc07d073775,"]},
+            {"id": "T3", "style_count": 7, "style_ids": ["S:7f2085cbb8cd7d3a10d7f221ea1fdf05f014618c,", "S:e7450e9457b14204f756d989888aeef06f4dc873,", "S:8f64d3c3037d5c4179a886a4fc1ad3d6deccddac,", "S:00af6e030947204591d89dd87fc6762abf168865,", "S:f7876509c801d99c6cdef2c8d7e392e27dc695cd,", "S:0112539063d2eae03f9dd1e21f7996db4b338400,", "S:2df42e33f54440dee8ffc740372ee50548803e65,"]}
+          ],
+          "live_probe": {"node_id": "12:4", "font": "Inter Semi Bold", "has_missing_font": false, "width": 330, "height": 18},
+          "verified_at": "2026-09-06T12:44:50Z",
+          "repaired_text_style_count": 25,
+          "retained_text_style_count": 1,
+          "repaired_direct_document_text_count": 31,
+          "repaired_collapsed_document_text_count": 46,
+          "style_validation": {
+            "outcome": "PASS",
+            "text_style_count": 26,
+            "font_families": {"Inter": 25, "Roboto Mono": 1},
+            "linked_specimen_count": 26,
+            "missing_font_count": 0
+          },
+          "documentation_validation": {
+            "outcome": "PASS",
+            "document_text_count": 62,
+            "missing_font_count": 0,
+            "collapsed_text_count": 0,
+            "overflow_count": 0
+          }
+        },
+        "validation": {
+          "outcome": "PASS_AFTER_METRIC_AND_TYPOGRAPHY_RENDER_REPAIR",
+          "verified_at": "2026-09-06T12:44:50Z",
+          "foundation_manifest_sha256": "b3da850f6898bf390d93f0602453826f8d2bb31f49ef0222ddffbbfe676d8202",
+          "superseded_foundation_manifest_sha256": "10565116cf906d0d6e83be66a4c110fcb894d5c79b8bcd420132ecd78b486bfe",
+          "earlier_superseded_foundation_manifest_sha256": "3615bd0e3b90024449aa8984fb4f8efb4daaf8a29aaf082a26d743ed89c0073d",
+          "canonical_manifest_length": 3077,
+          "canonical_identity_scheme": "SHA256 of canonical JSON containing the previously verified full live foundation manifest hash plus the ordered 26-style cloud-renderable font patch.",
+          "canonical_base_manifest_sha256": "10565116cf906d0d6e83be66a4c110fcb894d5c79b8bcd420132ecd78b486bfe",
+          "sha256_self_test": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+          "identity_scope": "FOUNDATIONS_MANIFEST_ONLY_NOT_A_CANDIDATE_FREEZE",
+          "figma_version_id": null,
+          "figma_version_note": "The current official connector did not expose a file-version identifier; the chained manifest hash binds the previously verified live collections, variables and styles plus the exact ordered font repair.",
+          "collection_count": 7,
+          "mode_count": 7,
+          "primitive_variable_count": 87,
+          "semantic_alias_variable_count": 110,
+          "metric_variable_count": 35,
+          "variable_count": 232,
+          "precisely_scoped_variable_count": 145,
+          "primitive_picker_hidden_variable_count": 87,
+          "ios_code_syntax_count": 232,
+          "duplicate_code_syntax_count": 0,
+          "text_style_count": 26,
+          "effect_style_count": 4,
+          "font_families_verified": ["Inter", "Roboto Mono"],
+          "all_values_present": true,
+          "all_semantic_values_alias_primitives": true,
+          "all_metric_scopes_exact": true,
+          "all_style_properties_exact": true,
+          "page_id": "0:1",
+          "non_page_canvas_node_count": null,
+          "canvas_state": "PHASE2_EDITABLE_DOCUMENTATION_PRESENT_AND_EXCLUDED_FROM_FOUNDATIONS_MANIFEST"
+        },
+        "next_task_id": "P2.b"
+      },
+      "phase2_file_structure": {
+        "id": "UP-P2-v1",
+        "status": "COMPLETE_VERIFIED",
+        "started_at": "2026-09-06T12:05:47Z",
+        "completed_at": "2026-09-06T13:52:25Z",
+        "figma_file_key": "coCZiR1zIwk7AGshjJXPEr",
+        "pages": {
+          "00 Cover & Baseline": "0:1",
+          "01 Getting Started & UX Architecture": "10:2",
+          "02 Foundations": "10:3",
+          "--- Components ---": "10:4",
+          "03 Components": "10:5",
+          "--- Candidate Directions ---": "10:6",
+          "10 Direction A — Night Deck": "10:7",
+          "20 Direction B — Library Gallery": "10:8",
+          "30 Direction C — Precision Console": "10:9",
+          "40 Direction D — Quiet Theater": "10:10",
+          "50 Direction E — Adaptive Capsule": "11:2",
+          "80 Comparison": "11:3",
+          "90 Selected Expansion": "11:4",
+          "--- Utilities ---": "11:5",
+          "99 Utilities": "11:6"
+        },
+        "documentation_root_nodes": {
+          "00 Cover & Baseline": "12:2",
+          "01 Getting Started & UX Architecture": "13:2",
+          "02 Foundations": "14:2"
+        },
+        "created_node_ids_by_page": {
+          "00 Cover & Baseline": ["12:2", "12:3", "12:4", "12:5", "12:6", "12:7", "12:8", "12:9"],
+          "01 Getting Started & UX Architecture": ["13:2", "13:3", "13:4", "13:5", "13:6", "13:7", "13:8", "13:9", "13:10"],
+          "02 Foundations": ["14:2", "14:3", "14:4", "14:5", "14:6", "14:7", "14:8", "14:9", "14:10", "14:11", "14:12", "14:13", "14:14", "14:15", "14:16", "14:17", "14:18", "14:19", "14:20", "14:21", "14:22", "14:23", "14:24", "14:25", "14:26", "14:27", "14:28", "14:29", "14:30", "14:31", "14:32", "14:33", "14:34", "14:35", "14:36", "14:37", "14:38", "15:4", "15:5", "15:6", "15:7", "15:8", "15:9", "15:10", "15:11", "15:12", "15:13", "15:14", "15:15", "15:16", "15:17", "15:18", "15:19", "15:20", "15:21", "15:22", "15:23", "16:2", "16:3", "16:4", "16:5", "16:6", "16:7", "16:8", "16:9", "16:10", "16:11", "17:5", "17:6", "17:7", "17:8", "17:9", "17:10", "17:11", "17:12", "17:13", "17:14", "18:2", "18:3", "18:4", "18:5", "18:6", "18:7", "18:8", "18:9", "18:10", "18:11", "18:12", "18:13", "18:14", "18:15", "18:16", "18:17", "18:18", "18:19", "24:2", "24:3", "24:4", "24:5", "24:6", "24:7", "24:8", "24:9", "24:10", "24:11", "25:2", "25:3", "25:4", "25:5", "25:6", "25:7", "25:8", "25:9", "25:10", "25:11", "25:12", "25:13", "25:14", "25:15", "25:16", "25:17", "25:18", "25:19", "25:20", "25:21", "26:2", "26:3", "26:4", "26:5", "26:6", "26:7", "26:8", "26:9", "26:10", "26:11", "26:12", "26:13", "26:14", "27:2", "27:3", "27:4", "27:5", "27:6", "27:7", "27:8", "27:9", "27:10", "27:11"]
+        },
+        "mutated_node_ids": ["14:10", "14:21", "14:31", "15:6", "15:16", "16:4", "24:4", "25:12", "26:2", "12:4", "12:5", "12:6", "12:7", "12:9", "13:3", "13:4", "13:6", "13:8", "13:10", "14:3", "14:4", "14:9", "17:5", "17:6", "24:2", "24:3", "27:2", "27:5", "27:7", "27:9", "27:11", "17:7", "17:8", "17:9", "17:10", "17:11", "17:12", "17:13", "17:14", "18:2", "18:3", "18:4", "18:5", "18:6", "18:7", "18:8", "18:9", "18:10", "18:11", "18:12", "18:13", "18:14", "18:15", "18:16", "18:17", "18:18", "18:19"],
+        "screenshot_evidence": {
+          "captured_at": "2026-09-06T12:44:50Z",
+          "connector": "official user-figma get_screenshot",
+          "visual_outcome": "PASS",
+          "checks": ["visual hierarchy", "information density", "alignment", "overflow", "token specimen consistency", "rendered typography"],
+          "cover_baseline": {"node_id": "12:2", "natural_size": [1440, 900], "rendered_size": [1440, 900], "outcome": "PASS"},
+          "ux_architecture": {"node_id": "13:2", "natural_size": [1440, 811], "rendered_size": [1440, 811], "outcome": "PASS"},
+          "foundations": {"node_id": "14:2", "natural_size": [1440, 5367], "rendered_size": [1099, 4096], "outcome": "PASS"},
+          "foundations_sections": [
+            {"node_id": "14:5", "name": "Colors", "size": [1280, 1445], "outcome": "PASS"},
+            {"node_id": "14:6", "name": "Typography", "size": [1280, 1372], "outcome": "PASS"},
+            {"node_id": "14:7", "name": "Metrics", "size": [1280, 1623], "outcome": "PASS"},
+            {"node_id": "14:8", "name": "Elevation & Focus", "size": [1280, 294], "outcome": "PASS"}
+          ],
+          "scope_note": "Screenshots verify visual structure only; they do not prove runtime media, persistence, gesture or keyboard behavior."
+        },
+        "documentation_validation": {
+          "verified_at": "2026-09-06T12:44:50Z",
+          "outcome": "PASS",
+          "editable_root_count": 3,
+          "document_text_count": 62,
+          "missing_font_count": 0,
+          "collapsed_text_count": 0,
+          "overflow_count": 0
+        },
+        "component_system": {
+          "status": "COMPLETE_VERIFIED",
+          "planned_family_count": 21,
+          "created_family_count": 21,
+          "validated_family_count": 21,
+          "specimen_semantic_binding": "UP Semantic A Night Deck",
+          "candidate_rebinding_policy": "Candidate pages will rebind direction semantics without changing source-aligned behavioral axes.",
+          "root_node_id": "39:2",
+          "completed_batches": [
+            {
+              "id": "C1",
+              "family_name": "Platform/App Chrome",
+              "family_frame_id": "39:5",
+              "component_set_id": "39:62",
+              "variant_count": 6,
+              "variant_ids": ["39:8", "39:19", "39:28", "39:35", "39:46", "39:55"],
+              "created_node_ids": ["39:2", "39:3", "39:4", "39:5", "39:6", "39:7", "39:8", "39:9", "39:10", "39:11", "39:12", "39:13", "39:14", "39:15", "39:16", "39:17", "39:18", "39:19", "39:20", "39:21", "39:22", "39:23", "39:24", "39:25", "39:26", "39:27", "39:28", "39:29", "39:30", "39:31", "39:32", "39:33", "39:34", "39:35", "39:36", "39:37", "39:38", "39:39", "39:40", "39:41", "39:42", "39:43", "39:44", "39:45", "39:46", "39:47", "39:48", "39:49", "39:50", "39:51", "39:52", "39:53", "39:54", "39:55", "39:56", "39:57", "39:58", "39:59", "39:60", "39:61", "39:62"],
+              "mutated_node_ids": ["39:2", "39:54", "39:61"],
+              "validation": {
+                "outcome": "PASS",
+                "variant_axes": ["Platform", "Context"],
+                "variant_count": 6,
+                "text_count": 28,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_reference_count": 73,
+                "bound_radius_reference_count": 84,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C2",
+              "family_name": "Player/Media Viewport",
+              "family_frame_id": "40:2",
+              "component_set_id": "40:83",
+              "variant_count": 16,
+              "variant_ids": ["40:5", "40:9", "40:12", "40:17", "40:21", "40:26", "40:30", "40:35", "40:44", "40:48", "40:51", "40:56", "40:60", "40:65", "40:69", "40:74"],
+              "created_node_ids": ["40:2", "40:3", "40:4", "40:5", "40:6", "40:7", "40:8", "40:9", "40:10", "40:11", "40:12", "40:13", "40:14", "40:15", "40:16", "40:17", "40:18", "40:19", "40:20", "40:21", "40:22", "40:23", "40:24", "40:25", "40:26", "40:27", "40:28", "40:29", "40:30", "40:31", "40:32", "40:33", "40:34", "40:35", "40:36", "40:37", "40:38", "40:39", "40:40", "40:41", "40:42", "40:43", "40:44", "40:45", "40:46", "40:47", "40:48", "40:49", "40:50", "40:51", "40:52", "40:53", "40:54", "40:55", "40:56", "40:57", "40:58", "40:59", "40:60", "40:61", "40:62", "40:63", "40:64", "40:65", "40:66", "40:67", "40:68", "40:69", "40:70", "40:71", "40:72", "40:73", "40:74", "40:75", "40:76", "40:77", "40:78", "40:79", "40:80", "40:81", "40:82", "40:83"],
+              "mutated_node_ids": ["40:73", "40:36", "40:75"],
+              "validation": {
+                "outcome": "PASS",
+                "variant_axes": ["Platform", "Phase"],
+                "variant_count": 16,
+                "text_count": 40,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_reference_count": 96,
+                "bound_radius_reference_count": 148,
+                "iphone_action_count": 5,
+                "iphone_actions_below_44pt": 0,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C3",
+              "family_name": "Player/Recent Row",
+              "family_frame_id": "42:2",
+              "component_set_id": "42:55",
+              "variant_count": 8,
+              "variant_ids": ["42:5", "42:11", "42:17", "42:23", "42:30", "42:36", "42:42", "42:48"],
+              "created_node_ids": ["42:2", "42:3", "42:4", "42:5", "42:6", "42:7", "42:8", "42:9", "42:10", "42:11", "42:12", "42:13", "42:14", "42:15", "42:16", "42:17", "42:18", "42:19", "42:20", "42:21", "42:22", "42:23", "42:24", "42:25", "42:26", "42:27", "42:28", "42:29", "42:30", "42:31", "42:32", "42:33", "42:34", "42:35", "42:36", "42:37", "42:38", "42:39", "42:40", "42:41", "42:42", "42:43", "42:44", "42:45", "42:46", "42:47", "42:48", "42:49", "42:50", "42:51", "42:52", "42:53", "42:54", "42:55"],
+              "mutated_node_ids": ["42:45", "42:51", "42:7", "42:13", "42:19", "42:25", "42:32", "42:38", "42:44", "42:50"],
+              "validation": {
+                "outcome": "PASS",
+                "variant_axes": ["Platform", "State"],
+                "variant_count": 8,
+                "text_count": 26,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_reference_count": 54,
+                "bound_radius_reference_count": 76,
+                "relink_action_count": 2,
+                "iphone_relink_actions_below_44pt": 0,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C4",
+              "family_name": "Player/Now Playing Bar",
+              "family_frame_id": "43:2",
+              "component_set_id": "43:40",
+              "variant_count": 5,
+              "variant_ids": ["43:5", "43:12", "43:19", "43:26", "43:33"],
+              "created_node_ids": ["43:2", "43:3", "43:4", "43:5", "43:6", "43:7", "43:8", "43:9", "43:10", "43:11", "43:12", "43:13", "43:14", "43:15", "43:16", "43:17", "43:18", "43:19", "43:20", "43:21", "43:22", "43:23", "43:24", "43:25", "43:26", "43:27", "43:28", "43:29", "43:30", "43:31", "43:32", "43:33", "43:34", "43:35", "43:36", "43:37", "43:38", "43:39", "43:40"],
+              "mutated_node_ids": ["43:7", "43:14", "43:21", "43:28", "43:35"],
+              "validation": {
+                "outcome": "PASS",
+                "variant_axes": ["Phase"],
+                "variant_count": 5,
+                "text_count": 17,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_reference_count": 39,
+                "bound_radius_reference_count": 64,
+                "primary_action_count": 5,
+                "actions_below_44pt": 0,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C5",
+              "family_name": "Player/Status Pill",
+              "family_frame_id": "44:2",
+              "component_set_id": "44:47",
+              "variant_count": 14,
+              "variant_ids": ["44:5", "44:8", "44:11", "44:14", "44:17", "44:20", "44:23", "44:26", "44:29", "44:32", "44:35", "44:38", "44:41", "44:44"],
+              "created_node_ids": ["44:2", "44:3", "44:4", "44:5", "44:6", "44:7", "44:8", "44:9", "44:10", "44:11", "44:12", "44:13", "44:14", "44:15", "44:16", "44:17", "44:18", "44:19", "44:20", "44:21", "44:22", "44:23", "44:24", "44:25", "44:26", "44:27", "44:28", "44:29", "44:30", "44:31", "44:32", "44:33", "44:34", "44:35", "44:36", "44:37", "44:38", "44:39", "44:40", "44:41", "44:42", "44:43", "44:44", "44:45", "44:46", "44:47"],
+              "mutated_node_ids": [],
+              "validation": {
+                "outcome": "PASS",
+                "variant_axes": ["Platform", "Phase"],
+                "variant_count": 14,
+                "text_count": 16,
+                "missing_or_collapsed_text_count": 0,
+                "status_label_count": 14,
+                "status_dot_count": 14,
+                "bound_color_reference_count": 60,
+                "bound_radius_reference_count": 60,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C6",
+              "family_name": "Player/Timeline",
+              "family_frame_id": "47:2",
+              "component_set_id": "47:83",
+              "variant_count": 10,
+              "variant_ids": ["47:5", "47:11", "47:19", "47:29", "47:36", "47:44", "47:50", "47:58", "47:68", "47:75"],
+              "top_level_created_node_ids": ["47:2", "47:83", "47:5", "47:11", "47:19", "47:29", "47:36", "47:44", "47:50", "47:58", "47:68", "47:75"],
+              "mutated_node_ids": ["47:19", "47:23", "47:24", "47:25", "47:26", "47:27", "47:58", "47:62", "47:63", "47:64", "47:65", "47:66"],
+              "validation": {
+                "outcome": "PASS_AFTER_DRAG_CALLOUT_CONTAINMENT_REPAIR",
+                "variant_axes": ["Platform", "State"],
+                "variant_count": 10,
+                "text_count": 24,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_reference_count": 61,
+                "bound_radius_reference_count": 124,
+                "iphone_hit_regions_below_44pt": 0,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C7",
+              "family_name": "Player/Transport Action",
+              "family_frame_id": "57:2",
+              "component_set_id": "57:79",
+              "variant_count": 16,
+              "variant_ids": ["57:27", "57:30", "57:34", "57:37", "57:40", "57:43", "57:47", "57:50", "57:53", "57:56", "57:60", "57:63", "57:66", "57:69", "57:73", "57:76"],
+              "top_level_created_node_ids": ["57:2", "57:79", "57:27", "57:30", "57:34", "57:37", "57:40", "57:43", "57:47", "57:50", "57:53", "57:56", "57:60", "57:63", "57:66", "57:69", "57:73", "57:76"],
+              "supporting_icon_component_ids": ["57:6", "57:8", "57:11", "57:13", "57:15", "57:18", "57:20", "57:22", "57:25", "59:2", "59:4", "59:6", "59:8", "59:10", "59:12"],
+              "mutated_node_ids": ["57:7", "57:14", "57:21", "67:2", "67:3", "67:4"],
+              "validation": {
+                "outcome": "PASS_AFTER_PLAY_GLYPH_ALIGNMENT_REPAIR",
+                "variant_axes": ["Platform", "Emphasis", "State"],
+                "variant_count": 16,
+                "text_count": 14,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_reference_count": 61,
+                "bound_radius_reference_count": 112,
+                "instance_swap_property": "Icon#57:16",
+                "instance_swap_reference_count": 16,
+                "iphone_actions_below_44pt": 0,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C8",
+              "family_name": "Player/Transport Bar",
+              "family_frame_id": "60:374",
+              "component_set_id": "60:855",
+              "variant_count": 24,
+              "variant_ids": ["60:377", "60:399", "60:422", "60:444", "60:465", "60:480", "60:496", "60:511", "60:526", "60:548", "60:571", "60:593", "60:614", "60:637", "60:661", "60:684", "60:706", "60:721", "60:737", "60:752", "60:767", "60:789", "60:812", "60:834"],
+              "top_level_created_node_ids": ["60:374", "60:855", "60:377", "60:399", "60:422", "60:444", "60:465", "60:480", "60:496", "60:511", "60:526", "60:548", "60:571", "60:593", "60:614", "60:637", "60:661", "60:684", "60:706", "60:721", "60:737", "60:752", "60:767", "60:789", "60:812", "60:834"],
+              "dependency_component_set_ids": ["47:83", "57:79"],
+              "mutated_node_ids": [],
+              "validation": {
+                "outcome": "PASS",
+                "variant_axes": ["Platform", "Layout", "Playback"],
+                "variant_count": 24,
+                "text_count": 14,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_reference_count": 281,
+                "bound_radius_reference_count": 628,
+                "timeline_instance_check": "PASS",
+                "transport_action_instance_check": "PASS",
+                "iphone_actions_below_44pt": 0,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C9",
+              "family_name": "Player/Volume Control",
+              "family_frame_id": "63:276",
+              "component_set_id": "63:299",
+              "variant_count": 3,
+              "variant_ids": ["63:279", "63:286", "63:292"],
+              "top_level_created_node_ids": ["63:276", "63:299", "63:279", "63:286", "63:292"],
+              "mutated_node_ids": [],
+              "library_reference": {
+                "name": "macOS 26 Slider",
+                "component_key": "6a41d9b30f08e97771e508a2b8972f91651343c6",
+                "import_outcome": "NOT_PERMITTED_LOCAL_WRAPPER_USED"
+              },
+              "validation": {
+                "outcome": "PASS",
+                "variant_axes": ["State"],
+                "variant_count": 3,
+                "text_count": 8,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_reference_count": 20,
+                "bound_radius_reference_count": 40,
+                "mac_hit_regions_below_28pt": 0,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C10",
+              "family_name": "Player/Rate Menu",
+              "family_frame_id": "65:276",
+              "component_set_id": "65:331",
+              "variant_count": 8,
+              "variant_ids": ["65:279", "65:283", "65:297", "65:301", "65:305", "65:309", "65:323", "65:327"],
+              "top_level_created_node_ids": ["65:276", "65:331", "65:279", "65:283", "65:297", "65:301", "65:305", "65:309", "65:323", "65:327"],
+              "mutated_node_ids": [],
+              "validation": {
+                "outcome": "PASS",
+                "variant_axes": ["Platform", "State"],
+                "variant_count": 8,
+                "text_count": 28,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_reference_count": 41,
+                "bound_radius_reference_count": 52,
+                "iphone_targets_below_44pt": 0,
+                "open_option_count_per_platform": 4,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C11",
+              "family_name": "Player/Track Settings Trigger",
+              "family_frame_id": "71:304",
+              "component_set_id": "71:341",
+              "variant_count": 10,
+              "variant_ids": ["71:307", "71:311", "71:316", "71:321", "71:325", "71:329", "71:331", "71:334", "71:337", "71:339"],
+              "top_level_created_node_ids": ["71:304", "71:341", "71:307", "71:311", "71:316", "71:321", "71:325", "71:329", "71:331", "71:334", "71:337", "71:339"],
+              "mutated_node_ids": ["71:310", "71:314", "71:319", "71:324", "71:328"],
+              "validation": {
+                "outcome": "PASS_AFTER_MAC_SPACER_CONTAINMENT_REPAIR",
+                "variant_axes": ["Platform", "State"],
+                "variant_count": 10,
+                "text_count": 17,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_node_count": 31,
+                "bound_radius_node_count": 10,
+                "iphone_targets_below_44pt": 0,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C12",
+              "family_name": "Player/Track Choice Row",
+              "family_frame_id": "71:342",
+              "component_set_id": "71:421",
+              "variant_count": 10,
+              "variant_ids": ["71:345", "71:352", "71:360", "71:369", "71:376", "71:383", "71:390", "71:398", "71:407", "71:414"],
+              "top_level_created_node_ids": ["71:342", "71:421", "71:345", "71:352", "71:360", "71:369", "71:376", "71:383", "71:390", "71:398", "71:407", "71:414"],
+              "mutated_node_ids": ["71:386", "71:394", "71:402", "71:410", "71:417"],
+              "text_properties": {
+                "title": "Title#71:20",
+                "detail": "Detail#71:21",
+                "reference_count_per_property": 10
+              },
+              "validation": {
+                "outcome": "PASS_AFTER_IPHONE_COPY_HEIGHT_REPAIR",
+                "variant_axes": ["Platform", "State"],
+                "variant_count": 10,
+                "text_count": 26,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_node_count": 48,
+                "bound_radius_node_count": 10,
+                "row_heights_below_44pt": 0,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C13",
+              "family_name": "Player/Track Settings Surface",
+              "family_frame_id": "78:304",
+              "component_set_id": "78:839",
+              "variant_count": 12,
+              "variant_ids": ["78:307", "78:347", "78:387", "78:445", "78:486", "78:529", "78:567", "78:609", "78:651", "78:711", "78:754", "78:799"],
+              "top_level_created_node_ids": ["78:304", "78:839", "78:307", "78:347", "78:387", "78:445", "78:486", "78:529", "78:567", "78:609", "78:651", "78:711", "78:754", "78:799"],
+              "dependency_component_set_ids": ["71:421"],
+              "track_choice_row_instance_count": 48,
+              "library_references": [
+                {"name": "macOS 26 Popover", "component_key": "21b41f111b3b0f45f5845e421758850a59ea626d", "use": "VISUAL_REFERENCE_ONLY_LOCAL_WRAPPER"},
+                {"name": "iPhone Sheet - Inspector", "component_key": "a0569baf92fa193190af2eae4b5f0a85d69a7006", "use": "VISUAL_REFERENCE_ONLY_LOCAL_WRAPPER"}
+              ],
+              "mutated_node_ids": ["78:575", "78:583", "78:592", "78:600", "78:617", "78:625", "78:634", "78:641", "78:659", "78:667", "78:676", "78:683", "78:719", "78:727", "78:738", "78:745", "78:762", "78:770", "78:779", "78:786", "78:807", "78:814", "78:823", "78:830", "78:433", "78:435", "78:437", "78:439", "78:441", "78:699", "78:701", "78:703", "78:705", "78:707"],
+              "validation": {
+                "outcome": "PASS_AFTER_COMPACT_LABEL_AND_CONTROL_BOUNDARY_REPAIR",
+                "variant_axes": ["Platform", "State"],
+                "variant_count": 12,
+                "text_count": 84,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_node_count": 348,
+                "bound_radius_node_count": 98,
+                "iphone_close_targets_below_44pt": 0,
+                "delay_control_count": 10,
+                "delay_controls_with_semantic_boundary": 10,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C14",
+              "family_name": "Player/Empty State",
+              "family_frame_id": "78:840",
+              "component_set_id": "78:869",
+              "variant_count": 4,
+              "variant_ids": ["78:843", "78:850", "78:855", "78:862"],
+              "top_level_created_node_ids": ["78:840", "78:869", "78:843", "78:850", "78:855", "78:862"],
+              "mutated_node_ids": [],
+              "validation": {
+                "outcome": "PASS",
+                "variant_axes": ["Platform", "Context"],
+                "variant_count": 4,
+                "text_count": 17,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_node_count": 28,
+                "bound_radius_node_count": 11,
+                "iphone_actions_below_44pt": 0,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C15",
+              "family_name": "Player/Resume Notice",
+              "family_frame_id": "78:884",
+              "component_set_id": "78:906",
+              "variant_count": 2,
+              "variant_ids": ["78:887", "78:896"],
+              "top_level_created_node_ids": ["78:884", "78:906", "78:887", "78:896"],
+              "mutated_node_ids": ["78:900"],
+              "validation": {
+                "outcome": "PASS_AFTER_IPHONE_COPY_HEIGHT_REPAIR",
+                "variant_axes": ["Platform"],
+                "variant_count": 2,
+                "text_count": 10,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_node_count": 16,
+                "bound_radius_node_count": 6,
+                "iphone_actions_below_44pt": 0,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C16",
+              "family_name": "Player/Relink Recovery",
+              "family_frame_id": "95:614",
+              "component_set_id": "95:729",
+              "variant_count": 8,
+              "variant_ids": ["95:617", "95:631", "95:645", "95:659", "95:673", "95:687", "95:701", "95:715"],
+              "top_level_created_node_ids": ["95:614", "95:729", "95:617", "95:631", "95:645", "95:659", "95:673", "95:687", "95:701", "95:715"],
+              "mutated_node_ids": [],
+              "validation": {
+                "outcome": "PASS",
+                "variant_axes": ["Platform", "State", "PlaybackContext"],
+                "variant_count": 8,
+                "text_count": 58,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_node_count": 114,
+                "bound_radius_node_count": 128,
+                "iphone_targets_below_44pt": 0,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C17",
+              "family_name": "Player/Feedback Banner",
+              "family_frame_id": "97:614",
+              "component_set_id": "97:801",
+              "variant_count": 18,
+              "variant_ids": ["97:617", "97:624", "97:636", "97:648", "97:655", "97:665", "97:675", "97:683", "97:696", "97:709", "97:716", "97:728", "97:740", "97:747", "97:757", "97:767", "97:775", "97:788"],
+              "top_level_created_node_ids": ["97:614", "97:801", "97:617", "97:624", "97:636", "97:648", "97:655", "97:665", "97:675", "97:683", "97:696", "97:709", "97:716", "97:728", "97:740", "97:747", "97:757", "97:767", "97:775", "97:788"],
+              "mutated_node_ids": ["97:741", "97:744", "97:748", "97:751", "97:758", "97:761"],
+              "validation": {
+                "outcome": "PASS_AFTER_IPHONE_WARNING_COPY_HEIGHT_REPAIR",
+                "variant_axes": ["Platform", "Type", "State"],
+                "variant_count": 18,
+                "text_count": 82,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_node_count": 194,
+                "bound_radius_node_count": 224,
+                "focused_action_check": "PASS",
+                "iphone_targets_below_44pt": 0,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C18",
+              "family_name": "Player/History Recovery",
+              "family_frame_id": "97:802",
+              "component_set_id": "97:833",
+              "variant_count": 4,
+              "variant_ids": ["97:805", "97:812", "97:819", "97:826"],
+              "top_level_created_node_ids": ["97:802", "97:833", "97:805", "97:812", "97:819", "97:826"],
+              "mutated_node_ids": [],
+              "validation": {
+                "outcome": "PASS",
+                "variant_axes": ["Platform", "State"],
+                "variant_count": 4,
+                "text_count": 18,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_node_count": 42,
+                "bound_radius_node_count": 48,
+                "iphone_targets_below_44pt": 0,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C19",
+              "family_name": "Player/History Reset Confirmation",
+              "family_frame_id": "102:614",
+              "component_set_id": "102:641",
+              "variant_count": 2,
+              "variant_ids": ["102:617", "102:629"],
+              "top_level_created_node_ids": ["102:614", "102:641", "102:617", "102:629"],
+              "library_references": [
+                {"name": "iOS and iPadOS 26 Alert", "component_key": "fa462a8e7bd84f5295764908dec90a7f3d915932", "use": "VISUAL_REFERENCE_ONLY_LOCAL_WRAPPER"},
+                {"name": "macOS 26 Alert", "component_key": "461d349170ba2ab5476ecdd1d64538f01fb3a80b", "use": "VISUAL_REFERENCE_ONLY_LOCAL_WRAPPER"}
+              ],
+              "effect_style": {"name": "Elevation/Floating", "id": "S:8bf26b5c9727b85a1503509cb102d2220213bcce,"},
+              "mutated_node_ids": ["102:632", "102:629", "102:641"],
+              "validation": {
+                "outcome": "PASS_AFTER_IPHONE_SAFETY_COPY_AND_SET_BOUNDARY_REPAIR",
+                "variant_axes": ["Platform"],
+                "variant_count": 2,
+                "text_count": 16,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_node_count": 32,
+                "bound_radius_node_count": 32,
+                "source_safety_contract_check": "PASS",
+                "iphone_targets_below_44pt": 0,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C20",
+              "family_name": "Player/Subtitle Overlay",
+              "family_frame_id": "102:642",
+              "component_set_id": "102:653",
+              "variant_count": 4,
+              "variant_ids": ["102:645", "102:647", "102:649", "102:651"],
+              "top_level_created_node_ids": ["102:642", "102:653", "102:645", "102:647", "102:649", "102:651"],
+              "text_property": {
+                "cue": "Cue#102:4",
+                "reference_count": 4
+              },
+              "mutated_node_ids": ["102:646", "102:648", "102:650", "102:652"],
+              "validation": {
+                "outcome": "PASS_AFTER_PRIMARY_TEXT_CONTRAST_REBIND",
+                "variant_axes": ["Platform", "Lines"],
+                "variant_count": 4,
+                "text_count": 6,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_node_count": 14,
+                "bound_radius_node_count": 16,
+                "maximum_mac_width": 560,
+                "overflow_count": 0
+              }
+            },
+            {
+              "id": "C21",
+              "family_name": "Player/Scrub Feedback",
+              "family_frame_id": "102:654",
+              "component_set_id": "102:679",
+              "variant_count": 8,
+              "variant_ids": ["102:657", "102:659", "102:662", "102:665", "102:668", "102:670", "102:673", "102:676"],
+              "top_level_created_node_ids": ["102:654", "102:679", "102:657", "102:659", "102:662", "102:665", "102:668", "102:670", "102:673", "102:676"],
+              "mutated_node_ids": ["102:658", "102:660", "102:664", "102:667", "102:669", "102:671", "102:675", "102:678"],
+              "validation": {
+                "outcome": "PASS_AFTER_PRIMARY_TEXT_CONTRAST_REBIND",
+                "variant_axes": ["Platform", "Mode"],
+                "variant_count": 8,
+                "text_count": 16,
+                "missing_or_collapsed_text_count": 0,
+                "bound_color_node_count": 32,
+                "bound_radius_node_count": 32,
+                "seek_fine_and_skip_semantics": "PASS",
+                "overflow_count": 0
+              }
+            }
+          ],
+          "batch1_visual_validation": {
+            "verified_at": "2026-09-06T13:01:21Z",
+            "outcome": "PASS_AFTER_DEFAULT_LAYOUT_FILL_REPAIR",
+            "repaired_transparent_layout_frame_count": 15,
+            "checks": ["variant distinction", "visual hierarchy", "alignment", "overflow", "state legibility", "synthetic-data labeling", "44pt iPhone actions"],
+            "screenshots": [
+              {"family_name": "Platform/App Chrome", "node_id": "39:5", "natural_size": [1280, 1702]},
+              {"family_name": "Player/Media Viewport", "node_id": "40:2", "natural_size": [1280, 2837]},
+              {"family_name": "Player/Recent Row", "node_id": "42:2", "natural_size": [1280, 518]},
+              {"family_name": "Player/Now Playing Bar", "node_id": "43:2", "natural_size": [1280, 618]},
+              {"family_name": "Player/Status Pill", "node_id": "44:2", "natural_size": [1280, 570]}
+            ],
+            "scope_note": "Screenshots validate editable component visuals only; they do not prove SwiftUI runtime behavior."
+          },
+          "batch2_visual_validation": {
+            "verified_at": "2026-09-06T13:20:16Z",
+            "outcome": "PASS_AFTER_PLAY_GLYPH_ALIGNMENT_REPAIR_AND_LIBRARY_FALLBACK",
+            "content_identity_sha256": "c803d91e5539c82dddf81281ec9e74831a14ebe33fd097f891b41ae25b5e1bae",
+            "system_manifest": {
+              "planned_family_count": 21,
+              "created_and_validated_family_count": 10,
+              "component_variant_count": 110,
+              "root_overflow_count": 0
+            },
+            "checks": ["variant manifest", "editable dependency instances", "visual hierarchy", "alignment", "overflow", "state legibility", "INSTANCE_SWAP", "semantic bindings", "44pt iPhone targets"],
+            "repairs": {
+              "timeline_drag_callout_containment": "PASS",
+              "transport_play_glyph_alignment": "PASS",
+              "created_centered_glyph_node_ids": ["67:2", "67:3", "67:4"],
+              "hidden_offset_polygon_node_ids": ["57:7", "57:14", "57:21"]
+            },
+            "library_fallback": {
+              "asset": "macOS 26 Slider",
+              "component_key": "6a41d9b30f08e97771e508a2b8972f91651343c6",
+              "import_outcome": "NOT_PERMITTED",
+              "resolution": "Local editable semantic wrapper using the discovered generic geometry reference; no external library was modified."
+            },
+            "screenshots": [
+              {"family_name": "Player/Timeline", "node_id": "47:2", "natural_size": [1280, 658]},
+              {"family_name": "Player/Transport Action", "node_id": "57:2", "natural_size": [1280, 500]},
+              {"family_name": "Player/Transport Bar", "node_id": "60:374", "natural_size": [1280, 2612]},
+              {"family_name": "Player/Volume Control", "node_id": "63:276", "natural_size": [1280, 352]},
+              {"family_name": "Player/Rate Menu", "node_id": "65:276", "natural_size": [1280, 1004]}
+            ],
+            "scope_note": "Screenshots validate editable component visuals only; they do not prove SwiftUI playback, persistence, keyboard, gesture, menu or audio behavior."
+          },
+          "batch3_visual_validation": {
+            "verified_at": "2026-09-06T13:35:57Z",
+            "outcome": "PASS_AFTER_LAYOUT_OVERFLOW_AND_CONTROL_BOUNDARY_REPAIR",
+            "content_identity_sha256": "1dbe434c6d96963979c274a398295697cb90fb34f55d79ad93bb209a312dec19",
+            "canonical_manifest_length": 1021,
+            "system_manifest": {
+              "planned_family_count": 21,
+              "created_and_validated_family_count": 15,
+              "component_variant_count": 148,
+              "root_overflow_count": 0
+            },
+            "checks": ["variant manifest", "editable text properties", "editable dependency instances", "visual hierarchy", "alignment", "overflow", "selection and pending state legibility", "semantic bindings", "control boundaries", "44pt iPhone targets"],
+            "repairs": {
+              "track_settings_trigger_mac_spacer_containment_count": 5,
+              "track_choice_row_iphone_copy_height_count": 5,
+              "track_settings_surface_iphone_full_width_row_count": 24,
+              "track_settings_surface_compact_label_count": 1,
+              "track_settings_surface_delay_boundary_count": 10,
+              "resume_notice_iphone_copy_height_count": 1
+            },
+            "screenshots": [
+              {"family_name": "Player/Track Settings Trigger", "node_id": "71:304", "natural_size": [1280, 506]},
+              {"family_name": "Player/Track Choice Row", "node_id": "71:342", "natural_size": [1280, 584]},
+              {"family_name": "Player/Track Settings Surface", "node_id": "78:304", "natural_size": [1280, 4000]},
+              {"family_name": "Player/Empty State", "node_id": "78:840", "natural_size": [1280, 810]},
+              {"family_name": "Player/Resume Notice", "node_id": "78:884", "natural_size": [1280, 454]}
+            ],
+            "representative_surface_screenshots": [
+              {"variant": "Platform=Mac, State=External", "node_id": "78:387", "natural_size": [368, 590], "outcome": "PASS"},
+              {"variant": "Platform=iPhone, State=Error", "node_id": "78:754", "natural_size": [360, 600], "outcome": "PASS"}
+            ],
+            "scope_note": "Screenshots validate editable component visuals only; they do not prove runtime track selection, subtitle loading, persistence, file access or playback behavior."
+          },
+          "batch4_visual_validation": {
+            "verified_at": "2026-09-06T13:52:25Z",
+            "outcome": "PASS_AFTER_TEXT_CONTRAST_AND_LAYOUT_REPAIRS",
+            "content_identity_sha256": "8b6ba22eea06cde3068105b51512016497fb820e2b9cad486b596d26f1d4e5e5",
+            "canonical_manifest_length": 573,
+            "system_manifest": {
+              "planned_family_count": 21,
+              "created_and_validated_family_count": 21,
+              "final_batch_family_count": 6,
+              "final_batch_variant_count": 44,
+              "component_variant_count": 192,
+              "root_overflow_count": 0
+            },
+            "checks": ["variant manifest", "target-specific recovery semantics", "history reset safety contract", "editable subtitle text property", "visual hierarchy", "alignment", "overflow", "semantic bindings", "focus visibility", "44pt iPhone targets", "text contrast"],
+            "repairs": {
+              "feedback_iphone_warning_copy_height_node_count": 6,
+              "history_reset_iphone_safety_and_set_boundary_node_count": 3,
+              "subtitle_primary_text_contrast_node_count": 4,
+              "scrub_primary_text_contrast_node_count": 8
+            },
+            "screenshots": [
+              {"family_name": "Player/Relink Recovery", "node_id": "95:614", "natural_size": [1280, 1386], "outcome": "PASS"},
+              {"family_name": "Player/Feedback Banner", "node_id": "97:614", "natural_size": [1280, 2362], "outcome": "PASS"},
+              {"family_name": "Player/History Recovery", "node_id": "97:802", "natural_size": [1280, 694], "outcome": "PASS"},
+              {"family_name": "Player/History Reset Confirmation", "node_id": "102:614", "natural_size": [1280, 642], "outcome": "PASS"},
+              {"family_name": "Player/Subtitle Overlay", "node_id": "102:642", "natural_size": [1280, 360], "outcome": "PASS_AFTER_CONTRAST_REPAIR"},
+              {"family_name": "Player/Scrub Feedback", "node_id": "102:654", "natural_size": [1280, 580], "outcome": "PASS_AFTER_CONTRAST_REPAIR"}
+            ],
+            "scope_note": "Screenshots validate editable component visuals only; they do not prove runtime file access, persistence, reset transactions, subtitle timing, gesture recognition or seek commit."
+          },
+          "full_system_validation": {
+            "verified_at": "2026-09-06T13:52:25Z",
+            "outcome": "PASS",
+            "content_identity_sha256": "2e11fe5277249aed1c76b57567ecfd25b62b51463158e950bea830083a893c22",
+            "canonical_manifest_length": 1315,
+            "component_page": {
+              "page_id": "10:5",
+              "root_node_id": "39:2",
+              "root_size": [1440, 24633],
+              "editable_node_count": 2055
+            },
+            "manifest": {
+              "family_count": 21,
+              "component_set_count": 21,
+              "component_variant_count": 192,
+              "unique_variant_name_check": "PASS",
+              "local_editable_set_count": 21,
+              "remote_set_count": 0
+            },
+            "integrity": {
+              "text_count": 795,
+              "missing_or_collapsed_text_count": 0,
+              "overflow_count": 0,
+              "instance_count": 224,
+              "orphan_instance_count": 0,
+              "image_fill_count": 0,
+              "placeholder_count": 0,
+              "unbound_solid_paint_count": 0
+            },
+            "dependency_checks": [
+              {"component": "Player/Transport Bar", "dependency": "Player/Timeline", "outcome": "PASS"},
+              {"component": "Player/Transport Bar", "dependency": "Player/Transport Action", "outcome": "PASS"},
+              {"component": "Player/Track Settings Surface", "dependency": "Player/Track Choice Row", "outcome": "PASS"}
+            ],
+            "paint_bindings": {
+              "solid_fill_count": 1481,
+              "bound_solid_fill_count": 1481,
+              "solid_stroke_count": 520,
+              "bound_solid_stroke_count": 520
+            },
+            "accessibility": {
+              "focused_variant_count": 19,
+              "focused_variants_without_visible_focus": 0,
+              "iphone_target_violations": 0,
+              "contrast_checks": [
+                {"foreground": "label/primary", "background": "background/surface", "ratio": 16.92, "minimum": 4.5, "outcome": "PASS"},
+                {"foreground": "label/secondary", "background": "background/surface", "ratio": 8.66, "minimum": 4.5, "outcome": "PASS"},
+                {"foreground": "label/primary", "background": "background/elevated", "ratio": 15.19, "minimum": 4.5, "outcome": "PASS"},
+                {"foreground": "label/secondary", "background": "background/elevated", "ratio": 7.77, "minimum": 4.5, "outcome": "PASS"},
+                {"foreground": "label/primary", "background": "background/control-overlay", "ratio": 18.8, "minimum": 4.5, "outcome": "PASS"},
+                {"foreground": "label/inverse", "background": "accent/primary", "ratio": 11.58, "minimum": 4.5, "outcome": "PASS"},
+                {"foreground": "label/inverse", "background": "status/danger", "ratio": 5.14, "minimum": 4.5, "outcome": "PASS"},
+                {"foreground": "focus/ring", "background": "background/elevated", "ratio": 4.36, "minimum": 3.0, "outcome": "PASS"}
+              ]
+            },
+            "candidate_page_isolation": {
+              "10 Direction A — Night Deck": 0,
+              "20 Direction B — Library Gallery": 0,
+              "30 Direction C — Precision Console": 0,
+              "40 Direction D — Quiet Theater": 0,
+              "50 Direction E — Adaptive Capsule": 0
+            },
+            "scope_note": "This verifies the editable Figma component system and candidate-page isolation only. It is not runtime evidence for SwiftUI, engines, persistence, file access, gestures, keyboard commands or destructive reset behavior."
+          }
+        },
+        "next_task_id": "P3.e"
+      },
+      "candidate_node_ids": {
+        "A": "116:2",
+        "B": "131:2",
+        "C": "162:2",
+        "D": "191:2",
+        "E": null
+      },
+      "candidates": {
+        "A": {
+          "direction_name": "夜航甲板 Night Deck",
+          "status": "FROZEN_INDEPENDENT_REVIEW_PASS",
+          "candidate_version": "A-v1",
+          "page_id": "10:7",
+          "root_node_id": "116:2",
+          "freeze_record_node_id": "125:581",
+          "frozen_at": "2026-09-06T14:13:28Z",
+          "content_identity": {
+            "schema": "universal-player-night-deck-candidate-v1",
+            "sha256": "b403903b1f37fa6750852709a6d7c8f6f5460f022b95147113c0310ba29a4c01",
+            "canonical_manifest_length": 53716,
+            "scope": "Editable candidate tree rooted at 116:2, excluding only Freeze Record metadata and including the frozen component-system SHA-256."
+          },
+          "component_system_sha256": "2e11fe5277249aed1c76b57567ecfd25b62b51463158e950bea830083a893c22",
+          "figma_revision_id": null,
+          "figma_revision_note": "The official connector does not expose a Figma revision ID; file, page, root and screen node IDs plus the content hashes are the revision authority.",
+          "root_before_freeze_metadata": {
+            "size": [1600, 8850],
+            "editable_node_count": 634,
+            "text_count": 258,
+            "instance_count": 110
+          },
+          "root_after_freeze_metadata": {
+            "size": [1600, 9050],
+            "locked": true
+          },
+          "screen_nodes": {
+            "mac_library_entry": {"node_id": "117:619", "size": [1360, 800]},
+            "mac_playback_playing": {"node_id": "117:644", "size": [1360, 860]},
+            "mac_audio_and_captions": {"node_id": "117:706", "size": [1360, 860]},
+            "mac_playback_ended": {"node_id": "117:827", "size": [1360, 860]},
+            "iphone_recently_played": {"node_id": "120:886", "size": [390, 844]},
+            "iphone_now_playing": {"node_id": "120:889", "size": [390, 844]},
+            "iphone_audio_and_captions": {"node_id": "120:892", "size": [390, 844]},
+            "iphone_fullscreen": {"node_id": "120:1053", "size": [844, 390]},
+            "iphone_relink_recovery": {"node_id": "120:1056", "size": [390, 844]}
+          },
+          "coverage": {
+            "p0": ["open or drop and recent entry", "ready or playing", "play and pause", "seek and skip", "ended and replay"],
+            "p1": ["resume", "audio tracks", "external captions and delay", "relink", "history recovery", "history reset"],
+            "states": ["loading", "empty", "error", "disabled", "focus", "success or ended", "danger"],
+            "platforms": ["macOS 1280-class workbench", "iPhone 390x844 portrait", "iPhone 844x390 fullscreen"],
+            "synthetic_data_label": "PASS"
+          },
+          "readback_validation": {
+            "outcome": "PASS",
+            "screen_count": 9,
+            "missing_screen_count": 0,
+            "direct_screen_overflow_count": 0,
+            "missing_font_count": 0,
+            "collapsed_text_count": 0,
+            "placeholder_count": 0,
+            "orphan_instance_count": 0,
+            "remote_instance_count": 0,
+            "image_fill_count": 0,
+            "unbound_solid_paint_count": 0,
+            "iphone_target_contract": "PASS_VIA_VERIFIED_LOCAL_COMPONENT_SYSTEM"
+          },
+          "visual_validation": {
+            "outcome": "PASS_AFTER_RECENT_RAIL_COMPOSITION_REPAIR",
+            "repair": "Compressed macOS Recent Row instances were replaced with local Platform/App Chrome Player instances on M2, M3 and M4 before freeze.",
+            "screenshots": [
+              {"name": "foundations", "node_id": "116:3", "natural_size": [1504, 561], "sha256": "e33926c77a7ad2afba2d11275b007a4067d2966dfea8239df992ec40338310c0"},
+              {"name": "mac_library_entry", "node_id": "117:619", "natural_size": [1360, 811], "sha256": "0d1f4bbe7727a330c46149c3fd948ae7aa1e817839a8f12502a2f436f206256f"},
+              {"name": "mac_playback_playing", "node_id": "117:644", "natural_size": [1360, 871], "sha256": "3ef586442d911341c050e9b9c86127d2358a3cca235dc9a89e733b6dad0d88c8"},
+              {"name": "mac_audio_and_captions", "node_id": "117:706", "natural_size": [1360, 871], "sha256": "86123f8368b1d0d954037c81273858b4f262da7b7c27d037f3f47fb27d5b3cb4"},
+              {"name": "mac_playback_ended", "node_id": "117:827", "natural_size": [1360, 871], "sha256": "51af6302c13453b603d39ac0114fcb91f054fada5642e8679ac24ef434488d29"},
+              {"name": "state_matrix", "node_id": "116:5", "natural_size": [1504, 1906], "sha256": "64e6d56370d29ab996c9b52f95e36eb236b496fbaa98e516c8a1c37629ebc084"},
+              {"name": "iphone_recently_played", "node_id": "120:886", "natural_size": [420, 874], "sha256": "6aa0c4efcfec8688fb72d4bf1f3ce7ae893d7688f9e8b3a5f03c2dae1fade86c"},
+              {"name": "iphone_now_playing", "node_id": "120:889", "natural_size": [420, 874], "sha256": "52e5f303f4adbe975c132f70ef02c585c973260734e4d4100f6856ebd01aeb5f"},
+              {"name": "iphone_audio_and_captions", "node_id": "120:892", "natural_size": [420, 874], "sha256": "568d6b95733c7fb0274bb595ed1f65f92387aafbd4e4c2cb159e39b3a6dce959"},
+              {"name": "iphone_fullscreen", "node_id": "120:1053", "natural_size": [874, 420], "sha256": "afadf892f2726ba8aeb9900aa9891d309ddc88989d8c1394b835b96b488fe62f"},
+              {"name": "iphone_relink_recovery", "node_id": "120:1056", "natural_size": [420, 874], "sha256": "ba7e0c58292cdedcc334a4b89ae3ef9946c1c2a8936afa39caadf5b44c60646c"},
+              {"name": "coverage_and_freeze", "node_id": "116:7", "natural_size": [1504, 553], "sha256": "4ce8122919cf10990c1438543b43276f1b5cef32db6f8424add94896e448c4ef"}
+            ],
+            "scope_note": "Screenshots prove visual composition only and do not prove playback, persistence, file access, gestures, keyboard delivery or decoder behavior."
+          },
+          "independent_review": {
+            "reviewed_at": "2026-09-06T14:19:25Z",
+            "role": "FRESH_READ_ONLY_JUDGE",
+            "agent_id": "6b67e942-e825-4e44-b2b4-d4e67f740514",
+            "reviewed_identity_sha256": "b403903b1f37fa6750852709a6d7c8f6f5460f022b95147113c0310ba29a4c01",
+            "outcome": "PASS",
+            "summary": "All nine agreed criteria passed; live Figma structure, exact screen identities and all twelve screenshot hashes matched. No write was performed by the reviewer.",
+            "runtime_boundary": "The approval is limited to this frozen editable design identity and is not runtime verification."
+          },
+          "candidate_page_isolation": {
+            "A": {"page_id": "10:7", "child_count": 1},
+            "B": {"page_id": "10:8", "child_count": 0},
+            "C": {"page_id": "10:9", "child_count": 0},
+            "D": {"page_id": "10:10", "child_count": 0},
+            "E": {"page_id": "11:2", "child_count": 0}
+          },
+          "canvas_mutations": "TASK_DEDICATED_DIRECTION_A_PAGE_ONLY",
+          "existing_reference_figma_writes": 0,
+          "external_project_writes": 0
+        },
+        "B": {
+          "direction_name": "目录画廊 Library Gallery",
+          "status": "FROZEN_INDEPENDENT_REVIEW_PASS",
+          "candidate_version": "B-v3",
+          "page_id": "10:8",
+          "root_node_id": "131:2",
+          "freeze_record_node_id": "155:634",
+          "frozen_at": "2026-09-06T17:13:30Z",
+          "superseded_freezes": [
+            {
+              "candidate_version": "B-v1",
+              "freeze_record_node_id": "140:600",
+              "status": "SUPERSEDED_INDEPENDENT_REVIEW_FAIL",
+              "review_agent_id": "dfefff25-5744-4feb-83c3-aaeb3e453f73",
+              "reason": "iPhone status overflow, missing explicit caption-delay controls, weak Open/Drop-to-Ready evidence, inconsistent current-media naming and a review-packet source-hash transcription error."
+            },
+            {
+              "candidate_version": "B-v2",
+              "freeze_record_node_id": "147:634",
+              "status": "SUPERSEDED_INDEPENDENT_REVIEW_FAIL",
+              "review_agent_id": "fafd614e-7d83-40a1-bd5d-66159adbe67",
+              "reason": "Normal-sized warning, selected-state and inverse-on-primary text did not meet the agreed 4.5:1 contrast threshold."
+            }
+          ],
+          "content_identity": {
+            "schema": "universal-player-library-gallery-candidate-v3",
+            "sha256": "2f2f9705fa3bd625cf147819e47a7ffad52fd6b44850d2b8e635302d4a247a61",
+            "canonical_manifest_length": 738292,
+            "scope": "Editable candidate tree rooted at 131:2 with resolved Direction-B semantic dependencies and authoritative baseline hashes; Freeze Record* metadata is excluded and root/coverage auto-layout heights plus root lock are normalized."
+          },
+          "component_system_sha256": "2e11fe5277249aed1c76b57567ecfd25b62b51463158e950bea830083a893c22",
+          "figma_revision_id": null,
+          "figma_revision_note": "The official connector does not expose a Figma revision ID; file, page, root, freeze-record and screen node IDs plus content and screenshot hashes are the revision authority.",
+          "root_before_freeze_metadata": {
+            "normalized_size": [1600, 8637],
+            "actual_size": [1600, 8873],
+            "editable_node_count": 714,
+            "text_count": 301,
+            "instance_count": 122
+          },
+          "root_after_freeze_metadata": {
+            "size": [1600, 8991],
+            "locked": true,
+            "freeze_record_count": 3,
+            "active_freeze_record_count": 1
+          },
+          "screen_nodes": {
+            "mac_library_entry_ready": {"node_id": "131:1109", "size": [1360, 800]},
+            "mac_playback_playing": {"node_id": "132:28", "size": [1360, 860]},
+            "mac_audio_and_captions": {"node_id": "133:93", "size": [1360, 860]},
+            "mac_playback_ended": {"node_id": "133:1251", "size": [1360, 860]},
+            "iphone_recently_played": {"node_id": "133:1483", "size": [390, 844]},
+            "iphone_now_playing": {"node_id": "133:1486", "size": [390, 844]},
+            "iphone_audio_and_captions": {"node_id": "133:1489", "size": [390, 844]},
+            "iphone_fullscreen": {"node_id": "133:1648", "size": [844, 390]},
+            "iphone_relink_recovery": {"node_id": "133:1651", "size": [390, 844]}
+          },
+          "coverage": {
+            "p0": ["open or drop to ready", "recent entry", "play and pause", "seek and skip", "ended and replay"],
+            "p1": ["resume", "audio tracks", "external captions and explicit delay", "relink", "history recovery", "history reset"],
+            "states": ["loading", "empty", "error", "disabled", "focus", "success or ended", "danger", "relink", "resume", "history recovery"],
+            "platforms": ["macOS 1360x800 or 1360x860 workbench", "iPhone 390x844 portrait", "iPhone 844x390 fullscreen"],
+            "synthetic_data_label": "PASS"
+          },
+          "readback_validation": {
+            "outcome": "PASS",
+            "screen_count": 9,
+            "placeholder_count": 0,
+            "missing_font_count": 0,
+            "empty_text_count": 0,
+            "orphan_instance_count": 0,
+            "remote_instance_count": 0,
+            "explicit_caption_delay_label_count": 10,
+            "iphone_status_right_inset": 16,
+            "current_media_identity": "Coastline Study",
+            "direction_a_isolation": "PASS_LOCKED_UNCHANGED"
+          },
+          "contrast_validation": {
+            "outcome": "PASS",
+            "minimum_normal_text_ratio": 4.561068871603402,
+            "accent_primary_on_surface": 7.668171670371464,
+            "accent_primary_on_canvas": 6.858323478627363,
+            "accent_primary_on_selected_fill": 4.561068871603402,
+            "danger_on_surface": 6.429904766061089,
+            "accent_secondary_on_surface": 6.2009215829022475,
+            "inverse_on_primary": 7.668171670371464,
+            "disabled_text_note": "Disabled controls are visually identifiable and exempt from the normal-text contrast criterion; no enabled normal text relies on the disabled token."
+          },
+          "visual_validation": {
+            "outcome": "PASS_AFTER_B_V3_SEMANTIC_CONTRAST_REPAIR",
+            "repair": "Direction-B-only primary/warning, danger and external-caption success semantics were darkened, while selected checkmarks were rebound to label/inverse. Shared components and frozen Direction A were not changed.",
+            "screenshots": [
+              {"name": "foundations", "node_id": "131:3", "node_size": [1504, 557], "sha256": "1b87f98d2fce6e905fed339f0c090c90bcc0b298ce0f03ec55d7cfa5a3195eb8"},
+              {"name": "mac_library_entry_ready", "node_id": "131:1109", "node_size": [1360, 800], "sha256": "7fa39dbc99ba351dee039a1de9bdd9722ae2db64b09de04abe8b71d2d3313835"},
+              {"name": "mac_playback_playing", "node_id": "132:28", "node_size": [1360, 860], "sha256": "46b1d773f33f9a8f8cec7d42a7ed5d0a2b18fe1aa5c3dc2fb339b3abe438a156"},
+              {"name": "mac_audio_and_captions", "node_id": "133:93", "node_size": [1360, 860], "sha256": "f69db4a1aa7b9bd9c3f4de2fbddb78cb04c5e2788616bba3f5d5b3cfff4f0211"},
+              {"name": "mac_playback_ended", "node_id": "133:1251", "node_size": [1360, 860], "sha256": "fce523bb1a8030b35d341dc55ed87b9ee6255dce015f0a4d9c8c06c0d5a73c4e"},
+              {"name": "mac_state_matrix", "node_id": "131:5", "node_size": [1504, 1670], "sha256": "0a5146ad0e43403dfdfd137f469faeec95cb6cc3ed01c712059ce18898bc3ffc"},
+              {"name": "iphone_recently_played", "node_id": "133:1483", "node_size": [390, 844], "sha256": "11352b3ebed82049aeb34e954f23288c22d834836c55720fb794babedb9c9e54"},
+              {"name": "iphone_now_playing", "node_id": "133:1486", "node_size": [390, 844], "sha256": "b9f9f763719faa3296ce3b2357fa25ecebb9e9193f6d093941677a7e75fed9a9"},
+              {"name": "iphone_audio_and_captions", "node_id": "133:1489", "node_size": [390, 844], "sha256": "ac45d464be9d94e3f41913c6fa9cbd7e9da641c044e6b62f7ad5b051c42ae7ab"},
+              {"name": "iphone_fullscreen", "node_id": "133:1648", "node_size": [844, 390], "sha256": "f4c217fa2dedce64d75c42d8ac901f52133e02fac078467e1540afd7e6966959"},
+              {"name": "iphone_relink_recovery", "node_id": "133:1651", "node_size": [390, 844], "sha256": "7afef670d89c1e38bd407736143b24ab832c904a8bc15f558a80be3a70b2fd7a"},
+              {"name": "coverage_and_freeze", "node_id": "131:7", "node_size": [1504, 796], "sha256": "fc75972026493b18d0ae43fb9fff7cf42cbece492a70b3b6852fe06806c21482"}
+            ],
+            "scope_note": "Screenshots prove visual composition only and do not prove playback, persistence, file access, gestures, keyboard delivery or decoder behavior."
+          },
+          "independent_review": {
+            "reviewed_at": "2026-09-06T17:35:11Z",
+            "role": "FRESH_READ_ONLY_JUDGE",
+            "agent_id": "414f1f35-2aa0-4b93-83d6-ae1d5fd6ce5b",
+            "reviewed_identity_sha256": "2f2f9705fa3bd625cf147819e47a7ffad52fd6b44850d2b8e635302d4a247a61",
+            "outcome": "PASS",
+            "summary": "All ten agreed criteria passed; all twelve final B-v3 screenshot hashes matched the packet, live Figma metadata matched the frozen root and nine screen nodes, and both prior failure sets were closed without changing Direction A.",
+            "runtime_boundary": "The approval is limited to this exact frozen editable design identity and is not runtime verification."
+          },
+          "candidate_page_isolation": {
+            "A": {"page_id": "10:7", "root_node_id": "116:2", "locked": true},
+            "B": {"page_id": "10:8", "root_node_id": "131:2", "locked": true},
+            "C": {"page_id": "10:9", "child_count": 0},
+            "D": {"page_id": "10:10", "child_count": 0},
+            "E": {"page_id": "11:2", "child_count": 0}
+          },
+          "canvas_mutations": "TASK_DEDICATED_DIRECTION_B_PAGE_AND_DIRECTION_B_ONLY_SEMANTIC_PRIMITIVES; SHARED_COMPONENTS_UNCHANGED",
+          "existing_reference_figma_writes": 0,
+          "external_project_writes": 0
+        },
+        "C": {
+          "direction_name": "精确播控 Precision Console",
+          "status": "FROZEN_INDEPENDENT_REVIEW_PASS",
+          "candidate_version": "C-v2",
+          "page_id": "10:9",
+          "root_node_id": "162:2",
+          "freeze_record_node_id": "177:637",
+          "frozen_at": "2026-09-06T18:10:10Z",
+          "superseded_freezes": [
+            {
+              "candidate_version": "C-v1",
+              "freeze_record_node_id": "171:637",
+              "status": "SUPERSEDED_INDEPENDENT_REVIEW_FAIL",
+              "content_identity_sha256": "3d64558d23fa6ae6bbd342be7fa599ee6a387068663a29776e59473839b93ed4",
+              "review_agent_id": "00f53f0c-d1e3-4eb9-b842-0ecab49c3050",
+              "reason": "Normal informational text inside black Media Viewport surfaces inherited dark label/inverse and reached only 1.096:1. The repair then expanded to a context-aware audit and corrected every remaining enabled C-only text below 4.5:1."
+            }
+          ],
+          "content_identity": {
+            "schema": "universal-player-precision-console-candidate-v2",
+            "sha256": "087edf355bec16710d70de61f2e6ea7e7e12582c3bbd97d8bd4a26bd011ee8f0",
+            "canonical_manifest_length": 747675,
+            "scope": "Editable candidate tree rooted at 162:2 with resolved Direction-C semantic dependencies and authoritative baseline hashes; Freeze Record* metadata is excluded and root/coverage auto-layout heights plus root lock are normalized."
+          },
+          "component_system_sha256": "2e11fe5277249aed1c76b57567ecfd25b62b51463158e950bea830083a893c22",
+          "figma_revision_id": null,
+          "figma_revision_note": "The official connector does not expose a Figma revision ID; file, page, root, freeze-record and screen node IDs plus content and screenshot hashes are the revision authority.",
+          "root_before_freeze_metadata": {
+            "normalized_size": [1600, 8581],
+            "actual_size_with_superseded_freeze": [1600, 8699],
+            "editable_node_count_excluding_freeze_metadata": 722,
+            "text_count_excluding_freeze_metadata": 303,
+            "instance_count": 123
+          },
+          "root_after_freeze_metadata": {
+            "size": [1600, 8817],
+            "locked": true,
+            "freeze_record_count": 2,
+            "active_freeze_record_count": 1
+          },
+          "screen_nodes": {
+            "mac_console_entry_ready": {"node_id": "162:34", "size": [1360, 800]},
+            "mac_precision_playback": {"node_id": "162:50", "size": [1360, 860]},
+            "mac_precision_track_drawer": {"node_id": "162:66", "size": [1360, 860]},
+            "mac_precision_complete": {"node_id": "162:84", "size": [1360, 860]},
+            "iphone_precision_queue": {"node_id": "162:144", "size": [390, 844]},
+            "iphone_precision_playback": {"node_id": "162:155", "size": [390, 844]},
+            "iphone_precision_track_sheet": {"node_id": "162:166", "size": [390, 844]},
+            "iphone_landscape_precision_fullscreen": {"node_id": "162:180", "size": [844, 390]},
+            "iphone_precision_relink_recovery": {"node_id": "162:188", "size": [390, 844]}
+          },
+          "coverage": {
+            "p0": ["open or drop to probe and ready", "recent entry", "play and pause", "precise seek and skip", "ended and replay"],
+            "p1": ["resume", "audio tracks", "external captions and five explicit delay controls per platform", "relink", "history recovery", "history reset"],
+            "states": ["loading", "empty", "error", "disabled", "focus", "success or ended", "danger", "relink", "resume", "history recovery"],
+            "platforms": ["macOS 1360x800 or 1360x860 precision workbench", "iPhone 390x844 portrait", "iPhone 844x390 landscape fullscreen"],
+            "synthetic_data_label": "PASS",
+            "direction_difference": ["precision-deck and narrow-queue information architecture", "8-point compact rectangular geometry", "numeric and monospaced telemetry", "cyan-black solid-panel material", "press displacement and in-place value feedback"]
+          },
+          "readback_validation": {
+            "outcome": "PASS",
+            "screen_count": 9,
+            "state_card_count": 10,
+            "explicit_caption_delay_button_count": 10,
+            "placeholder_count": 0,
+            "missing_font_count": 0,
+            "collapsed_text_count": 0,
+            "empty_text_count": 0,
+            "orphan_instance_count": 0,
+            "remote_instance_count": 0,
+            "direct_screen_overflow_count": 0,
+            "small_iphone_target_count": 0,
+            "iphone_status_right_inset": 16,
+            "direction_c_semantic_binding_count_post_freeze": 777,
+            "other_direction_semantic_binding_count": 0,
+            "unbound_solid_paint_count": 0,
+            "image_fill_count": 0
+          },
+          "contrast_validation": {
+            "outcome": "PASS_AFTER_CONTEXT_AWARE_C_V2_INSTANCE_REPAIR",
+            "audited_visible_text_count": 302,
+            "enabled_text_count": 296,
+            "disabled_exempt_count": 6,
+            "enabled_text_failure_count": 0,
+            "minimum_enabled_text_ratio": 4.892,
+            "media_viewport_audited_text_count": 20,
+            "media_viewport_minimum_visible_ratio": 8.253,
+            "media_viewport_failure_count": 0,
+            "repair_scope": "31 Direction-C instance text-fill overrides only; no semantic primitive, shared component, frozen A or frozen B mutation."
+          },
+          "visual_validation": {
+            "outcome": "PASS_AFTER_C_V2_CONTEXT_AWARE_CONTRAST_REPAIR",
+            "repair": "C-v1 video text contrast failure triggered a full nearest-solid-surface audit. Fifteen Media Viewport labels and sixteen additional enabled selected/error/destructive texts were rebound at the Direction-C instance layer before C-v2 was frozen.",
+            "screenshots": [
+              {"name": "foundations", "node_id": "162:3", "rendered_size": [1504, 573], "sha256": "a015c7187329e006a2f96747fe80e8f7ea255aab0594adb3db3994850ccbfecd"},
+              {"name": "mac_console_entry_ready", "node_id": "162:34", "rendered_size": [1360, 811], "sha256": "94dd7549e0f65f2ed3ff3694be799de611f5e46220c5644c57cdfee0911bcbca"},
+              {"name": "mac_precision_playback", "node_id": "162:50", "rendered_size": [1360, 871], "sha256": "ccc276063b1949ce8ee25e949b24d48da641ee1d4bf93e8fd59fb14d97cbd575"},
+              {"name": "mac_precision_track_drawer", "node_id": "162:66", "rendered_size": [1360, 871], "sha256": "014879e2fb6a25abd257c01e4e4f38605310505ebe43d25cff3f3d2587b66947"},
+              {"name": "mac_precision_complete", "node_id": "162:84", "rendered_size": [1360, 871], "sha256": "d82c3dd27be2828d7dbb0548e3bc43d85342d51d1b49d2b18aac2a8bb71bfd85"},
+              {"name": "mac_state_matrix", "node_id": "162:97", "rendered_size": [1504, 1676], "sha256": "9d4b604777e8eee629e1098c489cea18c487de40e195297cc384e663b5bbb4f0"},
+              {"name": "iphone_precision_queue", "node_id": "162:144", "rendered_size": [390, 844], "sha256": "9d21704c7d2a6e138b27cb2292908364a75432f241e427cc685993cc8fb985f3"},
+              {"name": "iphone_precision_playback", "node_id": "162:155", "rendered_size": [390, 844], "sha256": "0fe9d3c174f028b184fadfb071c0b1959f4d24937725aac18229fdb1c7de5cf2"},
+              {"name": "iphone_precision_track_sheet", "node_id": "162:166", "rendered_size": [390, 844], "sha256": "895f120644a8c63c52ede56ae2e04eaa3af787386bda4c17b73f778f083c11b2"},
+              {"name": "iphone_landscape_precision_fullscreen", "node_id": "162:180", "rendered_size": [844, 390], "sha256": "4fbef7dfd1d375f7d0d9a73738d0b721fae55a5d093abc14d93ebba34813ab84"},
+              {"name": "iphone_precision_relink_recovery", "node_id": "162:188", "rendered_size": [390, 844], "sha256": "3e140682a4a942bca53da2b29cd2de7389aefd6fd8d256068729713b1357d9da"},
+              {"name": "coverage_and_freeze", "node_id": "162:193", "rendered_size": [1504, 600], "sha256": "46a67cba7f833731fc43d92d5d0aeddf83a4b454d3ce0b7a5ebe2a89f3ebce2e"}
+            ],
+            "scope_note": "Screenshots prove visual composition only and do not prove playback, persistence, file access, gestures, keyboard delivery or decoder behavior."
+          },
+          "independent_review": {
+            "reviewed_at": "2026-09-06T18:28:19Z",
+            "role": "FRESH_READ_ONLY_JUDGE",
+            "agent_id": "9ab74cd3-2f9b-4d17-a59a-2ac7ab766bea",
+            "reviewed_identity_sha256": "087edf355bec16710d70de61f2e6ea7e7e12582c3bbd97d8bd4a26bd011ee8f0",
+            "outcome": "PASS",
+            "summary": "All eleven agreed criteria passed; exact identity, twelve screenshots, full tree, twenty Media Viewport rows, 302 context-aware text checks, frozen A/B isolation and the external baseline independently matched.",
+            "runtime_boundary": "The approval is limited to this exact frozen editable design identity and is not runtime verification or owner selection."
+          },
+          "candidate_page_isolation": {
+            "A": {"page_id": "10:7", "root_node_id": "116:2", "locked": true},
+            "B": {"page_id": "10:8", "root_node_id": "131:2", "locked": true},
+            "C": {"page_id": "10:9", "root_node_id": "162:2", "locked": true},
+            "D": {"page_id": "10:10", "child_count": 0},
+            "E": {"page_id": "11:2", "child_count": 0}
+          },
+          "canvas_mutations": "TASK_DEDICATED_DIRECTION_C_PAGE_INSTANCE_OVERRIDES_ONLY; SHARED_COMPONENTS_AND_FROZEN_A_B_UNCHANGED",
+          "existing_reference_figma_writes": 0,
+          "external_project_writes": 0
+        },
+        "D": {
+          "direction_name": "静谧剧场 Quiet Theater",
+          "status": "FROZEN_INDEPENDENT_REVIEW_PASS",
+          "candidate_version": "D-v1a",
+          "page_id": "10:10",
+          "root_node_id": "191:2",
+          "freeze_record_node_id": "229:588",
+          "frozen_at": "2026-09-07T02:59:15Z",
+          "evidence_amended_at": "2026-09-07T03:31:30Z",
+          "superseded_freezes": [
+            {
+              "candidate_version": "D-v1",
+              "freeze_record_node_id": "207:588",
+              "status": "SUPERSEDED_IDENTITY_EVIDENCE_INCONCLUSIVE",
+              "content_identity_sha256": "0fb96290fd6c951814ce6f38bf518c8b511a87cd78fc9adb66e7c793966942ea",
+              "review_agent_id": "1f4a46b1-1675-448c-810b-49024b7e4483",
+              "reason": "All design criteria and twelve individual PNG hashes passed, but the original serializer bytes and aggregate screenshot manifest body were unavailable for independent recomputation. D-v1a changes evidence serialization only; editable design content is unchanged."
+            }
+          ],
+          "content_identity": {
+            "schema": "universal-player-quiet-theater-candidate-v1a",
+            "sha256": "af0e26ade49cf0178ecde9bc2eb365a485f8969a2fea70100bd71ba9587e897e",
+            "canonical_manifest_length": 744509,
+            "utf8_byte_length": 744743,
+            "scope": "Expanded editable candidate tree rooted at 191:2 with hidden instance children, resolved Direction-D semantic dependencies, component-system hash and authoritative baseline hashes; every Freeze Record* subtree is excluded and root lock plus root height are normalized."
+          },
+          "component_system_sha256": "2e11fe5277249aed1c76b57567ecfd25b62b51463158e950bea830083a893c22",
+          "figma_revision_id": null,
+          "figma_revision_note": "The official connector does not expose a Figma revision ID; file, page, root, freeze-record and screen node IDs plus independently reproduced content and screenshot hashes are the revision authority.",
+          "root_after_review_metadata": {
+            "size": [1600, 9043],
+            "locked": true,
+            "editable_node_count_excluding_freeze_metadata": 722,
+            "text_count_excluding_freeze_metadata": 303,
+            "instance_count": 123,
+            "freeze_record_count": 2,
+            "active_freeze_record_count": 1
+          },
+          "screen_nodes": {
+            "mac_theater_entrance_ready": {"node_id": "191:34", "size": [1360, 800]},
+            "mac_immersive_playback": {"node_id": "191:50", "size": [1360, 860]},
+            "mac_contextual_audio_and_captions": {"node_id": "191:66", "size": [1360, 860]},
+            "mac_quiet_completion": {"node_id": "191:84", "size": [1360, 860]},
+            "iphone_quiet_library": {"node_id": "191:144", "size": [390, 844]},
+            "iphone_immersive_now_playing": {"node_id": "191:155", "size": [390, 844]},
+            "iphone_contextual_audio_and_captions": {"node_id": "191:166", "size": [390, 844]},
+            "iphone_landscape_quiet_fullscreen": {"node_id": "191:180", "size": [844, 390]},
+            "iphone_relink_bottom_edge_recovery": {"node_id": "191:188", "size": [390, 844]}
+          },
+          "coverage": {
+            "p0": ["open or drop to probe and ready", "recent entry", "play and pause", "seek and skip", "ended and replay"],
+            "p1": ["resume", "audio tracks", "external captions and five explicit delay controls per platform", "relink", "history recovery", "history reset"],
+            "states": ["loading", "empty", "error", "disabled", "focus", "success or ended", "danger", "relink", "resume", "history recovery"],
+            "platforms": ["macOS 1360x800 or 1360x860 theater workbench", "iPhone 390x844 portrait", "iPhone 844x390 landscape fullscreen"],
+            "synthetic_data_label": "PASS",
+            "direction_difference": ["media-first progressive-disclosure information architecture", "large sparse and elliptical geometry", "light display typography", "deep violet-black controlled glass", "slow edge chrome and centered gesture feedback"]
+          },
+          "readback_validation": {
+            "outcome": "PASS",
+            "screen_count": 9,
+            "state_card_count": 10,
+            "explicit_caption_delay_button_count": 10,
+            "placeholder_count": 0,
+            "missing_font_count": 0,
+            "collapsed_or_empty_visible_text_count": 0,
+            "orphan_instance_count": 0,
+            "remote_instance_count": 0,
+            "direct_screen_overflow_count": 0,
+            "small_iphone_target_count": 0,
+            "direction_d_semantic_binding_count": 727,
+            "other_direction_semantic_binding_count": 0,
+            "unbound_solid_paint_count": 0,
+            "image_fill_count": 0
+          },
+          "contrast_validation": {
+            "outcome": "PASS_AFTER_DIRECTION_D_INSTANCE_REPAIR",
+            "audited_visible_text_count": 269,
+            "enabled_text_count": 263,
+            "disabled_exempt_count": 6,
+            "enabled_text_failure_count": 0,
+            "minimum_enabled_text_ratio": 5.166,
+            "repair_scope": "Five Direction-D instance text fills were rebound to label/primary; no shared component or frozen A/B/C mutation."
+          },
+          "visual_validation": {
+            "outcome": "PASS_AFTER_QUIET_THEATER_LAYOUT_AND_CONTRAST_REPAIR",
+            "screenshot_manifest": {
+              "schema": "universal-player-quiet-theater-screenshot-manifest-v1a",
+              "sha256": "22f48e7143f40c04da4afdddc5c78764e2581f3d43afb9b3be9c51624c7dbe75",
+              "canonical_byte_length": 2130,
+              "screenshot_count": 12
+            },
+            "screenshots": [
+              {"name": "foundations", "node_id": "191:3", "rendered_size": [1504, 573], "sha256": "0693ddaf77e4d67783ced048646d42c3cc75a546f135c6a2bb931f08d4a801d2"},
+              {"name": "mac_theater_entrance_ready", "node_id": "191:34", "rendered_size": [1360, 811], "sha256": "22f017912dfb8ca9740f6b143e6f1eb5ba247d9cd1b57dbe66d50d6cf81c921a"},
+              {"name": "mac_immersive_playback", "node_id": "191:50", "rendered_size": [1360, 871], "sha256": "7cf2e6e47b79c2d6b2dc0d17d21b75609b412c474d32895482e2cd4ddaf5737b"},
+              {"name": "mac_contextual_audio_and_captions", "node_id": "191:66", "rendered_size": [1360, 871], "sha256": "5f7e5956ce3c3042e815dcb9d2f351c0a1725e048e4361a4a4d2c83fa13317b9"},
+              {"name": "mac_quiet_completion", "node_id": "191:84", "rendered_size": [1360, 871], "sha256": "5665233f9568bc3ca30f6da8e81f4e9ce42c7e5429a4f2c6aef3829f4fbfc30f"},
+              {"name": "mac_quiet_state_matrix", "node_id": "191:97", "rendered_size": [1504, 1750], "sha256": "7be85ea4b7369e2f7890da86d55737acd220a5bb36044011fa58c5ee16bd3108"},
+              {"name": "iphone_quiet_library", "node_id": "191:144", "rendered_size": [390, 844], "sha256": "5a3b1c0c6e27a823eac38dcc2d686afc23677c240f340426641a3ad01809654f"},
+              {"name": "iphone_immersive_now_playing", "node_id": "191:155", "rendered_size": [390, 844], "sha256": "0e0cbbbed2725b330c02d15e4b947c02e9b885b9b94954cef632b991df01c72b"},
+              {"name": "iphone_contextual_audio_and_captions", "node_id": "191:166", "rendered_size": [390, 844], "sha256": "f4da2c3bdd73d1e13ef839942c4812cace5ddf5f1dc6d745752b3969749fd5a2"},
+              {"name": "iphone_landscape_quiet_fullscreen", "node_id": "191:180", "rendered_size": [844, 390], "sha256": "33eb58b989c01880280e07a836dfb6cc39009128d55993cd1d02b5933bc2c2ef"},
+              {"name": "iphone_relink_bottom_edge_recovery", "node_id": "191:188", "rendered_size": [390, 844], "sha256": "00581e92ad76b0727779c5a1e7f6259bb64f05b59fc2fe2712b976269ee1a509"},
+              {"name": "coverage_and_freeze", "node_id": "191:193", "rendered_size": [1504, 372], "sha256": "c551f8427a64596830a205fe111fa3147d2476e710fac74f0c2b6a586985cfc4"}
+            ],
+            "scope_note": "Screenshots prove editable visual composition only and do not prove playback, persistence, file access, gestures, keyboard delivery or decoder behavior."
+          },
+          "independent_review": {
+            "reviewed_at": "2026-09-07T03:31:30Z",
+            "role": "FRESH_READ_ONLY_JUDGE",
+            "agent_id": "1f4a46b1-1675-448c-810b-49024b7e4483",
+            "reviewed_identity_sha256": "af0e26ade49cf0178ecde9bc2eb365a485f8969a2fea70100bd71ba9587e897e",
+            "outcome": "PASS",
+            "summary": "All eleven agreed criteria passed. The supplemental review independently reproduced the D-v1a canonical content identity and the twelve-entry screenshot manifest after the initial D-v1 evidence packet was inconclusive.",
+            "runtime_boundary": "The approval is limited to this exact frozen editable design identity and is not runtime verification or owner selection."
+          },
+          "candidate_page_isolation": {
+            "A": {"page_id": "10:7", "root_node_id": "116:2", "locked": true},
+            "B": {"page_id": "10:8", "root_node_id": "131:2", "locked": true},
+            "C": {"page_id": "10:9", "root_node_id": "162:2", "locked": true},
+            "D": {"page_id": "10:10", "root_node_id": "191:2", "locked": true},
+            "E": {"page_id": "11:2", "child_count": 0}
+          },
+          "canvas_mutations": "TASK_DEDICATED_DIRECTION_D_PAGE_AND_DIRECTION_D_ONLY_SEMANTIC_PRIMITIVES_OR_INSTANCE_OVERRIDES; SHARED_COMPONENTS_AND_FROZEN_A_B_C_UNCHANGED",
+          "existing_reference_figma_writes": 0,
+          "external_project_writes": 0
+        },
+        "E": null
+      },
+      "coverage": {
+        "users": [
+          "macOS local-media keyboard-and-pointer user",
+          "iPhone local-media touch user"
+        ],
+        "platforms": [
+          "macOS 13+ native SwiftUI, minimum window 900x560",
+          "iPhone iOS 17+ native SwiftUI, portrait and landscape/fullscreen"
+        ],
+        "screen_inventory": {
+          "macOS": [
+            "Recent sidebar: empty, populated, selected, needs-location",
+            "Player empty/open-file",
+            "Loading",
+            "Ready or paused",
+            "Playing with visible and auto-hidden overlay chrome",
+            "Ended with replay",
+            "Fullscreen",
+            "Resume-restored notice and Start Over",
+            "Relink recovery while player is empty or current playback continues",
+            "Audio & Captions popover with audio, embedded and external choices",
+            "Subtitle overlay, pending, unavailable and nonfatal error",
+            "Playback error and warning",
+            "Recent-history unavailable, reset confirmation, reset failure and recovery",
+            "Audio-only playback"
+          ],
+          "iPhone": [
+            "Recently Played empty",
+            "Recently Played list with persistent Now Playing bar",
+            "Now Playing portrait",
+            "Now Playing landscape or explicit fullscreen",
+            "Loading, ready, paused, playing and ended",
+            "Relative timeline seek, side double-tap skip and long-press fine scrub feedback",
+            "Audio & Captions medium or large bottom sheet",
+            "Resume, relink, subtitle error, playback error and warning",
+            "Recent-history unavailable and destructive-confirmation recovery"
+          ]
+        },
+        "p0_flows": [
+          "Open a user-selected local media file, probe engine, reach ready, play, seek, pause and replay after end",
+          "Return to or open Recent Media; restore a qualifying resume position paused, or Start Over",
+          "Replace media transactionally while preserving current playback until the new candidate is ready",
+          "Choose audio and exactly one caption source: Off, embedded or external; adjust external delay",
+          "Relink a missing recent file without disturbing current playback; remove only the recent entry",
+          "On iPhone, Back returns to Recently Played without unloading and Now Playing returns to playback"
+        ],
+        "p1_flows": [
+          "Finder/window drop, Open With and uncommon-container typed rejection",
+          "macOS fullscreen, overlay auto-hide, pointer drag and scroll gestures",
+          "macOS Playback shortcuts including Command-O, Space, seek, volume, mute, rate, percent jumps and F",
+          "iPhone external-keyboard Space and arrows plus touch gestures",
+          "Automatic AVFoundation-to-VLC fallback when the linked engine is actually available",
+          "Nonfatal track, subtitle and persistence failures with confirmed prior choice retained",
+          "Corrupt recent-history byte-identical backup and explicit reset",
+          "Focus, disabled, loading, empty, error, success and danger states"
+        ],
+        "functional_invariants": [
+          "Media and subtitles stay local and are never represented with real personal filenames or content.",
+          "Failed import, relink, track selection or subtitle replacement does not replace current playback.",
+          "Captions have exactly one active source while audio selection remains independent.",
+          "Resume is stored only after 30 seconds elapsed with at least 30 seconds remaining; restored playback stays paused.",
+          "Back to the iPhone library never unloads current playback.",
+          "History reset deletes only app metadata after explicit confirmation and preserves source media, subtitles and current playback.",
+          "Controls expose visible focus, capability-driven disabled states, keyboard order and at least 44-point iPhone targets.",
+          "Design screenshots prove only visual structure, never engine, persistence or gesture behavior."
+        ],
+        "synthetic_data": {
+          "media": [
+            {
+              "name": "Orbit Study 04.mp4",
+              "duration": "42:18",
+              "position": "12:36",
+              "kind": "video"
+            },
+            {
+              "name": "Field Notes.wav",
+              "duration": "08:40",
+              "position": "00:00",
+              "kind": "audio"
+            },
+            {
+              "name": "Night Transit.mkv",
+              "duration": "01:24:10",
+              "position": "31:05",
+              "kind": "video_needs_relink"
+            }
+          ],
+          "tracks": [
+            "Automatic / Japanese 5.1 / English Stereo",
+            "Captions Off / English CC / 日本語 / external scene-notes.srt"
+          ],
+          "trust_label": "Synthetic examples; not actual history, media, account or device data."
+        }
+      },
+      "review_outcome": "DIRECTION_A_PASS; DIRECTION_B_V3_PASS; DIRECTION_C_V2_PASS; DIRECTION_D_V1A_PASS; DIRECTION_E_NOT_STARTED",
+      "selection_status": "NOT_READY",
+      "blocker": null,
+      "next_action": "P3_BUILD_VALIDATE_FREEZE_DIRECTION_E_ADAPTIVE_CAPSULE"
+    },
+    {
+      "project_id": "ai-anime-short-factory",
+      "priority": 2,
+      "baseline_identity": null,
+      "current_stage": "QUEUED",
+      "figma_file_key": null,
+      "candidate_node_ids": {"A": null, "B": null, "C": null, "D": null, "E": null},
+      "coverage": null,
+      "review_outcome": "NOT_STARTED",
+      "selection_status": "NOT_READY",
+      "blocker": null,
+      "next_action": "A_BASELINE_AND_UX_ARCHITECTURE"
+    },
+    {
+      "project_id": "ai-music-foundry",
+      "priority": 3,
+      "baseline_identity": null,
+      "current_stage": "QUEUED",
+      "figma_file_key": null,
+      "candidate_node_ids": {"A": null, "B": null, "C": null, "D": null, "E": null},
+      "coverage": null,
+      "review_outcome": "NOT_STARTED",
+      "selection_status": "NOT_READY",
+      "blocker": null,
+      "next_action": "A_BASELINE_AND_UX_ARCHITECTURE"
+    },
+    {
+      "project_id": "novel-continuation-agent",
+      "priority": 4,
+      "baseline_identity": null,
+      "current_stage": "QUEUED_REFERENCE_FIGMA_EXISTS",
+      "figma_file_key": null,
+      "candidate_node_ids": {"A": null, "B": null, "C": null, "D": null, "E": null},
+      "coverage": null,
+      "review_outcome": "NOT_STARTED",
+      "selection_status": "NOT_READY",
+      "blocker": null,
+      "next_action": "A_BASELINE_AND_UX_ARCHITECTURE"
+    },
+    {
+      "project_id": "story-faceless-utopia",
+      "priority": 5,
+      "baseline_identity": null,
+      "current_stage": "QUEUED",
+      "figma_file_key": null,
+      "candidate_node_ids": {"A": null, "B": null, "C": null, "D": null, "E": null},
+      "coverage": null,
+      "review_outcome": "NOT_STARTED",
+      "selection_status": "NOT_READY",
+      "blocker": null,
+      "next_action": "A_BASELINE_AND_UX_ARCHITECTURE"
+    },
+    {
+      "project_id": "light-novel",
+      "priority": 6,
+      "baseline_identity": null,
+      "current_stage": "QUEUED",
+      "figma_file_key": null,
+      "candidate_node_ids": {"A": null, "B": null, "C": null, "D": null, "E": null},
+      "coverage": null,
+      "review_outcome": "NOT_STARTED",
+      "selection_status": "NOT_READY",
+      "blocker": null,
+      "next_action": "A_BASELINE_AND_UX_ARCHITECTURE"
+    },
+    {
+      "project_id": "wechat-article-scheduler",
+      "priority": 7,
+      "baseline_identity": null,
+      "current_stage": "QUEUED",
+      "figma_file_key": null,
+      "candidate_node_ids": {"A": null, "B": null, "C": null, "D": null, "E": null},
+      "coverage": null,
+      "review_outcome": "NOT_STARTED",
+      "selection_status": "NOT_READY",
+      "blocker": null,
+      "next_action": "A_BASELINE_AND_UX_ARCHITECTURE"
+    },
+    {
+      "project_id": "pixel-world-asset-forge",
+      "priority": 8,
+      "baseline_identity": null,
+      "current_stage": "QUEUED",
+      "figma_file_key": null,
+      "candidate_node_ids": {"A": null, "B": null, "C": null, "D": null, "E": null},
+      "coverage": null,
+      "review_outcome": "NOT_STARTED",
+      "selection_status": "NOT_READY",
+      "blocker": null,
+      "next_action": "A_BASELINE_AND_UX_ARCHITECTURE"
+    },
+    {
+      "project_id": "zarathustra-adaptation",
+      "priority": 9,
+      "baseline_identity": null,
+      "current_stage": "QUEUED",
+      "figma_file_key": null,
+      "candidate_node_ids": {"A": null, "B": null, "C": null, "D": null, "E": null},
+      "coverage": null,
+      "review_outcome": "NOT_STARTED",
+      "selection_status": "NOT_READY",
+      "blocker": null,
+      "next_action": "A_BASELINE_AND_UX_ARCHITECTURE"
+    },
+    {
+      "project_id": "audio-clone",
+      "priority": 10,
+      "baseline_identity": null,
+      "current_stage": "QUEUED",
+      "figma_file_key": null,
+      "candidate_node_ids": {"A": null, "B": null, "C": null, "D": null, "E": null},
+      "coverage": null,
+      "review_outcome": "NOT_STARTED",
+      "selection_status": "NOT_READY",
+      "blocker": null,
+      "next_action": "A_BASELINE_AND_UX_ARCHITECTURE"
+    },
+    {
+      "project_id": "mpv-clip-workbench",
+      "priority": 11,
+      "baseline_identity": null,
+      "current_stage": "QUEUED_REFERENCE_FIGMA_EXISTS",
+      "figma_file_key": null,
+      "candidate_node_ids": {"A": null, "B": null, "C": null, "D": null, "E": null},
+      "coverage": null,
+      "review_outcome": "NOT_STARTED",
+      "selection_status": "NOT_READY",
+      "blocker": null,
+      "next_action": "A_BASELINE_AND_UX_ARCHITECTURE"
+    }
+  ],
+  "latest_iteration": {
+    "project_id": "universal-player",
+    "stage": "C_DIRECTION_D_QUIET_THEATER",
+    "result": "FROZEN_INDEPENDENT_REVIEW_PASS",
+    "completed_at": "2026-09-07T03:33:48Z",
+    "gate": "warn_and_continue; 0 hard blockers and 10 pre-existing roadmap warnings",
+    "figma_authentication": "Official connector authenticated on the existing owner plan; no credential value read or saved.",
+    "figma_file_key": "coCZiR1zIwk7AGshjJXPEr",
+    "figma_file_url": "https://www.figma.com/design/coCZiR1zIwk7AGshjJXPEr",
+    "candidate_version": "D-v1a",
+    "candidate_page_id": "10:10",
+    "candidate_root_node_id": "191:2",
+    "content_identity_sha256": "af0e26ade49cf0178ecde9bc2eb365a485f8969a2fea70100bd71ba9587e897e",
+    "component_system_manifest_sha256": "2e11fe5277249aed1c76b57567ecfd25b62b51463158e950bea830083a893c22",
+    "screen_count": 9,
+    "figma_readback_validation": "PASS",
+    "figma_visual_validation": "PASS_AFTER_QUIET_THEATER_LAYOUT_AND_CONTRAST_REPAIR",
+    "independent_review": "PASS",
+    "review_agent_id": "1f4a46b1-1675-448c-810b-49024b7e4483",
+    "superseded_candidate": "D-v1 0fb96290fd6c951814ce6f38bf518c8b511a87cd78fc9adb66e7c793966942ea was superseded only because its serializer bytes were unavailable for independent identity reproduction; the design content did not change.",
+    "candidate_page_isolation": "A_B_C_D_FROZEN; E_EMPTY",
+    "canvas_mutations": "TASK_DEDICATED_DIRECTION_D_PAGE_AND_DIRECTION_D_ONLY_SEMANTIC_PRIMITIVES_OR_INSTANCE_OVERRIDES",
+    "existing_reference_figma_writes": 0,
+    "external_project_writes": 0,
+    "git_effects": 0,
+    "goal_mode": "ACTIVE_CYCLE_2_0_OF_10_AUTOMATIC_CONTINUATIONS_USED"
+  }
+}

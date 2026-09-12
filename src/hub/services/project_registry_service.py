@@ -74,7 +74,13 @@ def list_projects() -> list[dict[str, Any]]:
     return [item for item in projects if isinstance(item, dict)]
 
 
-def validate_registry(registry: dict[str, Any] | None = None) -> dict[str, Any]:
+def validate_registry(registry: dict[str, Any] | None = None, *,
+                      check_paths: bool = True) -> dict[str, Any]:
+    """Keep local authority/storage checks; portable CI validates metadata only.
+
+    Source availability is checked explicitly at runtime, never inferred from a
+    metadata-only success. Removed roots are rejected before filesystem probes.
+    """
     data = registry if registry is not None else load_registry()
     hard_blockers: list[str] = []
     warnings: list[str] = []
@@ -125,13 +131,32 @@ def validate_registry(registry: dict[str, Any] | None = None) -> dict[str, Any]:
         if priority_source not in ALLOWED_PRIORITY_SOURCES:
             hard_blockers.append(f"{project_id}: priority_source 无效")
 
+        presence = project.get("local_presence", {})
+        removed = ((isinstance(presence, dict) and presence.get("status") == "removed_local")
+                   or project.get("current_state_status") == "removed_local")
+        if removed:
+            if not isinstance(presence, dict) or presence.get("status") != "removed_local":
+                hard_blockers.append(f"{project_id}: removed_local requires a matching presence record")
+                presence = {}
+            if any(project.get(flag) is not False for flag in (
+                    "enabled", "scan_enabled", "profile_enabled", "external_write_allowed")):
+                hard_blockers.append(f"{project_id}: removed_local must disable execution, scanning and writes")
+            if presence.get("retry_allowed") is not False or project.get("current_state_status") != "removed_local":
+                hard_blockers.append(f"{project_id}: removed_local cannot be retried or presented as a live source")
+            if any(project.get(field) != [] for field in ("watch_paths", *AUTHORITY_PATH_FIELDS)):
+                hard_blockers.append(f"{project_id}: removed_local must not contain active read routes")
+            if not isinstance(presence.get("reason"), str) or not presence["reason"].strip():
+                hard_blockers.append(f"{project_id}: removed_local needs a provenance reason")
+            # Retained inventory record only: never expand, stat or resolve its root.
+            continue
+
         root_path = project.get("root_path")
         root: Path | None = None
         if isinstance(root_path, str) and root_path.strip():
             root = Path(root_path).expanduser()
-            # manga-localizer is an accepted no-access record. Even an exists()
-            # probe would violate the current Goal's inspection boundary.
-            if project_id != "manga-localizer" and not root.exists():
+            # Storage validation never probes manga. The named business declaration
+            # is read only by the separately authorized connection refresh.
+            if check_paths and project_id != "manga-localizer" and not root.exists():
                 warnings.append(f"{project_id}: root_path 不存在或不可读：{root_path}")
         elif project.get("enabled"):
             warnings.append(f"{project_id}: enabled=true 但 root_path 为空")
@@ -152,7 +177,7 @@ def validate_registry(registry: dict[str, Any] | None = None) -> dict[str, Any]:
                     hard_blockers.append(f"{project_id}: {field} 含无效路径")
                     continue
                 expanded_authority = Path(authority_path).expanduser()
-                if project_id != "manga-localizer" and not expanded_authority.exists():
+                if check_paths and project_id != "manga-localizer" and not expanded_authority.exists():
                     hard_blockers.append(f"{project_id}: 登记 authority 不存在：{authority_path}")
                 if root is not None and isinstance(watch_paths, list):
                     try:
@@ -210,8 +235,17 @@ def validate_registry(registry: dict[str, Any] | None = None) -> dict[str, Any]:
         for key in ("inventory_allowed", "inspection_allowed", "validation_allowed", "mutation_allowed")
     ):
         hard_blockers.append("manga-localizer 当前 Goal 的 inventory/inspection/validation/mutation 必须全部为 false")
-    if any(manga.get(field) for field in AUTHORITY_PATH_FIELDS):
-        hard_blockers.append("manga-localizer authority 指针必须为空，禁止为本 Goal 访问项目树")
+    named_business_route = (
+        manga.get("connection_read_allowed") is True
+        and manga.get("current_state_paths") == [".agent/STATE.yaml"]
+        and manga.get("rules_paths") == [] and manga.get("supporting_authority_paths") == []
+        and manga.get("access_profile") == "bounded_named_business_state_read"
+        and manga.get("current_state_status") == "owner_authorized_sole_business_state"
+        and manga.get("connection_authority") ==
+        "ALL-PROJECTS-CODEX-GOVERNANCE-V1 owner authorization; business state only, storage exclusion remains"
+    )
+    if any(manga.get(field) for field in AUTHORITY_PATH_FIELDS) and not named_business_route:
+        hard_blockers.append("manga-localizer authority must be empty or the exact owner-authorized sole business route")
 
     hub = project_by_id.get("personal-control-hub", {})
     hub_storage = hub.get("storage_governance", {}) if isinstance(hub, dict) else {}
@@ -248,6 +282,7 @@ def validate_registry(registry: dict[str, Any] | None = None) -> dict[str, Any]:
         "hard_blockers": hard_blockers,
         "warnings": warnings,
         "project_count": len(projects),
+        "path_availability_checked": check_paths,
         "enabled_count": sum(1 for p in projects if isinstance(p, dict) and p.get("enabled")),
     }
 
@@ -267,7 +302,8 @@ def print_registry_list() -> int:
         return 0
 
     for project in projects:
-        status = "enabled" if project.get("enabled") else "disabled"
+        removed = project.get("local_presence", {}).get("status") == "removed_local"
+        status = "removed_local / 已从本地移除" if removed else "enabled" if project.get("enabled") else "disabled"
         print(
             f"- {project.get('id')}: {project.get('name')} "
             f"[{status}] scan={project.get('scan_enabled')} "

@@ -1,0 +1,120 @@
+schema_version: '1.0'
+projects:
+  manga-localizer:
+    adapter: manga
+    data_root: /Volumes/AI_WORK_SSD/ProjectData/manga-localizer/real-data
+    batch_id: a734c596-faae-4875-ae61-f694a3c26d4a
+    review_db: final-review/all-199-pages/final-review/final-review.sqlite3
+    project_dbs:
+      63ac150e-b071-41d9-af18-6d31d10f4590: manga01/runs/round8-clean-plate-final/workspace/project/project.sqlite3
+      b1b85f3e-4d72-4956-b519-6b30fee02fcc: manga02/runs/rd-r04-ppocr-lama-json/workspace/project/project.sqlite3
+    github_repository: alalapi-0/manga-localizer
+  light-novel:
+    adapter: novel
+    validation_reports:
+    - id: repository-gate
+      path: reports/gate_result.json
+      format: gate_arrays
+    github_repository: alalapi-0/jp-cn-novel-translation-pipeline
+  novel-continuation-agent:
+    adapter: continuation
+    validation_reports:
+    - id: repository-gate
+      path: reports/gate_result.json
+      format: gate_arrays
+    data_root: /Users/alalapi/NovelUniverseData
+    universe_id: novel_real_readiness_01
+    github_repository: alalapi-0/novel-continuation-agent
+  wechat-article-scheduler:
+    adapter: wechat
+    github_repository: alalapi-0/wechat-article-scheduler
+  ai-anime-short-factory:
+    adapter: anime
+    metadata_root: /Volumes/AI_WORK_SSD/ProjectData/ai-anime-short-factory/runtime_assets/metadata
+    github_repository: alalapi-0/ai-anime-short-factory
+  pixel-world-asset-forge:
+    adapter: pixel
+    metadata_root: /Volumes/AI_WORK_SSD/ProjectData/pixel-world-asset-forge/assets
+    github_repository: alalapi-0/pixel-world-asset-forge
+  computer-study-plan:
+    adapter: study
+    github_repository: alalapi-0/computer_study_plan
+  story-faceless-utopia:
+    adapter: story
+    github_repository: alalapi-0/story-faceless-utopia
+  zarathustra-adaptation:
+    adapter: zarathustra
+    editorial_root: /Volumes/AI_WORK_SSD/Artifacts/zarathustra-adaptation/editorial-sources
+    github_repository: alalapi-0/zarathustra-adaptation
+  cognitive-asset-library:
+    adapter: cognitive
+    github_repository: alalapi-0/cognitive_asset_library
+  audio-clone:
+    adapter: validation_runs
+    validation_reports:
+    - id: saved-verification
+      root: /Volumes/AI_WORK_SSD/Artifacts/audio-clone/codex
+      path: verify.json
+      format: feature_report
+    github_repository: alalapi-0/audio_clone
+  ai-music-foundry:
+    adapter: music
+    data_root: /Volumes/AI_WORK_SSD/ProjectData/ai-music-foundry/workspace/projects
+    github_repository: alalapi-0/ai-music-foundry
+  storage_governance:
+    adapter: storage_evidence
+    evidence_root: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_04_r1
+    evidence_path: POST_MIGRATION_VERIFICATION.yaml
+    github_repository: alalapi-0/personal-control-hub
+  personal-control-hub:
+    adapter: hub_activity
+    github_repository: alalapi-0/personal-control-hub
+  universal-player:
+    adapter: validation_runs
+    github_repository: alalapi-0/universal-player
+    validation_reports:
+    - id: guard-core
+      root: /Volumes/AI_WORK_SSD/Temp
+      path: universal-player-guard-*/results/core-*.json
+      suite: core
+      format: universal_player_guard_result_v1
+  resilient-personal-network:
+    adapter: client_fixture
+    report_root: /Volumes/AI_WORK_SSD/Artifacts/resilient-personal-network/validation
+    report_path: client-fixture.json
+    github_repository: alalapi-0/resilient-personal-network
+  mpv-clip-workbench:
+    adapter: mpv
+    github_repository: alalapi-0/mpv-clip-workbench
+    project_files:
+    - .local-runtime/f02-F-H264-LAND-A/projects/working.mpvclip.json
+    - .local-runtime/f03-F-HEVC-PORT-B/projects/working.mpvclip.json
+    - .local-runtime/f04-F-HEVC-4K-C/projects/working.mpvclip.json
+    - .local-runtime/f05-F-HEVC-PORT-B/projects/working.mpvclip.json
+  youtube-hq-downloader:
+    adapter: downloader
+  pycharm-agent-workspace:
+    adapter: workspace_checks
+  desktop-jav-tools:
+    adapter: jav_batch
+    data_root: /Volumes/AI_WORK_SSD/ProjectData/desktop-jav-tools
+  desktop-magnet:
+    adapter: magnet_batch
+  desktop-tool:
+    adapter: validation_runs
+    validation_reports:
+    - id: saved-functional
+      root: /Volumes/AI_WORK_SSD/Artifacts/desktop-tool/validation
+      path: offline-html.json
+      format: feature_report
+      test_scope: offline_html_pipeline
+      source_files: [html_crawler.py, validate_html_pipeline.py]
+  pycharm-misc-project:
+    adapter: validation_runs
+    validation_reports:
+    - id: saved-functional
+      root: /Volumes/AI_WORK_SSD/Artifacts/pycharm-misc-project/validation
+      path: offline-file-tools.json
+      format: feature_report
+      test_scope: isolated_file_tools
+      source_files: [fix_mojibake_names.py, collect_by_ext.py, validate_file_tools.py]

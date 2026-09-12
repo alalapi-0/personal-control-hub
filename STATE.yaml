@@ -10,7 +10,7 @@ metadata:
   - registry_or_route_change
   - blocker_change
   - unique_next_action_change
-last_updated: '2026-09-06T07:30:20.519634+00:00'
+last_updated: '2026-09-09T02:10:00+00:00'
 project:
   id: personal-control-hub
   phase: Phase 1
@@ -25,19 +25,21 @@ current_round:
   last_completed_round: ROUND-1
   next_round: ROUND-1-5
 current_work:
-  objective: 完成并交付Hub选稿页；学习计划保留原版，其他项目的后续设计由所有者自行交给Cursor。
-  status: ACCEPTED
-  unit: HUB-FINAL-SELECTION-HANDOFF
-  spec: docs/design/ui_governance_execution.md
-  evidence: docs/reports/ui_design_governance/final/
+  objective: 为11个当前合格且未选定项目完成五套可编辑、实质不同、经独立审查的Figma候选，并在Hub形成真实可比较的选稿记录。
+  status: ACTIVE
+  unit: MULTI-PROJECT-FIGMA-REDESIGN-SELECTION-V1
+  spec: data/design_governance/multi-project-figma-redesign-v1.json
+  evidence: data/design_governance/multi-project-figma-redesign-v1.json
   blocker: null
-  next_action: 无本轮后续设计任务；其他项目的设计与实施由所有者另行安排。
-  owner_scope_revision: docs/reports/ui_design_governance/unit-17/owner-decision.json
-  accepted_candidate: e5dd2cc73a1f4d731eb3b489b9d599b501712e59aed4516ba71bbf18862137d0
-  handoff: docs/reports/hub_selection_handoff.md
+  pause_reason: null
+  goal_mode_cycle: 2
+  automatic_continuations_used: 0
+  automatic_continuation_limit: 10
+  next_action: 在universal-player的50 Direction E — Adaptive Capsule页构建第五套完整可编辑候选：保持已锁定的P0/P1、状态和macOS/iPhone平台契约，并以移动优先的跨尺寸胶囊信息架构、44–56触控几何、圆角排版、深绿墨/珊瑚/薄荷实色材质和断点形态过渡与已冻结的Directions A至D实质区分；验证、冻结并安排fresh只读独立审查。
+  owner_scope_revision: owner_prompt_2026-09-06T16:01:00+08:00
 registry:
   authority: data/registry/external_projects.yaml
-  registered_count: 24
+  registered_count: 26
   enabled_count: 23
   execution_candidate_count: 21
   special_record_count: 3
@@ -86,3 +88,4 @@ task_health:
   action: 本轮按所有者最新Hub选稿页范围完成验收；不继续其他项目，不操作Cursor。
   next_checkpoint: next eligible Goal health boundary; preserve completed rebaseline/cooldown
   cooldown: 75000moretokens or30active minutes plus eligible condition
+all_projects_governance: {"budget":{"cooldown":"75000 tokens/30min plus trigger","coverage":"native visible","current_visible_tokens":6048100,"first_250k_rebaseline":"completed","last_health":"REPLAN at3903214; repaired","prior_visible_tokens":14061875},"candidate_paths":["STATE.yaml"],"completed":["数据能力验收通过；23/24业务源；44项副本变化验证通过"],"coverage":{"business_blockers":59,"cloud_excluded":17,"local":24,"metrics":1518,"numeric_metrics":1098,"removed_local":2,"unknown":420},"delivery":{"hub_commit":"aef562b11c57f3d0b21d8893c5bb42c24b97ba1b","manga_commit":"a761519b806736f016d8b71877b89a53d4fcdf3e","music_commit":"ced997e98c25e89295ff2dbcccd53ec125388474","rpn_commit":"12495b46f5c33a0228d606fb36284dc4be0ccca8","universal_commit":"58ad819919402a76e03478c4f33c20ecf942d11d","zarathustra_commit":"6060d3db680d06799ddfb56cbfd4944312c10edc","audio_commit":"56c62d39de8634209760b2f8d8c142123d196d2a","anime_ignore_commit":"e23ba5b18e7a8a195295df4fa5c0e720fa08be9d","remote_verified":true,"pixel_commit":"aeead2fb7ee4208e6a9cf9593752da276fe27a1d"},"delivery_inventory":"docs/reports/all-projects-governance/round-2026-09-09/delivery-inventory.json","execution_document":"docs/all_projects_governance_execution.md","lane":"DIRECT","native_task_id":"01a07ef7-735b-7270-9c21-3347e1232b5a","next_action":"待所有者确认空项目例外；其余数据验收已就绪。","recovery":{"jav":"loader46809abb/anchor d5d0af3e; approved; noGit","manga_unique":"Primary .agent/CURSOR_LOOP_PROMPT.md preserved","anime":"Temp/anime-verification-01a0847f6817778088aeb0975e96b500/checks.json","pixel":"Temp/pixel-storage-01a0847f6817778088aeb0975e96b500/checks.json","pixel_ci":"34344708324 failed:123baseline/0new","real_delta":"Temp/hub-real-delta-01a0847f6817778088aeb0975e96b500/result.json"},"route_version":2,"status":"ACTIVE","task_id":"ALL-PROJECTS-CODEX-GOVERNANCE-V1","unit":"v2_source_gap","unresolved":["downloads空模板无业务源；24分母保留","漫画56真实重做未授权；7无Git；Pixel123历史失败保留"],"stopped_as_unnecessary":"Anime/轻小说/续写/学习计划/Zara/HTML/jav非数据修复停做，WIP保留","prepared_plan":{"version":3,"status":"prepared","roadmap":"data/roadmap/project_data_v3.yaml","prompt":"prompts/all_projects_governance_goal_mode.md"}}

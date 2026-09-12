@@ -43,23 +43,14 @@ def digest(value: object) -> str:
 
 def authority(seed: str = "a") -> dict[str, str]:
     fingerprint = hashlib.sha256(seed.encode()).hexdigest()
-    return {
-        "source_plan_id": f"source-plan-{seed}",
-        "source_plan_hash": fingerprint,
-        "manifest_id": f"manifest-{seed}",
-        "manifest_hash": fingerprint,
-        "registry_hash": fingerprint,
-        "adapter_version": "1.0",
-        "adapter_hash": fingerprint,
-        "accepted_inventory_hash": fingerprint,
-        "accepted_candidate": fingerprint,
-    }
+    return {"registry_hash": fingerprint, "schema_hash": hashlib.sha256(b"schema").hexdigest(),
+            "adapter_version": "2.0"}
 
 
 def make_result(project_id: str, capsule: dict[str, str], *, success: bool,
                 disposition: str | None = None, marker: str = "one") -> dict:
     row = {
-        "schema_version": "1.0",
+        "schema_version": "2.0",
         "kind": "source_resolution",
         "project_id": project_id,
         "observed_at": "2026-09-05T12:00:00Z",
@@ -71,7 +62,6 @@ def make_result(project_id: str, capsule: dict[str, str], *, success: bool,
         "evidence": [],
         "operational_facts": [],
         "errors": [] if success else [{"code": marker, "message": "fixture failure"}],
-        "ui_verification": "UNVERIFIED",
     }
     row["result_hash"] = digest(row)
     return row
@@ -81,7 +71,7 @@ def validate_result(row: dict) -> dict:
     required = {
         "schema_version", "kind", "project_id", "observed_at", "disposition",
         "success", "authority", "business_snapshot", "sources", "evidence",
-        "operational_facts", "errors", "ui_verification", "result_hash",
+        "operational_facts", "errors", "result_hash",
     }
     if not isinstance(row, dict) or set(row) != required:
         raise ValueError("strict result fields")
@@ -118,7 +108,7 @@ class RefreshLedgerTests(unittest.TestCase):
         self.root = Path(self.temporary.name) / "hub"
         self.root.mkdir()
         self.capsule = authority()
-        self.path = self.root / "data/design_governance/refresh.sqlite3"
+        self.path = self.root / "data/connections/refresh.sqlite3"
 
     def tearDown(self) -> None:
         self.temporary.cleanup()
@@ -183,6 +173,11 @@ class RefreshLedgerTests(unittest.TestCase):
         second = refresh(self.ledger(), resolver2, "resume", ["a", "b"])
         self.assertEqual(["b"], resolver2.calls)
         self.assertEqual("FINISHED", second["request"]["status"])
+        prior_head = second["projection"]["head"]
+        resolver2.calls.clear()
+        repeated = refresh(self.ledger(), resolver2, "resume", ["a", "b"])
+        self.assertEqual([], resolver2.calls)
+        self.assertEqual(prior_head, repeated["projection"]["head"])
 
     def test_coordinator_uses_ledger_dispatcher_to_rebuild_older_authorities(self) -> None:
         ledger = self.ledger()
@@ -195,13 +190,16 @@ class RefreshLedgerTests(unittest.TestCase):
             def validate_result(self, row: dict) -> dict:
                 validated = validate_result(row)
                 if validated["authority"] != self.authority:
-                    raise ValueError("not the active source plan")
+                    raise ValueError("not the active registry/schema authority")
                 return validated
 
         resolver = CurrentOnlyResolver(
             newer, {"b": make_result("b", newer, success=True)})
         outcome = refresh(ledger, resolver, "new", ["b"])
         self.assertEqual({"a", "b"}, set(outcome["projection"]["projects"]))
+        self.assertTrue(outcome["projection"]["projects"]["a"]["authority_drift"])
+        self.assertEqual("stale", outcome["projection"]["projects"]["a"]["freshness"])
+        self.assertEqual("fresh", outcome["projection"]["projects"]["b"]["freshness"])
 
     def test_latest_failure_retains_prior_success_as_explicitly_stale(self) -> None:
         ledger = self.ledger()
@@ -264,7 +262,7 @@ class RefreshLedgerTests(unittest.TestCase):
         with self.assertRaisesRegex(LedgerCorruptionError, "hash link"):
             ledger.history()
 
-        other_path = self.root / "data/design_governance/other.sqlite3"
+        other_path = self.root / "data/connections/other.sqlite3"
         other = RefreshLedger(self.root, other_path, result_validator=validate_result)
         other.begin_request("forged", ["a"], self.capsule)
         self.append(other, "forged", "a", success=True)
@@ -286,7 +284,7 @@ class RefreshLedgerTests(unittest.TestCase):
     def test_path_rejects_escape_symlink_fifo_and_unknown_file(self) -> None:
         with self.assertRaises(LedgerPathError):
             RefreshLedger(self.root, self.root.parent / "outside.sqlite3")
-        approved = self.root / "data/design_governance"
+        approved = self.root / "data/connections"
         approved.mkdir(parents=True)
         outside = self.root / "outside"
         outside.mkdir()
@@ -418,7 +416,7 @@ except Exception as exc:
             ledger.rebuild()
 
     def test_read_only_history_never_creates_or_mutates_a_ledger(self) -> None:
-        absent = self.root / "docs/reports/ui_design_governance/absent.sqlite3"
+        absent = self.root / "docs/reports/all-projects-governance/absent.sqlite3"
         with self.assertRaises(LedgerPathError):
             RefreshLedger(self.root, absent, read_only=True)
         self.assertFalse(absent.exists())

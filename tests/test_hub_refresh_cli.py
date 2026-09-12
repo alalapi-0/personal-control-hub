@@ -1,256 +1,289 @@
 from __future__ import annotations
 
 import contextlib
-import copy
 import io
 import json
+import socket
+import sqlite3
+import subprocess
 import sys
 import unittest
+from contextlib import closing
 from pathlib import Path
 from unittest import mock
 
-import yaml
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-import test_hub_sources as source_fixtures
-from hub.connection_manager_cli import main, validate_bundle
-from hub.connection_records import content_hash
-from hub.connection_refresh import RefreshLedger
-from hub.connection_relations import relation_hash
-from hub.connection_sources import (
-    ACCEPTED_INVENTORY_CANDIDATE,
-    ACCEPTED_INVENTORY_SHA256,
-    INVENTORY_PATH,
-    SourceResolver,
-    freeze_source_plan,
-)
-from hub.connections import freeze_manifest
+
+from connection_fixtures import Fixture
+from hub.connection_cli import main
+from hub.connection_refresh import GENESIS_HASH, RefreshLedger
+from hub.connection_records import validate_result
+from hub.connection_sources import SourceResolver
 
 
-class RefreshCliTests(unittest.TestCase):
-    def setUp(self):
-        self.fixture = source_fixtures.SourceResolverTests()
-        self.fixture.setUp()
-        self.addCleanup(self.fixture.tearDown)
-        self.root = self.fixture.root
-        self.bundle = {"schema_version": "1.0", "kind": "connection_authority_bundle",
-                       "manifest": self.fixture.manifest, "adapters": self.fixture.adapters,
-                       "source_plan": self.fixture.plan}
-        self.bundle["content_hash"] = content_hash(self.bundle)
-        self.data = self.root / "data/design_governance"
-        self.data.mkdir(exist_ok=True)
-        self.write("authority-bundle-v1.json", self.bundle)
-        self.write("connection_adapters.json", self.fixture.adapters)
+class HubRefreshCliTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.fixture = Fixture()
+        self.a, _ = self.fixture.add("a")
+        self.b, _ = self.fixture.add("b")
+        self.addCleanup(self.fixture.close)
+        self.ledger_path = self.fixture.hub / "data/connections/connection_refresh.sqlite3"
 
-    def write(self, filename, value):
-        (self.data / filename).write_text(json.dumps(value), encoding="utf-8")
-
-    def invoke(self, *args):
+    def invoke(self, *arguments: str) -> tuple[int, dict]:
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
-            code = main(list(args), root=self.root)
+            code = main(["--root", str(self.fixture.hub), *arguments])
         return code, json.loads(output.getvalue())
 
-    def call(self, *args):
-        if "--bundle" not in args:
-            args = ("--bundle", "data/design_governance/authority-bundle-v1.json", *args)
-        return self.invoke(*args)
+    def test_refresh_retry_history_and_offline_rebuild_keep_public_receipt(self) -> None:
+        code, first = self.invoke("refresh", "--request-id", "all")
+        self.assertEqual(0, code, first)
+        self.assertEqual("FINISHED", first["request"]["status"])
+        self.assertEqual(["a", "b"], first["appended_project_ids"])
+        self.assertEqual({"a", "b"}, set(first["projection"]["projects"]))
 
-    def install_current_bundle_and_relations(self):
-        self.fixture.registry["projects"][0]["name"] = "current-authority-name"
-        (self.root / "data/registry/external_projects.yaml").write_text(
-            yaml.safe_dump(self.fixture.registry, sort_keys=False), encoding="utf-8")
-        manifest = freeze_manifest(
-            self.root,
-            revision=3,
-            authority_ref="owner-goal-11111111-2222-3333-4444-555555555555",
-        )
-        plan = freeze_source_plan(
-            manifest,
-            self.fixture.registry,
-            manifest["registry_ref"]["sha256"],
-            self.fixture.adapters,
-            self.fixture.discovery,
-            self.fixture.discovery_hash,
-            created_at="2026-09-05T08:00:00+00:00",
-        )
-        bundle = {
-            "schema_version": "1.0",
-            "kind": "connection_authority_bundle",
-            "manifest": manifest,
-            "adapters": self.fixture.adapters,
-            "source_plan": plan,
-        }
-        bundle["content_hash"] = content_hash(bundle)
-        self.write("authority-bundle-v2.json", bundle)
-        # A distinct plan identity keeps both historical authorities readable.
-        current_bundle = copy.deepcopy(bundle)
-        current_plan = current_bundle["source_plan"]
-        current_plan["id"] = "hub-source-plan-v3"
-        current_plan["content_hash"] = content_hash({
-            k: v for k, v in current_plan.items() if k != "content_hash"})
-        current_bundle["content_hash"] = content_hash({
-            k: v for k, v in current_bundle.items() if k != "content_hash"})
-        self.write("authority-bundle-v3.json", current_bundle)
-        current_plan["id"] = "hub-source-plan-v4"
-        current_plan["content_hash"] = content_hash({
-            k: v for k, v in current_plan.items() if k != "content_hash"})
-        current_bundle["content_hash"] = content_hash({
-            k: v for k, v in current_bundle.items() if k != "content_hash"})
-        self.write("authority-bundle-v4.json", current_bundle)
-        relations = {
-            "schema_version": "1.0",
-            "kind": "connection_relation_proposals",
-            "id": "fixture-relations-v2",
-            "revision": 2,
-            "created_at": "2026-09-05T08:00:00+00:00",
-            "registry_ref": {
-                "path": "data/registry/external_projects.yaml",
-                "sha256": manifest["registry_ref"]["sha256"],
-            },
-            "inventory_ref": {
-                "path": INVENTORY_PATH,
-                "sha256": ACCEPTED_INVENTORY_SHA256,
-                "accepted_candidate_hash": ACCEPTED_INVENTORY_CANDIDATE,
-            },
-            "relations": [],
-            "content_hash": "",
-        }
-        relations["content_hash"] = relation_hash(relations)
-        self.write("relation-proposals-v4.json", relations)
-        return bundle
+        with mock.patch.object(SourceResolver, "refresh",
+                               side_effect=AssertionError("retry must not re-read")):
+            code, retry = self.invoke("refresh", "--request-id", "all")
+        self.assertEqual(0, code, retry)
+        self.assertEqual([], retry["appended_project_ids"])
+        self.assertEqual(first["projection"], retry["projection"])
 
-    def test_full_refresh_retry_and_offline_rebuild(self):
-        code, result = self.call("refresh", "--request-id", "fixture-all")
-        self.assertEqual(code, 2)
-        self.assertEqual(result["request"]["status"], "FINISHED")
-        self.assertEqual(len(result["projection"]["projects"]), 24)
-        self.assertEqual(sum(p["last_success"] is not None for p in result["projection"]["projects"].values()), 23)
-        with mock.patch.object(SourceResolver, "refresh", side_effect=AssertionError("retry must not re-read")):
-            code, retry = self.call("refresh", "--request-id", "fixture-all")
-        self.assertEqual(code, 2)
-        self.assertEqual(retry["appended_project_ids"], [])
-        self.assertEqual(result["projection"], retry["projection"])
-        code, rebuilt = self.call("rebuild")
-        self.assertEqual(code, 0)
-        self.assertEqual(rebuilt["projects"], result["projection"]["projects"])
-
-    def test_history_survives_current_registry_and_adapter_unavailability(self):
-        self.call("refresh", "--request-id", "fixture-one", "--project", "declared-00")
-        _, before = self.call("history")
-        (self.root / "data/registry/external_projects.yaml").write_text("not: [valid")
-        (self.data / "connection_adapters.json").unlink()
-        code, history = self.call("history")
-        self.assertEqual(code, 0)
-        self.assertEqual(history["results"], before["results"])
-        self.assertEqual(history["current_authority"]["state"], "unavailable")
-        code, rebuilt = self.call("rebuild")
-        self.assertEqual(code, 0)
-        self.assertEqual(rebuilt["projects"]["declared-00"]["freshness"], "stale")
-        self.assertTrue(rebuilt["projects"]["declared-00"]["authority_drift"])
-        code, failed = self.call("refresh", "--request-id", "must-not-begin")
-        self.assertEqual(code, 1)
-        self.assertIn("drift", failed["message"])
-        _, after = self.call("history")
-        self.assertEqual(before["head"], after["head"])
-
-    def test_absent_history_does_not_create_database(self):
-        code, result = self.call("history")
-        self.assertEqual(code, 1)
-        self.assertFalse((self.data / "connection_refresh.sqlite3").exists())
-
-    def test_corrupt_bundle_rejected_before_database_creation(self):
-        self.bundle["content_hash"] = "0" * 64
-        self.write("authority-bundle-v1.json", self.bundle)
-        code, result = self.call("refresh", "--request-id", "invalid")
-        self.assertEqual(code, 1)
-        self.assertIn("hash", result["message"])
-        self.assertFalse((self.data / "connection_refresh.sqlite3").exists())
-
-    def test_multiple_frozen_versions_rebuild_and_continue(self):
-        self.call("refresh", "--request-id", "old", "--project", "declared-00")
-        next_bundle = copy.deepcopy(self.bundle)
-        next_bundle["source_plan"]["id"] = "hub-source-plan-v2"
-        plan = next_bundle["source_plan"]
-        plan["content_hash"] = content_hash({k: v for k, v in plan.items() if k != "content_hash"})
-        next_bundle["content_hash"] = content_hash({k: v for k, v in next_bundle.items() if k != "content_hash"})
-        validate_bundle(next_bundle)
-        self.write("authority-bundle-v2.json", next_bundle)
-        prefix = ["--bundle", "data/design_governance/authority-bundle-v1.json",
-                  "--bundle", "data/design_governance/authority-bundle-v2.json"]
-        code, result = self.call(*prefix, "refresh", "--request-id", "new", "--project", "declared-00")
-        self.assertEqual(code, 0, result)
-        code, history = self.call(*prefix, "history")
-        self.assertEqual(code, 0)
-        self.assertEqual(len(history["results"]), 2)
-        self.assertTrue(history["requests"][0]["authority_drift"])
-        self.assertFalse(history["requests"][1]["authority_drift"])
-        code, rebuilt = self.call(*prefix, "rebuild")
-        self.assertEqual(code, 0, rebuilt)
-        self.assertEqual(rebuilt["projects"]["declared-00"]["last_success"]["request_id"], "new")
-
-    def test_defaults_accept_historical_drift_but_reject_active_drift_and_keep_history(self):
-        code, _ = self.call("refresh", "--request-id", "historical", "--project", "declared-00")
-        self.assertEqual(code, 0)
-        self.install_current_bundle_and_relations()
-
-        code, validated = self.invoke("validate")
-        self.assertEqual(code, 0, validated)
-        self.assertEqual(
-            ["drifted", "matched", "matched", "matched"],
-            [status["state"] for status in validated["current_authorities"]],
-        )
         code, history = self.invoke("history")
-        self.assertEqual(code, 0, history)
-        self.assertEqual("historical", history["requests"][0]["request_id"])
-        self.assertEqual(1, len(history["results"]))
+        self.assertEqual(0, code, history)
+        self.assertEqual("historical_ledger", history["view_role"])
+        self.assertEqual("available", history["current_authority"]["state"])
+        self.assertEqual(2, len(history["results"]))
+        code, rebuilt = self.invoke("rebuild")
+        self.assertEqual(0, code, rebuilt)
+        self.assertEqual(first["projection"]["projects"], rebuilt["projects"])
 
-        drifted_adapters = copy.deepcopy(self.fixture.adapters)
-        drifted_adapters["adapter_version"] = "drifted"
-        self.write("connection_adapters.json", drifted_adapters)
-        code, validated = self.invoke("validate")
-        self.assertEqual(code, 2, validated)
-        self.assertEqual("drifted", validated["current_authorities"][-1]["state"])
+    def test_history_and_rebuild_survive_corrupt_or_missing_registry_without_external_effects(self) -> None:
+        code, _ = self.invoke("refresh", "--request-id", "durable", "--project-id", "a")
+        self.assertEqual(0, code)
+        registry = self.fixture.hub / "data/registry/external_projects.yaml"
+        original = registry.read_bytes()
 
-    def test_mid_request_permission_drift_preserves_committed_project(self):
+        for label in ("corrupt", "missing"):
+            with self.subTest(label=label):
+                if label == "corrupt":
+                    registry.write_text("projects: [", encoding="utf-8")
+                else:
+                    registry.unlink()
+                with mock.patch("hub.connection_sources._safe_relative_read",
+                                side_effect=AssertionError("project roots must not be read")), \
+                        mock.patch.object(subprocess, "run",
+                                          side_effect=AssertionError("processes must not run")), \
+                        mock.patch.object(subprocess, "Popen",
+                                          side_effect=AssertionError("processes must not run")), \
+                        mock.patch.object(socket, "create_connection",
+                                          side_effect=AssertionError("network must not be used")):
+                    code, history = self.invoke("history")
+                    self.assertEqual(0, code, history)
+                    self.assertEqual("unavailable", history["current_authority"]["state"])
+                    self.assertEqual("historical_ledger", history["view_role"])
+                    self.assertIsNone(history["requests"][0]["authority_drift"])
+                    code, rebuilt = self.invoke("rebuild")
+                    self.assertEqual(0, code, rebuilt)
+                    self.assertEqual("stale", rebuilt["projects"]["a"]["freshness"])
+                    self.assertIsNone(rebuilt["projects"]["a"]["authority_drift"])
+                registry.write_bytes(original)
+
+    def test_missing_and_corrupt_ledger_fail_with_fixed_errors_without_creation(self) -> None:
+        for command in ("history", "rebuild"):
+            with self.subTest(command=command):
+                code, result = self.invoke(command)
+                self.assertEqual(2, code, result)
+                self.assertEqual("UNSAFE_LEDGER_PATH", result["error"])
+                self.assertEqual("Hub refresh ledger is missing or unavailable at the configured Hub-local path.",
+                                 result["message"])
+                self.assertFalse(self.ledger_path.exists())
+
+        ledger = RefreshLedger(self.fixture.hub, self.ledger_path,
+                               result_validator=validate_result)
+        ledger.begin_request("corrupt", ["a"], self.fixture.resolver().authority)
+        with closing(sqlite3.connect(self.ledger_path)) as connection:
+            connection.execute("UPDATE ledger_meta SET head_hash=?", ("f" * 64,))
+            connection.commit()
+        code, result = self.invoke("history")
+        self.assertEqual(2, code, result)
+        self.assertEqual("LEDGER_CORRUPT", result["error"])
+
+    def test_current_authority_change_marks_historical_projection_stale(self) -> None:
+        code, _ = self.invoke("refresh", "--request-id", "before", "--project-id", "a")
+        self.assertEqual(0, code)
+        self.fixture.projects[0]["name"] = "renamed"
+        self.fixture.save_registry()
+
+        code, history = self.invoke("history")
+        self.assertEqual(0, code, history)
+        self.assertTrue(history["requests"][0]["authority_drift"])
+        code, rebuilt = self.invoke("rebuild")
+        self.assertEqual(0, code, rebuilt)
+        self.assertTrue(rebuilt["projects"]["a"]["authority_drift"])
+        self.assertEqual("stale", rebuilt["projects"]["a"]["freshness"])
+
+    def test_unavailable_authority_preserves_unknown_and_latest_failure_causes(self) -> None:
+        offline = self.a.with_name("a-offline")
+        self.a.rename(offline)
+        code, _ = self.invoke("refresh", "--request-id", "a-first-failure", "--project", "a")
+        self.assertEqual(2, code)
+        offline.rename(self.a)
+        code, _ = self.invoke("refresh", "--request-id", "b-success", "--project", "b")
+        self.assertEqual(0, code)
+        (self.b / "STATE.yaml").unlink()
+        code, _ = self.invoke("refresh", "--request-id", "b-newer-failure", "--project", "b")
+        self.assertEqual(2, code)
+        (self.fixture.hub / "data/registry/external_projects.yaml").write_text(
+            "projects: [", encoding="utf-8")
+
+        code, rebuilt = self.invoke("rebuild")
+        self.assertEqual(0, code, rebuilt)
+        self.assertEqual("unknown", rebuilt["projects"]["a"]["freshness"])
+        self.assertIn("Registered root is unavailable", rebuilt["projects"]["a"]["stale_reason"])
+        self.assertIn("current Hub authority could not be verified", rebuilt["projects"]["a"]["stale_reason"])
+        self.assertEqual("stale", rebuilt["projects"]["b"]["freshness"])
+        self.assertIn("Declared current-state source is missing", rebuilt["projects"]["b"]["stale_reason"])
+        self.assertIn("current Hub authority could not be verified", rebuilt["projects"]["b"]["stale_reason"])
+
+    def test_partial_failure_restarts_without_rereading_committed_project(self) -> None:
         original = SourceResolver.refresh
 
-        def change_after_first(resolver, project_id):
+        def interrupt(resolver: SourceResolver, project_id: str) -> dict:
+            if project_id == "b":
+                raise RuntimeError("fixture interruption")
+            return original(resolver, project_id)
+
+        with mock.patch.object(SourceResolver, "refresh", interrupt):
+            code, partial = self.invoke("refresh", "--request-id", "partial")
+        self.assertEqual(2, code, partial)
+        self.assertEqual("OPEN", partial["request"]["status"])
+        self.assertEqual(["a"], partial["appended_project_ids"])
+        self.assertEqual({"b": "RuntimeError"}, partial["resolver_errors"])
+
+        calls: list[str] = []
+
+        def resume(resolver: SourceResolver, project_id: str) -> dict:
+            calls.append(project_id)
+            return original(resolver, project_id)
+
+        with mock.patch.object(SourceResolver, "refresh", resume):
+            code, completed = self.invoke("refresh", "--request-id", "partial")
+        self.assertEqual(0, code, completed)
+        self.assertEqual(["b"], calls)
+        self.assertEqual(["b"], completed["appended_project_ids"])
+        self.assertEqual("FINISHED", completed["request"]["status"])
+
+    def test_failed_request_replay_stays_failed_and_removed_only_is_nonretrying(self) -> None:
+        offline = self.a.with_name("a-offline")
+        self.a.rename(offline)
+        code, failed = self.invoke("refresh", "--request-id", "failed-a", "--project", "a")
+        self.assertEqual(2, code, failed)
+        offline.rename(self.a)
+        code, succeeded = self.invoke("refresh", "--request-id", "success-b", "--project", "a")
+        self.assertEqual(0, code, succeeded)
+        with mock.patch.object(SourceResolver, "refresh",
+                               side_effect=AssertionError("replay must not re-read")):
+            code, replay = self.invoke("refresh", "--request-id", "failed-a", "--project", "a")
+        self.assertEqual(2, code, replay)
+        self.assertEqual([], replay["appended_project_ids"])
+
+        self.fixture.projects[1].update(
+            root_path="/definitely/not/read",
+            local_presence={"status": "removed_local"},
+        )
+        self.fixture.save_registry()
+        code, removed = self.invoke("refresh", "--request-id", "removed-only", "--project", "b")
+        self.assertEqual(0, code, removed)
+        self.assertEqual("removed_local",
+                         removed["projection"]["projects"]["b"]["latest_attempt"]["disposition"])
+        with mock.patch.object(SourceResolver, "refresh",
+                               side_effect=AssertionError("removed replay must not re-read")):
+            code, replay = self.invoke("refresh", "--request-id", "removed-only", "--project", "b")
+        self.assertEqual(0, code, replay)
+        self.assertEqual([], replay["appended_project_ids"])
+
+    def test_refresh_preserves_expected_head_cas_and_legacy_option_aliases(self) -> None:
+        code, first = self.invoke("--ledger", "data/connections/connection_refresh.sqlite3",
+                                  "refresh", "--request-id", "cas-one", "--project", "a",
+                                  "--expected-sequence", "0", "--expected-hash", GENESIS_HASH)
+        self.assertEqual(0, code, first)
+        self.assertEqual(["a"], first["appended_project_ids"])
+
+        code, conflict = self.invoke("refresh", "--request-id", "cas-two", "--project-id", "b",
+                                     "--expected-sequence", "0", "--expected-hash", GENESIS_HASH)
+        self.assertEqual(2, code, conflict)
+        self.assertEqual("EXPECTED_HEAD_CONFLICT", conflict["error"])
+
+        code, incomplete = self.invoke("refresh", "--request-id", "cas-three",
+                                       "--expected-sequence", "0")
+        self.assertEqual(2, code, incomplete)
+        self.assertEqual("INPUT_INVALID", incomplete["error"])
+
+    def test_mid_request_authority_drift_rechecks_projection_before_preview(self) -> None:
+        original = SourceResolver.refresh
+
+        def drift_after_first(resolver: SourceResolver, project_id: str) -> dict:
             result = original(resolver, project_id)
-            if project_id == "declared-00":
-                for project in self.fixture.registry["projects"]:
-                    if project["id"] == "desktop-magnet":
-                        project["access_profile"] = "no_current_goal_access"
-                (self.root / "data/registry/external_projects.yaml").write_text(
-                    yaml.safe_dump(self.fixture.registry, sort_keys=False))
+            if project_id == "a":
+                self.fixture.projects[1]["name"] = "renamed-b"
+                self.fixture.save_registry()
             return result
 
-        with mock.patch.object(SourceResolver, "refresh", change_after_first):
-            code, result = self.call("refresh", "--request-id", "mid-request-drift",
-                                     "--project", "declared-00", "--project", "desktop-magnet")
-        self.assertEqual(code, 2)
-        self.assertEqual(result["request"]["status"], "FINISHED")
-        projects = result["projection"]["projects"]
-        self.assertIsNotNone(projects["declared-00"]["last_success"])
-        self.assertFalse(projects["desktop-magnet"]["latest_attempt"]["success"])
-        self.assertIsNone(projects["desktop-magnet"]["last_success"])
-        code, history = self.call("history")
-        self.assertEqual(code, 0)
-        self.assertEqual(len(history["results"]), 2)
-        self.assertEqual(history["results"][1]["result"]["sources"], [])
+        with mock.patch.object(SourceResolver, "refresh", drift_after_first):
+            code, result = self.invoke("refresh", "--request-id", "mid-drift")
+        self.assertEqual(2, code, result)
+        self.assertEqual("stale", result["projection"]["projects"]["a"]["freshness"])
+        self.assertTrue(result["projection"]["projects"]["a"]["authority_drift"])
+        preview = json.loads((self.fixture.hub / result["previews"]["projects.json"]).read_text())
+        rows = {row["project_id"]: row for row in preview["projects"]}
+        self.assertEqual("stale", rows["a"]["freshness"]["state"])
+        self.assertEqual("renamed-b", rows["b"]["name"])
 
-    def test_offline_project_root_is_distinct_from_missing_named_file(self):
-        project = next(p for p in self.fixture.registry["projects"] if p["id"] == "declared-00")
-        path = Path(project["root_path"])
-        path.rename(path.with_name("offline-fixture"))
-        code, result = self.call("refresh", "--request-id", "offline-root", "--project", "declared-00")
-        self.assertEqual(code, 2)
-        code, history = self.call("history")
-        self.assertEqual(code, 0)
-        failure = history["results"][0]["result"]
-        self.assertEqual(failure["disposition"], "SOURCE_UNAVAILABLE")
-        self.assertEqual(failure["errors"][0]["code"], "SOURCE_UNAVAILABLE")
-        self.assertEqual(failure["sources"], [])
+    def test_unavailable_post_refresh_authority_returns_receipt_without_preview(self) -> None:
+        original = SourceResolver.refresh
+
+        def corrupt_after_first(resolver: SourceResolver, project_id: str) -> dict:
+            result = original(resolver, project_id)
+            if project_id == "a":
+                (self.fixture.hub / "data/registry/external_projects.yaml").write_text(
+                    "projects: [", encoding="utf-8")
+            return result
+
+        with mock.patch.object(SourceResolver, "refresh", corrupt_after_first):
+            code, result = self.invoke("refresh", "--request-id", "authority-unavailable")
+        self.assertEqual(2, code, result)
+        self.assertEqual("CURRENT_AUTHORITY_UNAVAILABLE", result["error"])
+        self.assertEqual("FINISHED", result["receipt"]["request"]["status"])
+        self.assertEqual(["a", "b"], result["receipt"]["appended_project_ids"])
+        self.assertEqual({"available": False, "error": "CURRENT_AUTHORITY_UNAVAILABLE"},
+                         result["previews"])
+        self.assertFalse((self.fixture.hub / "data/connections/preview").exists())
+
+    def test_post_commit_error_is_sanitized_and_retains_receipt(self) -> None:
+        marker = "sensitive-marker-from-os"
+        with mock.patch("hub.connection_cli.write_previews", side_effect=OSError(marker)):
+            code, result = self.invoke("refresh", "--request-id", "preview-failure", "--project", "a")
+        self.assertEqual(2, code, result)
+        self.assertEqual("PREVIEW_UNAVAILABLE", result["error"])
+        self.assertEqual("FINISHED", result["receipt"]["request"]["status"])
+        self.assertEqual(["a"], result["receipt"]["appended_project_ids"])
+        self.assertNotIn(marker, json.dumps(result))
+
+    def test_offline_root_and_missing_named_source_remain_distinct_failures(self) -> None:
+        self.a.rename(self.a.with_name("a-offline"))
+        (self.b / "STATE.yaml").unlink()
+        code, refreshed = self.invoke("refresh", "--request-id", "source-failures")
+        self.assertEqual(2, code, refreshed)
+        self.assertEqual(["a", "b"], refreshed["appended_project_ids"])
+
+        code, history = self.invoke("history", "--request-id", "source-failures")
+        self.assertEqual(0, code, history)
+        failures = {row["project_id"]: row["result"] for row in history["results"]}
+        self.assertEqual("offline", failures["a"]["disposition"])
+        self.assertEqual("missing_source", failures["b"]["disposition"])
+        self.assertEqual([], failures["a"]["sources"])
+        self.assertEqual([], failures["b"]["sources"])
 
 
 if __name__ == "__main__":

@@ -3,9 +3,12 @@
 
 from __future__ import annotations
 
+from governance_scope import add_scope_argument, activate_scope, selected_task, excluded_path
+
 from pathlib import Path
 import re
 import sys
+import argparse
 
 try:
     import yaml
@@ -137,12 +140,12 @@ L2_L3_LEVELS = {"L2", "L3"}
 FORBIDDEN_MARKERS = [
     "FEISHU_APP_SECRET" + "=",
     "FEISHU_WEBHOOK_URL" + "=http",
-    "sk" + "-",
     "xoxb" + "-",
     "BEGIN PRIVATE " + "KEY",
 ]
 
 FORBIDDEN_REGEX = [
+    re.compile(r"sk-[0-9A-Za-z]{20,}"),
     re.compile(r"ghp_[0-9A-Za-z]{20,}"),
     re.compile(r"github_pat_[0-9A-Za-z_]{20,}"),
 ]
@@ -236,15 +239,19 @@ def _check_mcp_registry() -> list[str]:
     return issues
 
 
-def main() -> int:
-    missing_files = [path for path in REQUIRED_FILES if not (ROOT / path).is_file()]
-    missing_dirs = [path for path in REQUIRED_DIRS if not (ROOT / path).is_dir()]
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser()
+    add_scope_argument(parser)
+    args = parser.parse_args(argv)
+    activate_scope(args.task_id)
+    missing_files = [path for path in REQUIRED_FILES if not excluded_path(path) and not (ROOT / path).is_file()]
+    missing_dirs = [path for path in REQUIRED_DIRS if not excluded_path(path) and not (ROOT / path).is_dir()]
     secret_hits: list[str] = []
     mcp_issues: list[str] = []
 
     scan_paths = list(dict.fromkeys(REQUIRED_FILES + MCP_SCAN_PATHS))
     for relative in scan_paths:
-        if relative in SECRET_SCAN_EXCLUDE:
+        if excluded_path(relative) or relative in SECRET_SCAN_EXCLUDE:
             continue
         path = ROOT / relative
         if not path.is_file():

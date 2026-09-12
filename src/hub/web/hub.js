@@ -1,5 +1,6 @@
 import {el, button, api, notify, navigate, validRefreshCommand} from './common.js';
 import {renderDesigns} from './designs.js';
+import {attention, freshness, refreshable} from './connection_view.mjs';
 
 const main = document.querySelector('#main');
 const statuses = {active:'进行中',paused:'已暂停',blocked:'受阻',complete:'已完成',unknown:'来源未提供状态'};
@@ -9,9 +10,6 @@ const projectNames=new Map();
 try {pendingRefresh=validRefreshCommand(JSON.parse(localStorage.getItem('hub:refresh-pending')||'null'));} catch {}
 function time(value){if(!value)return '尚未读取';const d=new Date(value);return Number.isNaN(d.valueOf())?'时间未提供':d.toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}
 function human(value){if(value===null||value===undefined)return '来源未提供';if(typeof value==='string')return value;return JSON.stringify(value,null,2);}
-function attention(p){return !p.declared.hub_connection_exception&&(p.freshness.state!=='fresh'||p.errors.length>0);}
-function freshness(p){if(p.declared.hub_connection_exception)return '已登记例外';return p.freshness.authority_drift?'来源规则变化 · 需重新核对':p.freshness.state==='stale'?'上次快照 · 尚未更新':p.freshness.state==='fresh'?'已更新':'尚无成功快照';}
-function refreshable(p){return p.declared.enabled&&p.declared.summary_enabled&&!p.declared.hub_connection_exception;}
 function sourceLine(p){return `${types[p.declared.project_type]||'项目'} · ${time(p.source.observed_at)} · ${freshness(p)}`;}
 function diagnostic(value,label='查看诊断信息'){return el('details',{className:'diagnostics'},el('summary',{},label),el('pre',{},JSON.stringify(value,null,2)));}
 const relationKinds={pipeline:'流程衔接',shared_review_pattern:'相似审核方式',shared_visual_language:'相似视觉语言'};

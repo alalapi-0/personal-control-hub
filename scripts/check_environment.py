@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from governance_scope import add_scope_argument, activate_scope, selected_task, excluded_path
+
 import argparse
 import json
 import re
@@ -159,7 +161,9 @@ def run_check() -> dict[str, Any]:
         warnings.append("npm 未安装（可选）")
 
     _check_directories(hard_blockers, warnings)
-    mcp_info = _check_mcp_config(warnings)
+    mcp_info = ({"status": "not_probed", "runtime_available": None,
+                 "notes": "Project checks do not require editor or connector runtimes"}
+                if selected_task() else _check_mcp_config(warnings))
 
     tools = {
         "python": python_info,
@@ -178,6 +182,10 @@ def run_check() -> dict[str, Any]:
         },
         "mcp_servers": mcp_info,
     }
+
+    if selected_task():
+        tools.pop("cursor", None)
+        tools.pop("codex", None)
 
     if hard_blockers:
         overall = "fail"
@@ -229,7 +237,8 @@ def _print_text(result: dict[str, Any]) -> None:
     print(f"Git: {tools['git']['status']}")
     print(f"Node: {tools['node']['status']}")
     print(f"npm: {tools['npm']['status']}")
-    print("Cursor MCP: manual_check_required")
+    if not selected_task():
+        print("Cursor MCP: manual_check_required")
     print("Codex: manual_check_required")
     print(f"总体状态: {result['overall_status']}")
     if result["warnings"]:
@@ -250,7 +259,9 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="在当前任务已明确授权记录时，更新状态文件并追加日志；默认不写文件",
     )
+    add_scope_argument(parser)
     args = parser.parse_args(argv)
+    activate_scope(args.task_id)
 
     result = run_check()
     if args.record:

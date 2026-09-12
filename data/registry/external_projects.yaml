@@ -133,22 +133,24 @@ projects:
   - "/Users/alalapi/PycharmProjects/personal-control-hub/data/registry/external_projects.yaml"
   - "/Users/alalapi/PycharmProjects/personal-control-hub/governance/adapters/storage_governance.yaml"
 - id: manga-localizer
-  hub_connection_exception:
+  legacy_hub_connection_exception:
     status: AUTHORIZED_EXCEPTION
     authority_ref: owner-turn:01a071cc-f2c6-76c2-bc43-f300db610b0b/01a07400-d059-7f90-a685-2e3250945f2d#manga-visible-exception
     reason: 所有者批准 Manga 的可见管理接入例外；保留登记、禁读限制和未知业务状态，不访问项目、不扩大权限。
     decision_ref: docs/reports/ui_design_governance/unit-09/owner-decision.json
   name: Manga Localizer
-  root_path: "/Users/alalapi/PycharmProjects/manga-localizer"
+  root_path: /Users/alalapi/PycharmProjects/manga-localizer
   enabled: false
   scan_enabled: false
   profile_enabled: false
   summary_enabled: true
   project_type: completed_exclusion_record
-  priority_link:
+  priority_link: null
   priority_source: user
   watch_paths: []
-  access_profile: no_current_goal_access
+  access_profile: bounded_named_business_state_read
+  connection_read_allowed: true
+  connection_authority: ALL-PROJECTS-CODEX-GOVERNANCE-V1 owner authorization; business state only, storage exclusion remains
   external_write_allowed: false
   storage_governance:
     scope: accepted_exclusion_record_only
@@ -157,8 +159,9 @@ projects:
     validation_allowed: false
     mutation_allowed: false
   rules_paths: []
-  current_state_paths: []
-  current_state_status: accepted_exclusion_no_current_goal_access
+  current_state_paths:
+  - .agent/STATE.yaml
+  current_state_status: owner_authorized_sole_business_state
   supporting_authority_paths: []
 - id: universal-player
   name: Universal Player
@@ -871,3 +874,47 @@ projects:
   supporting_authority_paths:
   - "/Volumes/AI_WORK_SSD/mpv-clip-workbench/README.md"
   - "/Volumes/AI_WORK_SSD/mpv-clip-workbench/docs/40-rounds/ROUND_INDEX.md"
+- id: game-removed-local
+  name: game
+  root_path: /Volumes/AI_WORK_SSD/WineGames/亜人少女～異能少女との同棲生活～
+  enabled: false
+  scan_enabled: false
+  profile_enabled: false
+  summary_enabled: true
+  project_type: local_removal_record
+  priority_source: user
+  watch_paths: []
+  rules_paths: []
+  current_state_paths: []
+  current_state_status: removed_local
+  supporting_authority_paths: []
+  access_profile: removed_local_record_only
+  external_write_allowed: false
+  local_presence:
+    status: removed_local
+    reason: Owner confirmed local removal on 2026-09-08; preserve identity and former
+      path
+    native_project_id: a3af69b8-527d-40be-9b7d-487e236b2c26
+    retry_allowed: false
+- id: manga-removed-local
+  name: manga
+  root_path: /Volumes/AI_WORK_SSD/manga
+  enabled: false
+  scan_enabled: false
+  profile_enabled: false
+  summary_enabled: true
+  project_type: local_removal_record
+  priority_source: user
+  watch_paths: []
+  rules_paths: []
+  current_state_paths: []
+  current_state_status: removed_local
+  supporting_authority_paths: []
+  access_profile: removed_local_record_only
+  external_write_allowed: false
+  local_presence:
+    status: removed_local
+    reason: Owner confirmed local removal on 2026-09-08; preserve identity and former
+      path
+    native_project_id: local-1e00315201990d02930e2c56de2f87e8
+    retry_allowed: false

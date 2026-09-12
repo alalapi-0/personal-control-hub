@@ -1,6 +1,6 @@
 policy:
   name: personal_control_hub_agent_policy
-  version: "1.1.0"
+  version: "1.2.0"
   status: draft
   default_mode: local_first_read_mostly
   current_round: ROUND-1-1
@@ -12,6 +12,12 @@ authority_model:
     - governance/round_state.yaml
     - data/state/current_status.yaml
   legacy_protocol_reference: governance/repo_protocol_standard.yaml
+
+authority_reuse:
+  current_scope_only: true
+  existing_authorization_requires_reconfirmation: false
+  historical_grant_may_override_current_pause_or_prohibition: false
+  note: "授权、资产保护、结果验证、日志分别判断；明确授权且归属清楚的低风险本地产物无需逐项确认或全量备份。"
 
 allowed_without_confirmation:
   - "读取本仓库文档、YAML、脚本和测试。"
@@ -26,8 +32,8 @@ allowed_without_confirmation:
 
 requires_user_confirmation:
   - "修改外部项目本体。"
-  - "删除文件。"
-  - "覆盖已有用户内容。"
+  - "未经当前任务授权、归属不明或不可逆的删除。"
+  - "未经授权或存在并发冲突的用户内容覆盖。"
   - "覆盖用户已有 .cursor/mcp.json。"
   - "没有当前或已记录所有者授权时推送 GitHub。"
   - "调用真实付费 API。"
@@ -82,10 +88,10 @@ auto_advance_policy:
   require_consistency_check: true
   default_continue_without_hard_blocker: true
   rules:
-    - "每轮开始前必须运行 python scripts/agent_gate.py 与 python scripts/auto_advance_runner.py --mode check。"
+    - "每个执行单元首次写入前运行 python scripts/auto_advance_runner.py --mode check 一次；runner 已含 gate，不再单独重复。相关输入未变化时复用证据。"
     - "gate 输出 continue 时只表示检查通过；仅在当前已有上级授权范围内继续。"
     - "gate 输出 warn_and_continue 时报告 warning，并仅在当前已有授权范围内继续。"
-    - "gate 输出 stop 时必须停止并请求用户确认。"
+    - "gate 输出 stop 时停止受影响动作，先诊断可修复问题；仅真实权限、保护边界或所有者决策需要用户。"
     - "没有 hard blocker 不要因偏好不完美而停下。"
     - "可用保守默认值时使用保守默认值。"
     - "只有 hard blocker 才请求用户。"
@@ -98,7 +104,7 @@ auto_advance_policy:
   hard_blocker_examples:
     - "真实 API key、密码、cookie。"
     - "写入外部项目。"
-    - "删除文件或覆盖用户内容。"
+    - "未经授权、归属不明或不可逆的删除/覆盖。"
     - "未获当前或已记录所有者授权的 git push、发布内容、登录账号、支付或购买。"
     - "改变 P0/P1 战略优先级。"
     - "MCP L2/L3 未获确认。"
@@ -120,8 +126,9 @@ approval_levels:
       - "读取 MCP registry 与 policy"
   L1:
     name: local_low_risk_write
-    confirmation_required: true
-    logging_required: true
+    confirmation_required: false
+    logging_required: false
+    authority_required: true
     examples:
       - "当前任务明确授权的本仓库文档与 YAML 更新"
       - "当前任务明确授权的 automation_log.jsonl 记录"
@@ -175,3 +182,18 @@ git_delivery_policy:
   remote_change: false
   secret_bearing_commit: false
   runner_may_commit_or_push: false
+
+task_overrides:
+  ALL-PROJECTS-CODEX-GOVERNANCE-V1:
+    activation: current_owner_prompt_required
+    execution_document: docs/all_projects_governance_execution.md
+    state_entry: STATE.yaml#all_projects_governance
+    governance_subject: project
+    editor_dependency: none
+    external_project_writes: current_task_document_scope_only
+    git_delivery: accepted_unit_to_verified_default_branch
+    force_push: false
+    bypass_protection: false
+    real_feishu: disabled
+    paid_generation: additional_authority_required
+    runner_grants_authority: false

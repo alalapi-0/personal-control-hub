@@ -1,0 +1,117 @@
+import json
+import tempfile
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+from hub.metric_storage import collect_storage
+from hub.metric_sources import read_structured
+from hub.metrics import bounded_json, metric_key
+
+NOW = '2026-09-09T00:00:00Z'
+
+
+class StorageMetricTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        self.spec = {'evidence_root': str(self.root / 'evidence'), 'evidence_path': 'REPORT.yaml'}
+        self.state = {'schema_version': 3, 'protocol_revision': 322,
+                      'metadata': {'updated_at': '2026-09-05T22:11:33+08:00'},
+                      'closure': {'final_report': str(self.root / 'evidence/REPORT.yaml')},
+                      'project_accounting': {'cleaned_local_source_roots': 20,
+                          'existing_external_projects_linked': 1, 'pending_projects': 0,
+                          'active_projects': 0, 'remaining_execution_candidates': 0,
+                          'removed_projects': ['/private/original'], 'released_bytes': None,
+                          'external_added_bytes': None}}
+        self.report = {'schema_version': 1, 'verified_at': '2026-09-04T09:53:36+08:00',
+                       'external_copy_validation': 'PASS_before_each_source_cleanup',
+                       'identity_guard': 'PASS', 'retained_local_sources': [],
+                       'cleaned_local_sources': '20_exact_roots_replaced_with_symlinks',
+                       'github_validation': '14 projects described in prose'}
+
+    def collect(self):
+        (self.root / 'STATE.yaml').write_text(json.dumps(self.state))
+        (self.root / 'evidence').mkdir(exist_ok=True)
+        (self.root / 'evidence/REPORT.yaml').write_text(json.dumps(self.report))
+        result = collect_storage(self.root, 'fixture', NOW, self.spec)
+        return result, {r['metric_id'].removeprefix('storage.'): r for r in result['metrics']}
+
+    def test_true_fields_unknown_bytes_historical_bounds_and_budget(self):
+        result, rows = self.collect()
+        self.assertEqual(rows['cleaned_local_source_roots']['value'], 20)
+        self.assertEqual(rows['removed_projects']['value'], 1)
+        self.assertEqual(rows['pending_projects']['value'], 0)
+        self.assertEqual(rows['historical_identity_guard_passed']['value'], 1)
+        self.assertEqual(rows['historical_retained_local_sources']['value'], 0)
+        for name in ('released_bytes', 'external_added_bytes', 'current_validation_failures'):
+            self.assertIsNone(rows[name]['value'])
+        self.assertEqual(rows['historical_identity_guard_passed']['business_at'], self.report['verified_at'])
+        self.assertEqual(rows['cleaned_local_source_roots']['business_at'], self.state['metadata']['updated_at'])
+        self.assertIsNone(rows['current_validation_failures']['business_at'])
+        self.assertNotIn('/private/original', json.dumps(result))
+        self.assertNotIn(str(self.root), json.dumps(result))
+        self.assertNotIn('github_validation', json.dumps(result))
+        self.assertLess(len(bounded_json({'metrics': [{k: r[k] for k in ('metric_id','value','unit','quality','business_at')} for r in result['metrics']]}).encode()), 8192)
+        self.assertEqual(len({metric_key(r) for r in result['metrics']}), len(rows))
+
+    def test_bad_field_isolated(self):
+        self.state['project_accounting']['active_projects'] = True
+        self.report['identity_guard'] = 'PASSED (natural language)'
+        _, rows = self.collect()
+        self.assertIsNone(rows['active_projects']['value'])
+        self.assertIsNone(rows['historical_identity_guard_passed']['value'])
+        self.assertEqual(rows['pending_projects']['value'], 0)
+        self.assertEqual(rows['historical_external_copy_validation_passed']['value'], 1)
+
+    def test_pointer_change_never_follows_unconfigured_path(self):
+        self.state['closure']['final_report'] = '/private/other/REPORT.yaml'
+        with patch('hub.metric_storage.read_structured', wraps=read_structured) as reader:
+            _, rows = self.collect()
+        self.assertEqual(reader.call_count, 1)
+        self.assertEqual(reader.call_args.args[1], 'STATE.yaml')
+        self.assertIsNone(rows['historical_identity_guard_passed']['value'])
+        self.assertEqual(rows['cleaned_local_source_roots']['value'], 20)
+
+    def test_semantic_versions_and_identity_dedup(self):
+        first, _ = self.collect()
+        self.state['protocol_revision'] += 1
+        self.state['goal'] = {'status': 'complete'}
+        self.report['github_validation'] = 'OTHER PROSE'
+        self.state['project_accounting']['removed_projects'] *= 2
+        second, rows = self.collect()
+        self.assertEqual(first['source_version'], second['source_version'])
+        self.assertEqual(rows['removed_projects']['value'], 1)
+        self.state['project_accounting']['removed_projects'].append('/private/other')
+        third, _ = self.collect()
+        self.assertNotEqual(second['source_version'], third['source_version'])
+
+    def test_invalid_list_does_not_erase_independent_counts(self):
+        self.state['project_accounting']['removed_projects'] = [{'path': '/private/original'}]
+        self.report['retained_local_sources'] = 'unknown'
+        _, rows = self.collect()
+        self.assertIsNone(rows['removed_projects']['value'])
+        self.assertIsNone(rows['historical_retained_local_sources']['value'])
+        self.assertEqual(rows['cleaned_local_source_roots']['value'], 20)
+
+    def test_invalid_evidence_path_is_never_read(self):
+        self.spec['evidence_path'] = '../REPORT.yaml'
+        self.state['closure']['final_report'] = str(self.root / 'evidence/../REPORT.yaml')
+        with patch('hub.metric_storage.read_structured', wraps=read_structured) as reader:
+            _, rows = self.collect()
+        self.assertEqual(reader.call_count, 1)
+        self.assertIsNone(rows['historical_identity_guard_passed']['value'])
+
+    def test_unsupported_schema_and_missing_configuration(self):
+        self.report['schema_version'] = 2
+        _, rows = self.collect()
+        self.assertIsNone(rows['historical_identity_guard_passed']['value'])
+        self.assertEqual(rows['cleaned_local_source_roots']['value'], 20)
+        self.spec = {}
+        _, rows = self.collect()
+        self.assertIsNone(rows['historical_external_copy_validation_passed']['value'])
+
+
+if __name__ == '__main__':
+    unittest.main()

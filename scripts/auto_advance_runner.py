@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from governance_scope import add_scope_argument, activate_scope, selected_task, excluded_path
+
 import argparse
 import json
 import re
@@ -49,7 +51,7 @@ def _run_script(relative: str, extra_args: list[str] | None = None) -> tuple[int
         return 127, f"脚本不存在：{relative}"
     cmd = [sys.executable, str(script)] + (extra_args or [])
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=120, check=False)
+        result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, timeout=120, check=False)
         output = (result.stdout or "") + (result.stderr or "")
         return result.returncode, output.strip()
     except (OSError, subprocess.TimeoutExpired) as exc:
@@ -74,10 +76,17 @@ def _get_round_context() -> dict[str, Any]:
         project = {}
     if not isinstance(current_round, dict):
         current_round = {}
+    task = state.get("all_projects_governance", {}) if selected_task() else {}
+    work = task or (state.get("current_work", {}) if isinstance(state, dict) else {})
+    work = work if isinstance(work, dict) else {}
     return {
-        "current_round": current_round.get("id"),
+        "task_id": selected_task(),
+        "task_unit": task.get("unit"),
+        "task_next_action": task.get("next_action"),
+        "work_status": work.get("status"),
+        "current_round": task.get("unit") if selected_task() else current_round.get("id"),
         "current_round_name": current_round.get("name"),
-        "next_round": current_round.get("next_round"),
+        "next_round": None if selected_task() else current_round.get("next_round"),
         "current_phase": project.get("phase"),
     }
 
@@ -134,16 +143,22 @@ def _run_checks() -> dict[str, Any]:
     soft_warnings: list[str] = []
 
     code, env_out = _run_script("scripts/check_environment.py", ["--json"])
+    if code != 0:
+        hard_blockers.append("check_environment.py 退出码非零")
     env_result = _parse_json_from_output(env_out)
     if env_result is None:
         hard_blockers.append("check_environment.py 未能输出有效 JSON")
 
     code, gate_out = _run_script("scripts/agent_gate.py", ["--json"])
+    if code != 0:
+        hard_blockers.append("agent_gate.py 退出码非零")
     gate_result = _parse_json_from_output(gate_out)
     if gate_result is None:
         hard_blockers.append("agent_gate.py 未能输出有效 JSON")
 
     code, consistency_out = _run_script("scripts/round_consistency_check.py", ["--json"])
+    if code != 0:
+        hard_blockers.append("round_consistency_check.py 退出码非零")
     consistency_result = _parse_json_from_output(consistency_out)
     if consistency_result is None:
         hard_blockers.append("round_consistency_check.py 未能输出有效 JSON")
@@ -217,8 +232,9 @@ def _generate_prompt(round_item: dict[str, Any], executor: str) -> str:
         "",
         "```bash",
         "python scripts/auto_advance_runner.py --mode check",
-        "python scripts/agent_gate.py",
         "```",
+        "",
+        "检查已包含 gate；同一输入不再单独重复。当前暂停或禁止优先于历史授权。",
         "",
         "## 目标",
         "",
@@ -252,9 +268,15 @@ def _generate_prompt(round_item: dict[str, Any], executor: str) -> str:
 
 
 def mode_prepare_next() -> dict[str, Any]:
+    if str(_get_round_context().get("work_status", "")).upper() == "PAUSED":
+        print("当前产品任务 PAUSED；旧路线图或验证通过不构成恢复授权。")
+        return {"decision": "stop", "prompts_written": False, "previewed": False}
     check_result = _run_checks()
     context = check_result["context"]
     next_round_id = context.get("next_round")
+    if selected_task():
+        print("Project task next action:", context.get("task_next_action") or "bootstrap incomplete")
+        return {"decision": check_result["decision"], "prompts_written": False, "previewed": True, "authority_granted": False}
 
     if not check_result["checks_passed"]:
         print("=== Auto Advance Runner: prepare-next ===")
@@ -276,8 +298,31 @@ def mode_prepare_next() -> dict[str, Any]:
     return {"decision": check_result["decision"], "prompts_written": False, "previewed": True}
 
 
+def _candidate_paths() -> list[str]:
+    if not selected_task():
+        return []
+    state = _load_yaml("STATE.yaml") or {}
+    task = state.get("all_projects_governance", {})
+    if not isinstance(task, dict) or task.get("task_id") != selected_task():
+        raise ValueError("Selected task lacks canonical candidate authority")
+    paths = task.get("candidate_paths")
+    if not isinstance(paths, list) or not paths:
+        raise ValueError("Current task candidate_paths must list owned files")
+    for path in paths:
+        if (not isinstance(path, str) or not path or Path(path).is_absolute()
+                or any(part in {"..", ".", "", ".git"} for part in path.split("/"))):
+            raise ValueError("Invalid candidate path for scoped Git check")
+        current = ROOT
+        for part in Path(path).parts:
+            current = current / part
+            if current.is_symlink():
+                raise ValueError("Candidate path cannot traverse symlinks")
+    return sorted(set([*paths, "STATE.yaml"]))
+
+
 def _git_status_porcelain() -> tuple[int, str]:
-    return _run_script_command(["git", "status", "--porcelain"])
+    paths = _candidate_paths()
+    return _run_script_command(["git", "status", "--porcelain"] + (["--", *(" :(literal)".strip() + path for path in paths)] if paths else []))
 
 
 def _run_script_command(cmd: list[str]) -> tuple[int, str]:
@@ -304,7 +349,9 @@ def _is_sensitive_path(path: str) -> bool:
 
 
 def _scan_staged_sensitive(hard_blockers: list[str]) -> None:
-    code, output = _run_script_command(["git", "diff", "--cached", "--name-only"])
+    paths = _candidate_paths()
+    code, output = _run_script_command(["git", "diff", "--cached", "--name-only"] +
+                                       (["--", *(":(literal)" + path for path in paths)] if paths else []))
     if code != 0:
         return
     for line in output.splitlines():
@@ -326,7 +373,7 @@ def _scan_staged_sensitive(hard_blockers: list[str]) -> None:
 
 
 def _scan_unstaged_sensitive(hard_blockers: list[str]) -> None:
-    code, output = _run_script_command(["git", "status", "--porcelain"])
+    code, output = _git_status_porcelain()
     if code != 0:
         return
     for line in output.splitlines():
@@ -355,7 +402,8 @@ def mode_finalize_round() -> dict[str, Any]:
     if in_repo_code != 0:
         hard_blockers.append("当前目录不在 git 仓库中，无法完成 Git 状态验证")
 
-    merge_code, merge_out = _run_script_command(["git", "diff", "--name-only", "--diff-filter=U"])
+    paths = _candidate_paths()
+    merge_code, merge_out = _run_script_command(["git", "diff", "--name-only", "--diff-filter=U"] + (["--", *(" :(literal)".strip() + path for path in paths)] if paths else []))
     if merge_code == 0 and merge_out.strip():
         hard_blockers.append("存在 merge conflict，必须停止")
 
@@ -373,7 +421,7 @@ def mode_finalize_round() -> dict[str, Any]:
             for item in hard_blockers:
                 print(f"  - {item}")
     else:
-        status_code, status_out = _run_script_command(["git", "status", "--porcelain"])
+        status_code, status_out = _git_status_porcelain()
         if status_code != 0:
             hard_blockers.append(f"git status 失败：{status_out}")
             decision = "stop"
@@ -399,7 +447,9 @@ def main(argv: list[str] | None = None) -> int:
         default="check",
         help="运行模式",
     )
+    add_scope_argument(parser)
     args = parser.parse_args(argv)
+    activate_scope(args.task_id)
 
     if args.mode == "check":
         result = mode_check()

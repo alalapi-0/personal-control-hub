@@ -1,0 +1,1141 @@
+{
+  "schema_version": "1.0",
+  "kind": "imported_figma_source_observation",
+  "reader": "Hub design author and design evidence reviewer",
+  "purpose": "Versioned read-only evidence for the four previously registered Figma sources; not runtime baselines or Hub candidates",
+  "update_trigger": "A relevant Figma source version changes or design authoring needs a new observation; preserve this observation identity",
+  "source_inventory": {
+    "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json",
+    "sha256": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c"
+  },
+  "credential_probe": {
+    "method": "GET /v1/me",
+    "http_status": 200,
+    "evidence": "Prior authorized REST probe recorded in STATE checkpoint 2026-09-05T23:50:12+00:00",
+    "credential_value_saved": false,
+    "authentication_configuration_changed": false
+  },
+  "records": [
+    {
+      "project_id": "computer-study-plan",
+      "file_key": "WtmY7TC867Wdp0qXY2b5uz",
+      "source_ref": "docs/PROJECT_STATE.md:39",
+      "classification": "imported",
+      "meta_probe": {
+        "http_status": 200,
+        "role": "owner",
+        "evidence": "Prior authorized REST meta probe; recorded in STATE checkpoint 2026-09-05T23:50:12+00:00; reused without claiming a new request"
+      },
+      "structure_probe": {
+        "http_status": 200,
+        "method": "GET /v1/files/:file_key?depth=2",
+        "observed_at": "2026-09-05T23:53:41+00:00"
+      },
+      "structure": {
+        "name": "Linux Learning OS｜Lightfield Exact Production V3",
+        "version": "2386069438343011819",
+        "last_modified": "2026-08-10T12:14:01Z",
+        "editor_type": "figma",
+        "editor_type_status": "observed",
+        "pages": [
+          {
+            "node_id": "0:1",
+            "name": "00｜Reference & Calibration",
+            "type": "CANVAS",
+            "top_level_nodes": [
+              {
+                "node_id": "2:6",
+                "name": "Reference Title",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "2:7",
+                "name": "Reference Note",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "2:8",
+                "name": "REFERENCE_IMAGE_TARGET",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "2:9",
+                "name": "Reference Non-negotiables",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "13:2",
+                "name": "Material Calibration Board",
+                "type": "FRAME"
+              }
+            ]
+          },
+          {
+            "node_id": "2:2",
+            "name": "01｜Desktop Product Screens",
+            "type": "CANVAS",
+            "top_level_nodes": [
+              {
+                "node_id": "24:101",
+                "name": "D01｜Dashboard / Current Action",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "24:158",
+                "name": "D02｜Linux Route / Expedition Map",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "24:234",
+                "name": "D03｜Module 00 / Terminal Initiation",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "24:299",
+                "name": "D04｜Task / Real Shell",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "25:21",
+                "name": "D05｜Feedback / Error",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "25:82",
+                "name": "D06｜Feedback / Success",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "25:141",
+                "name": "D07｜Review Grounds",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "25:237",
+                "name": "D08｜Command Codex",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "25:344",
+                "name": "D09｜Growth Record",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "25:439",
+                "name": "D10｜Round 00 / Completion",
+                "type": "FRAME"
+              }
+            ]
+          },
+          {
+            "node_id": "2:3",
+            "name": "02｜Mini Program Screens",
+            "type": "CANVAS",
+            "top_level_nodes": [
+              {
+                "node_id": "32:2",
+                "name": "M01｜首页 / Current Action",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "32:73",
+                "name": "M02｜Linux 路线",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "32:154",
+                "name": "M03｜Module 00 / 终端启程",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "32:242",
+                "name": "M04｜任务 / Real Shell",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "34:8",
+                "name": "M05｜反馈 / Error",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "34:96",
+                "name": "M06｜反馈 / Success",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "34:183",
+                "name": "M07｜复习场 / Training Grounds",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "34:256",
+                "name": "M08｜命令手册 / Command Codex",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "34:332",
+                "name": "M09｜成长记录",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "34:433",
+                "name": "M10｜Round 00 / 通关",
+                "type": "FRAME"
+              }
+            ]
+          },
+          {
+            "node_id": "2:4",
+            "name": "03｜Components & Foundations",
+            "type": "CANVAS",
+            "top_level_nodes": [
+              {
+                "node_id": "17:2",
+                "name": "LF / Foundations / Visual Calibration",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "17:36",
+                "name": "Button Section Title",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "17:37",
+                "name": "Button Section Copy",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "17:58",
+                "name": "LF / Depth Button",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "17:59",
+                "name": "Button State Label 0",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "17:60",
+                "name": "Button State Label 1",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "17:61",
+                "name": "Button State Label 2",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "17:62",
+                "name": "Button State Label 3",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "18:2",
+                "name": "Spatial Block Section Title",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "18:3",
+                "name": "Spatial Block Section Copy",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "18:27",
+                "name": "LF / Spatial Block",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "18:28",
+                "name": "Spatial Block State Label 0",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "18:29",
+                "name": "Spatial Block State Label 1",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "18:30",
+                "name": "Spatial Block State Label 2",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "18:31",
+                "name": "Spatial Block State Label 3",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "20:2",
+                "name": "Glass Card Section Title",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "20:3",
+                "name": "Glass Card Section Copy",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "20:43",
+                "name": "LF / Glass Task Card",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "20:46",
+                "name": "Glass Card State Label 0",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "20:47",
+                "name": "Glass Card State Label 1",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "20:48",
+                "name": "Glass Card State Label 2",
+                "type": "TEXT"
+              }
+            ]
+          },
+          {
+            "node_id": "2:5",
+            "name": "04｜Motion & Codex Handoff",
+            "type": "CANVAS",
+            "top_level_nodes": [
+              {
+                "node_id": "40:56",
+                "name": "H01｜Motion Principles & Parallax",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "40:158",
+                "name": "H02｜Spatial Block Physics",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "40:215",
+                "name": "H03｜Button & Card Mechanics",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "44:2",
+                "name": "H04｜Transitions, Feedback & Reduced Motion",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "44:125",
+                "name": "H05｜Desktop & Mini Program Flow",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "44:271",
+                "name": "H06｜Codex Implementation Contract",
+                "type": "FRAME"
+              }
+            ]
+          }
+        ]
+      },
+      "structure_sha256": "83e6d570e8c00ef16c8971736e3d8aba1fb6d2c6e2293b02cb84942f0ef71211",
+      "live_figma_file_verified": true,
+      "runtime_ui_verified": false,
+      "candidate": false,
+      "owner_choice": false,
+      "external_write": false
+    },
+    {
+      "project_id": "mpv-clip-workbench",
+      "file_key": "JXHe6V8OMEz9qt5rbRHuuz",
+      "source_ref": "docs/10-product/BEGINNER_UX_DIRECTION.md:11",
+      "classification": "imported",
+      "meta_probe": {
+        "http_status": 200,
+        "role": "owner",
+        "evidence": "Prior authorized REST meta probe; recorded in STATE checkpoint 2026-09-05T23:50:12+00:00; reused without claiming a new request"
+      },
+      "structure_probe": {
+        "http_status": 200,
+        "method": "GET /v1/files/:file_key?depth=2",
+        "observed_at": "2026-09-05T23:53:43+00:00"
+      },
+      "structure": {
+        "name": "MPV Clip Workbench Beginner UX",
+        "version": "2395274837973766019",
+        "last_modified": "2026-09-04T07:29:21Z",
+        "editor_type": "figma",
+        "editor_type_status": "observed",
+        "pages": [
+          {
+            "node_id": "0:1",
+            "name": "B01 Beginner default",
+            "type": "CANVAS",
+            "top_level_nodes": [
+              {
+                "node_id": "1:39",
+                "name": "WorkbenchButton",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "1:51",
+                "name": "ViewSwitch",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "1:65",
+                "name": "ClipRow",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "1:66",
+                "name": "B01 / 默认主界面",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "1:123",
+                "name": "B01 / 默认主界面 · 还没打开视频",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "1:168",
+                "name": "B01 / 首次引导",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "5:29",
+                "name": "B01 / 界面设置",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "13:51",
+                "name": "L05 / 默认主界面 · 打开所在文件夹",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "14:63",
+                "name": "L05 / 界面设置 · 选导出目录",
+                "type": "FRAME"
+              }
+            ]
+          }
+        ]
+      },
+      "structure_sha256": "51f11a85f414cb8b395af7b17d46fa9aa6311aec5c29442c9dd02f1843d596c1",
+      "live_figma_file_verified": true,
+      "runtime_ui_verified": false,
+      "candidate": false,
+      "owner_choice": false,
+      "external_write": false
+    },
+    {
+      "project_id": "novel-continuation-agent",
+      "file_key": "9zSdt4kzc52DYkSfz6uige",
+      "source_ref": "AGENTS.md:19 (nodes 50:3–50:11)",
+      "classification": "imported",
+      "meta_probe": {
+        "http_status": 200,
+        "role": "owner",
+        "evidence": "Prior authorized REST meta probe; recorded in STATE checkpoint 2026-09-05T23:50:12+00:00; reused without claiming a new request"
+      },
+      "structure_probe": {
+        "http_status": 200,
+        "method": "GET /v1/files/:file_key?depth=2",
+        "observed_at": "2026-09-05T23:53:46+00:00"
+      },
+      "structure": {
+        "name": "AI Novel Director — Spatial Story Studio",
+        "version": "2376301497308632906",
+        "last_modified": "2026-07-15T04:45:54Z",
+        "editor_type": "figma",
+        "editor_type_status": "observed",
+        "pages": [
+          {
+            "node_id": "0:1",
+            "name": "00 · Cover",
+            "type": "CANVAS",
+            "top_level_nodes": [
+              {
+                "node_id": "8:2",
+                "name": "Cover / UI Constitution v1.0",
+                "type": "FRAME"
+              }
+            ]
+          },
+          {
+            "node_id": "7:2",
+            "name": "01 · Getting Started",
+            "type": "CANVAS",
+            "top_level_nodes": [
+              {
+                "node_id": "10:2",
+                "name": "Getting Started / Governance",
+                "type": "FRAME"
+              }
+            ]
+          },
+          {
+            "node_id": "7:3",
+            "name": "02 · Foundations",
+            "type": "CANVAS",
+            "top_level_nodes": [
+              {
+                "node_id": "11:2",
+                "name": "Foundations / UI Constitution v1.0",
+                "type": "FRAME"
+              }
+            ]
+          },
+          {
+            "node_id": "7:4",
+            "name": "——— COMPONENTS ———",
+            "type": "CANVAS",
+            "top_level_nodes": []
+          },
+          {
+            "node_id": "7:5",
+            "name": "10 · Components",
+            "type": "CANVAS",
+            "top_level_nodes": [
+              {
+                "node_id": "13:2",
+                "name": "Components / Novel Director",
+                "type": "FRAME"
+              }
+            ]
+          },
+          {
+            "node_id": "7:6",
+            "name": "——— SCREENS ———",
+            "type": "CANVAS",
+            "top_level_nodes": []
+          },
+          {
+            "node_id": "50:2",
+            "name": "20 · Final Product · Minimal Home + Workbenches",
+            "type": "CANVAS",
+            "top_level_nodes": [
+              {
+                "node_id": "50:3",
+                "name": "00 · HOME / Spatial Entry",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "50:4",
+                "name": "01 · WORLD / Universe Atlas",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "50:5",
+                "name": "02 · CHARACTER / Identity Studio",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "50:6",
+                "name": "03 · RELATION / Temporal Topology",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "50:7",
+                "name": "04 · AGENT / Skill Foundry",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "50:8",
+                "name": "05 · SCENE / Spatial Director",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "50:9",
+                "name": "06 · CHRONICLE / Narrative Timeline",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "50:10",
+                "name": "07 · WRITING / Chapter Studio",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "50:11",
+                "name": "08 · REVIEW / Canon Audit",
+                "type": "FRAME"
+              }
+            ]
+          },
+          {
+            "node_id": "36:2",
+            "name": "19 · Homepage Directions v2 · 3D + Motion",
+            "type": "CANVAS",
+            "top_level_nodes": [
+              {
+                "node_id": "36:3",
+                "name": "V2-A · 雾松天体仪 / Narrative Orrery",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "36:4",
+                "name": "V2-B · 黄铜世界剖面 / Atlas Cutaway",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "36:5",
+                "name": "V2-C · 苔金导演台 / Spatial Director Desk",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "36:6",
+                "name": "V2-D · 墨蓝时序环 / Chronicle Helix",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "36:7",
+                "name": "V2-E · 青铜叙事树 / Living Canon Tree",
+                "type": "FRAME"
+              }
+            ]
+          },
+          {
+            "node_id": "22:2",
+            "name": "18 · Homepage Directions · Pick One",
+            "type": "CANVAS",
+            "top_level_nodes": [
+              {
+                "node_id": "22:3",
+                "name": "A · 夜航星图 / Narrative Observatory",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "22:4",
+                "name": "B · 白瓷档案 / Curatorial Archive",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "22:5",
+                "name": "C · 黑匣片场 / Director’s Black Box",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "22:6",
+                "name": "D · 纸上建筑 / Narrative Blueprint",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "22:7",
+                "name": "E · 漆夜长卷 / Digital Lacquer Manuscript",
+                "type": "FRAME"
+              }
+            ]
+          },
+          {
+            "node_id": "7:7",
+            "name": "20 · Novel Hub",
+            "type": "CANVAS",
+            "top_level_nodes": []
+          },
+          {
+            "node_id": "7:8",
+            "name": "21 · Canon Atlas",
+            "type": "CANVAS",
+            "top_level_nodes": []
+          },
+          {
+            "node_id": "7:9",
+            "name": "22 · Character Studio",
+            "type": "CANVAS",
+            "top_level_nodes": []
+          },
+          {
+            "node_id": "7:10",
+            "name": "23 · Temporal Relations",
+            "type": "CANVAS",
+            "top_level_nodes": []
+          },
+          {
+            "node_id": "7:11",
+            "name": "24 · Manuscript Studio",
+            "type": "CANVAS",
+            "top_level_nodes": []
+          },
+          {
+            "node_id": "7:12",
+            "name": "25 · Director Lab",
+            "type": "CANVAS",
+            "top_level_nodes": []
+          },
+          {
+            "node_id": "7:13",
+            "name": "30 · Flows & States",
+            "type": "CANVAS",
+            "top_level_nodes": []
+          },
+          {
+            "node_id": "7:14",
+            "name": "90 · Visual References",
+            "type": "CANVAS",
+            "top_level_nodes": []
+          },
+          {
+            "node_id": "7:15",
+            "name": "——— UTILITIES ———",
+            "type": "CANVAS",
+            "top_level_nodes": []
+          },
+          {
+            "node_id": "7:16",
+            "name": "99 · Utilities",
+            "type": "CANVAS",
+            "top_level_nodes": []
+          }
+        ]
+      },
+      "structure_sha256": "4519f4989019ab695ce046649a89a609edab4e3ffd4d6d336100a961da52fc60",
+      "live_figma_file_verified": true,
+      "runtime_ui_verified": false,
+      "candidate": false,
+      "owner_choice": false,
+      "external_write": false
+    },
+    {
+      "project_id": "universal-player",
+      "file_key": "lURMGTfFpSzWQhVy0hBS3m",
+      "source_ref": ".agent/STATE.md",
+      "classification": "imported",
+      "meta_probe": {
+        "http_status": 200,
+        "role": "owner",
+        "evidence": "Prior authorized REST meta probe; recorded in STATE checkpoint 2026-09-05T23:50:12+00:00; reused without claiming a new request"
+      },
+      "structure_probe": {
+        "http_status": 200,
+        "method": "GET /v1/files/:file_key?depth=2",
+        "observed_at": "2026-09-05T23:53:49+00:00"
+      },
+      "structure": {
+        "name": "Universal Player — Product Design",
+        "version": "2387346370768693436",
+        "last_modified": "2026-08-14T00:48:50Z",
+        "editor_type": "figma",
+        "editor_type_status": "observed",
+        "pages": [
+          {
+            "node_id": "0:1",
+            "name": "00 Cover",
+            "type": "CANVAS",
+            "top_level_nodes": [
+              {
+                "node_id": "14:2",
+                "name": "Cover / Universal Player",
+                "type": "FRAME"
+              }
+            ]
+          },
+          {
+            "node_id": "12:2",
+            "name": "01 Foundations",
+            "type": "CANVAS",
+            "top_level_nodes": [
+              {
+                "node_id": "21:2",
+                "name": "Foundations / Root",
+                "type": "FRAME"
+              }
+            ]
+          },
+          {
+            "node_id": "12:3",
+            "name": "02 Components",
+            "type": "CANVAS",
+            "top_level_nodes": [
+              {
+                "node_id": "26:2",
+                "name": "Components / Intro",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "27:2",
+                "name": "Media Viewport / Documentation",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "30:2",
+                "name": "Player/Media Viewport",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "32:2",
+                "name": "Recent Row / Documentation",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "32:53",
+                "name": "Player/Recent Row",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "33:2",
+                "name": "Timeline / Documentation",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "33:58",
+                "name": "Player/Timeline",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "34:2",
+                "name": "Status Pill / Documentation",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "34:46",
+                "name": "Player/Status Pill",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "36:2",
+                "name": "Error Banner / Documentation",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "36:47",
+                "name": "Player/Error Banner",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "38:2",
+                "name": "Empty State / Documentation",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "38:41",
+                "name": "Player/Empty State",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "39:2",
+                "name": "Transport Bar / Documentation",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "39:70",
+                "name": "Player/Transport Bar",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "42:2",
+                "name": "__Screen/Mac Window Chrome",
+                "type": "COMPONENT"
+              },
+              {
+                "node_id": "42:12",
+                "name": "__Screen/iPhone Chrome",
+                "type": "COMPONENT"
+              },
+              {
+                "node_id": "79:18",
+                "name": "Player/Resume Notice",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "79:19",
+                "name": "Resume Notice / Documentation",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "82:42",
+                "name": "Player/Relink Recovery",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "82:43",
+                "name": "Relink Recovery / Documentation",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "83:19",
+                "name": "Player/Subtitle Control",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "83:20",
+                "name": "Subtitle Control / Documentation",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "86:45",
+                "name": "Player/Subtitle Menu",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "86:46",
+                "name": "Subtitle Menu / Documentation",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "87:10",
+                "name": "Player/Subtitle Overlay",
+                "type": "COMPONENT_SET"
+              },
+              {
+                "node_id": "87:11",
+                "name": "Subtitle Overlay / Documentation",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "119:2",
+                "name": "Annotation/iPhone Implementation Status",
+                "type": "COMPONENT"
+              },
+              {
+                "node_id": "126:2",
+                "name": "Embedded Track Selection · 2026-08-14",
+                "type": "SECTION"
+              },
+              {
+                "node_id": "147:242",
+                "name": "App Icon · 2026-08-14",
+                "type": "SECTION"
+              },
+              {
+                "node_id": "164:266",
+                "name": "Corrupt History Recovery · 2026-08-14",
+                "type": "SECTION"
+              }
+            ]
+          },
+          {
+            "node_id": "12:4",
+            "name": "03 Screens",
+            "type": "CANVAS",
+            "top_level_nodes": [
+              {
+                "node_id": "41:2",
+                "name": "Screens / Intro",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "41:12",
+                "name": "Mac / Empty / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "41:13",
+                "name": "Mac / Empty",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "41:14",
+                "name": "Mac / Loading / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "41:15",
+                "name": "Mac / Loading",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "41:16",
+                "name": "Mac / Playing / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "41:17",
+                "name": "Mac / Playing",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "41:18",
+                "name": "Mac / Failed / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "41:19",
+                "name": "Mac / Failed",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "41:20",
+                "name": "Mac / Compact Playing / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "41:21",
+                "name": "Mac / Compact Playing",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "41:22",
+                "name": "iPhone / Empty / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "41:23",
+                "name": "iPhone / Empty",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "41:24",
+                "name": "iPhone / Loading / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "41:25",
+                "name": "iPhone / Loading",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "41:26",
+                "name": "iPhone / Playing / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "41:27",
+                "name": "iPhone / Playing",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "41:28",
+                "name": "iPhone / Failed / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "41:29",
+                "name": "iPhone / Failed",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "41:30",
+                "name": "iPhone / Fullscreen Playing / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "41:31",
+                "name": "iPhone / Fullscreen Playing",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "88:329",
+                "name": "Mac / Resume Restored",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "88:411",
+                "name": "Mac / Relink Required",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "88:482",
+                "name": "Mac / Resume Restored / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "88:483",
+                "name": "Mac / Relink Required / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "88:484",
+                "name": "Mac / Subtitle Menu",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "88:576",
+                "name": "Mac / Subtitle Playing",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "88:643",
+                "name": "Mac / Subtitle Menu / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "88:644",
+                "name": "Mac / Subtitle Playing / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "89:578",
+                "name": "iPhone / Resume Restored",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "89:634",
+                "name": "iPhone / Relink Required",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "89:684",
+                "name": "iPhone / Resume Restored / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "89:685",
+                "name": "iPhone / Relink Required / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "89:686",
+                "name": "iPhone / Subtitle Menu",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "89:755",
+                "name": "iPhone / Subtitle Playing",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "89:800",
+                "name": "iPhone / Subtitle Menu / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "89:801",
+                "name": "iPhone / Subtitle Playing / Label",
+                "type": "TEXT"
+              },
+              {
+                "node_id": "135:751",
+                "name": "Mac / Track Settings",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "135:800",
+                "name": "iPhone / Track Settings",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "135:830",
+                "name": "iPhone / Embedded Captions Playing",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "138:1037",
+                "name": "Mac / Embedded Captions Playing",
+                "type": "FRAME"
+              },
+              {
+                "node_id": "168:1037",
+                "name": "Corrupt History Recovery · 2026-08-14",
+                "type": "SECTION"
+              }
+            ]
+          }
+        ]
+      },
+      "structure_sha256": "b0a2f6d20796e8d2879320236653f28f39a0970ad9963b13ea3aca7091dffc5d",
+      "live_figma_file_verified": true,
+      "runtime_ui_verified": false,
+      "candidate": false,
+      "owner_choice": false,
+      "external_write": false
+    }
+  ],
+  "limitations": {
+    "official_connector": "requires_reauthentication",
+    "figma_structure_only": true,
+    "rendered_visuals_verified": false,
+    "runtime_behavior_verified": false,
+    "manga_accessed": false,
+    "external_projects_modified": false,
+    "remote_writes": false,
+    "design_store_modified": false,
+    "owner_selection_created": false
+  }
+}

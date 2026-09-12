@@ -14,13 +14,11 @@ from unittest import mock
 import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-import test_hub_sources as source_fixtures
+from connection_fixtures import Fixture
 import test_hub_local_service as transport_fixtures
 from hub.connection_records import content_hash
 from hub.connection_refresh import GENESIS_HASH
-from hub.connection_relations import relation_hash
-from hub.connection_sources import SourceResolver, freeze_source_plan
-from hub.connections import freeze_manifest
+from hub.connection_sources import SourceResolver
 from hub.design_cli import _artifact, _baseline, _candidate, FIXTURE_TIME
 from hub.design_service import DesignService
 from hub.design_store import DesignStore
@@ -35,37 +33,16 @@ class LocalServiceIntegrationTests(unittest.TestCase):
     stop = transport_fixtures.LocalHTTPTests.stop
 
     def setUp(self):
-        self.source_fixture = source_fixtures.SourceResolverTests()
-        self.source_fixture.setUp()
-        self.addCleanup(self.source_fixture.tearDown)
-        f = self.source_fixture
-        self.root = f.root
-        # One synthetic design project is also a registered source project. Its
-        # external-root stand-in remains under this temporary directory only.
-        registry = copy.deepcopy(f.registry)
-        next(p for p in registry["projects"] if p["id"] == "declared-00")["id"] = "fixture-project"
-        adapters = copy.deepcopy(f.adapters)
-        adapters["projects"]["fixture-project"] = adapters["projects"].pop("declared-00")
-        (self.root / "data/registry/external_projects.yaml").write_text(yaml.safe_dump(registry, sort_keys=False))
-        data = self.root / "data/design_governance"
-        (data / "connection_adapters.json").write_text(json.dumps(adapters))
-        manifest = freeze_manifest(self.root, revision=2)
-        plan = freeze_source_plan(manifest, registry, manifest["registry_ref"]["sha256"],
-                                  adapters, f.discovery, f.discovery_hash,
-                                  created_at="2026-09-05T05:00:00+00:00")
-        bundle = {"schema_version": "1.0", "kind": "connection_authority_bundle",
-                  "manifest": manifest, "adapters": adapters, "source_plan": plan}
-        bundle["content_hash"] = content_hash(bundle)
-        (data / "authority-bundle-v1.json").write_text(json.dumps(bundle))
-        relations = {"schema_version": "1.0", "kind": "connection_relation_proposals",
-                     "id": "fixture-http-relations", "revision": 1, "created_at": FIXTURE_TIME,
-                     "registry_ref": {key: manifest["registry_ref"][key] for key in ("path", "sha256")},
-                     "inventory_ref": {"path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json",
-                                       "sha256": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
-                                       "accepted_candidate_hash": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512"},
-                     "relations": []}
-        relations["content_hash"] = relation_hash(relations)
-        (data / "relation-proposals-v1.json").write_text(json.dumps(relations))
+        self.source_fixture = Fixture()
+        self.addCleanup(self.source_fixture.close)
+        self.root = self.source_fixture.hub
+        self.source_fixture.business["current_work"]["status"] = "active"
+        self.source_fixture.business["current_work"]["completed"] = False
+        self.source_fixture.add("fixture-project")
+        self.source_fixture.add("manga-localizer")
+        # A synthetic explicit denial; no real project root is used.
+        self.source_fixture.projects[1]["connection_read_allowed"] = False
+        self.source_fixture.save_registry()
         self.material = self.root / "docs/reports/ui_design_governance/unit-04/integration"
         self.material.mkdir(parents=True)
         artifacts = []
@@ -86,11 +63,7 @@ class LocalServiceIntegrationTests(unittest.TestCase):
         self.addCleanup(self.stop)
 
     def start(self):
-        self.projects = ProjectService(
-            self.root,
-            bundle_paths=["data/design_governance/authority-bundle-v1.json"],
-            relations_path="data/design_governance/relation-proposals-v1.json",
-        )
+        self.projects = ProjectService(self.root)
         self.designs = DesignService(DesignStore(self.root, self.store.path, fixture=True))
         self.server = HubHTTPServer(self.projects, self.designs)
         self.thread = threading.Thread(target=self.server.serve_forever, kwargs={"poll_interval": 0.01})
@@ -175,14 +148,14 @@ class LocalServiceIntegrationTests(unittest.TestCase):
         self.session()
         status, _, before = self.call()
         self.assertEqual(status, 200)
-        self.assertEqual(before["data"]["total"], 24)
-        self.assertFalse((self.root / "data/design_governance/connection_refresh.sqlite3").exists())
+        self.assertEqual(before["data"]["total"], 2)
+        self.assertFalse((self.root / "data/connections/connection_refresh.sqlite3").exists())
         command = {"request_id": "fixture-refresh", "project_ids": ["fixture-project", "manga-localizer"],
                    "expected_head": {"sequence": 0, "hash": GENESIS_HASH}}
         status, _, result = self.call("POST", "/api/refresh", command)
         self.assertEqual(status, 200)
         self.assertEqual(result["data"]["request"]["status"], "FINISHED")
-        ledger = self.root / "data/design_governance/connection_refresh.sqlite3"
+        ledger = self.root / "data/connections/connection_refresh.sqlite3"
         ledger_digest = hashlib.sha256(ledger.read_bytes()).hexdigest()
         with mock.patch.object(SourceResolver, "refresh", side_effect=AssertionError("GET/retry must remain offline")):
             status, _, listing = self.call()
@@ -199,7 +172,7 @@ class LocalServiceIntegrationTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(ledger.read_bytes()).hexdigest(), ledger_digest)
         blocked = next(item for item in listing["data"]["projects"] if item["project_id"] == "manga-localizer")
         self.assertEqual(blocked["business"]["normalized_status"], "unknown")
-        self.assertEqual(blocked["operational"]["latest_attempt"]["disposition"], "BLOCKED_BY_AUTHORITY")
+        self.assertEqual(blocked["operational"]["latest_attempt"]["disposition"], "disabled")
 
 
 if __name__ == "__main__":

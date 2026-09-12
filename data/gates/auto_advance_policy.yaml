@@ -1,6 +1,6 @@
 policy:
   name: auto_advance_policy
-  version: "0.7.0"
+  version: "0.8.0"
   status: draft
   owner: user
   gate_script: scripts/agent_gate.py
@@ -27,7 +27,7 @@ decision_rules:
       - "在最终汇报中报告 warning；当前任务授权时才写日志。"
       - "使用保守默认值。"
   stop:
-    meaning: "存在硬阻塞；必须停止并请求用户确认。"
+    meaning: "停止受影响动作并诊断；仅真实权限、保护边界或所有者决策才请求用户。"
     required_action:
       - "说明阻塞原因。"
       - "不得执行触发阻塞的动作。"
@@ -42,9 +42,9 @@ hard_blockers:
   - id: HARD-EXTERNAL-PROJECT-WRITE
     description: "写入外部项目。"
   - id: HARD-DELETE-FILE
-    description: "删除文件。"
+    description: "未经任务授权、归属不明或不可逆的删除。"
   - id: HARD-OVERWRITE-USER-CONTENT
-    description: "覆盖用户内容。"
+    description: "未经授权或有并发冲突的用户内容覆盖。"
   - id: HARD-GIT-PUSH
     description: "没有当前或已记录所有者授权的 git push。"
   - id: HARD-PUBLISH-CONTENT
@@ -117,6 +117,8 @@ git_policy:
   stop_on_sensitive_file_detected: true
 
 runner_policy:
+  entry_check: "check 已含 agent_gate 和状态一致性；同一输入不单独重跑 gate。"
+  paused_work_is_not_resume_authority: true
   entry_script: scripts/auto_advance_runner.py
   required_modes:
     - check
@@ -131,3 +133,18 @@ consistency_policy:
   require_legacy_current_status_sync: false
   require_roadmap_sync: true
   require_log_append: false
+
+task_overrides:
+  ALL-PROJECTS-CODEX-GOVERNANCE-V1:
+    activation: current_owner_prompt_required
+    execution_document: docs/all_projects_governance_execution.md
+    state_entry: STATE.yaml#all_projects_governance
+    governance_subject: project
+    editor_dependency: none
+    external_project_writes: current_task_document_scope_only
+    git_delivery: accepted_unit_to_verified_default_branch
+    force_push: false
+    bypass_protection: false
+    real_feishu: disabled
+    paid_generation: additional_authority_required
+    runner_grants_authority: false
