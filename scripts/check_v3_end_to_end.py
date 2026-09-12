@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import shutil
 import subprocess
@@ -240,10 +241,35 @@ def _review_rework() -> dict[str, Any]:
     }
 
 
+def _v3_08_remaining(unresolved: list[str]) -> dict[str, list[str]]:
+    skipped: list[str] = []
+    blocked: list[str] = []
+    for item in unresolved:
+        if "学习计划" in item and "computer-study-plan" not in skipped:
+            skipped.append("computer-study-plan")
+        elif ("YouTube" in item or "tokens.json" in item) and "youtube-hq-downloader" not in skipped:
+            skipped.append("youtube-hq-downloader")
+        elif ("续写" in item or "governed-wip" in item) and "novel-continuation-agent" not in blocked:
+            blocked.append("novel-continuation-agent")
+    return {"skipped_condition_unchanged": skipped, "blocked": blocked}
+
+
+def _roadmap_criteria() -> list[str]:
+    roadmap = yaml.safe_load((ROOT / "data/roadmap/project_data_v3.yaml").read_text(encoding="utf-8"))
+    return [
+        item["id"]
+        for stage in roadmap.get("stages", [])
+        if isinstance(stage, dict)
+        for item in stage.get("acceptance", [])
+        if isinstance(item, dict) and isinstance(item.get("id"), str)
+    ]
+
+
 def _handoff() -> dict[str, Any]:
     governance = yaml.safe_load((ROOT / "STATE.yaml").read_text(encoding="utf-8"))["all_projects_governance"]
     v3 = governance["v3"]
     latest = v3["acceptance"]["latest"]
+    unresolved = [item for item in governance.get("unresolved", []) if isinstance(item, str)]
     return {
         "canonical_state": "STATE.yaml#all_projects_governance",
         "unit": governance.get("unit"),
@@ -256,10 +282,8 @@ def _handoff() -> dict[str, Any]:
             "remaining_count": v3["rollout"].get("remaining_count"),
         },
         "reuse_accepted_units": True,
-        "v3_08_remaining": {
-            "skipped_condition_unchanged": ["computer-study-plan", "youtube-hq-downloader"],
-            "blocked": ["novel-continuation-agent"],
-        },
+        "v3_08_remaining": _v3_08_remaining(unresolved),
+        "unresolved_count": len(unresolved),
     }
 
 
@@ -416,17 +440,64 @@ def run_check() -> dict[str, Any]:
         temporary.cleanup()
 
 
+def run_handoff() -> dict[str, Any]:
+    criteria = _roadmap_criteria()
+    remaining = ["V3-10-A2", "V3-10-A3", "V3-11-A1", "V3-11-A2", "V3-11-A3"]
+    if [item for item in remaining if item not in criteria]:
+        raise ValueError("remaining criteria missing from roadmap")
+    handoff = _handoff()
+    coverage = _coverage()
+    unresolved = yaml.safe_load((ROOT / "STATE.yaml").read_text(encoding="utf-8"))[
+        "all_projects_governance"
+    ].get("unresolved", [])
+    result = {
+        "schema_version": "1.0",
+        "kind": "v3_handoff_check",
+        "agent_required": False,
+        "mcp_required": False,
+        "model_required": False,
+        "reran_accepted_units": False,
+        "mapping": {
+            "canonical_state": "STATE.yaml#all_projects_governance",
+            "roadmap": "data/roadmap/project_data_v3.yaml",
+            "registry": "data/registry/external_projects.yaml",
+            "sources": "data/connections/metric_sources.yaml",
+        },
+        "applicable_criteria": criteria,
+        "remaining_criteria": remaining,
+        "handoff": handoff,
+        "coverage": coverage,
+        "unresolved": unresolved,
+        "unverified_host_events": list(UNVERIFIED_HOST_EVENTS),
+        "real_business_not_replaced_by_fixture": True,
+    }
+    if (
+        not coverage["valid"]
+        or handoff["v3_08_remaining"]["blocked"] != ["novel-continuation-agent"]
+        or set(handoff["v3_08_remaining"]["skipped_condition_unchanged"])
+        != {"computer-study-plan", "youtube-hq-downloader"}
+        or handoff["unresolved_count"] != 11
+        or len(unresolved) != 11
+    ):
+        raise ValueError("handoff assertions failed")
+    bounded_json(result)
+    return result
+
+
 def main(argv: list[str] | None = None) -> int:
-    del argv
+    parser = argparse.ArgumentParser(description="V3 no-Agent chain and read-only handoff")
+    parser.add_argument("--handoff", action="store_true", help="Read STATE/roadmap only; do not rerun accepted units")
+    args = parser.parse_args(argv)
+    kind = "v3_handoff_check" if args.handoff else "v3_end_to_end_check"
     try:
-        print(bounded_json(run_check()))
+        print(bounded_json(run_handoff() if args.handoff else run_check()))
         return 0
     except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
         print(bounded_json({
             "schema_version": "1.0",
-            "kind": "v3_end_to_end_check",
+            "kind": kind,
             "valid": False,
-            "error": "v3_end_to_end_failed",
+            "error": "v3_end_to_end_failed" if not args.handoff else "v3_handoff_failed",
             "reason": str(exc.__class__.__name__),
         }))
         return 2

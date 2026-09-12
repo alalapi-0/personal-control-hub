@@ -46,6 +46,41 @@ class V3EndToEndTests(unittest.TestCase):
         self.assertIn("mcp_host_events", result["unverified_host_events"])
         self.assertTrue(result["real_business_not_replaced_by_fixture"])
 
+    def test_handoff_reads_state_without_rerunning_units(self):
+        result = CHECKER.run_handoff()
+        self.assertEqual(result["kind"], "v3_handoff_check")
+        self.assertFalse(result["reran_accepted_units"])
+        self.assertFalse(result["agent_required"])
+        self.assertIn("V3-10-A2", result["remaining_criteria"])
+        self.assertIn("V3-11-A3", result["remaining_criteria"])
+        self.assertEqual(result["handoff"]["unresolved_count"], 11)
+        self.assertEqual(len(result["unresolved"]), 11)
+        self.assertEqual(
+            result["handoff"]["v3_08_remaining"]["blocked"],
+            ["novel-continuation-agent"],
+        )
+        self.assertEqual(result["mapping"]["canonical_state"], "STATE.yaml#all_projects_governance")
+        self.assertTrue(result["coverage"]["valid"])
+        completed = subprocess.run(
+            [sys.executable, "-I", str(ROOT / "scripts/check_v3_end_to_end.py"), "--handoff"],
+            cwd=ROOT,
+            env={
+                "PATH": "",
+                "PYTHONNOUSERSITE": "1",
+                "PYTHONSAFEPATH": "1",
+                "PYTHONDONTWRITEBYTECODE": "1",
+                "PYTHONUTF8": "1",
+            },
+            text=True,
+            capture_output=True,
+            timeout=20,
+            check=False,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        payload = json.loads(completed.stdout)
+        self.assertFalse(payload["reran_accepted_units"])
+        self.assertLessEqual(len(completed.stdout.encode()), 8192)
+
     def test_plain_command_stays_isolated_and_bounded(self):
         completed = subprocess.run(
             [sys.executable, "-I", str(ROOT / "scripts/check_v3_end_to_end.py")],
