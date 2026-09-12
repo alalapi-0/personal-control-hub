@@ -14,15 +14,16 @@ const ENV_EXAMPLE = path.join(REPO_ROOT, ".env.example");
 const SETUP_DOC = path.join(REPO_ROOT, "docs", "MCP_SETUP.md");
 const TROUBLE_DOC = path.join(REPO_ROOT, "docs", "MCP_TROUBLESHOOTING.md");
 
-const REQUIRED_SERVERS = [
-  "filesystem",
-  "playwright",
+const REQUIRED_SERVERS = ["filesystem"];
+
+const REGISTERED_CANDIDATES = [
   "chrome-devtools",
   "context7",
+  "filesystem",
   "github",
+  "playwright",
+  "stitch",
 ];
-
-const OPTIONAL_SERVERS = ["stitch"];
 
 const ENV_KEYS = [
   "GITHUB_TOKEN",
@@ -98,7 +99,7 @@ function main() {
   const servers = config.mcpServers;
   const serverKeys = Object.keys(servers);
 
-  // 4. 必需 server
+  // 4. 当前项目配置只要求最小本地 filesystem；其余是登记候选，不是强制启用项。
   for (const key of REQUIRED_SERVERS) {
     if (servers[key]) {
       pass(`已配置 server: ${key}`);
@@ -107,7 +108,11 @@ function main() {
     }
   }
 
-  // 5. stitch（可选，warning）
+  for (const key of REGISTERED_CANDIDATES) {
+    if (!servers[key]) info(`已登记但当前项目配置未启用: ${key}`);
+  }
+
+  // 5. stitch（若配置则检查结构）
   if (servers.stitch) {
     const stitch = servers.stitch;
     const hasCommand = stitch.command && Array.isArray(stitch.args) && stitch.args.length > 0;
@@ -124,7 +129,7 @@ function main() {
       warn("stitch 配置不完整（缺少 command/args），需用户补充");
     }
   } else {
-    warn("未配置 stitch server（可选，需 STITCH_API_KEY）");
+    info("stitch 未出现在当前项目配置中（登记候选，默认不启用）");
   }
 
   // 6. filesystem 路径检查
@@ -208,7 +213,9 @@ function main() {
     fail("缺少 docs/MCP_TROUBLESHOOTING.md");
   }
 
-  info(`当前已配置 ${serverKeys.length} 个 MCP server: ${serverKeys.join(", ")}`);
+  info(`登记候选 ${REGISTERED_CANDIDATES.length} 个: ${REGISTERED_CANDIDATES.join(", ")}`);
+  info(`当前项目配置 ${serverKeys.length} 个: ${serverKeys.join(", ")}`);
+  info("运行时可用性：未验证；配置存在不代表已加载、健康或获得动作授权");
 
   printSummary();
   process.exit(failCount > 0 ? 1 : 0);
@@ -224,8 +231,8 @@ function printSummary() {
   } else {
     console.log("仓库级 MCP 配置检查全部通过。");
   }
-  console.log("\n注意: 通过检查 ≠ 当前 Agent 线程已暴露 MCP 工具。");
-  console.log("仍需: Cursor Settings → Tools & MCP 批准 → 完全退出 Cursor → 重新打开 → 新建普通前台 Agent 对话。");
+  console.log("\n注意: 通过检查 ≠ 当前 Agent 线程已暴露 MCP 工具或获得调用权限。");
+  console.log("仅当用户明确要求运行时验证时，再由用户在 Cursor Settings → Tools & MCP 查看实际状态。");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 }
 

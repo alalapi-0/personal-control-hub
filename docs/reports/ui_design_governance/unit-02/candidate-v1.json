@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "id": "hub-design-records-candidate-v1",
+  "contract_id": "HUB-GOV-2026-09-05-TC2",
+  "created_at": "2026-09-05T04:54:08.232854+00:00",
+  "file_hashes": {
+    "STATE.yaml": "946baac30e16fb3bd7aea83d85f6683750d34f24670686c5bf983a393c2714cb",
+    "src/hub/design_records.py": "a76a824e88a787291d800e963b3db1e64f0b93515cf8807342ed2ce8cd528336",
+    "src/hub/design_store.py": "7b046605fadedc32a6f9be78f93c3eb3d1b7328a5283fe9acd470445903e2664",
+    "src/hub/design_cli.py": "114cff1113b7d47ca55d764ccb98d72fb25aa5644d7a93723c5937a3e914cacd",
+    "src/hub/design_export.py": "6a8f83407c20286475ea0bc9103c5c4f590062ea14ae931bb7733ad39537d839",
+    "scripts/hub_designs.py": "67429e24f52c43e9b831077401edc63f90dba525f6e75543d0fb47d627482904",
+    "tests/test_hub_designs.py": "f49a18e83b07b63f74f2aadf68b90c515cb7604db1aadc033816487f3d10fc5f",
+    "tests/test_hub_design_exports.py": "c7cd1f4282de387de1613fca88cb254bdf4230676d18d9d3ea9743de4b9de42a",
+    "docs/design/hub_design_records_protocol.md": "2299fe3425ebdc3ae6398c10bc3d0f1e3d77ab02a7e4f7e98eab1e0bb48359fa",
+    "docs/reports/ui_design_governance/unit-02/README.md": "f1f435e17f47a0a5920cdd08c48e8dae05fe902246fc9e8ae699fd40115b4806",
+    "docs/reports/ui_design_governance/unit-02/baseline.json": "8896962888f6199181da966fd88740ada5e5636410b569d037d2ec87ff04b0aa",
+    "docs/reports/ui_design_governance/unit-02/contract.md": "e89d218da3323cf71bcd63250c3d0a2cf6c1e1345bd9dab1ef29bd928d408d86",
+    "docs/reports/ui_design_governance/unit-02/fixture-demo/baseline-preview.txt": "92eae5392854dca32b03faaceb7c4bb22ea6e237d9a7499150d5d1d17df0ac5b",
+    "docs/reports/ui_design_governance/unit-02/fixture-demo/exports/synthetic_fixture/selected-candidate.zip": "5a5791863ca5225a8c89bc35ffb9f6085311ae6c29a2480768f06e57b5f7c3e8",
+    "docs/reports/ui_design_governance/unit-02/fixture-demo/fixture-store.json": "976e72103681bfb8bccb5c6e75a9d0881432b2ef1ec5f9d9cb15a122ab8e36c1",
+    "docs/reports/ui_design_governance/unit-02/fixture-demo/fixture-store.json.lock": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/reports/ui_design_governance/unit-02/state-task.diff": "4f450136f1ba8dac8502c4787a30658251db36ef885cb807e25c8851ed16640f",
+    "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+    "docs/reports/ui_design_governance/unit-02/validation-v1.json": "dd66d6a05285c0203e41a6814a03f041ed631b6d7e75f2b6f63e52585abac9cc"
+  },
+  "content_hash": "aa269b64e630a49e6af147902c52b175b3647ef4c2249f2b17c883b2105eab82",
+  "hash_algorithm": "SHA-256(UTF-8(json.dumps(file_hashes, sort_keys=True, separators=(',', ':'))))",
+  "review_envelope_exclusions": [
+    "candidate identity records",
+    "immutable Judge/Governor decision records"
+  ],
+  "status": "frozen_for_independent_review",
+  "task_owned_bytecode_removed": [
+    "src/hub/__pycache__/design_records.cpython-314.pyc",
+    "src/hub/__pycache__/design_store.cpython-314.pyc",
+    "src/hub/__pycache__/design_cli.cpython-314.pyc",
+    "src/hub/__pycache__/design_export.cpython-314.pyc",
+    "scripts/__pycache__/hub_designs.cpython-314.pyc",
+    "tests/__pycache__/test_hub_designs.cpython-314.pyc",
+    "tests/__pycache__/test_hub_design_exports.cpython-314.pyc"
+  ]
+}

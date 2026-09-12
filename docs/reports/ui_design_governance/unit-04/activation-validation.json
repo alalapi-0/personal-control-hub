@@ -1,0 +1,97 @@
+{
+  "schema_version": "1.0",
+  "contract": "HUB-GOV-2026-09-05-TC4",
+  "contract_version": 1,
+  "accepted_predecessors": {
+    "TC2": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+    "TC3": "77f6d8d2d866aa5bb5acf40efc72fff30fbba8c5cd08ba2ea662fe210c370438"
+  },
+  "gates": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "bcbf97",
+        "wall_time_seconds": 0.278109417,
+        "exit_code": 0,
+        "original_token_count": 266,
+        "output": "=== Auto Advance Runner: check ===\n决策：warn_and_continue\n当前轮次：ROUND-1-1\n下一轮次：ROUND-1-5\n硬阻塞：0\n软警告：10\n检查通过：是\n动作授权：未授予（runner 只报告检查结果）\n\n软警告：\n  - ROUND-3-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-4-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-8-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-10-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-11-6: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-12-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-14: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-15: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-16: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-17: planned 但 can_auto_advance 不是 true，可能需要人工确认\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "422054",
+        "wall_time_seconds": 0.000004958,
+        "exit_code": 0,
+        "original_token_count": 281,
+        "output": "=== Agent Gate 检查结果 ===\n决策：warn_and_continue\n硬阻塞：0\n软警告：10\n下一轮候选：ROUND-1-5\n动作授权：未授予（gate 只报告检查结果）\n\n软警告明细：\n  - ROUND-3-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-4-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-8-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-10-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-11-6: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-12-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-14: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-15: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-16: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-17: planned 但 can_auto_advance 不是 true，可能需要人工确认\n建议：检查通过但有 warning；仅在当前已有授权范围内继续，默认不写日志。\n"
+      }
+    }
+  ],
+  "checks": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "482c79",
+        "wall_time_seconds": 0.000001541,
+        "exit_code": 0,
+        "original_token_count": 44,
+        "output": "personal-control-hub skeleton check\nroot: /Users/alalapi/PycharmProjects/personal-control-hub\n\nFiles: OK\nDirectories: OK\nMCP registry: OK\nSecret marker scan: OK\n\nResult: PASS\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "f2dabb",
+        "wall_time_seconds": 0.000001833,
+        "exit_code": 0,
+        "original_token_count": 30,
+        "output": "=== 轮次一致性检查 ===\n结果：ok\n当前轮次：ROUND-1-1\n下一轮次：ROUND-1-5\n警告：0\n硬阻塞：0\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "9540ae",
+        "wall_time_seconds": 0.000002167,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    }
+  ],
+  "native_writer_observation": [
+    {
+      "id": "01a06fae-2112-7cd2-8c83-d34d323fecaa",
+      "kind": "codex",
+      "projectId": "143aa8bc-4e11-457c-ad2a-5d6ca478a280",
+      "hostId": "local",
+      "status": "active",
+      "cwd": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "updatedAt": 1788589945,
+      "title": "完成 personal-control-hub Hub 验收",
+      "summary": "建设项目管理 Hub，完成真实项目接入、UI 设计选择、状态关联、验证与交接说明"
+    },
+    {
+      "id": "01a06f5b-020c-7160-9826-a051939f8a11",
+      "kind": "codex",
+      "projectId": "143aa8bc-4e11-457c-ad2a-5d6ca478a280",
+      "hostId": "local",
+      "status": "notLoaded",
+      "cwd": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "updatedAt": 1788577549,
+      "title": "设计审核界面治理Prompt",
+      "summary": "为personal-control-hub编写可多轮迭代的审核UI治理目标模式Prompt与项目记录规范"
+    }
+  ],
+  "active_workers": 0,
+  "bootstrap_bytes": 7976,
+  "external_writes": 0,
+  "git_effects": 0,
+  "activation_initial_attempt": {
+    "exit_code": 1,
+    "reason": "TC2 candidate uses file_hashes/content_hash whereas TC3 uses files/aggregate_sha256.",
+    "effect": "Created only the empty owned unit-04 directory; no baseline or STATE write occurred before this error.",
+    "resolution": "Read the explicit candidate shapes and completed registration; no candidate history rewritten."
+  }
+}

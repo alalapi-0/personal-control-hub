@@ -107,6 +107,23 @@ def _check_directories(hard_blockers: list[str], warnings: list[str]) -> None:
             hard_blockers.append(f"必要目录缺失：{relative}")
 
 
+def _read_mcp_server_names(relative: str, warnings: list[str]) -> list[str]:
+    path = ROOT / relative
+    if not path.is_file():
+        warnings.append(f"未找到 {relative}")
+        return []
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        warnings.append(f"{relative} 无法解析：{exc}")
+        return []
+    servers = payload.get("mcpServers")
+    if not isinstance(servers, dict):
+        warnings.append(f"{relative} 缺少 mcpServers 对象")
+        return []
+    return sorted(str(name) for name in servers)
+
+
 def _check_mcp_config(warnings: list[str]) -> dict[str, Any]:
     # Preserve the legacy presence-only probe outside the Codex task scope.
     candidates = [".cursor/mcp.example.json", ".cursor/mcp.json"]

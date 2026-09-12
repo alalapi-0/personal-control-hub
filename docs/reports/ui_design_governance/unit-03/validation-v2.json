@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "contract": "HUB-GOV-2026-09-05-TC3",
+  "repair_of": "TC3-candidate-v1",
+  "judge_finding": "post-construction and mid-read authority drift",
+  "changes": [
+    "Recheck live registry, adapter, inventory and discovery before and throughout every external descriptor operation.",
+    "Use guarded declared-source parsing with shared v1 selectors and record validation; preserve old CLI and immutable snapshots.",
+    "Normalize authority changes to AUTHORITY_DRIFT without partial source evidence.",
+    "Preserve committed earlier project results when a later project loses permission.",
+    "Differentiate unavailable project root from missing named state file."
+  ],
+  "checks": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -W error::ResourceWarning -m unittest discover -s tests -p 'test_hub_*.py'",
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "660392",
+        "wall_time_seconds": 10.001951042,
+        "session_id": 20656,
+        "original_token_count": 28,
+        "output": "................................................................................................................",
+        "completion": {
+          "chunk_id": "eb11aa",
+          "wall_time_seconds": 0.000001459,
+          "exit_code": 0,
+          "original_token_count": 30,
+          "output": "...................\n----------------------------------------------------------------------\nRan 131 tests in 15.145s\n\nOK\n"
+        }
+      }
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/check_repo.py",
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "069958",
+        "wall_time_seconds": 0.000003167,
+        "exit_code": 0,
+        "original_token_count": 44,
+        "output": "personal-control-hub skeleton check\nroot: /Users/alalapi/PycharmProjects/personal-control-hub\n\nFiles: OK\nDirectories: OK\nMCP registry: OK\nSecret marker scan: OK\n\nResult: PASS\n"
+      }
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/round_consistency_check.py",
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "f516bf",
+        "wall_time_seconds": 9.58e-7,
+        "exit_code": 0,
+        "original_token_count": 30,
+        "output": "=== 轮次一致性检查 ===\n结果：ok\n当前轮次：ROUND-1-1\n下一轮次：ROUND-1-5\n警告：0\n硬阻塞：0\n"
+      }
+    },
+    {
+      "command": "git diff --check",
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "2a1f4d",
+        "wall_time_seconds": 0.000001125,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    }
+  ],
+  "related_tests": 131,
+  "real_evidence": "real-validation-v2.json",
+  "baseline_failures": "Unchanged registry mpv policy errors and legacy storage/SubPlz expectations; no claim of those suites passing.",
+  "git_effects": 0,
+  "external_writes": 0
+}

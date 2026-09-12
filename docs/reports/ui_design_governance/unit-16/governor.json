@@ -1,0 +1,16 @@
+{
+  "status": "APPROVE",
+  "governor": "/root/tc16_governor",
+  "contract": "TC16 v1",
+  "candidate_revision": 2,
+  "candidate_sha256": "78b4221f82d49dd48397fbb47f0e74d2111ddf15540c33f8d357f24e849ce3a0",
+  "fresh_judge": "/root/tc16_judge_v2",
+  "basis": "Fresh PASS:20current-authorityrefresh+4exceptions,head108→130,24CLI/service/HTTP/UIparity,zeroManga,285protectedunchanged,deep-linkrelationnames,exceptionrefreshdisabled,tests/browserconsolepass.",
+  "authorized_next": "Registeracceptance,updateSTATE,scopedcommit+normalpush+exactremoteverification.",
+  "prior_candidate_decision": {
+    "candidate": "367d1e6f96b072e59cc224ec67a3ae19fee6661776e68d340ea13ecfe1f2d172",
+    "status": "REQUEST_REPAIR",
+    "reason": "RawrelatedIDsondirectdetail;fixedinv2."
+  },
+  "scope_limit": "TC16managementcoveragecomplete;TC17andfinalGoalhandoffremainopen."
+}

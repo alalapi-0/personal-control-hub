@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "failure_fingerprint": "initial clean archive / check_repo / missing docs/archive / bootstrap omitted",
+  "root_cause": "Git does not persist an empty docs/archive; existing bootstrap creates it.",
+  "repair": "Document and exercise existing bootstrap before checks; no implementation or source-input changes.",
+  "reused_tests": "install-validation.json: source133, management11, combined181 and real24 readback passed; no retest required for setup-only repair.",
+  "checks": [
+    {
+      "command": "python3 scripts/bootstrap.py",
+      "exit_code": 0,
+      "stdout": "personal-control-hub bootstrap\nroot: /private/var/folders/kt/x9ylq5615_39plzj52hnyvtc0000gn/T/hub-tc5-setup-oyya2bkk\ndry_run: False\n\nDirectories to create:\n  - docs/archive\n\nPlaceholder files to create:\n  - none\n\nBootstrap completed without overwriting existing files.\n",
+      "stderr": ""
+    },
+    {
+      "command": "python3 scripts/check_repo.py",
+      "exit_code": 0,
+      "stdout": "personal-control-hub skeleton check\nroot: /private/var/folders/kt/x9ylq5615_39plzj52hnyvtc0000gn/T/hub-tc5-setup-oyya2bkk\n\nFiles: OK\nDirectories: OK\nMCP registry: OK\nSecret marker scan: OK\n\nResult: PASS\n",
+      "stderr": ""
+    },
+    {
+      "command": "python3 scripts/check_registry.py",
+      "exit_code": 0,
+      "stdout": "=== External Project Registry Check ===\n项目数：24\n已启用：23\n结果：ok\n硬阻塞：0\n警告：0\n",
+      "stderr": ""
+    },
+    {
+      "command": "python3 scripts/round_consistency_check.py",
+      "exit_code": 0,
+      "stdout": "=== 轮次一致性检查 ===\n结果：ok\n当前轮次：ROUND-1-1\n下一轮次：ROUND-1-5\n警告：0\n硬阻塞：0\n",
+      "stderr": ""
+    }
+  ],
+  "temporary_directory_removed": true,
+  "external_writes": 0,
+  "git_mutations": 0
+}

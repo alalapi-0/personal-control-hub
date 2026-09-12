@@ -1,0 +1,18 @@
+{
+  "status": "FAIL",
+  "reviewer": "/root/tc16_judge",
+  "candidate_sha256": "367d1e6f96b072e59cc224ec67a3ae19fee6661776e68d340ea13ecfe1f2d172",
+  "finding": "Direct/reloaded story-faceless-utopia detail displays raw related project IDs because name map depended on mutable lastProjects.",
+  "evidence": "story-faceless-utopia-desktop-v1.png",
+  "otherwise_passed": [
+    "exact candidate/evidence/state/285protected hashes",
+    "verify.py without replay: head130,20+4,CLI/service/HTTP24parity,zeroresolver/Mangaops",
+    "LightNovel unknown business diagnostic truthful",
+    "ESmodule syntax",
+    "Node10",
+    "Python187+140subtests",
+    "repo/state/bundle/diff checks"
+  ],
+  "effects": "Read-only; validation used disposable preimage/server only",
+  "resolution": "Root added separate display-name directory cache and fetch on direct-detail cache miss; new candidate pending."
+}

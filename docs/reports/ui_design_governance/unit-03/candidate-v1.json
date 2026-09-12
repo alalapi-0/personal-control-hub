@@ -1,0 +1,180 @@
+{
+  "schema_version": "1.0",
+  "id": "TC3-candidate-v1",
+  "contract": "HUB-GOV-2026-09-05-TC3",
+  "contract_version": 1,
+  "head": "99c0dffc7d446ec17751632ea312220a28a7159e",
+  "aggregate_sha256": "d53f6f4af0b4b0eebd0210cbc27633a13b79565a2dda70a9a7cd2586d46e0c31",
+  "files": [
+    {
+      "path": "STATE.yaml",
+      "sha256": "39ebaad7a5bde75fc1d6332544ef5be609407b25de6aca39935ceffe08682ed1",
+      "bytes": 4883
+    },
+    {
+      "path": "data/design_governance/authority-bundle-v1.json",
+      "sha256": "cf54b9a8fabc889f0c7400aec497e2ab5fad83f2d20b1ff312b18357a1491b1a",
+      "bytes": 55904
+    },
+    {
+      "path": "data/design_governance/connection_refresh.sqlite3",
+      "sha256": "a7711df5cb5eb7d81965fa392dd1db00f567748047d3824ceb787870e36fdeed",
+      "bytes": 290816
+    },
+    {
+      "path": "data/design_governance/manifest-v2.json",
+      "sha256": "27801085d9809d594e982b51264d50408231f8dd34f71146974d686e0fbc1304",
+      "bytes": 29571
+    },
+    {
+      "path": "data/design_governance/relation-proposals-v1.json",
+      "sha256": "a33040083e6f0ba00baee75aeb4dd3b7b1a14bdc89749e39cee525962d43fa10",
+      "bytes": 2205
+    },
+    {
+      "path": "data/design_governance/source-plan-v1.json",
+      "sha256": "ea07f264044f1ed0ecfdf54b98f3f11c033c6fa61f8977807b8cedcbfc30b482",
+      "bytes": 15241
+    },
+    {
+      "path": "docs/design/hub_refresh_protocol.md",
+      "sha256": "e8406ed2ace0744ee23ece3ae2ad58d44d6ddf40bf4569fddb1d1e90ecb9946b",
+      "bytes": 4850
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-03/README.md",
+      "sha256": "49ff5efa70137697afd17365d17f8bedb94a9fb760f9214300edeeaa21947354",
+      "bytes": 2274
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-03/activation-validation.json",
+      "sha256": "2ffe509602f44a8bf2b99d8ff5a0a83dfd569b5f57a6bc61ce6b81e2e436721a",
+      "bytes": 3882
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-03/baseline.json",
+      "sha256": "621500e73c307a09bf7d29f3ee632b358c0387ef4659b9188a625ea27f506f64",
+      "bytes": 26999
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-03/contract.md",
+      "sha256": "6641c132647eed520daa2bad3678dfa2073f4e2a72c1c5f46583ba76bdd93905",
+      "bytes": 5936
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-03/history.json",
+      "sha256": "871530fcecb3da13eedf387b574dfa6a36e2b7940aec71d635f20a3310d10d30",
+      "bytes": 233513
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-03/implementation-seams.md",
+      "sha256": "4465e061c32519502ff3088a740d55b9fff9b1c0945e6f37e1a3d8f616d90d76",
+      "bytes": 3107
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-03/light-novel-initial-observation.json",
+      "sha256": "59642a2d16b01f307a6aae7190826f4889599efd56538cc9a9878e947522a7fa",
+      "bytes": 1444
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-03/preservation-v1.json",
+      "sha256": "6b67d643a31ecc6d091393c51ad68724fd7d5f898956e3e19ee35c615686c262",
+      "bytes": 483
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-03/real-validation.json",
+      "sha256": "f8602f612da593844f03b047409b1e20557de85e57532d58f2d70210d52a69aa",
+      "bytes": 7854
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-03/rebuild.json",
+      "sha256": "f1af1afacd84983cb20b3d5bbcc67709b701ebc689f0e57126ad9f1b93d77087",
+      "bytes": 24829
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-03/refresh-01.json",
+      "sha256": "4b70d6cb50c944dabaf07f829876855adcc8c9951f6ece66f87de4119a605272",
+      "bytes": 29101
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-03/refresh-02.json",
+      "sha256": "cdabc427b568be7e05ba5b8fcee1dafc7c2bba704024a1763f4d09834af83532",
+      "bytes": 29118
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-03/refresh-retry.json",
+      "sha256": "99f5dc6ebb3e404ad69ce3988e483da7fd41092e9df16a5ef3405a491bc632f4",
+      "bytes": 28463
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-03/relations.json",
+      "sha256": "ec180aaa71b99cc94fd33880e35d528e3d4eca928d68551ef953736619b9769a",
+      "bytes": 11768
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json",
+      "sha256": "319515d774c94ed9d89d8133f87e705c2540b47b1d4d04a1d84f172f707cfee0",
+      "bytes": 8358
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-03/state-task.diff",
+      "sha256": "bf68d1a8f4c1b5e72fd8cac036e023f14a5459d5e111d9b5930aa4ccddb12490",
+      "bytes": 1041
+    },
+    {
+      "path": "docs/reports/ui_design_governance/unit-03/validation-v1.json",
+      "sha256": "12489e26b3f1550d5e55659a0562d8115aacd9eea58d202ccd0cc7ec0c8e8716",
+      "bytes": 1821
+    },
+    {
+      "path": "scripts/hub_refresh.py",
+      "sha256": "21861e0cf06f58a85eb019e3aca30f0f5ff8e9ecdae96d2671317e5d57b9f27c",
+      "bytes": 319
+    },
+    {
+      "path": "src/hub/connection_manager_cli.py",
+      "sha256": "d3f7a43992d80a0e4dd0a15d4f5e5d0c35901c0c631ece0b46130ae26bef8108",
+      "bytes": 9273
+    },
+    {
+      "path": "src/hub/connection_refresh.py",
+      "sha256": "27b760074f8eab5de5e28609bf73042b92b0380f02e2741367e48123e85b1af1",
+      "bytes": 41746
+    },
+    {
+      "path": "src/hub/connection_relations.py",
+      "sha256": "9d07054564c40b7a4d174bb07fccf55ef2bf42bd1f491200203d524e71b07b1a",
+      "bytes": 5456
+    },
+    {
+      "path": "src/hub/connection_sources.py",
+      "sha256": "654f0f1366ff71c8eda4582d051a6f3adc139777a4b3b0f8eb1f415b5650f402",
+      "bytes": 56765
+    },
+    {
+      "path": "tests/test_hub_refresh.py",
+      "sha256": "0d900b9ecf243b1b47d97fd32016d580f882704430a6d31039815b30daec501f",
+      "bytes": 17433
+    },
+    {
+      "path": "tests/test_hub_refresh_cli.py",
+      "sha256": "33a8cec48c0c8072feee5f46d4ab0b4434c73153ff9ce907cd0f3336a0f1837b",
+      "bytes": 5645
+    },
+    {
+      "path": "tests/test_hub_relations.py",
+      "sha256": "3877269f618eb9b5dac55aac9ff7e8db6bbf71286819e8572b491822a3088645",
+      "bytes": 3506
+    },
+    {
+      "path": "tests/test_hub_sources.py",
+      "sha256": "a32b95313fdbcce1e85aecc0d7b32dc8e2a6db510231fde968dad11c4b786097",
+      "bytes": 21203
+    }
+  ],
+  "preimages": "docs/reports/ui_design_governance/unit-03/baseline.json",
+  "validation": "docs/reports/ui_design_governance/unit-03/validation-v1.json",
+  "real_validation": "docs/reports/ui_design_governance/unit-03/real-validation.json",
+  "review_scope": "source layer and durable records; no final UI/connection/Goal acceptance",
+  "recovery": "new task-owned files only; preserve baseline preimages, prior manifests/design records, live facts and unrelated changes; no reset/stash/Git effects"
+}

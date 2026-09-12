@@ -1,5 +1,7 @@
 # MCP 故障排查指南
 
+> 当前 registry 候选默认 disabled，受保护的项目配置只含 filesystem，运行时可用性未验证。仅在用户明确要求运行时排障时使用本文；不得据此补齐 `.cursor/mcp.json`、安装包或读取凭据。
+
 本文档针对 Cursor 中 MCP Server「配置了但当前线程不可用」的常见问题。
 
 > 先运行 `node scripts/check_mcp_config.js` 确认仓库级配置无误，再按本文排查 Cursor 运行时问题。

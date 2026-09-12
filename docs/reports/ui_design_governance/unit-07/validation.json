@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "root_checks": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 /tmp/hub_tc7_run.py (exact source archived as execution.py)",
+      "exit": 0,
+      "result": "24 results:20resolved,3verifiedabsence,1authorityblock; idempotent replay0reads; priorledgerpreserved; realemptydesignstore"
+    },
+    {
+      "command": "python3 docs/reports/ui_design_governance/unit-07/verify.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 docs/reports/ui_design_governance/unit-04/readback.py",
+      "exit": 0,
+      "result": "24 list/detail parity; designavailable true revision1;0externalreads/mutations; ledgerunchanged"
+    },
+    {
+      "command": "python3 scripts/check_repo.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/check_registry.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/round_consistency_check.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/hub_refresh.py validate",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/hub_designs.py validate --store data/design_governance/design-store.json",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "reused_tests": {
+    "basis": "No src/tests/scripts change relative acceptedTC6 except exact protectedglobalpreexistingfiles",
+    "tests": "TC6 Root/Judge184Hub+11controltests PASS",
+    "evidence": "../unit-06/validation.json"
+  },
+  "generated_lock": "data/design_governance/design-store.json.lock is an empty generated advisory-lock file, retained locally and excluded from Git delivery; not another state store",
+  "independent_acceptance": "pending"
+}

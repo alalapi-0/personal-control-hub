@@ -1,0 +1,250 @@
+{
+  "schema_version": "1.0",
+  "kind": "static_source_discovery",
+  "authority": "read_only_observation_not_business_state",
+  "source_inventory": {
+    "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json",
+    "sha256": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+    "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512"
+  },
+  "light_novel": {
+    "project_id": "light-novel",
+    "inspection": "static source only; no execution or business input/output reads",
+    "sources": [
+      {
+        "path": "AGENTS.md",
+        "sha256": "73f425e44d2f6658ffc7bd217237e8c705b4ad13e694ef1031ebb3bbdc311109",
+        "bytes": 15613
+      },
+      {
+        "path": "governance/round_state.yaml",
+        "sha256": "4188c064b038a0c56e1daa7897e7e1c7eb735bcaf9baa8c22b84fe4ae4885cd4",
+        "bytes": 26798
+      },
+      {
+        "path": "scripts/local_scheduler_status.py",
+        "sha256": "8a1699fce76af55fb898e0d281c7b1e49bbb52f7ce8b26c413586a2b5d18c86f",
+        "bytes": 2118
+      },
+      {
+        "path": "scripts/check_orphan_workers.py",
+        "sha256": "b6ced2e89c1f226f0f15666a03c57ce964afb89c7966c1e502f6b66432cfede1",
+        "bytes": 1845
+      },
+      {
+        "path": "scripts/check_final_translation_singleton.py",
+        "sha256": "0fa378951bfd0fca85b33a404da2ba8e6dbc5eaeed1cf78e0c3104cb07998dcf",
+        "bytes": 4585
+      },
+      {
+        "path": "src/scheduler/status.py",
+        "sha256": "8a686bdd8cb9449ab3a70f2ec838edf39acda13fc0483d55ae6cfb998ec506ac",
+        "bytes": 14450
+      },
+      {
+        "path": "src/scheduler/control.py",
+        "sha256": "5faa94d42514d4ae677100d2d18380980a11bd747348b31a9936f7ef6eaaa77e",
+        "bytes": 8785
+      },
+      {
+        "path": "scripts/pipeline_worker_registry.py",
+        "sha256": "b6f8da4d7a721e45bfa9236dcb0896ba9969f0888cc29e73348c4b4632baf8f7",
+        "bytes": 16178
+      },
+      {
+        "path": "src/translation/chapter_parser.py",
+        "sha256": "f7bfbbb242b82bc1c6a203e5635fc51d3454dbadfbeb49f7f22526d86229debf",
+        "bytes": 3861
+      },
+      {
+        "path": "docs/product_final_state_spec.md",
+        "sha256": "99182110cb4e3833b70c3448da6c611cb0e705be8cf0099a5aa3cd2abd6c6aa7",
+        "bytes": 21607
+      },
+      {
+        "path": "docs/next_agent_execution_protocol.md",
+        "sha256": "2e5fcde328c4ed9cd87b684f6d033b1d4e4cfce5a6f96800376e1fd9f9006348",
+        "bytes": 4685
+      }
+    ]
+  },
+  "undeclared_sources": {
+    "inspection": "static named entry content only; no execution or business data reads",
+    "results": [
+      {
+        "project_id": "desktop-magnet",
+        "read_only": true,
+        "declared_state_paths": [],
+        "files": [
+          {
+            "path": "README.md",
+            "bytes": 1927,
+            "sha256": "42a6f59459895ab2e13a211b7492605a1c20e5dcc6882fa8aad046761dec69a0",
+            "headings": [
+              "# Magnet Auto Fetcher",
+              "## 目录结构",
+              "## 安装依赖",
+              "## 快速开始",
+              "## 命令行参数",
+              "## 输出内容说明",
+              "## 合规提醒"
+            ],
+            "state_reference_lines": [
+              {
+                "line": 72,
+                "text": "- 每个编码的状态"
+              }
+            ],
+            "description_lines": [
+              "# Magnet Auto Fetcher",
+              "",
+              "从输入 `txt` 批量读取编码，到目标资源站检索资源，并将结果写入输出 `txt`。",
+              "",
+              "## 目录结构",
+              "",
+              "```text",
+              ".",
+              "├── main.py",
+              "├── requirements.txt",
+              "├── README.md",
+              "├── input/",
+              "│   └── codes.txt            # 输入编码文件（项目内置）",
+              "├── output/",
+              "│   └── magnets.txt          # 输出磁力链接文件（项目内置）",
+              "└── src/",
+              "    └── magnet_fetcher/",
+              "        ├── __init__.py",
+              "        ├── cli.py           # 主流程与命令行入口",
+              "        ├── config.py        # 参数解析与配置模型",
+              "        ├── models.py        # 领域数据模型",
+              "        ├── scraper.py       # 资源站抓取与解析",
+              "        ├── text_utils.py    # 文本和磁力链工具函数",
+              "        └── writer.py        # 结果写入 txt"
+            ]
+          }
+        ]
+      },
+      {
+        "project_id": "pycharm-misc-project",
+        "read_only": true,
+        "declared_state_paths": [],
+        "files": [
+          {
+            "path": "fix_mojibake_names.py",
+            "bytes": 4239,
+            "sha256": "b1ca7ead45172d204f22040437e2f54a805b60bcc21eed0a7c3317b9cfe5c1f4",
+            "functions": [
+              "transcode_name",
+              "unique_path",
+              "rename_tree",
+              "undo_from_log",
+              "main"
+            ],
+            "imports": [
+              "argparse",
+              "csv",
+              "os",
+              "pathlib"
+            ],
+            "state_path_literals": [],
+            "entry_guard": true
+          },
+          {
+            "path": "collect_by_ext.py",
+            "bytes": 3357,
+            "sha256": "299cac9417820fd2cf644b4cea871fcde541451b95b261488ba121ddd7a586b5",
+            "functions": [
+              "normalize_ext",
+              "unique_target_path",
+              "is_under",
+              "main"
+            ],
+            "imports": [
+              "argparse",
+              "pathlib",
+              "shutil"
+            ],
+            "state_path_literals": [],
+            "entry_guard": true
+          },
+          {
+            "path": "transcribe_ja.py",
+            "bytes": 1597,
+            "sha256": "59b49531bafac4ae2ee1e16d5c20df16bd1eda80efb9b32da923ce466f0a1338",
+            "functions": [
+              "main"
+            ],
+            "imports": [
+              "argparse",
+              "pathlib",
+              "whisper"
+            ],
+            "state_path_literals": [],
+            "entry_guard": true
+          },
+          {
+            "path": "pack_nwjs_game.py",
+            "bytes": 9841,
+            "sha256": "064c4d9ea024a9909afc559b709aef8c994aa20cebd47ace564ede808a496eab",
+            "functions": [
+              "log",
+              "safe_slug",
+              "is_nwjs_bundle",
+              "find_nwjs_app",
+              "detect_layout",
+              "patch_package_json",
+              "ignore_runtime_files",
+              "remove_quarantine",
+              "build_app_from_game",
+              "parse_args",
+              "main"
+            ],
+            "imports": [
+              "__future__",
+              "argparse",
+              "dataclasses",
+              "fnmatch",
+              "json",
+              "pathlib",
+              "shutil",
+              "subprocess",
+              "typing"
+            ],
+            "state_path_literals": [],
+            "entry_guard": true
+          }
+        ]
+      },
+      {
+        "project_id": "desktop-downloads-scripts",
+        "read_only": true,
+        "declared_state_paths": [],
+        "files": [
+          {
+            "path": "main.py",
+            "bytes": 493,
+            "sha256": "c23eda4f9cbe14be3d00bf0b788e987efbb30ea488550b47fe9c12d6d1b4b521",
+            "functions": [
+              "print_hi"
+            ],
+            "imports": [],
+            "state_path_literals": [],
+            "entry_guard": true
+          }
+        ]
+      }
+    ]
+  },
+  "light_novel_findings": {
+    "malformed_governance_yaml": "Historical completed round is not whole-project completion; preserve parse failure.",
+    "known_static_control_paths": [
+      "workspace/control/scheduler_tick_state.json",
+      "workspace/control/scheduler_paused.json"
+    ],
+    "runtime_control_files_read": false,
+    "external_probes_executed": false,
+    "pending": "Implement bounded Hub-only parsers after exact evidence binding; never execute external status scripts."
+  },
+  "external_writes": 0,
+  "manga_probes": 0
+}

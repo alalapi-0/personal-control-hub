@@ -1,0 +1,140 @@
+{
+  "id": "hub-unit-01-validation-v2",
+  "schema_version": "1.0",
+  "record_type": "historical_validation_evidence",
+  "created_at": "2026-09-05T04:11:45.532980+00:00",
+  "commands": [
+    {
+      "command": [
+        "python3",
+        "scripts/auto_advance_runner.py",
+        "--mode",
+        "check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.417,
+      "stdout": "=== Auto Advance Runner: check ===\n决策：warn_and_continue\n当前轮次：ROUND-1-1\n下一轮次：ROUND-1-5\n硬阻塞：0\n软警告：10\n检查通过：是\n动作授权：未授予（runner 只报告检查结果）\n\n软警告：\n  - ROUND-3-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-4-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-8-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-10-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-11-6: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-12-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-14: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-15: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-16: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-17: planned 但 can_auto_advance 不是 true，可能需要人工确认\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/agent_gate.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.074,
+      "stdout": "=== Agent Gate 检查结果 ===\n决策：warn_and_continue\n硬阻塞：0\n软警告：10\n下一轮候选：ROUND-1-5\n动作授权：未授予（gate 只报告检查结果）\n\n软警告明细：\n  - ROUND-3-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-4-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-8-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-10-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-11-6: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-12-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-14: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-15: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-16: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-17: planned 但 can_auto_advance 不是 true，可能需要人工确认\n建议：检查通过但有 warning；仅在当前已有授权范围内继续，默认不写日志。\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_hub_connections.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.301,
+      "stdout": "",
+      "stderr": "test_blocked_record_never_expands_or_resolves_its_root (test_hub_connections.HubConnectionTests.test_blocked_record_never_expands_or_resolves_its_root) ... ok\ntest_collection_accepts_complete_manifest_snapshot_evidence_graph (test_hub_connections.HubConnectionTests.test_collection_accepts_complete_manifest_snapshot_evidence_graph) ... ok\ntest_collection_rejects_evidence_snapshot_adapter_version_mismatch (test_hub_connections.HubConnectionTests.test_collection_rejects_evidence_snapshot_adapter_version_mismatch) ... ok\ntest_collection_rejects_evidence_snapshot_hash_mismatch (test_hub_connections.HubConnectionTests.test_collection_rejects_evidence_snapshot_hash_mismatch) ... ok\ntest_collection_rejects_forged_access_profile_and_source_index (test_hub_connections.HubConnectionTests.test_collection_rejects_forged_access_profile_and_source_index) ... ok\ntest_collection_rejects_snapshot_manifest_identity_mismatch (test_hub_connections.HubConnectionTests.test_collection_rejects_snapshot_manifest_identity_mismatch) ... ok\ntest_corrupt_yaml_is_invalid_and_keeps_source_fingerprint (test_hub_connections.HubConnectionTests.test_corrupt_yaml_is_invalid_and_keeps_source_fingerprint) ... ok\ntest_create_only_manifest_preserves_existing_file (test_hub_connections.HubConnectionTests.test_create_only_manifest_preserves_existing_file) ... ok\ntest_env_prefixed_source_is_forbidden (test_hub_connections.HubConnectionTests.test_env_prefixed_source_is_forbidden) ... ok\ntest_file_cannot_serve_as_authorized_project_root (test_hub_connections.HubConnectionTests.test_file_cannot_serve_as_authorized_project_root) ... ok\ntest_fresh_snapshot_has_fingerprint_and_matching_success_time (test_hub_connections.HubConnectionTests.test_fresh_snapshot_has_fingerprint_and_matching_success_time) ... ok\ntest_fresh_snapshot_rejects_blocked_status_and_failure_exit (test_hub_connections.HubConnectionTests.test_fresh_snapshot_rejects_blocked_status_and_failure_exit) ... ok\ntest_invalid_snapshot_cannot_claim_connected_and_verified (test_hub_connections.HubConnectionTests.test_invalid_snapshot_cannot_claim_connected_and_verified) ... ok\ntest_manifest_freezes_all_24_registry_ids_without_roots (test_hub_connections.HubConnectionTests.test_manifest_freezes_all_24_registry_ids_without_roots) ... ok\ntest_manifest_rejects_duplicate_id_even_when_rehashed (test_hub_connections.HubConnectionTests.test_manifest_rejects_duplicate_id_even_when_rehashed) ... ok\ntest_manifest_rejects_omitted_registry_id_even_when_rehashed (test_hub_connections.HubConnectionTests.test_manifest_rejects_omitted_registry_id_even_when_rehashed) ... ok\ntest_manifest_rejects_tampering_without_rehash (test_hub_connections.HubConnectionTests.test_manifest_rejects_tampering_without_rehash) ... ok\ntest_missing_named_source_is_explicit_unknown (test_hub_connections.HubConnectionTests.test_missing_named_source_is_explicit_unknown) ... ok\ntest_named_source_reference_cannot_point_to_etc_passwd (test_hub_connections.HubConnectionTests.test_named_source_reference_cannot_point_to_etc_passwd) ... ok\ntest_output_outside_task_scope_is_denied (test_hub_connections.HubConnectionTests.test_output_outside_task_scope_is_denied) ... ok\ntest_output_through_symlinked_allowed_directory_is_denied (test_hub_connections.HubConnectionTests.test_output_through_symlinked_allowed_directory_is_denied) ... ok\ntest_registry_drift_invalidates_frozen_manifest (test_hub_connections.HubConnectionTests.test_registry_drift_invalidates_frozen_manifest) ... ok\ntest_rehashed_manifest_cannot_upgrade_no_access_or_forge_source (test_hub_connections.HubConnectionTests.test_rehashed_manifest_cannot_upgrade_no_access_or_forge_source) ... ok\ntest_rehashed_manifest_cannot_upgrade_no_source_or_resolve_root (test_hub_connections.HubConnectionTests.test_rehashed_manifest_cannot_upgrade_no_source_or_resolve_root) ... ok\ntest_safe_yaml_rejects_python_object_tag_without_execution (test_hub_connections.HubConnectionTests.test_safe_yaml_rejects_python_object_tag_without_execution) ... ok\ntest_schema_rejects_missing_field_invalid_enum_and_naive_timestamp (test_hub_connections.HubConnectionTests.test_schema_rejects_missing_field_invalid_enum_and_naive_timestamp) ... ok\ntest_snapshot_and_evidence_reject_unknown_adapter_version (test_hub_connections.HubConnectionTests.test_snapshot_and_evidence_reject_unknown_adapter_version) ... ok\ntest_source_symlink_cannot_escape_authorized_root (test_hub_connections.HubConnectionTests.test_source_symlink_cannot_escape_authorized_root) ... ok\ntest_unavailable_project_root_is_distinct_from_missing_source (test_hub_connections.HubConnectionTests.test_unavailable_project_root_is_distinct_from_missing_source) ... ok\ntest_unknown_adapter_version_fails_closed (test_hub_connections.HubConnectionTests.test_unknown_adapter_version_fails_closed) ... ok\ntest_unrecognized_status_is_not_falsely_normalized (test_hub_connections.HubConnectionTests.test_unrecognized_status_is_not_falsely_normalized) ... ok\n\n----------------------------------------------------------------------\nRan 31 tests in 1.216s\n\nOK\n"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/hub_connections.py",
+        "refresh",
+        "--manifest",
+        "data/design_governance/manifest-v1.json",
+        "--project",
+        "personal-control-hub",
+        "--output",
+        "docs/reports/ui_design_governance/unit-01/real-smoke-v2.json"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.101,
+      "stdout": "{\"count\": 1, \"availability\": {\"fresh\": 1}, \"final_acceptance\": \"UNVERIFIED\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/hub_connections.py",
+        "refresh",
+        "--manifest",
+        "data/design_governance/manifest-v1.json",
+        "--output",
+        "docs/reports/ui_design_governance/unit-01/connections-v2.json"
+      ],
+      "exit_code": 2,
+      "elapsed_seconds": 0.507,
+      "stdout": "{\"count\": 24, \"availability\": {\"fresh\": 19, \"blocked_by_authority\": 1, \"invalid\": 1, \"source_not_declared\": 3}, \"final_acceptance\": \"UNVERIFIED\"}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/hub_connections.py",
+        "validate",
+        "data/design_governance/manifest-v1.json",
+        "docs/reports/ui_design_governance/unit-01/connections-v2.json"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.068,
+      "stdout": "{\"valid\": true, \"records\": 49, \"registry_projects\": 24}\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/check_registry.py"
+      ],
+      "exit_code": 1,
+      "elapsed_seconds": 0.058,
+      "stdout": "=== External Project Registry Check ===\n项目数：24\n已启用：23\n结果：fail\n硬阻塞：2\n警告：0\n\n硬阻塞：\n  - mpv-clip-workbench: 项目内 authority 未进入 watch_paths：docs/40-rounds/ROUND_INDEX.md\n  - mpv-clip-workbench: storage_governance.scope 无效\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/check_repo.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.034,
+      "stdout": "personal-control-hub skeleton check\nroot: /Users/alalapi/PycharmProjects/personal-control-hub\n\nFiles: OK\nDirectories: OK\nMCP registry: OK\nSecret marker scan: OK\n\nResult: PASS\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/round_consistency_check.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.063,
+      "stdout": "=== 轮次一致性检查 ===\n结果：ok\n当前轮次：ROUND-1-1\n下一轮次：ROUND-1-5\n警告：0\n硬阻塞：0\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.019,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "predecessor": "validation.json",
+  "repair_reason": "judge-v1.json and governor-v1.json",
+  "baseline_exceptions_unchanged": [
+    "registry MPV watch/scope failures",
+    "pytest unavailable; legacy local7pass2fail; two unrelated external storage tests not run"
+  ],
+  "final_product_acceptance": "UNVERIFIED"
+}

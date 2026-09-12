@@ -1,0 +1,10 @@
+{
+  "exit_code": 0,
+  "user_scope_discovered": true,
+  "connection_status": "Connected",
+  "arguments_reported_by_cli": false,
+  "configuration_unchanged": true,
+  "raw_output_returned": false,
+  "existing_sessions_restarted": false,
+  "probe": "claude mcp get figma; telemetry disabled and npm offline only in validation process"
+}

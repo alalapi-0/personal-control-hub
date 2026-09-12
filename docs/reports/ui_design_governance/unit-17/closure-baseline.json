@@ -1,0 +1,34 @@
+{
+  "contract": "TC17 v3",
+  "gate": {
+    "exit": 0,
+    "hard": 0,
+    "existing_soft": 10
+  },
+  "protected_reference": "docs/reports/ui_design_governance/unit-18/baseline.json",
+  "authorized_changed_protected": [
+    "data/design_governance/design-store.json"
+  ],
+  "old_store_sha256": "ebe2b0f94a1542c9562cf61129b3cfa44231d2567ea4ab61056bebdb5acde230",
+  "old_revision": 14,
+  "prefixes": {
+    "facts": {
+      "count": 12,
+      "sha256": "3314cbeff1491a621e1e78a31cfc018c80ae5ef13e404be668c5acdcfbd7bc25"
+    },
+    "events": {
+      "count": 1,
+      "sha256": "9bfb6aaf487a6b1da1681e48bb8a17d4935231e8b7ecb92f354efc149b33f235"
+    },
+    "requests": {
+      "count": 14,
+      "sha256": "81db5fee84a1a8af1d570baa2b13bf30c56cd80fdb4f1ec66ab03f91a6306c15"
+    }
+  },
+  "fixture_stop": {
+    "session_id": 87574,
+    "native_exit_code": 0,
+    "stays_stopped": true
+  },
+  "head_before": "4f5a8f06f50d4e06c8d7a207b2058d612213f380"
+}

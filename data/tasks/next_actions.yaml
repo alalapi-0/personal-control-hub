@@ -11,15 +11,16 @@ next_actions:
     requires_user_confirmation: false
 
   - id: next_round_003_register_external_projects
-    title: "由用户确认首批外部项目本地路径。"
-    status: proposed
+    title: "从实际仓库和开发目录冻结完整本机项目清单。"
+    status: completed
     program_id: personal_control_hub
     project_id: null
-    source: round_000_restart
+    source: dev_projects_2026_09_02_r1
     evidence:
-      - "external_projects.yaml 当前保持空结构，未写真实外部路径。"
-    suggested_executor: user_then_cursor
-    requires_user_confirmation: true
+      - "data/registry/external_projects.yaml 已登记 24 条稳定身份记录。"
+      - "冻结 manifest revision 2 位于 /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/PROJECT_MANIFEST_v2.yaml，并补全了逐项目规则/current-state 指针。"
+    suggested_executor: completed_by_current_storage_governance_goal
+    requires_user_confirmation: false
 
 policy:
   llm_output_type: proposal

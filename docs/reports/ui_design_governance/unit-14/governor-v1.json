@@ -1,0 +1,9 @@
+{
+  "agent": "/root/tc12_governor",
+  "decision": "REQUEST_REPAIR",
+  "candidate_sha256": "b772ac901e34c88a465edd19b3fa9ebc69dd7b56319b5d781efe035eab6bf68b",
+  "criterion": 7,
+  "reason": "P2/states/mobile final readback/export aa1f2834... disagrees with stale mapping/script ae73db4e...; verifier omitted the mapping content hash equality assertion.",
+  "authorized_repair": "Update both stale identities, assert mapping vs readback for every frame, rerun targeted identity/export/preservation checks, freeze v2 and obtain fresh Judge.",
+  "limits": "No redesign or repeated external write required. V1 not authorized for delivery."
+}

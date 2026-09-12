@@ -1,0 +1,159 @@
+{
+  "file_key": "qHIMgQnOulj5TEEYk9Yaod",
+  "file_url": "https://www.figma.com/design/qHIMgQnOulj5TEEYk9Yaod",
+  "page_id": "0:1",
+  "version": "TC17-1f7f616f9037023c147fa06a739a16b0efe32a4695d650aab54fd0b8279703e3",
+  "status": "four editable views verified; owner decision pending",
+  "source_notes": "observation.md",
+  "scenes": [
+    {
+      "id": "11:2",
+      "name": "原版 · 真实代码 / 合成内容 · Desktop",
+      "width": 1440,
+      "height": 937,
+      "content_sha256": "db77f5d6cb3fd5ab98ecd609776b1a3b5a9dfd1734bb35227b914dfd809c24c3",
+      "nodes": 72,
+      "texts": 23,
+      "instances": 1,
+      "auto_layouts": 27,
+      "fonts": [
+        "{\"family\":\"Cousine\",\"style\":\"Bold\"}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Bold\",\"variationSettings\":{\"wght\":700}}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Regular\",\"variationSettings\":{\"wght\":400}}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Black\",\"variationSettings\":{\"wght\":900}}",
+        "{\"family\":\"Cousine\",\"style\":\"Regular\"}"
+      ],
+      "task_title_present": true,
+      "task_action_present": true,
+      "zero_progress_present": true
+    },
+    {
+      "id": "25:14",
+      "name": "原版 · 真实代码 / 合成内容 · Mobile",
+      "width": 390,
+      "height": 739,
+      "content_sha256": "d72bfac63a73a457aa238e8a20f66e1b94ecc576cb71aab181a95848aa191ecc",
+      "nodes": 88,
+      "texts": 30,
+      "instances": 2,
+      "auto_layouts": 35,
+      "fonts": [
+        "{\"family\":\"Cousine\",\"style\":\"Bold\"}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Bold\",\"variationSettings\":{\"wght\":700}}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Regular\",\"variationSettings\":{\"wght\":400}}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Black\",\"variationSettings\":{\"wght\":900}}",
+        "{\"family\":\"Cousine\",\"style\":\"Regular\"}"
+      ],
+      "task_title_present": true,
+      "task_action_present": true,
+      "zero_progress_present": true
+    },
+    {
+      "id": "13:13",
+      "name": "安静任务台 · 同内容 / 首页提案 · Desktop",
+      "width": 1440,
+      "height": 937,
+      "content_sha256": "453645b3f3231d610ff2b5d96b682e58ff9b4fa14a230ec6c4bee7332b2261fc",
+      "nodes": 40,
+      "texts": 22,
+      "instances": 3,
+      "auto_layouts": 18,
+      "fonts": [
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Bold\",\"variationSettings\":{\"wght\":700}}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Regular\",\"variationSettings\":{\"wght\":400}}",
+        "{\"family\":\"Cousine\",\"style\":\"Regular\"}"
+      ],
+      "task_title_present": true,
+      "task_action_present": true,
+      "zero_progress_present": true
+    },
+    {
+      "id": "17:10",
+      "name": "安静任务台 · 同内容 / 首页提案 · Mobile",
+      "width": 390,
+      "height": 739,
+      "content_sha256": "818b584ed5d7e73ef6250b3073008e66416f5c020d2e8f6a93598dc13618b390",
+      "nodes": 61,
+      "texts": 32,
+      "instances": 4,
+      "auto_layouts": 24,
+      "fonts": [
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Bold\",\"variationSettings\":{\"wght\":700}}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Regular\",\"variationSettings\":{\"wght\":400}}",
+        "{\"family\":\"Cousine\",\"style\":\"Regular\"}"
+      ],
+      "task_title_present": true,
+      "task_action_present": true,
+      "zero_progress_present": true
+    }
+  ],
+  "components": [
+    {
+      "id": "11:79",
+      "name": "Source / Primary action",
+      "width": 330,
+      "height": 60,
+      "content_sha256": "4530b5fb142e4954e7c44f93d3b6cdfda6106d312798f75d08117419511e8e2a",
+      "nodes": 5,
+      "texts": 2,
+      "instances": 0,
+      "auto_layouts": 3,
+      "fonts": [
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Bold\",\"variationSettings\":{\"wght\":700}}"
+      ],
+      "task_title_present": false,
+      "task_action_present": true,
+      "zero_progress_present": false
+    },
+    {
+      "id": "25:102",
+      "name": "Source / Mobile navigation",
+      "width": 361,
+      "height": 68,
+      "content_sha256": "1c2b977d45d7335bf4e1c2f404dd4406a3397f2b1648d449e106887404476195",
+      "nodes": 21,
+      "texts": 10,
+      "instances": 0,
+      "auto_layouts": 6,
+      "fonts": [
+        "{\"family\":\"Cousine\",\"style\":\"Regular\"}",
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Bold\",\"variationSettings\":{\"wght\":700}}"
+      ],
+      "task_title_present": false,
+      "task_action_present": false,
+      "zero_progress_present": false
+    },
+    {
+      "id": "32:60",
+      "name": "Source / Secondary action",
+      "width": 137,
+      "height": 44,
+      "content_sha256": "081726cfca181a359605c67f55698365062a6e0ff68891362ab6ee5f62b5d8e0",
+      "nodes": 2,
+      "texts": 1,
+      "instances": 0,
+      "auto_layouts": 1,
+      "fonts": [
+        "{\"family\":\"Noto Sans SC\",\"style\":\"Regular\",\"variationSettings\":{\"wght\":400}}"
+      ],
+      "task_title_present": false,
+      "task_action_present": false,
+      "zero_progress_present": false
+    }
+  ],
+  "capture_ids": [
+    {
+      "id": "cb9c9be6-d4d9-42ac-bd3e-68a8f7895059",
+      "result": "desktop reference consumed and removed"
+    },
+    {
+      "id": "dccc7df7-4c7a-4980-b417-ef747a21fc3c",
+      "result": "stale served desktop content; rejected and removed"
+    },
+    {
+      "id": "1f0e237a-2eea-4aa4-a28b-3c93de4df68e",
+      "result": "mobile reference consumed and removed"
+    }
+  ],
+  "prepared_at": "2026-09-06T05:10:18.510998+00:00"
+}

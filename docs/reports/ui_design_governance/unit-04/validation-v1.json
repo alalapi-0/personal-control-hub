@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "id": "TC4-validation-v1",
+  "commands": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -W error::ResourceWarning -m unittest discover -s tests -p 'test_hub*.py'",
+      "chunk_id": "aaee92",
+      "wall_time_seconds": 1.002054709,
+      "original_token_count": 2,
+      "output": ".....................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 181 tests in 20.614s\n\nOK\n",
+      "exit_code": 0
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/check_repo.py",
+      "chunk_id": "a488c2",
+      "wall_time_seconds": 0.000001708,
+      "exit_code": 0,
+      "original_token_count": 44,
+      "output": "personal-control-hub skeleton check\nroot: /Users/alalapi/PycharmProjects/personal-control-hub\n\nFiles: OK\nDirectories: OK\nMCP registry: OK\nSecret marker scan: OK\n\nResult: PASS\n"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/round_consistency_check.py",
+      "chunk_id": "f5c30c",
+      "wall_time_seconds": 0.0000015,
+      "exit_code": 0,
+      "original_token_count": 30,
+      "output": "=== 轮次一致性检查 ===\n结果：ok\n当前轮次：ROUND-1-1\n下一轮次：ROUND-1-5\n警告：0\n硬阻塞：0\n"
+    },
+    {
+      "command": "git diff --check",
+      "chunk_id": "174ec2",
+      "wall_time_seconds": 0.000004125,
+      "exit_code": 0,
+      "original_token_count": 0,
+      "output": ""
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/auto_advance_runner.py --mode check",
+      "chunk_id": "887af9",
+      "wall_time_seconds": 0.367658917,
+      "exit_code": 0,
+      "original_token_count": 266,
+      "output": "=== Auto Advance Runner: check ===\n决策：warn_and_continue\n当前轮次：ROUND-1-1\n下一轮次：ROUND-1-5\n硬阻塞：0\n软警告：10\n检查通过：是\n动作授权：未授予（runner 只报告检查结果）\n\n软警告：\n  - ROUND-3-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-4-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-8-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-10-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-11-6: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-12-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-14: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-15: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-16: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-17: planned 但 can_auto_advance 不是 true，可能需要人工确认\n"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/agent_gate.py",
+      "chunk_id": "c2d6c3",
+      "wall_time_seconds": 0.029393917,
+      "exit_code": 0,
+      "original_token_count": 281,
+      "output": "=== Agent Gate 检查结果 ===\n决策：warn_and_continue\n硬阻塞：0\n软警告：10\n下一轮候选：ROUND-1-5\n动作授权：未授予（gate 只报告检查结果）\n\n软警告明细：\n  - ROUND-3-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-4-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-8-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-10-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-11-6: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-12-5: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-14: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-15: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-16: planned 但 can_auto_advance 不是 true，可能需要人工确认\n  - ROUND-17: planned 但 can_auto_advance 不是 true，可能需要人工确认\n建议：检查通过但有 warning；仅在当前已有授权范围内继续，默认不写日志。\n"
+    }
+  ],
+  "external_writes": 0,
+  "real_design_choices": 0,
+  "git_effects": 0
+}

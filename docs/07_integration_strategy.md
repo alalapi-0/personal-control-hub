@@ -26,8 +26,8 @@ personal-control-hub 的集成策略是先本地、后 mock、再真实 adapter�
 ## MCP 与集成关系
 
 - **Cursor** 加载 MCP；本仓库 `data/mcp/mcp_capability_registry.yaml` 登记能力与审批级别。
-- **Context7、GitHub 只读** 规划为近期试点（L0/L2），Round 0.5 已进入 default start，但真实调用仍按审批策略。
-- **Playwright** 归类 L3，与 browser_test_integration 联动，可 default start，但自动登录、支付、发布和破坏性 UI 操作仍禁止或需 CEO 显式批准。
+- **Context7、GitHub 只读** 规划为近期试点（L0/L2），当前仅登记且默认 disabled，真实调用另行授权。
+- **Playwright** 归类 L3，与 browser_test_integration 联动，默认 disabled；自动登录、支付、发布和破坏性 UI 操作仍禁止或需显式批准。
 - 调度任务 `SCHED-MCP-REGISTRY-AUDIT`、`SCHED-DAILY-PROJECT-SCAN-PREP`、`SCHED-BROWSER-TEST-REVIEW` 准备集成与 MCP 审计材料，不自动执行。
 
 ## 配置原则

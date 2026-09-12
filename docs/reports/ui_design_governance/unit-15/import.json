@@ -1,0 +1,104 @@
+{
+  "selection_authority": {
+    "layout": "C",
+    "palette": "5 暮紫杏光",
+    "reference": "codex-task://01a07442-c275-7270-bd2e-98b50f277bd0/owner-C-then-P5",
+    "recorded_at": "2026-09-06T03:37:40+00:00",
+    "exact_message_timestamp": "not available; recorded_at is import time",
+    "accepted_tc14": "a0c70f35f896142e8224c3fd8149b81c9bdfef8530845446943948da740fba81"
+  },
+  "facts": 6,
+  "events": 1,
+  "store_revision": 8,
+  "candidate": {
+    "id": "hub-c-p5",
+    "revision": 1,
+    "content_hash": "d1799e76718a1a4253871798da621b6a925cb6e42c8797b6fe7e440786fc23da"
+  },
+  "receipts": [
+    {
+      "operation": "append_fact",
+      "payload_hash": "73016ca675cd5e16999cf0530a0aa04da4aa2ee8cfa96f1f9d9023bf76ea3f2f",
+      "request_id": "tc15-import-hub-c-p5-overview-desktop",
+      "result_hash": "88d8209ea25ea68c322f7cba66431e3b01327c9288c945e765398b40f1391822",
+      "result_id": "hub-c-p5-overview-desktop",
+      "result_kind": "artifact_ref",
+      "result_revision": 2
+    },
+    {
+      "operation": "append_fact",
+      "payload_hash": "c4388a69496ac5857fe15a64ea521d50600de94c2a705daed49568a421d692a5",
+      "request_id": "tc15-import-hub-c-p5-overview-mobile",
+      "result_hash": "03e9b6799fe3cd8cd9c1430122d6400455aa223c420da0ebdb69a8cc54dd900f",
+      "result_id": "hub-c-p5-overview-mobile",
+      "result_kind": "artifact_ref",
+      "result_revision": 3
+    },
+    {
+      "operation": "append_fact",
+      "payload_hash": "29f8ca1046f56d27ed9a05b6c6cd2ac60a1ab2965f957b5cb6d01e02c538336e",
+      "request_id": "tc15-import-hub-c-p5-compare-desktop",
+      "result_hash": "ad685e292a53b352af5f8f6658fac20aec54029b70855aa4bab5a77383f1d860",
+      "result_id": "hub-c-p5-compare-desktop",
+      "result_kind": "artifact_ref",
+      "result_revision": 4
+    },
+    {
+      "operation": "append_fact",
+      "payload_hash": "2484bd57389de622663702463bae467f28b2f56ef4f060d3676554b2d9584846",
+      "request_id": "tc15-import-hub-c-p5-states-mobile",
+      "result_hash": "39bf24d83f3edc7e47e287075ea1f73041419f858677f422af8dab3b7691386e",
+      "result_id": "hub-c-p5-states-mobile",
+      "result_kind": "artifact_ref",
+      "result_revision": 5
+    },
+    {
+      "operation": "append_fact",
+      "payload_hash": "a83507814c0fa9f446cdcfd10d0e6d5862d75b0939807280d90379c1c023003c",
+      "request_id": "tc15-import-hub-before-graphical-ui",
+      "result_hash": "61dbfd8b52f8a693f1e86a52c8d416730e20f0496eac91f621b96964f70feb05",
+      "result_id": "hub-before-graphical-ui",
+      "result_kind": "baseline",
+      "result_revision": 6
+    },
+    {
+      "operation": "append_fact",
+      "payload_hash": "70f1aa7ca3bdb5786f9b5abdf237b6a48f829cf4433876f5e0cfc4dfe72fe8bd",
+      "request_id": "tc15-import-hub-c-p5",
+      "result_hash": "043f697a6ac39b6fe3bc7ab1d3cc4de6ca13df3480b3489408083fa66014c7d0",
+      "result_id": "hub-c-p5",
+      "result_kind": "candidate",
+      "result_revision": 7
+    },
+    {
+      "operation": "append_decision",
+      "payload_hash": "f0fdda9bce0cce53161cf3281b34bd6807de87cfb5d19fd463f06f00fdf78d3a",
+      "request_id": "tc15-owner-c-p5-select",
+      "result_hash": "30e3aa0ff07752c2953c49784b2f6f6be0617cc0d4c857036a39ca56b3ff4f76",
+      "result_id": "owner-hub-c-p5-selection",
+      "result_kind": "decision_event",
+      "result_revision": 8
+    }
+  ],
+  "export_command": {
+    "request_id": "tc15-selected-c-p5-export",
+    "expected_revision": 8,
+    "candidate": {
+      "id": "hub-c-p5",
+      "revision": 1,
+      "content_hash": "d1799e76718a1a4253871798da621b6a925cb6e42c8797b6fe7e440786fc23da"
+    }
+  },
+  "export": {
+    "outcome": "COMMITTED",
+    "request_id": "tc15-selected-c-p5-export",
+    "candidate": {
+      "id": "hub-c-p5",
+      "revision": 1,
+      "content_hash": "d1799e76718a1a4253871798da621b6a925cb6e42c8797b6fe7e440786fc23da"
+    },
+    "store_revision": 8,
+    "sha256": "b8e1863afa97c9402b89f3ddd68112c57ba21afa3f10fd219ad7a746417b15eb",
+    "expected_sha256": "b8e1863afa97c9402b89f3ddd68112c57ba21afa3f10fd219ad7a746417b15eb"
+  }
+}

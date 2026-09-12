@@ -2,6 +2,8 @@
 
 外部项目默认只读。personal-control-hub 只通过本地路径索引外部仓库，不复制，不直接修改，不自动提交，不推送。
 
+本文读者是登记/扫描项目的 Agent；在项目登记字段、读取边界或适配器契约改变时更新。普通项目推进不触发全文更新。
+
 ## Registry 字段契约（schema_version 1.0）
 
 权威文件：`data/registry/external_projects.yaml`。
@@ -20,6 +22,14 @@
 | `priority_source` | enum | `user` / `rule` / `proposal` |
 | `watch_paths` | list[string] | 允许关注的入口路径 |
 | `notes` | string | 可选说明 |
+
+可选治理字段：
+
+- `authority_files`: 子项目权威入口的相对路径列表。
+- `hub_adapter`: hub 内条件适配器路径。
+- `access_profile`: 例如 `read_only_pointer`。
+- `norm_copy_forbidden`: 是否禁止把子项目规范复制到 hub。
+- `external_write_allowed`: hub 是否获准写外部项目；默认且当前必须为 false。
 
 顶层 `policy` 必须声明 `read_only: true` 与 `write_external_forbidden: true`。禁止扫描目录见 registry 中 `forbidden_scan_dirs`。
 
@@ -92,9 +102,10 @@ python hub.py registry list
 
 ## 读取顺序
 
-1. 入口文件。
-2. 用关键词搜索少量命中。
-3. 读取少量命中文件。
+1. 先读 `AGENTS.md` 与 `STATE.yaml`。
+2. 读取 registry 中当前项目条目和 `hub_adapter`。
+3. 只有任务需要实际执行子项目工作时，才读取 adapter 指向的权威入口。
+4. 用关键词搜索少量命中，再读取少量必要文件。
 
 不默认向量库、RAG 或全量 Markdown 扫描。
 
@@ -114,3 +125,9 @@ git remote -v
 ## 输出边界
 
 扫描结果可以生成 profile、snapshot、priority suggestion 和 next actions。LLM 只能提出 proposal，用户确认后才进入 confirmed link 或优先级变更。
+
+## StorageGovernance 与完整项目清单
+
+`storage_governance` 使用便携根路径 `~/PycharmProjects/personal-control-hub/governance/programs/storage_governance`；唯一执行 current-state 为 `STATE.yaml`，稳定规范为 `STORAGE_GOVERNANCE.md`，Hub 适配器为 `governance/adapters/storage_governance.yaml`。该目录归属 Hub，并持有唯一执行状态和规范；根 STATE 只存管理入口，不形成副本，也不从注册表获得删除或外部写入权限。
+
+注册表保存实际 Git 仓库、显式非 Git 开发目录和特殊控制/排除记录的稳定身份。普通项目的动态队列、disposition、证据和 effect authority 只由冻结 project manifest 与专用唯一执行状态持有。`manga-localizer` 必须关闭 inventory/scan/validation/mutation；`personal-control-hub` 必须关闭递归扫描、迁移和 cleanup，只允许当前授权覆盖的管理记录修复。

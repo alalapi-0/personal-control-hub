@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "kind": "bounded_operational_observation",
+  "project_id": "light-novel",
+  "observed_at": "2026-09-05 05:40:11 UTC",
+  "method": "Root bounded regular-file JSON reads of two statically named control files, no external code execution.",
+  "files": [
+    {
+      "path": "workspace/control/scheduler_tick_state.json",
+      "sha256": "b0779c077fb381b119836375a55d77fa317ef5e925e44ecfee5997a7cdf6696c",
+      "bytes": 246,
+      "operational_fields": {
+        "last_blocked_reason": "paused",
+        "last_successful_tick": "2026-06-12T11:38:21.999898+00:00",
+        "last_tick_id": "tick_20260619_062400_8155_161206",
+        "last_tick_status": "skipped_paused",
+        "updated_at": "2026-06-19T06:24:00.138933+00:00"
+      }
+    },
+    {
+      "path": "workspace/control/scheduler_paused.json",
+      "sha256": "bdff818aeaf35b01a0f4638c640e383cc8bc0e091200bbfaf9ef4083ec8b2f57",
+      "bytes": 145,
+      "operational_fields": {
+        "paused": true,
+        "reason": "user_requested_pause",
+        "requested_at": "2026-06-12T13:13:03.153396+00:00"
+      }
+    }
+  ],
+  "business_state": "unknown",
+  "business_state_reason": "Scheduler control facts and historical governance completion do not establish the current translation business phase.",
+  "authority": "External project remains authoritative; this is a read-only observation, not a refreshed connection acceptance.",
+  "external_writes": 0
+}

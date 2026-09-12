@@ -1,0 +1,11 @@
+{
+  "contract": "TC16 v1",
+  "candidate_sha256": "367d1e6f96b072e59cc224ec67a3ae19fee6661776e68d340ea13ecfe1f2d172",
+  "files": {
+    "src/hub/web/hub.js": "6ac000d0ccf19916c7851e9dc96360f59c28adff5db7ee32fc4e48fdcd1776f7",
+    "data/design_governance/connection_refresh.sqlite3": "edc126b0fe6a54d716ef4fc38e239bd1d467c36df7bd766e3ac79671dbc32450"
+  },
+  "state_pre_acceptance_sha256": "28db829d7575ef5ffb90265126456faf0e7bf87b31f8eff1aa4882c1fb2623ef",
+  "frozen_at": "2026-09-06T04:30:04.769351+00:00",
+  "metadata_boundary": "Acceptance/decision/next-action metadata outside semantic runtime candidate; source/data hashes immutable after freeze."
+}

@@ -1,0 +1,123 @@
+{
+  "schema_version": "1.0",
+  "kind": "TC8_semantic_candidate",
+  "candidate_hash": "564425250a0899103e1a2b764cb7e21c58a117ca3fc516a1205929a5b42741f7",
+  "semantic": {
+    "contract": "HUB-GOV-2026-09-06-TC8",
+    "version": 1,
+    "head_before": "06d60092cd0d6982b80be26f2b521f6fa90659a1",
+    "files": {
+      "data/design_governance/authority-bundle-v3.json": "2dfb91d96c09ecbd5c1fb267891cab8a2a9ddeef90f8ff0ac7758c158a7b9cf8",
+      "data/design_governance/connection-exceptions-v1.json": "19ae8fda54b241947ee19a89b351039812d92b94c186093633e391d73a259b1b",
+      "data/design_governance/manifest-v4.json": "ffe478e9510114f9ec2987f9c2f92ac93ffdfc56e4908f8c54d080551155d543",
+      "data/design_governance/relation-proposals-v3.json": "11924a54d2c6577f66ccf2f0bef867e5027d588af6efd1215478c38872358a9e",
+      "data/design_governance/source-plan-v3.json": "681a5e51c17e8c15f37db7059645544e3c50cf3332759ea74251e7db285d5104",
+      "data/registry/external_projects.yaml": "16d10340d9c094c55886d5c9b9efaf3bccd18691534a07f967d8103ac4ad419a",
+      "docs/reports/ui_design_governance/unit-07/delivery.json": "3ee5d3be572b1548cdfa7aedb1ee484f7a568f712cb5785f691dc7d00e0f994f",
+      "docs/reports/ui_design_governance/unit-07/dependencies.json": "40098fa3d8f586fd2621cace121c47d15955f031901d9a76bbf879b99f6f8396",
+      "docs/reports/ui_design_governance/unit-08/README.md": "31607955e831cc7321da615b1e161602c2ccf2305860dbf6e1533e0b1969d63b",
+      "docs/reports/ui_design_governance/unit-08/baseline.json": "18c76ad3bbe29d979f06072724bff898e2008e840658e063e3bc33ee1908f6b6",
+      "docs/reports/ui_design_governance/unit-08/contract.md": "531ef7e032eed145a9d0ee12f8af51d85d0cd6cc412adc91fcc85d6a4de438b6",
+      "docs/reports/ui_design_governance/unit-08/owner-decision.json": "d6930ad4831577e53052aa24d1b11bd40895fa2573ca824e144fac337f29fbf3",
+      "docs/reports/ui_design_governance/unit-08/validation.json": "ff55e9f1c0f2fdb0168b4356049434c96f6ebf956d1948882e4edf40eab90ba5",
+      "docs/reports/ui_design_governance/unit-08/verify.py": "824086213abfe16aed9d71e3fab18c6246b5357b226546b9d517989b67b9211c",
+      "governance/programs/storage_governance/STATE.yaml": "cbe826e52ddc6031bf42b038a2ef29991b442dbe9bd8a5339219288218ab1e6f",
+      "src/hub/connection_manager_cli.py": "373fc2be02c5495f7fee88fa05d862a96dbdf0a786414fef0efc77607193a1ee",
+      "src/hub/project_service.py": "290d0e8ca85c09a2b374eb575e0b70ee1646d3d1ec41a12bc4fb71ca8ba25c2a",
+      "tests/test_hub_project_service.py": "3c4c3cabc7fd574556468579cdcfc639585c0887a19452380cbb7f1610e81656",
+      "tests/test_hub_refresh_cli.py": "714da084304cc24a78a6410560b39e33d47cc8c1d4e06e381a246e190ca17ffa"
+    },
+    "state_semantic": {
+      "schema_version": "1.1",
+      "metadata": {
+        "role": "canonical_current_state",
+        "authority": "canonical",
+        "reader": "进入 Hub 的 Agent、所有者和状态展示工具。",
+        "purpose": "只保存 Hub 当前管理工作、registry/外部状态指针、阻塞与唯一下一步；不复制外部项目执行状态。",
+        "update_triggers": [
+          "accepted_milestone",
+          "governance_round_transition",
+          "registry_or_route_change",
+          "blocker_change",
+          "unique_next_action_change"
+        ]
+      },
+      "project": {
+        "id": "personal-control-hub",
+        "phase": "Phase 1",
+        "health": "active",
+        "location_policy": "internal_disk_only",
+        "storage_migration_or_cleanup": "forbidden"
+      },
+      "current_round": {
+        "id": "ROUND-1-1",
+        "name": "Development Project Storage Governance Registry and Routing",
+        "status": "ACCEPTED",
+        "governance_revision": "HUB-GOV-2026-09-02-06-ACCEPTED",
+        "last_completed_round": "ROUND-1",
+        "next_round": "ROUND-1-5"
+      },
+      "current_work": {
+        "objective": "完成日常 Hub、真实接入、设计闭环与管理材料归并。",
+        "unit": "HUB-08-SOURCE-EXCEPTIONS",
+        "spec": "docs/design/ui_governance_execution.md",
+        "evidence": "docs/reports/ui_design_governance/unit-08/",
+        "blocker": "Figma 需重连；Manga 读取范围或可见例外待所有者确认。"
+      },
+      "registry": {
+        "authority": "data/registry/external_projects.yaml",
+        "registered_count": 24,
+        "enabled_count": 23,
+        "execution_candidate_count": 21,
+        "special_record_count": 3,
+        "storage_effect_authority": "governance_program_state_only",
+        "frozen_manifest": "/Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_04_r1/PROJECT_MANIFEST_v1.yaml",
+        "frozen_manifest_sha256": "fafae757b2b8cbc297d6be7976d2a6f49a7735734b27293792fa0b52dc6bfacd",
+        "authority_pointer_audit": "/Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/AUTHORITY_POINTER_AUDIT.yaml",
+        "exclusions": {
+          "manga-localizer": "accepted_exclusion_record_only",
+          "personal-control-hub": "protected_internal_control_plane",
+          "storage_governance": "protected_governance_program"
+        }
+      },
+      "storage_governance": {
+        "relation": "managed_governance_program",
+        "adapter": "governance/adapters/storage_governance.yaml",
+        "authority_root": "governance/programs/storage_governance",
+        "sole_execution_state": "governance/programs/storage_governance/STATE.yaml",
+        "management_evidence": "docs/reports/ui_design_governance/unit-06/",
+        "hub_access": "pointer_only",
+        "goal_package": {
+          "prompt": "prompts/storage_governance_goal_mode.md",
+          "parameters": "data/programs/storage_governance_goal.yaml",
+          "project_registry": "data/registry/external_projects.yaml"
+        }
+      },
+      "git_delivery": {
+        "current_goal_authority": "owner_20260905_resume_accepted_units",
+        "remote": "origin",
+        "tracking_branch": "origin/agent/governance-closure-20260812",
+        "automatic_main_merge": false,
+        "force_push": false
+      },
+      "task_health": {
+        "first_250k_rebaseline": "completed",
+        "status": "WATCH",
+        "native_goal_tokens": 1066751,
+        "native_goal_seconds": 2184,
+        "telemetry_scope": "native cumulative Goal; no cost or active/idle breakdown inferred",
+        "material_progress": "TC4-TC6 accepted and pushed",
+        "risk": "transient review-role capacity; resolved when TC6Judge finished",
+        "action": "collect review roles before next dispatch",
+        "next_checkpoint": "TC7 candidate freeze; no repeat solely above250k",
+        "cooldown": "75000moretokens or30active minutes plus eligible condition"
+      }
+    }
+  },
+  "metadata_exclusions": [
+    "STATE.last_updated",
+    "STATE.current_work.status",
+    "STATE.current_work.next_action",
+    "candidate/review/decision/delivery records"
+  ]
+}

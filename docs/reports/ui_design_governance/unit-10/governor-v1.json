@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "governor": "/root/tc4_governor",
+  "decision": "APPROVE",
+  "contract_version": 2,
+  "candidate_sha256": "bbe9b670a6128ac8791d5a2c49cf7f35a666c9318137a2002a65e622ab651c5e",
+  "judge_ref": "judge-v1.json",
+  "independent_checks": [
+    "16filehashes_and_STATE_semantics",
+    "same_candidate_fresh_JudgePASS",
+    "externalCodex_drift_currenthash_and_mtime",
+    "originalCodexhash_preserved_UNKNOWN_actor_no_rollback",
+    "auth_limits_explicit",
+    "no_credential_globalconfig_or_private_data_in_Git"
+  ],
+  "authorized_delivery": "20 registered Hub paths; normal push current tracking branch and verify exact remote SHA",
+  "overall_goal_complete": false
+}

@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "judge": "/root/tc18_judge",
+  "contract": "TC18 v1",
+  "candidate_sha256": "31948ccec7efa9d9901270ac54cad4c6423b5571d4b7418deff7b1f1716af89f",
+  "scope": "Frozen local candidate only",
+  "checks": {
+    "semantic_candidate_hash": "MATCH",
+    "registered_files": 5,
+    "state_preacceptance_hash": "MATCH",
+    "verify_exit": 0,
+    "registry_ids": 24,
+    "ui_counts": {
+      "in_scope": 13,
+      "no_ui": 8,
+      "protected": 3
+    },
+    "source_identities": 25,
+    "bindings": 12,
+    "ledger_head": 130,
+    "protected_preimages_unchanged": 338
+  },
+  "findings": [
+    "All rows have traceable disposition, rationale, identity, truthful runtime scope, TC16 outcome and recovery condition.",
+    "desktop-tool prior deferred resolved by complete userscript structure: third-party existing form interaction only.",
+    "Three protected rows have applicable current policy or owner authority; Manga remains unprobed.",
+    "TC17 runtime evidence limited to exact isolated synthetic flow; actual owner choice remains pending."
+  ],
+  "actionable_defects": [],
+  "delivery_limit": "TC17 runtime binding files remain uncommitted. This PASS does not establish independently reproducible remote delivery; commit/push/remote verification wait on recorded TC17 choice/acceptance dependency."
+}

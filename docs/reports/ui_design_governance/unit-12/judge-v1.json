@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root/tc12_judge",
+  "role": "fresh_read_only_Judge",
+  "candidate_sha256": "2316be78b04df2a3b22cd0ce8ebf172da8bab2a3d9ef992d5a22fad71d294a61",
+  "verdict": "PASS",
+  "checks": [
+    "canonical identity and four file hashes/state semantics match",
+    "16 protected files and accepted TC11 configuration unchanged",
+    "official whoami once; 33 tools; email matched visible connected account; identity not persisted",
+    "management UI no Reconnect; Allow all actions unchanged",
+    "0 file/node calls, design writes, OAuth replay or config changes",
+    "gate 0 hard; repo/consistency/diff checks pass; 2 targeted tests pass"
+  ],
+  "limitations": [
+    "design-write success not established",
+    "overall Hub UI not accepted"
+  ],
+  "observed_at": "2026-09-06T01:13:29.836461+00:00"
+}

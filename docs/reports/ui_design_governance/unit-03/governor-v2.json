@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "governor": "/root/hub_governor_tc3",
+  "contract": "HUB-GOV-2026-09-05-TC3",
+  "contract_version": 1,
+  "candidate": "TC3-candidate-v2",
+  "aggregate_sha256": "3161b6e7166a924d4cf34a6d830309a1184cac121d8364e2ff439e2ad43cd250",
+  "judge": "/root/refresh_judge_v2",
+  "judge_result": "FAIL",
+  "decision": "REQUEST_REPAIR",
+  "contract_status": "ACTIVE",
+  "contract_revision_required": false,
+  "reason": "A normal concurrent ledger commit can be falsely reported as corruption because history verification spans snapshots.",
+  "repair_requirements": [
+    "One coherent read snapshot for schema, events, requests, results, completion state and ledger head.",
+    "Concurrent history/rebuild returns coherent old/new data or documented retryable concurrency error, never false corruption.",
+    "Preserve detection of actual corruption, orphan rows, broken links and lifecycle inconsistency.",
+    "Deterministic concurrent tests at reproduced and other material read boundaries.",
+    "Preserve v2 authority checks, immutable facts, predecessors and unrelated work; fresh Judge then Governor for replacement."
+  ],
+  "successor_status": "TC4 DRAFT remains pending repaired TC3 approval."
+}

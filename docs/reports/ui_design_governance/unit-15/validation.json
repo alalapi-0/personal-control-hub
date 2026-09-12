@@ -1,0 +1,83 @@
+{
+  "candidate_sha256": "c0eda89f6aab0cfbd722ed312dbb0fa820832d85e6defd42dba4bf97286dfc00",
+  "contract": "TC15 v3",
+  "status": "PASS",
+  "lanes": {
+    "functional": "PASS",
+    "visual": "PASS",
+    "desktop_mobile": "PASS",
+    "console": "PASS",
+    "network": "PASS",
+    "security": "PASS",
+    "persistence": "PASS",
+    "data_isolation": "PASS",
+    "protected_preimages": "PASS"
+  },
+  "checks": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 pytest -q -p no:cacheprovider tests/test_hub*.py",
+      "exit": 0,
+      "passed": 187,
+      "subtests_passed": 140,
+      "seconds": 47.59,
+      "scope": "unchanged Python service/security code; JS-only final export wording adjustment does not affect this result"
+    },
+    {
+      "command": "node --test tests/test_hub_web_logic.mjs",
+      "exit": 0,
+      "passed": 10
+    },
+    {
+      "command": "node --check src/hub/web/hub.js; node --check src/hub/web/designs.js",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/check_repo.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/round_consistency_check.py",
+      "exit": 0,
+      "warnings": 0,
+      "hard": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "first_write_gate": {
+    "exit": 0,
+    "hard": 0,
+    "existing_roadmap_soft": 10
+  },
+  "browser_evidence": [
+    "browser-functional.json",
+    "browser-visual.json",
+    "browser-recovery.json"
+  ],
+  "working_state_final": {
+    "notice": "正在准备导出…",
+    "buttons_disabled": true
+  },
+  "canonical": "persistence.json",
+  "contrast": "contrast.json",
+  "baseline_warning": "Node MODULE_TYPELESS_PACKAGE_JSON warning in CLI tests only; browser modules explicitly typed, no runtime warnings.",
+  "failure_classification": "Injected lost-response, invalid fixture source and competing revision failures are intentional recovery tests. Two incorrect harness heading locators and unsupported helper import were diagnosed; no product failure resulted.",
+  "intermediate_cleanup": [
+    "projects-desktop.png",
+    "projects-mobile.png",
+    "design-desktop.png",
+    "design-mobile.png",
+    "design-mobile-200.png",
+    "depth-projects-desktop.png",
+    "depth-projects-mobile.png",
+    "depth-design-desktop.png",
+    "soft-button-focus.png"
+  ],
+  "limitations": [
+    "No Figma effects; original C/P5 import and one owner choice remain unchanged. Latest owner feedback governs implemented CSS.",
+    "Canonical UI reads accepted previous project snapshots; real external source refresh is deferred to the next authorized unit.",
+    "TC15 does not complete external UI coverage or overall Goal handoff."
+  ]
+}

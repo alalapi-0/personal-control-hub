@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "reviewer": "/root/refresh_judge_v1",
+  "contract": "HUB-GOV-2026-09-05-TC3",
+  "candidate": "TC3-candidate-v1",
+  "aggregate_sha256": "d53f6f4af0b4b0eebd0210cbc27633a13b79565a2dda70a9a7cd2586d46e0c31",
+  "decision": "FAIL",
+  "identity_verified": true,
+  "blocking_findings": [
+    {
+      "criterion": 9,
+      "location": "src/hub/connection_sources.py:626",
+      "problem": "SourceResolver caches registry permissions. Changing desktop-magnet to disabled/no_current_goal_access after construction still reads README.md and returns EXPLICIT_NO_CURRENT_SOURCE_VERIFIED.",
+      "fixture_observation": {"post_drift_read_calls": 1, "post_drift_read_relatives": ["README.md"], "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED", "success": true},
+      "required_evidence": "Registry/adapter drift is checked before every subsequent external read, including mid-request drift for each source mode."
+    }
+  ],
+  "passed_checks": {"tests": 124, "test_exit_code": 0, "repository": "PASS", "round_consistency": "PASS", "diff_check": "PASS", "real_ledger_unchanged": true, "real_requests": 2, "real_events": 52, "real_results": 48, "source_dispositions": {"SOURCE_RESOLVED": 20, "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED": 3, "BLOCKED_BY_AUTHORITY": 1}, "ui_verification": "UNVERIFIED"},
+  "review_mutations": 0,
+  "external_project_reads": 0
+}

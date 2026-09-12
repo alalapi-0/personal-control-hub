@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "id": "hub-design-records-candidate-v2",
+  "contract_id": "HUB-GOV-2026-09-05-TC2",
+  "contract_version": 1,
+  "created_at": "2026-09-05T05:16:50.167155+00:00",
+  "file_hashes": {
+    "STATE.yaml": "9aeef2b60c5bb1a0034a95eae9a2a48a1638a983f76a02ea52d01bb1e2ddd8a4",
+    "docs/design/hub_design_records_protocol.md": "33e14541062f7bcaaa4c0c30065c6b0a4a87186fab951682d152cd5384ccd4a2",
+    "docs/reports/ui_design_governance/unit-02/README.md": "e91d82f855442a908211d5df0e3f32d88393c31d83087d1e6adc3d78349c5cfd",
+    "docs/reports/ui_design_governance/unit-02/baseline.json": "8896962888f6199181da966fd88740ada5e5636410b569d037d2ec87ff04b0aa",
+    "docs/reports/ui_design_governance/unit-02/contract.md": "e89d218da3323cf71bcd63250c3d0a2cf6c1e1345bd9dab1ef29bd928d408d86",
+    "docs/reports/ui_design_governance/unit-02/fixture-demo-v2/baseline-preview.txt": "92eae5392854dca32b03faaceb7c4bb22ea6e237d9a7499150d5d1d17df0ac5b",
+    "docs/reports/ui_design_governance/unit-02/fixture-demo-v2/candidate-preview.txt": "3aa9c15b088717a0ebd7dd4797c3f4c852a1adfbf8ac18d41daee8c5cfc7c45f",
+    "docs/reports/ui_design_governance/unit-02/fixture-demo-v2/exports/synthetic_fixture/selected-candidate.zip": "9399ffd287ab68a40ba6c5b1a2cd5fffd6d2e45c1bc25c211ab1914a953fcca4",
+    "docs/reports/ui_design_governance/unit-02/fixture-demo-v2/fixture-store.json": "8029eea7c6335d7e0e4d002942ed002475cbe2063b2c1c7cd1530ba3efa99726",
+    "docs/reports/ui_design_governance/unit-02/fixture-demo-v2/fixture-store.json.lock": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/reports/ui_design_governance/unit-02/fixture-demo/baseline-preview.txt": "92eae5392854dca32b03faaceb7c4bb22ea6e237d9a7499150d5d1d17df0ac5b",
+    "docs/reports/ui_design_governance/unit-02/fixture-demo/candidate-preview.txt": "3aa9c15b088717a0ebd7dd4797c3f4c852a1adfbf8ac18d41daee8c5cfc7c45f",
+    "docs/reports/ui_design_governance/unit-02/fixture-demo/exports/synthetic_fixture/selected-candidate.zip": "5a5791863ca5225a8c89bc35ffb9f6085311ae6c29a2480768f06e57b5f7c3e8",
+    "docs/reports/ui_design_governance/unit-02/fixture-demo/fixture-store.json": "976e72103681bfb8bccb5c6e75a9d0881432b2ef1ec5f9d9cb15a122ab8e36c1",
+    "docs/reports/ui_design_governance/unit-02/fixture-demo/fixture-store.json.lock": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/reports/ui_design_governance/unit-02/state-task.diff": "9cd1419f88b820d61c6ec1dcf32969d70c05a5f6bdca6d94e3bee4ebd32531d4",
+    "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+    "docs/reports/ui_design_governance/unit-02/validation-v1.json": "dd66d6a05285c0203e41a6814a03f041ed631b6d7e75f2b6f63e52585abac9cc",
+    "docs/reports/ui_design_governance/unit-02/validation-v2.json": "03a81cc2069d0ebe18247ce23b6a30a4120f96e788e2781296b0201fb1f0cf94",
+    "scripts/hub_designs.py": "67429e24f52c43e9b831077401edc63f90dba525f6e75543d0fb47d627482904",
+    "src/hub/design_cli.py": "2af4ea96ea66295e7a1abac5f7e5d774fdb73b659d1d960e3f992137d556bd8c",
+    "src/hub/design_export.py": "21d85349384a3744a33c56e0d86ae544413fb74ea0225e36c4271f5832521145",
+    "src/hub/design_records.py": "07c0e9065bb722ce99ac662ec802c9c52c3fec9cd7d1ffcd7b40269fa37a4ec7",
+    "src/hub/design_store.py": "0c6079f7d5478ae873eba14d6ca2a7b86d7a9bf37f99b846d80385e3fc93297e",
+    "tests/test_hub_design_exports.py": "c5ff78cdf1fa6c9254de8a6a3e2bff94b08468a3996c01dd3871b8bb734cb997",
+    "tests/test_hub_designs.py": "c294184c151c9d028263de826780b4cafffb1bb5fe0565b8b3404dbbf5f55cab"
+  },
+  "content_hash": "bc37c0cc626acf2b13321b52eb218f5aad3e787678950786cd15bc6e09db28c3",
+  "hash_algorithm": "SHA-256(UTF-8(json.dumps(file_hashes, sort_keys=True, separators=(',', ':'))))",
+  "review_envelope_exclusions": [
+    "candidate identity records",
+    "immutable Judge/Governor decision records"
+  ],
+  "status": "frozen_for_independent_review",
+  "task_owned_bytecode_removed": [
+    "src/hub/__pycache__/design_records.cpython-314.pyc",
+    "src/hub/__pycache__/design_store.cpython-314.pyc",
+    "src/hub/__pycache__/design_cli.cpython-314.pyc",
+    "src/hub/__pycache__/design_export.cpython-314.pyc",
+    "tests/__pycache__/test_hub_designs.cpython-314.pyc"
+  ],
+  "predecessor": "candidate-v1.json"
+}

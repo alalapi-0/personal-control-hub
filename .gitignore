@@ -25,3 +25,12 @@ governance/programs/storage_governance/.hub/status.json
 # 编辑器与系统
 .DS_Store
 .idea/
+
+# Rebuildable Hub-local connection ledger and default previews
+data/connections/*.sqlite3
+data/connections/*.sqlite3-*
+data/connections/preview/
+
+# Local browser captures and runtime locks
+.playwright-mcp/
+data/design_governance/*.lock

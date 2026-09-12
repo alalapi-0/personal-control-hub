@@ -11,7 +11,7 @@ validation_commands:
     - id: ROUND-CONSISTENCY
       command: "python scripts/round_consistency_check.py"
       required: true
-      description: "检查 round_state、current_status、roadmap 是否一致"
+      description: "检查唯一 STATE.yaml 与当前 round、roadmap 是否一致"
 
   environment:
     - id: CHECK-ENV

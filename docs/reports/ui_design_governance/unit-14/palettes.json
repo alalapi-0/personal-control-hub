@@ -1,0 +1,96 @@
+{
+  "layout_choice": "C",
+  "palette_choice": "PENDING",
+  "palettes": [
+    {
+      "id": "P1",
+      "name": "白瓷电蓝",
+      "mood": "冷白与电蓝，清晰利落的数字画廊",
+      "tradeoff": "最克制，适合长期日常使用",
+      "roles": {
+        "canvas": "#F5F7FF",
+        "surface": "#FFFFFF",
+        "text": "#171F48",
+        "muted": "#4C5878",
+        "border": "#7D86A0",
+        "accent": "#1743C7",
+        "tint": "#E6ECFF",
+        "warning": "#995000",
+        "success": "#16674D",
+        "onaccent": "#FFFFFF"
+      }
+    },
+    {
+      "id": "P2",
+      "name": "藏红花与朱砂",
+      "mood": "金黄底与朱砂红，温暖浓烈的印刷感",
+      "tradeoff": "最鲜明的浅色方案，暖色存在感强",
+      "roles": {
+        "canvas": "#FFE6A6",
+        "surface": "#FFF4CE",
+        "text": "#431B15",
+        "muted": "#775045",
+        "border": "#A6755D",
+        "accent": "#A62F22",
+        "tint": "#F7D0AD",
+        "warning": "#805000",
+        "success": "#346039",
+        "onaccent": "#FFFFFF"
+      }
+    },
+    {
+      "id": "P3",
+      "name": "冰川泻湖",
+      "mood": "冰蓝底与深海青，清透冷静",
+      "tradeoff": "轻盈舒展，整体情绪偏冷",
+      "roles": {
+        "canvas": "#D8F3FF",
+        "surface": "#F5FCFF",
+        "text": "#08394E",
+        "muted": "#385E73",
+        "border": "#658697",
+        "accent": "#006572",
+        "tint": "#B6DDE7",
+        "warning": "#8E490D",
+        "success": "#316735",
+        "onaccent": "#FFFFFF"
+      }
+    },
+    {
+      "id": "P4",
+      "name": "墨夜酸柠",
+      "mood": "蓝黑底与酸柠黄，醒目的夜间工作台",
+      "tradeoff": "辨识度高，主操作的视觉刺激较强",
+      "roles": {
+        "canvas": "#161C22",
+        "surface": "#232D36",
+        "text": "#F2F5EF",
+        "muted": "#ABBAC7",
+        "border": "#758998",
+        "accent": "#D8EF45",
+        "tint": "#354022",
+        "warning": "#FFC56B",
+        "success": "#71D8B1",
+        "onaccent": "#20251B"
+      }
+    },
+    {
+      "id": "P5",
+      "name": "暮紫杏光",
+      "mood": "深梅紫与杏桃色，温暖而有戏剧性",
+      "tradeoff": "最衬 C 的衬线标题，个人风格鲜明",
+      "roles": {
+        "canvas": "#24172D",
+        "surface": "#35243E",
+        "text": "#FFF2EA",
+        "muted": "#CEB6D5",
+        "border": "#927A9A",
+        "accent": "#FFBD95",
+        "tint": "#57384B",
+        "warning": "#F9DB86",
+        "success": "#99D4B3",
+        "onaccent": "#3B2132"
+      }
+    }
+  ]
+}

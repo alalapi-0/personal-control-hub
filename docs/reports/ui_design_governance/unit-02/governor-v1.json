@@ -1,0 +1,21 @@
+{
+  "governor": "/root/hub_contract",
+  "contract_id": "HUB-GOV-2026-09-05-TC2",
+  "contract_version": 1,
+  "candidate_id": "hub-design-records-candidate-v1",
+  "candidate_hash": "aa269b64e630a49e6af147902c52b175b3647ef4c2249f2b17c883b2105eab82",
+  "fresh_judge": "judge-v1.json",
+  "decision": "REQUEST_REPAIR",
+  "contract_revision_required": false,
+  "repair_requirements": [
+    "Before atomic publication, failures preserve old store/no new export and clean temporary files.",
+    "After atomic publication, verify published content and report COMMITTED_DURABILITY_UNCONFIRMED with revision, receipt, path and hash when directory fsync fails; idempotent retry resolves the same commit; no dangerous rollback.",
+    "Baseline artifacts validate against individual project/page scope; candidate artifacts retain full candidate scope.",
+    "Only explicitly candidate/review-bound Figma references may be exported.",
+    "dry-run belongs only to synthetic_fixture stores, related fact graphs must have consistent classification, all events synthetic with zero real/implementation authority.",
+    "baseline behavior action IDs must be unique within each baseline.",
+    "Implement immutable design_family facts with revision/hash, exact member/pages and source evidence; non-null family candidates bind exact family revision/hash, without formal program-link authority.",
+    "Family fixture covers multi-project baseline/candidate/events/restart/drift/export; independent records retain their exact existing schema."
+  ],
+  "next_review": "Freeze candidate v2 after repair; fresh Judge then Governor decision under unchanged TC2 contract."
+}

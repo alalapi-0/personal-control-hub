@@ -1,0 +1,51 @@
+{
+  "deep_links": {
+    "checks": [
+      {
+        "route": "#designs",
+        "raw": false,
+        "readable": true
+      },
+      {
+        "route": "#designs/computer-study-plan",
+        "raw": false,
+        "readable": true
+      },
+      {
+        "route": "#designs/computer-study-plan/csp-home-quiet-workbench",
+        "raw": false,
+        "readable": true
+      }
+    ],
+    "failure": {
+      "text": "暂时无法读取\n\n暂时无法读取或保存。已保留原有数据，请重试。\n\n重新读取\n查看诊断信息",
+      "raw": false
+    },
+    "recovered": 1,
+    "errors": [],
+    "directoryGetCount": 5,
+    "nonGet": []
+  },
+  "mobile": {
+    "images": [
+      {
+        "alt": "原始版本预览",
+        "w": 390,
+        "h": 739
+      },
+      {
+        "alt": "安静任务台预览",
+        "w": 390,
+        "h": 739
+      }
+    ],
+    "overflow": false
+  },
+  "back": {
+    "url": "http://127.0.0.1:63078/#designs/computer-study-plan",
+    "focus": "main",
+    "h1": "Computer Study Plan"
+  },
+  "expected_console_error": "One intentionally injected /api/projects HTTP503, recovery verified",
+  "note": "The initial warm-tab iteration used pre-repair JavaScript; only fresh/reloaded checks above are acceptance evidence."
+}

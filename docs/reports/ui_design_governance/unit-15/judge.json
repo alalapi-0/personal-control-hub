@@ -1,0 +1,16 @@
+{
+  "role": "/root/tc15_judge",
+  "decision": "PASS",
+  "candidate_sha256": "c0eda89f6aab0cfbd722ed312dbb0fa820832d85e6defd42dba4bf97286dfc00",
+  "independent_checks": [
+    "Recomputed semantic candidate and all registered evidence hashes; STATE matches pre-acceptance registration.",
+    "Reran verify.py: 235 protected files unchanged, zero canonical mutations, store revision 8, one owner event, exact export hash, CLI/service/HTTP agreement, clean restart/stop.",
+    "Reran full Hub suite: 187 passed and 140 subtests; Node 10 passed; JavaScript syntax and diff check passed.",
+    "Inspected live read-only Hub at 127.0.0.1:63078; project and selected-design views render correctly and runtime warnings/errors are empty.",
+    "Inspected original visual, interaction, recovery, persistence and network evidence; v3 soft depth, muted palette, AA contrast, keyboard, mobile, 200% text, 44px targets, reduced motion and opaque fallback satisfy the contract.",
+    "Exact pending recovery, cross-candidate semantics, stale/conflict behavior and bound export are covered by isolated actual-service evidence; injected faults are distinguished from product errors.",
+    "No hidden test suppression or protected/unrelated mutation found."
+  ],
+  "owner_acceptance": "现在这版的这个界面设计我觉得都没有问题，可以往下推进了。",
+  "scope_limit": "TC15 runnable local Hub and selected-design loop only; external connection refresh, external UI coverage and overall Goal handoff remain."
+}

@@ -1,0 +1,12 @@
+{
+  "reviewer": "/root/design_records_judge_v2",
+  "role": "fresh_read_only_judge",
+  "candidate_id": "hub-design-records-candidate-v2",
+  "candidate_hash": "bc37c0cc626acf2b13321b52eb218f5aad3e787678950786cd15bc6e09db28c3",
+  "decision": "FAIL",
+  "blocking_finding": {"criterion": 5, "finding": "Scope identity hashes raw member/page arrays although binding semantics use sets. Reordering identical page sets allows two current selections without supersedes.", "independent_reproduction": {"candidate_a_pages": ["a", "b"], "candidate_b_pages": ["b", "a"], "same_project": true, "both_supersedes": null, "effective_count": 2, "selected_count": 2, "all_appends_and_validation": "succeeded"}},
+  "passing_evidence": {"hashes_matched": 26, "hub_tests": 83, "gates": "PASS", "repository": "PASS", "round_consistency": "PASS", "diff_check": "PASS", "protected_unchanged": 53, "state_only_allowed_fields": true, "bootstrap_bytes": 7992, "both_fixtures": "revision 11; four synthetic events; zero real choices; ZIP hashes valid"},
+  "baseline_failure": "Two unchanged MPV registry errors.",
+  "reviewer_side_effect": "One reopen command omitted PYTHONDONTWRITEBYTECODE and created four ignored design-module bytecode files. Frozen candidate unchanged; Root removes these exact task-owned files after collection.",
+  "review_limits": "Temporary synthetic fixtures only; no external project probes, Figma, UI, Git or remote effects."
+}

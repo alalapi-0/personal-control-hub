@@ -1,0 +1,11 @@
+{
+  "agent": "/root/tc14_judge",
+  "role": "fresh_read_only_judge",
+  "verdict": "FAIL",
+  "candidate_sha256": "b772ac901e34c88a465edd19b3fa9ebc69dd7b56319b5d781efe035eab6bf68b",
+  "findings": [
+    "P2/states/mobile content identity in figma.json and embedded readback script was stale after tint correction; final readback and PNG export identities already agreed. Verifier did not assert mapping content identity equality. Violates criterion7."
+  ],
+  "passed": "Independent verifier/repo/state/tests/diff; all five palettes visual distinction/readability, contrast, C structural identity, source protection and honest runtime limitations.",
+  "required_repair": "Update stale identities, add equality assertion, freeze a new candidate and obtain fresh review."
+}

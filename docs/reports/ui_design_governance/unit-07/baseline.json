@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "unit": "HUB-07-OPERATIONAL-READINESS",
+  "lane": "GOVERNED",
+  "head": "b0c25ef0d0ee0f2d56cb6cfe523b7a07a514c8a7",
+  "state_preimage": "---\nschema_version: '1.1'\nmetadata:\n  role: canonical_current_state\n  authority: canonical\n  reader: 进入 Hub 的 Agent、所有者和状态展示工具。\n  purpose: 只保存 Hub 当前管理工作、registry/外部状态指针、阻塞与唯一下一步；不复制外部项目执行状态。\n  update_triggers:\n  - accepted_milestone\n  - governance_round_transition\n  - registry_or_route_change\n  - blocker_change\n  - unique_next_action_change\nlast_updated: '2026-09-05T22:21:19+08:00'\nproject:\n  id: personal-control-hub\n  phase: Phase 1\n  health: active\n  location_policy: internal_disk_only\n  storage_migration_or_cleanup: forbidden\ncurrent_round:\n  id: ROUND-1-1\n  name: Development Project Storage Governance Registry and Routing\n  status: ACCEPTED\n  governance_revision: HUB-GOV-2026-09-02-06-ACCEPTED\n  last_completed_round: ROUND-1\n  next_round: ROUND-1-5\ncurrent_work:\n  objective: 完成日常 Hub、真实接入、设计闭环与管理材料归并。\n  status: ACCEPTED_PENDING_GIT_DELIVERY\n  unit: HUB-06-MANAGEMENT-CONSOLIDATION\n  spec: docs/design/ui_governance_execution.md\n  evidence: docs/reports/ui_design_governance/unit-06/\n  blocker: Figma 需重连；Manga 读取范围待所有者决定，仅挂起对应依赖。\n  next_action: 提交并推送 TC6，核对远端后刷新获准连接。\nregistry:\n  authority: data/registry/external_projects.yaml\n  registered_count: 24\n  enabled_count: 23\n  execution_candidate_count: 21\n  special_record_count: 3\n  storage_effect_authority: governance_program_state_only\n  frozen_manifest: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_04_r1/PROJECT_MANIFEST_v1.yaml\n  frozen_manifest_sha256: fafae757b2b8cbc297d6be7976d2a6f49a7735734b27293792fa0b52dc6bfacd\n  authority_pointer_audit: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/AUTHORITY_POINTER_AUDIT.yaml\n  exclusions:\n    manga-localizer: accepted_exclusion_record_only\n    personal-control-hub: protected_internal_control_plane\n    storage_governance: protected_governance_program\nstorage_governance:\n  relation: managed_governance_program\n  adapter: governance/adapters/storage_governance.yaml\n  authority_root: governance/programs/storage_governance\n  sole_execution_state: governance/programs/storage_governance/STATE.yaml\n  management_evidence: docs/reports/ui_design_governance/unit-06/\n  hub_access: pointer_only\n  goal_package:\n    prompt: prompts/storage_governance_goal_mode.md\n    parameters: data/programs/storage_governance_goal.yaml\n    project_registry: data/registry/external_projects.yaml\ngit_delivery:\n  current_goal_authority: owner_20260905_resume_accepted_units\n  remote: origin\n  tracking_branch: origin/agent/governance-closure-20260812\n  automatic_main_merge: false\n  force_push: false\n",
+  "protected_hashes": {
+    "AGENTS.md": "e125d3a9c3a1c2961b3c9619f23ad2456d5645f2f41986c92c4a9ba00d9f7ca4",
+    "data/gates/auto_advance_policy.yaml": "47a48652d107e5e9e6e5251ca8e500862b2b00665d46187c2f3c9294f9766f6b",
+    "data/mcp/mcp_approval_policy.yaml": "54330d0612d652cd41152f40ab23fb1b935cf34e322476356fb118ec772e8aff",
+    "governance/agent_policy.yaml": "2b9f8ee1bdea519fafc7772f7b45999c1856a2baae64f84a21b7c64ac069b68a",
+    "prompts/codex_project_driver.md": "db43ba63d591314a7e0f8d8ebe0291c8a7f9139dd42cd3e0c77c5ec388293c70",
+    "prompts/cursor_project_driver.md": "28ae68bd3e1d84df876675cb2dc26c3848d15cb6b4d79216efd966e7e1cd3394",
+    "scripts/agent_gate.py": "3f534a7550833e8ae95c8a893c3e625f24f7957ea7aac3c0c1e4b0f7e75c8f95",
+    "scripts/auto_advance_runner.py": "1a93d285b3e3dd8399ecfd0efab548fb284d7ffb4d2e6905d7dcec94d543e815",
+    "docs/global_agent_governance_execution.md": "3c31b295653bf7d4e9b7a2fefe2d8f51830305c7b96225355fb2078af93d4484"
+  },
+  "authority_hashes": {
+    "data/design_governance/authority-bundle-v1.json": "cf54b9a8fabc889f0c7400aec497e2ab5fad83f2d20b1ff312b18357a1491b1a",
+    "data/design_governance/authority-bundle-v2.json": "96a9923d953a04a56e45f3670fb06e840ec1403b0cca567f99ccf6a1587724d3",
+    "data/design_governance/manifest-v3.json": "7a7ff48360e891dbb3db0b23a3ea8c123b89c1e47bc5fa03b6634d0cd4b3c30e",
+    "data/design_governance/source-plan-v2.json": "a143fc746b67dd21117bd377655255454d3e815c16d8538d52dd493f7d6c62f3",
+    "data/design_governance/relation-proposals-v2.json": "133619fb61ac898ab44565a18583a298f0274bf264ce2054d4843890ac81b2ac",
+    "data/design_governance/connection_adapters.json": "06df415a7ca906a1d779fa2867ab5dc18915ab2d8581bb65c7db85eeb6bcc5c6",
+    "data/registry/external_projects.yaml": "b41fb0df37556b31c196f179cd1f3b64f6919acc958590d2f97b2ef91e7600bd"
+  },
+  "ledger_preimage_sha256": "82262ca7fdffbce4c18059e616108974b9857e0f70b6e35e65660901eb33a8b4",
+  "design_store_preimage": "absent",
+  "source_code_identity": "TC6 exact Git head; no source writes authorized absent new defect",
+  "entry_gate": "PASS;0hard,10existingsoft",
+  "acceptance_boundary": "no UI/finalconnection/ownerchoice/Goal completion",
+  "metadata_only_health_record": "one completed first250k rebaseline in soleSTATE"
+}

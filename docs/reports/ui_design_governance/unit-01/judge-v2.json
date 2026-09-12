@@ -1,0 +1,13 @@
+{
+  "id": "hub-foundation-judge-v2",
+  "candidate_id": "hub-foundation-candidate-v2",
+  "candidate_hash": "22652f8bc4a2914fdc5751aa6f732b7114c50e41a671afc4f7974643b6db0de8",
+  "reviewer": "/root/foundation_judge_v2",
+  "decision": "FAIL",
+  "findings": [
+    "Nonfresh source_not_declared or invalid snapshots could carry concrete business state and next action.",
+    "Fresh snapshot with null last_success_at and a refresh error passed.",
+    "Nested extra fields and malformed/wrong-project scope evidence references passed."
+  ],
+  "verified_context": "22 file hashes and aggregate matched; 31 tests and real 49-record graph passed but did not cover these cases."
+}

@@ -1,0 +1,60 @@
+{
+  "classification": "synthetic_fixture",
+  "conflict": {
+    "conflict": {
+      "draft": "冲突后保留这段输入",
+      "focus": "design-conflict",
+      "count": "决定历史（5）"
+    },
+    "confirmed": "决定历史（6）"
+  },
+  "export": {
+    "status": 200,
+    "working": {
+      "allButtonsDisabled": true,
+      "notice": "正在保存决定…"
+    },
+    "navigation": {
+      "title": "示例：另一候选",
+      "currentExportLinks": 0
+    },
+    "recovered": {
+      "text": "另一候选或旧修订的导出请求已恢复。\n\n下载校验后的 ZIP\n查看导出校验信息\n完成恢复并返回当前候选",
+      "href": "/api/exports/ui-export-5ac29ce0-5fb6-4ca7-8eac-a9dc5e58130e?candidate_id=fixture-candidate&candidate_revision=2&candidate_hash=28c711f8c3d63cfa1983fd1cc3623e9bdbcd96aa49f2a45b9d083f7357ee7f90&store_revision=15"
+    },
+    "finalFocus": ""
+  },
+  "partial_refresh": {
+    "notice": "刷新完成，1 项未能更新，保留上次成功快照。",
+    "status": "active",
+    "next": "continue fixture",
+    "freshness": "stale",
+    "errors": 1
+  },
+  "refresh_recovery": {
+    "enabledOnExcludedView": true,
+    "sameCommand": true,
+    "actualProjectIds": [
+      "fixture-project"
+    ],
+    "notice": "已完成 1 项刷新。"
+  },
+  "stale": {
+    "stale": true,
+    "selectionDisabled": true,
+    "exportDisabled": true,
+    "history": "决定历史（6）"
+  },
+  "export_completed_focus": "design-feedback",
+  "project_checks": {
+    "bounded_refresh": 23,
+    "list_rows": 24,
+    "empty_search_and_clear": true,
+    "clipboard": "来源位置已复制。",
+    "empty_design": "这个项目暂无设计候选"
+  },
+  "harness_notes": [
+    "An early browser helper used unsupported Node dynamic import; no effects occurred before diagnosis and rewrite.",
+    "Two early locator checks used abbreviated headings; actual page inspection confirmed complete empty state and no product failure."
+  ]
+}

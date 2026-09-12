@@ -1,0 +1,24 @@
+{
+  "id": "hub-unit-01-preservation",
+  "schema_version": "1.0",
+  "record_type": "historical_preservation_evidence",
+  "created_at": "2026-09-05T04:01:59.813088+00:00",
+  "protected_file_count": 21,
+  "changed_protected_files": [
+    "STATE.yaml"
+  ],
+  "authorized_fields_changed": [
+    "current_work",
+    "last_updated"
+  ],
+  "all_other_state_sections": "exact semantic equality",
+  "all_other_protected_files": "exact byte-hash equality",
+  "bootstrap_bytes": 7997,
+  "external_effects": "No external writes/services/Git effects performed; tests use isolated temporary fixture directories.",
+  "task_agents": {
+    "hub_code_discovery": "collected read-only",
+    "ui_sources": "collected read-only",
+    "connection_tests": "collected; only test_hub_connections.py",
+    "hub_contract": "contract returned; awaiting exact candidate decision"
+  }
+}

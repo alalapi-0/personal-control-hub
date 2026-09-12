@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.0",
+  "id": "hub-unit-01-baseline",
+  "record_type": "historical_baseline_evidence",
+  "observed_at": "2026-09-05T03:52:29.395327+00:00",
+  "head": "99c0dffc7d446ec17751632ea312220a28a7159e",
+  "branch": "agent/governance-closure-20260812",
+  "protected_files": {
+    "AGENTS.md": {
+      "git_status": " M",
+      "sha256": "03e31a94d193f54c392671143f31db860bba412304e0c2a9c861a971beadf547"
+    },
+    "README.md": {
+      "git_status": " M",
+      "sha256": "bde32f5889256cf6e64f55e25cd00d695c033cdca21d009568b27f80508c767c"
+    },
+    "STATE.yaml": {
+      "git_status": " M",
+      "sha256": "08c1aa5e2bdec65718f089759fde4981f1349b50c3665dc7a1f820bf46608bab"
+    },
+    "data/registry/external_projects.yaml": {
+      "git_status": " M",
+      "sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+    },
+    "data/tasks/next_actions.yaml": {
+      "git_status": " M",
+      "sha256": "684743d8a7500c9412907ca051f4c4871add3e6c3b829d0138f748135883ce3e"
+    },
+    "data/tasks/next_program_actions.yaml": {
+      "git_status": " M",
+      "sha256": "8958655786ad3cb8d4353ed200d0009a37304d1546dda510b21ff011b02d800b"
+    },
+    "docs/05_external_project_protocol.md": {
+      "git_status": " M",
+      "sha256": "426bbca6dff0b44c7cf316ae2bcbe07e2aa20eedf9c2bf718e1d962fef1cf621"
+    },
+    "governance/adapters/storage_governance.yaml": {
+      "git_status": " M",
+      "sha256": "c84d1be1cb39d699af694a412b09452006cb4c6be4bd8c514eb949bd239a1cea"
+    },
+    "governance/file_role_map.yaml": {
+      "git_status": " M",
+      "sha256": "d85e8af949b463666ae44bc759c0d687f01178ade44331cf19aea579c8359ba7"
+    },
+    "project.yaml": {
+      "git_status": " M",
+      "sha256": "95d10def7d1ea9c95c1f0a2411d9ef9791863e667a857b602d0e2df912637070"
+    },
+    "scripts/check_repo.py": {
+      "git_status": " M",
+      "sha256": "faf66e34667e91637382148bc7a7c9d34d2ac5c54b12ac0d5858d047ee0da7bf"
+    },
+    "src/hub/services/project_registry_service.py": {
+      "git_status": " M",
+      "sha256": "c4915a3471d7b71096bd6e43e0b7e36cd5251eee3f2a98a3459996513ed3c28c"
+    },
+    "tests/test_control_plane_v2.py": {
+      "git_status": " M",
+      "sha256": "28ba214e4527997771740a817e4723c61887acb1b33d9350a649a6a9669b3cd7"
+    },
+    "data/programs/storage_governance_goal.yaml": {
+      "git_status": "??",
+      "sha256": "2111e05d9cf1f6cd2cd1b091e9d900650383cd0bc2092ca44d361fae25c1cfc4"
+    },
+    "docs/design/completion_handoff.md": {
+      "git_status": "??",
+      "sha256": "d3e042b91286401915eec1c15a28d09638afeafb53f977af6be4f5f3a281d8d1"
+    },
+    "docs/design/design_review_workbench.md": {
+      "git_status": "??",
+      "sha256": "a5f13285c243fe81c70c491037895f2a8b63a4d7e340eeb3667a80d91a1d1113"
+    },
+    "docs/design/personal_control_hub_completion.md": {
+      "git_status": "??",
+      "sha256": "7c129418569ad231e293dd09b4c0ba789762d0bd092273ec008117df6d3893d7"
+    },
+    "docs/design/ui_governance_data_contract.md": {
+      "git_status": "??",
+      "sha256": "305a27893e22f1b83445c16b69205587bb665339b33d246c7f5730dfa7ebb46a"
+    },
+    "docs/design/ui_governance_execution.md": {
+      "git_status": "??",
+      "sha256": "b4d94112ece004f8bacfe938d2843b2659191d7ec9ab1a30485c3c2c567d1072"
+    },
+    "prompts/storage_governance_goal_mode.md": {
+      "git_status": "??",
+      "sha256": "8263e3dbef3628f48317b43402923297d9cec18936f217c4ee0fc90647757639"
+    },
+    "prompts/ui_design_governance_goal_mode.md": {
+      "git_status": "??",
+      "sha256": "e1acb3c03eedc1ce93183609a01d6f9ca67827e3eb07c361a257de200ff555a6"
+    }
+  },
+  "state_preimage": "---\nschema_version: '1.1'\nmetadata:\n  role: canonical_current_state\n  authority: canonical\n  reader: 进入 Hub 的 Agent、所有者和状态展示工具。\n  purpose: 只保存 Hub 当前管理工作、registry/外部状态指针、阻塞与唯一下一步；不复制外部项目执行状态。\n  update_triggers:\n  - accepted_milestone\n  - governance_round_transition\n  - registry_or_route_change\n  - blocker_change\n  - unique_next_action_change\nlast_updated: '2026-09-04T09:53:36+08:00'\nproject:\n  id: personal-control-hub\n  phase: Phase 1\n  health: active\n  location_policy: internal_disk_only\n  storage_migration_or_cleanup: forbidden\ncurrent_round:\n  id: ROUND-1-1\n  name: Development Project Storage Governance Registry and Routing\n  status: ACCEPTED\n  governance_revision: HUB-GOV-2026-09-02-06-ACCEPTED\n  last_completed_round: ROUND-1\n  next_round: ROUND-1-5\ncurrent_work:\n  objective: 为当前逐项目存储治理提供完整项目清单、稳定参数、单向路由和 compact Hub 摘要；执行状态只在外部 StorageGovernance/STATE.yaml。\n  status: COMPLETE_WITH_OWNER_REMOVAL\n  blocker: 无；SubPlz 已确认不是业主项目，本机与外置盘副本/运行时均已清除，上游 GitHub 未触碰。20 个项目已迁移清理，mpv-clip-workbench 已关联。\n  next_action: 保持当前外置盘路径映射；SubPlz 不再纳入 Hub 管理。\nregistry:\n  authority: data/registry/external_projects.yaml\n  registered_count: 24\n  enabled_count: 23\n  execution_candidate_count: 21\n  special_record_count: 3\n  storage_effect_authority: external_storage_state_only\n  frozen_manifest: \"/Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_04_r1/PROJECT_MANIFEST_v1.yaml\"\n  frozen_manifest_sha256: fafae757b2b8cbc297d6be7976d2a6f49a7735734b27293792fa0b52dc6bfacd\n  authority_pointer_audit: \"/Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/AUTHORITY_POINTER_AUDIT.yaml\"\n  exclusions:\n    manga-localizer: accepted_exclusion_record_only\n    personal-control-hub: protected_internal_control_plane\n    storage_governance: protected_governance_program\nstorage_governance:\n  relation: active_governance_program\n  adapter: governance/adapters/storage_governance.yaml\n  external_router: \"~/Documents/StorageGovernance/AGENTS.md\"\n  external_norm: \"~/Documents/StorageGovernance/STORAGE_GOVERNANCE.md\"\n  external_state: \"~/Documents/StorageGovernance/STATE.yaml\"\n  execution_state_authority: external_state_only\n  hub_access: registry_pointer_and_compact_summary\n  hub_location_policy: internal_disk_only_and_migration_excluded\n  goal_package:\n    prompt: prompts/storage_governance_goal_mode.md\n    parameters: data/programs/storage_governance_goal.yaml\n    project_registry: data/registry/external_projects.yaml\n    activation: active\n    authority: owner_resume_01a069c2-4ba9-7161-bb4e-eae56f5e5977\n    epoch: dev_projects_2026_09_04_r1\n    contract: SG-GOV-2026-09-04-ROOT-MIGRATION\n  compact_execution_summary:\n    state: COMPLETE_WITH_OWNER_REMOVAL\n    active_project: none_paused\n    active_projects: 0\n    active_writers: 0\n    pending_projects: 0\n    terminal_records: 22\n    project_effects_allowed: false\n    current_project_effect_authority: closed\n    storage_execution_authority: completed_with_owner_removal\n    epoch_capability_authority: granted\n    last_terminal_project: root-migration-batch\n    last_terminal_disposition: 20_cleaned_0_owner_exempt_1_removed_1_existing_external_registered\n  management_finding: mpv-clip-workbench 已登记为外盘现有 Git 项目；light_novel 与 zarathustra-adaptation 已完成外盘复制、Git 同步、旧源清理和软链替换；SubPlz 已按业主确认移除本机与外置盘资产并从 Hub registry 删除。\n  owner_global_configuration_preservation: external_state_owner_boundary_addendum\n  source: \"~/Documents/StorageGovernance/STATE.yaml\"\n  scope: exact_root_migration_and_github_sync\n  active_project_state: complete_with_owner_removal\n  post_effect_evidence: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_04_r1/POST_MIGRATION_VERIFICATION.yaml\n  last_accepted_milestone:\n    id: storage_restart_2026_09_01_r2_closure\n    status: complete_terminal_reconciliation\n    accepted_on: '2026-09-02'\n    epoch_released_local_bytes: 882577408\n    cumulative_accepted_release_bytes: 26992914432\n    terminal_counts:\n      accepted: 1\n      deferred: 29\n      protected: 14\n      ineligible: 1\n    source_state: \"~/Documents/StorageGovernance/STATE.yaml\"\n  bounded_management_repair_effect: consumed\ncontrol_plane_review:\n  revision: 7\n  state: ACCEPTED\n  phase: COMPLETE\n  contract: SG-GOV-2026-09-03-TC2\n  fresh_judge: PASS\n  governor_decision: APPROVE\n  review_authority: \"~/Documents/StorageGovernance/STATE.yaml.control_plane_review\"\ngit_delivery:\n  current_goal_authority: none\n  remote: origin\n  tracking_branch: origin/agent/governance-closure-20260812\n  automatic_main_merge: false\n  force_push: false\n",
+  "bootstrap_bytes": 8058,
+  "task_thread_id": "01a06fae-2112-7cd2-8c83-d34d323fecaa",
+  "write_ownership": {
+    "observed_at": "2026-09-05T03:51:57.808Z",
+    "native_active_hub_tasks": [
+      "01a06fae-2112-7cd2-8c83-d34d323fecaa"
+    ],
+    "subagents": "read_only_only"
+  },
+  "git_effects_authorized": false
+}

@@ -1,0 +1,14 @@
+{
+  "superseded_candidate": "b772ac901e34c88a465edd19b3fa9ebc69dd7b56319b5d781efe035eab6bf68b",
+  "reason": "P2/states/mobile content identity in figma.json and embedded readback script was stale after tint correction; final readback and PNG export identities already agreed. Verifier did not assert mapping content identity equality. Violates criterion7.",
+  "changes": [
+    {
+      "key": "P2/states/mobile",
+      "id": "91:2019",
+      "before": "ae73db4ed742fa25b6153b48257623ec4c6a18064a47c188c27901c3d791a099",
+      "after": "aa1f2834e3d649f97916da7f5aa6e4c6466bd854df8f27cda1f3ae30d062935c"
+    }
+  ],
+  "visual_changes": false,
+  "new_check": "figma.json frame content_sha256 equals final readback content_sha256"
+}

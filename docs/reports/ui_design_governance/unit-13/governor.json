@@ -1,0 +1,11 @@
+{
+  "agent": "/root/tc12_governor",
+  "role": "read_only_governor",
+  "contract": "HUB-GOV-2026-09-06-TC13-v1",
+  "candidate_sha256": "6b53024c1419582977da6c36bf090080359ca474afe8ace84630e615a34a79c0",
+  "decision": "APPROVE",
+  "decided_at": "2026-09-06 02:40:05 UTC",
+  "basis": "Frozen evidence satisfies TC13: three distinct complete editable directions in one task draft, 36 desktop/mobile frames, 58 matched exports, 670 matched source nodes, 133 viewing links, 33 contrast pairs; synthetic data and required accessibility/state designs evidenced; preservation, STATE semantics and checks passed. Fresh Judge PASS on the same candidate with no blocking findings.",
+  "authorized_next_action": "Root may record this decision, commit and normally push only TC13 scope to the current tracking branch, verify exact remote SHA, then present A/B/C and await owner selection.",
+  "limits": "Owner selection remains PENDING. Runtime interaction, persistence, real integrations and frontend implementation remain UNVERIFIED. No implementation or owner selection in TC13; no OAuth, configuration, account or other-project effects."
+}

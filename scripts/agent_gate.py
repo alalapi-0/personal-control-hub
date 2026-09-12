@@ -6,6 +6,7 @@ from __future__ import annotations
 from governance_scope import add_scope_argument, activate_scope, selected_task, excluded_path
 
 import argparse
+import os
 import json
 import os
 import re
@@ -25,18 +26,24 @@ CORE_FILES = [
     "README.md",
     "STATE.yaml",
     "AGENTS.md",
+    "STATE.yaml",
+    "NORTH_STAR.md",
     "project.yaml",
     "docs/00_start_here.md",
     "docs/01_project_ultimate_goal.md",
     "docs/02_master_roadmap.md",
     "governance/agent_policy.yaml",
     "governance/round_state.yaml",
+    "governance/adapters/storage_governance.yaml",
     "data/mcp/mcp_capability_registry.yaml",
     "data/mcp/mcp_approval_policy.yaml",
     "data/mcp/mcp_integration_roadmap.yaml",
     "prompts/codex_project_driver.md",
     "prompts/cursor_project_driver.md",
 ]
+
+DEFAULT_BOOT_FILES = ["AGENTS.md", "STATE.yaml"]
+DEFAULT_BOOT_LIMIT_BYTES = 8192
 
 REQUIRED_ROUND_FIELDS = [
     "id",
@@ -58,6 +65,7 @@ REQUIRED_MCP_IDS = {
 }
 
 SCAN_ROOTS = [
+    "STATE.yaml",
     "README.md",
     "STATE.yaml",
     "AGENTS.md",
@@ -175,6 +183,21 @@ def _check_core_files(hard_blockers: list[str]) -> None:
         hard_blockers.extend(f"核心文件缺失：{relative}" for relative in missing)
 
 
+def _check_default_boot(hard_blockers: list[str]) -> None:
+    paths = [ROOT / relative for relative in DEFAULT_BOOT_FILES]
+    if any(not path.is_file() for path in paths):
+        return
+    total = sum(path.stat().st_size for path in paths)
+    if total > DEFAULT_BOOT_LIMIT_BYTES:
+        hard_blockers.append(
+            f"默认启动包 {total} bytes，超过 {DEFAULT_BOOT_LIMIT_BYTES} bytes"
+        )
+    state = _load_yaml("STATE.yaml", hard_blockers)
+    metadata = state.get("metadata", {}) if isinstance(state, dict) else {}
+    if not isinstance(metadata, dict) or metadata.get("authority") != "canonical":
+        hard_blockers.append("STATE.yaml 必须是唯一 canonical current state")
+
+
 def _get_rounds(data: Any) -> list[dict[str, Any]]:
     if not isinstance(data, dict):
         return []
@@ -274,6 +297,13 @@ def _check_mcp_registry(hard_blockers: list[str]) -> None:
         level = levels.get(level_id, {})
         if not isinstance(level, dict) or level.get("confirmation_required") is not True:
             hard_blockers.append(f"mcp_approval_policy: {level_id} 必须要求人工确认")
+    agent_policy = _load_yaml("governance/agent_policy.yaml", hard_blockers)
+    agent_levels = agent_policy.get("approval_levels", {}) if isinstance(agent_policy, dict) else {}
+    for source, level in (("mcp_approval_policy", levels.get("L1", {})),
+                          ("agent_policy", agent_levels.get("L1", {}) if isinstance(agent_levels, dict) else {})):
+        if not isinstance(level, dict) or any(level.get(key) is not expected for key, expected in
+                (("confirmation_required", False), ("logging_required", False), ("authority_required", True))):
+            hard_blockers.append(f"{source}: L1 必须复用当前授权、免重复确认且不强制日志；不得自动授予权限")
     l3 = levels.get("L3", {})
     if not isinstance(l3, dict) or l3.get("default_forbidden") is not True:
         hard_blockers.append("mcp_approval_policy: L3 具体高风险动作必须保持默认禁止")
@@ -355,16 +385,16 @@ def run_gate(requested_round: str | None = None) -> dict[str, Any]:
     if requested_round and requested_can_auto_advance is False and decision == "continue":
         decision = "warn_and_continue"
 
-    can_auto_advance = decision in {"continue", "warn_and_continue"}
-    if requested_round and requested_can_auto_advance is False:
-        can_auto_advance = False
+    checks_passed = decision in {"continue", "warn_and_continue"}
 
     return {
         "decision": decision,
         "hard_blockers": hard_blockers,
         "soft_warnings": soft_warnings,
         "next_round": next_round,
-        "can_auto_advance": can_auto_advance,
+        "checks_passed": checks_passed,
+        "can_auto_advance": False,
+        "authority_granted": False,
     }
 
 
@@ -373,7 +403,8 @@ def _print_text(result: dict[str, Any]) -> None:
     print(f"决策：{result['decision']}")
     print(f"硬阻塞：{len(result['hard_blockers'])}")
     print(f"软警告：{len(result['soft_warnings'])}")
-    print(f"可推进轮次：{result['next_round'] or '无'}")
+    print(f"下一轮候选：{result['next_round'] or '无'}")
+    print("动作授权：未授予（gate 只报告检查结果）")
 
     if result["hard_blockers"]:
         print("\n硬阻塞明细：")
@@ -386,11 +417,11 @@ def _print_text(result: dict[str, Any]) -> None:
             print(f"  - {item}")
 
     if result["decision"] == "stop":
-        suggestion = "存在硬阻塞，必须停止并请求用户确认。"
+        suggestion = "存在硬阻塞；停止触发阻塞的动作，并按当前上级规则处理。"
     elif result["decision"] == "warn_and_continue":
-        suggestion = "可以继续推进，但需要记录 warning 并使用保守默认值。"
+        suggestion = "检查通过但有 warning；仅在当前已有授权范围内继续，默认不写日志。"
     else:
-        suggestion = "可以继续推进。"
+        suggestion = "检查通过；仅在当前已有授权范围内继续。"
     print(f"建议：{suggestion}")
 
 

@@ -8,10 +8,11 @@ next_program_actions:
 
   - id: program_confirm_external_project_paths
     program_id: personal_control_hub
-    title: "确认首批外部项目路径和扫描开关。"
-    status: proposed
+    title: "冻结全部实际本机开发项目路径与扫描边界。"
+    status: completed
     suggested_cadence: once
-    requires_user_confirmation: true
+    requires_user_confirmation: false
+    evidence: /Volumes/AI_WORK_SSD/_governance/evidence/dev_projects_2026_09_02_r1/PROJECT_MANIFEST_v2.yaml
 
 policy:
   source: "Agent may propose; user accepts."

@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "unit": "TC6",
+  "candidate_hash": "2c5fdbc323211af989a71950bb9740d5216e7fa6404c5fc2eac7272eba3cafe7",
+  "commit": "b0c25ef0d0ee0f2d56cb6cfe523b7a07a514c8a7",
+  "tree": "1fef72519de944d40199460c3071e16d2150d06b",
+  "branch": "agent/governance-closure-20260812",
+  "remote": "origin",
+  "remote_ref": "refs/heads/agent/governance-closure-20260812",
+  "remote_verified_commit": "b0c25ef0d0ee0f2d56cb6cfe523b7a07a514c8a7",
+  "push": "normal_success",
+  "staged_paths": 41,
+  "staged_patch_sha256": "3ed4e3fe7eb515d9de1ed5228a4efe3876ee50436fedaa360b3bea125b839ee3",
+  "other_global_worktree_changes": "preserved_unstaged",
+  "overall_goal_complete": false
+}

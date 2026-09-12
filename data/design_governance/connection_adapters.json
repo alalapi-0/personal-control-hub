@@ -1,0 +1,254 @@
+{
+  "schema_version": "1.0",
+  "adapter_version": "1.0",
+  "metadata": {
+    "reader": "Hub connection reader and maintainer",
+    "purpose": "Deterministic bounded field selectors, not project identity or execution authority",
+    "update_trigger": "Registered source structure/role changes; version and revalidate selectors",
+    "evidence": "docs/reports/ui_design_governance/unit-01/source-discovery.md"
+  },
+  "projects": {
+    "storage_governance": {
+      "role": "compact_management_summary",
+      "format": "yaml",
+      "status": {
+        "jsonpath": "execution_control.state"
+      },
+      "next": {
+        "jsonpath": "next_action.description"
+      },
+      "unknown": null,
+      "next_kind": "explicit"
+    },
+    "personal-control-hub": {
+      "role": "hub_current_management",
+      "format": "yaml",
+      "status": {
+        "jsonpath": "current_work.status"
+      },
+      "next": {
+        "jsonpath": "current_work.next_action"
+      },
+      "unknown": null,
+      "next_kind": "explicit"
+    },
+    "manga-localizer": {
+      "role": "excluded_registry_record",
+      "format": null,
+      "status": null,
+      "next": null,
+      "unknown": "明确禁止当前Goal访问；等待所有者范围决定。",
+      "next_kind": "unknown"
+    },
+    "universal-player": {
+      "role": "product_state",
+      "format": "markdown",
+      "status": {
+        "label": "Status:"
+      },
+      "next": null,
+      "unknown": "仅提供历史产品后续，不是当前下一步。",
+      "next_kind": "unknown"
+    },
+    "ai-anime-short-factory": {
+      "role": "governance_runtime_state",
+      "format": "json",
+      "status": {
+        "jsonpath": "governed_round.status"
+      },
+      "next": null,
+      "unknown": "队列当前为空；无命名下一步字段，Goal模式不代表进度。",
+      "next_kind": "unknown"
+    },
+    "ai-music-foundry": {
+      "role": "product_capability_summary",
+      "format": "markdown",
+      "status": {
+        "label": "- **当前产品优先级**："
+      },
+      "next": {
+        "label": "- **原创作曲线下一里程碑**："
+      },
+      "unknown": "产品优先级描述不等于运行健康；下一里程碑仅适用于原创作曲线。",
+      "next_kind": "track_milestone"
+    },
+    "novel-continuation-agent": {
+      "role": "current_round_and_blocker",
+      "format": "yaml",
+      "status": {
+        "jsonpath": "current_round.status"
+      },
+      "next": {
+        "jsonpath": "next_agent_recommended_actions"
+      },
+      "unknown": "后续是建议清单，不是执行授权。",
+      "next_kind": "recommendations"
+    },
+    "story-faceless-utopia": {
+      "role": "declared_readme_product_summary",
+      "format": "markdown",
+      "status": {
+        "section": "Current stage",
+        "first_paragraph": true
+      },
+      "next": null,
+      "unknown": "来源未提供唯一下一步；不将存储完成映射为产品完成。",
+      "next_kind": "unknown"
+    },
+    "light-novel": {
+      "role": "declared_round_snapshot",
+      "format": "yaml",
+      "status": null,
+      "next": null,
+      "unknown": "已登记来源语法无效，保留读取错误；不运行源项目live probe。",
+      "next_kind": "unknown"
+    },
+    "wechat-article-scheduler": {
+      "role": "project_lifecycle",
+      "format": "yaml",
+      "status": {
+        "jsonpath": "project.status"
+      },
+      "next": null,
+      "unknown": "无明确下一步；运行配置不是健康状态。",
+      "next_kind": "unknown"
+    },
+    "resilient-personal-network": {
+      "role": "repository_stage_claim_only",
+      "format": "markdown",
+      "status": {
+        "section": "当前阶段",
+        "first_paragraph": true
+      },
+      "next": null,
+      "unknown": "无唯一下一步；本地文档未验证远端服务健康。",
+      "next_kind": "unknown"
+    },
+    "pixel-world-asset-forge": {
+      "role": "round_cycle_state",
+      "format": "yaml",
+      "status": {
+        "jsonpath": "round_progression.cycle_status"
+      },
+      "next": null,
+      "unknown": "轮次映射是任务名称，不是下一步或授权。",
+      "next_kind": "unknown"
+    },
+    "desktop-jav-tools": {
+      "role": "operational_readme",
+      "format": "markdown",
+      "status": null,
+      "next": null,
+      "unknown": "使用和恢复指南未声明业务当前状态或下一步。",
+      "next_kind": "unknown"
+    },
+    "zarathustra-adaptation": {
+      "role": "product_state",
+      "format": "markdown",
+      "status": {
+        "section": "Snapshot",
+        "table_key": "Phase"
+      },
+      "next": {
+        "section": "Next (ordered)"
+      },
+      "unknown": null,
+      "next_kind": "recommendations"
+    },
+    "computer-study-plan": {
+      "role": "project_capability_summary",
+      "format": "markdown",
+      "status": {
+        "section": "1. 当前定位",
+        "first_paragraph": true
+      },
+      "next": {
+        "section": "5. 当前问题 / 后续"
+      },
+      "unknown": "后续是多个待办方向；此摘要不读取任务进度数据。",
+      "next_kind": "backlog"
+    },
+    "desktop-tool": {
+      "role": "tool_storage_operations",
+      "format": "markdown",
+      "status": null,
+      "next": null,
+      "unknown": "登记来源描述存储维护，不提供业务状态或下一步。",
+      "next_kind": "unknown"
+    },
+    "audio-clone": {
+      "role": "storage_operations_only",
+      "format": "markdown",
+      "status": null,
+      "next": null,
+      "unknown": "登记的存储运行文档不提供业务状态或下一步。",
+      "next_kind": "unknown"
+    },
+    "cognitive-asset-library": {
+      "role": "roadmap_phase_state",
+      "format": "markdown",
+      "status": {
+        "heading_regex": "^## Phase [^\\n]+ — `in_progress`"
+      },
+      "next": null,
+      "unknown": "未勾选验收项是多个候选，不能推断唯一下一步。",
+      "next_kind": "unknown"
+    },
+    "pycharm-agent-workspace": {
+      "role": "version_lifecycle",
+      "format": "yaml",
+      "status": {
+        "jsonpath": "status"
+      },
+      "next": null,
+      "unknown": "next_version_hint是命名模板，不是下一步。",
+      "next_kind": "unknown"
+    },
+    "youtube-hq-downloader": {
+      "role": "nonunique_project_status_claim",
+      "format": "markdown",
+      "status": {
+        "section": "当前进度"
+      },
+      "next": null,
+      "unknown": "未来扩展列表未排序，不是唯一下一步。",
+      "next_kind": "unknown"
+    },
+    "desktop-magnet": {
+      "role": "registry_only",
+      "format": null,
+      "status": null,
+      "next": null,
+      "unknown": "没有声明当前状态入口；允许的README只有使用说明。",
+      "next_kind": "unknown"
+    },
+    "pycharm-misc-project": {
+      "role": "registry_only",
+      "format": null,
+      "status": null,
+      "next": null,
+      "unknown": "没有声明当前状态入口；允许的顶层观察未发现README或状态文件。",
+      "next_kind": "unknown"
+    },
+    "desktop-downloads-scripts": {
+      "role": "registry_only",
+      "format": null,
+      "status": null,
+      "next": null,
+      "unknown": "没有声明当前状态入口；允许的顶层观察仅为脚本和IDE元数据。",
+      "next_kind": "unknown"
+    },
+    "mpv-clip-workbench": {
+      "role": "product_round_state",
+      "format": "markdown",
+      "status": {
+        "label": "- Round Status:"
+      },
+      "next": {
+        "section": "下一入口"
+      },
+      "unknown": "不使用Next Authorized Round标签；其下一行明确说尚未授权。",
+      "next_kind": "explicit"
+    }
+  }
+}

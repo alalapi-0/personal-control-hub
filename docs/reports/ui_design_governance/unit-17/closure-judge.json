@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "judge": "/root/tc17_closure_judge",
+  "contract": "TC17 v3",
+  "candidate_sha256": "51fcdd76e9d1a0e9c1597818f925e6b63f6761090a3396e481c6cb897e022000",
+  "checks": {
+    "candidate_sha": "MATCH",
+    "frozen_files": 43,
+    "verify_closure": "PASS",
+    "store_revision": 15,
+    "facts_preserved": 12,
+    "old_events_preserved": 1,
+    "new_defer_events": 1,
+    "protected_files_unchanged": 337,
+    "ledger_head": 130,
+    "python_passed": 187,
+    "python_subtests": 140,
+    "node_passed": 10,
+    "ui_lanes": "PASS",
+    "export_artifacts": 4,
+    "export_selection": "unselected",
+    "export_authority": false
+  },
+  "basis": [
+    "Exact scoped18addition/2deletion readable-name fix only.",
+    "Delegated owner instruction is faithfully mapped to one defer event; original retained and external work cancelled.",
+    "Export SHA313bb3ec4b5bcbe4e96e6dac7349bf90eab23b7292c0da7f5440af8a3f6f621e, null selection, no implementation authority, exact history.",
+    "Screenshots and fresh/reload/back, focus, reduced-motion, console/network, restart/replay evidence cover revised acceptance.",
+    "TC18 frozen candidate31948ccec7efa9d9901270ac54cad4c6423b5571d4b7418deff7b1f1716af89f unchanged."
+  ],
+  "actionable_defects": [],
+  "known_warning": "Existing Node module-type warning is not a candidate regression."
+}

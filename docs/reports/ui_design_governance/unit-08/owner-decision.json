@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "kind": "owner_connection_exception_decision",
+  "authority_ref": "owner-turn:01a071cc-f2c6-76c2-bc43-f300db610b0b/01a073d2-9296-7743-84f8-17cec1f9bffc#source-absence-exceptions",
+  "thread_id": "01a071cc-f2c6-76c2-bc43-f300db610b0b",
+  "turn_id": "01a073d2-9296-7743-84f8-17cec1f9bffc",
+  "message_id": "01a073d2-930c-7ee3-8eee-d745e384c9a4",
+  "started_at_unix": 1788649575,
+  "quote": "批准例外",
+  "context": "Reply to pending question about three verified no-current-source projects. Manga scope clarification remains unanswered.",
+  "project_ids": [
+    "desktop-downloads-scripts",
+    "desktop-magnet",
+    "pycharm-misc-project"
+  ],
+  "decision": "AUTHORIZED_EXCEPTION",
+  "reason": "所有者批准无当前状态源的可见管理例外；保留登记和未知业务状态，不扩大读取或写入权限。",
+  "exclusions": [
+    "manga-localizer"
+  ],
+  "source_absence_evidence": "../unit-07/runtime-evidence.json",
+  "ui_verification": "UNVERIFIED",
+  "final_goal_acceptance": false
+}

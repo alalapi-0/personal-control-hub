@@ -1,0 +1,25 @@
+{
+  "request_id": "tc17-defer-owner-01a07589-d513-7a01-92f4-eefb9ba5f05b",
+  "event_id": "tc17-owner-retain-original",
+  "created_at": "2026-09-06T07:10:45.123986+00:00",
+  "expected_revision": 14,
+  "action": "defer",
+  "candidate": {
+    "id": "csp-home-quiet-workbench",
+    "revision": 1,
+    "content_hash": "1a1f1a59897ae6200e9361e3c4c692c2f58499bd045df8f3abd2d994d8e453a1"
+  },
+  "scope": {
+    "family_id": null,
+    "members": [
+      {
+        "pages": [
+          "home"
+        ],
+        "project_id": "computer-study-plan"
+      }
+    ]
+  },
+  "feedback": "所有者原话：学习计划的项目保留原版的设计，其他项目也不用继续推进了，只要先把hub的选稿页面做出来就行，后面其他项目的设计和推进我打算交给cursor去做。\n由 Root 按此指令代为记录：学习计划保留原版，本候选不采用；不授权外部实施。",
+  "supersedes": null
+}

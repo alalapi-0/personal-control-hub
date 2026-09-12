@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0",
+  "contract": "HUB-GOV-2026-09-05-TC3",
+  "repair_of": "TC3-candidate-v2",
+  "changes": [
+    "Pin complete history verification/materialization to one SQLite read transaction.",
+    "Rebuild derives only from that coherent historical snapshot.",
+    "Two deterministic WAL tests interleave commits at multiple material read boundaries and preserve true-corruption detection."
+  ],
+  "checks": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -W error::ResourceWarning -m unittest discover -s tests -p 'test_hub_*.py'",
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "95438c",
+        "wall_time_seconds": 10.00316025,
+        "session_id": 63984,
+        "original_token_count": 29,
+        "output": "..................................................................................................................",
+        "completion": {
+          "chunk_id": "e4393c",
+          "wall_time_seconds": 0.000001166,
+          "exit_code": 0,
+          "original_token_count": 30,
+          "output": "...................\n----------------------------------------------------------------------\nRan 133 tests in 15.067s\n\nOK\n"
+        }
+      }
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/check_repo.py",
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "b27759",
+        "wall_time_seconds": 0.000002292,
+        "exit_code": 0,
+        "original_token_count": 44,
+        "output": "personal-control-hub skeleton check\nroot: /Users/alalapi/PycharmProjects/personal-control-hub\n\nFiles: OK\nDirectories: OK\nMCP registry: OK\nSecret marker scan: OK\n\nResult: PASS\n"
+      }
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/round_consistency_check.py",
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "6f29b4",
+        "wall_time_seconds": 0.000001834,
+        "exit_code": 0,
+        "original_token_count": 30,
+        "output": "=== 轮次一致性检查 ===\n结果：ok\n当前轮次：ROUND-1-1\n下一轮次：ROUND-1-5\n警告：0\n硬阻塞：0\n"
+      }
+    },
+    {
+      "command": "git diff --check",
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "129b3c",
+        "wall_time_seconds": 0.000002875,
+        "exit_code": 0,
+        "original_token_count": 0,
+        "output": ""
+      }
+    }
+  ],
+  "related_tests": 133,
+  "real_evidence": "readback-v3.json",
+  "source_read_evidence": "real-validation-v2.json; source resolver unchanged in this repair",
+  "baseline_failures": "Existing mpv registry errors and legacy storage/SubPlz expectations remain unrelated baseline; not claimed passing.",
+  "git_effects": 0,
+  "external_writes": 0
+}

@@ -1,0 +1,24 @@
+{
+  "id": "hub-foundation-judge-v3",
+  "candidate_id": "hub-foundation-candidate-v3",
+  "candidate_hash": "08229da02fa8264754f19143e90accd60e21f740209d0891c1011b8ce138ea0d",
+  "reviewer": "/root/foundation_judge_v3",
+  "decision": "PASS",
+  "verified": [
+    "25/25 hashes and aggregate; no mutation after checks",
+    "38/38 focused tests",
+    "49-record full graph and 3-record Hub graph",
+    "Fresh Hub source read and expected STATE fingerprint",
+    "24 registry IDs; 20 named-source / 1 no_access / 3 no_source",
+    "Schema index matches runtime",
+    "20 protected files byte-identical; other STATE sections semantically unchanged",
+    "Bootstrap 7997 bytes; check_repo/round_consistency/diff/gates pass"
+  ],
+  "baseline_failures": [
+    "Two pre-existing MPV registry validation errors unchanged"
+  ],
+  "limits": [
+    "Foundation only; no UI/final connection/Figma/Goal acceptance",
+    "19 fresh / 1 blocked / 1 invalid / 3 source-not-declared; all UI UNVERIFIED"
+  ]
+}

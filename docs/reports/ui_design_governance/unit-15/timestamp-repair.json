@@ -1,0 +1,8 @@
+{
+  "reason": "Replace guessed logical timestamp with actual import clock before any UI consumer",
+  "owned_store_preimage_sha256": "f989fa7589421214113c9cf880bff3d0124767ba01553b7b7dfe4faa83e0e12b",
+  "owned_export_sha256": "26558f2a712e34d95b8336cf24824018cd425f0713b4eadf4139701c77e3c3ac",
+  "restored_store_sha256": "ff7f6659951a3c331488b999d927e992559ac512e41214c4a3145520910ec37f",
+  "observed_at": "2026-09-06T03:37:40+00:00",
+  "foreign_facts_or_events": 0
+}

@@ -1,0 +1,22 @@
+{
+  "pass": true,
+  "reference": "Python hashlib SHA-256, UTF-8",
+  "samples": [
+    {
+      "name": "empty",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "abc",
+      "sha256": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+    },
+    {
+      "name": "unicode",
+      "sha256": "e060862b303e6a64d48c729da3cb4bd9bc0b51fb5386194aef2ed2af9a4f686c"
+    },
+    {
+      "name": "multiblock",
+      "sha256": "c01468c6cd64d61dbf57290420e1a4214889f7b077b639ae994cdbbe58a6ecd8"
+    }
+  ]
+}

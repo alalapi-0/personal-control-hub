@@ -1,0 +1,3310 @@
+{
+  "background_server_remaining": false,
+  "design_available": false,
+  "design_revision": null,
+  "external_source_reads": 0,
+  "final_connections_accepted": false,
+  "head": {
+    "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+    "sequence": 78
+  },
+  "kind": "TC4_real_read_only_api_evidence",
+  "ledger_sha256_after": "4c4151df940117550d8c2665c5d35846727ffe1eb72f6e87882173c58f75a131",
+  "ledger_sha256_before": "4c4151df940117550d8c2665c5d35846727ffe1eb72f6e87882173c58f75a131",
+  "list_detail_equal": true,
+  "list_latency_ms": 79.75,
+  "manga_probes": 0,
+  "mutating_http_calls": 0,
+  "new_real_decisions": 0,
+  "project_count": 24,
+  "projects": [
+    {
+      "business": {
+        "blockers": null,
+        "next_action": null,
+        "next_action_kind": "unknown",
+        "normalized_status": "unknown",
+        "raw_status": "REPAIR_DISPATCHED",
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter.",
+          "next_action": "队列当前为空；无命名下一步字段，Goal模式不代表进度。",
+          "normalized_status": "Status is not mapped."
+        }
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "declared_unique_runtime_state",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "python_node_git_project",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "AI Anime Short Factory",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 54,
+          "observed_at": "2026-09-05T06:14:37+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "6576822d743099472473c5dcc407b070a57f9d5261fddde19e2264275fbdcad7",
+          "result_ref": "refresh-result:tc3-real-all-03:ai-anime-short-factory:6576822d743099472473c5dcc407b070a57f9d5261fddde19e2264275fbdcad7",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 54,
+          "observed_at": "2026-09-05T06:14:37+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "6576822d743099472473c5dcc407b070a57f9d5261fddde19e2264275fbdcad7",
+          "result_ref": "refresh-result:tc3-real-all-03:ai-anime-short-factory:6576822d743099472473c5dcc407b070a57f9d5261fddde19e2264275fbdcad7",
+          "success": true
+        }
+      },
+      "project_id": "ai-anime-short-factory",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "43504d8b607a790f5533ec037b62fe1bb63eb240e5767eb9948fe6cfd86814d8",
+        "last_success_result_hash": "6576822d743099472473c5dcc407b070a57f9d5261fddde19e2264275fbdcad7",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "6576822d743099472473c5dcc407b070a57f9d5261fddde19e2264275fbdcad7",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "ai-anime-short-factory",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:37+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:37+00:00",
+          "sources": [
+            {
+              "bytes": 420527,
+              "format": "json",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "442c746eb14ed52180be87bf0eb1731084173b789506ad5b9ade5994ff0c3f99"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:37+00:00",
+        "role": "governance_runtime_state",
+        "sources": [
+          {
+            "bytes": 420527,
+            "format": "json",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "442c746eb14ed52180be87bf0eb1731084173b789506ad5b9ade5994ff0c3f99"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": "Q1 Theory/Form Kernel。",
+        "next_action_kind": "track_milestone",
+        "normalized_status": "unknown",
+        "raw_status": "Trap Remix R6b《小木马》真实试做；R2、R3a–R3c、R4a–R4c、R5、R6a 试做范围合同与 R6b 变换建议子增量已完成。首个样片尚未导入真实录音。",
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter.",
+          "normalized_status": "Status is not mapped."
+        }
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "declared_exact_current_capability_and_gaps",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "python_git_project",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "AI Music Foundry",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 55,
+          "observed_at": "2026-09-05T06:14:37+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "f22c78986adb80aeb013c3c491b238abe926fa7efa746742067e8f4946c34686",
+          "result_ref": "refresh-result:tc3-real-all-03:ai-music-foundry:f22c78986adb80aeb013c3c491b238abe926fa7efa746742067e8f4946c34686",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 55,
+          "observed_at": "2026-09-05T06:14:37+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "f22c78986adb80aeb013c3c491b238abe926fa7efa746742067e8f4946c34686",
+          "result_ref": "refresh-result:tc3-real-all-03:ai-music-foundry:f22c78986adb80aeb013c3c491b238abe926fa7efa746742067e8f4946c34686",
+          "success": true
+        }
+      },
+      "project_id": "ai-music-foundry",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "e335e86b9d0be2a0e420c0a966739ffe68b3bdbcff44af33b829317156cd7d6b",
+        "last_success_result_hash": "f22c78986adb80aeb013c3c491b238abe926fa7efa746742067e8f4946c34686",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "f22c78986adb80aeb013c3c491b238abe926fa7efa746742067e8f4946c34686",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "ai-music-foundry",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:37+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:37+00:00",
+          "sources": [
+            {
+              "bytes": 13765,
+              "format": "markdown",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "f8b699c01b54f60973211c19acd82330df233f77e82c8f312016be617a0d343e"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:37+00:00",
+        "role": "product_capability_summary",
+        "sources": [
+          {
+            "bytes": 13765,
+            "format": "markdown",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "f8b699c01b54f60973211c19acd82330df233f77e82c8f312016be617a0d343e"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": null,
+        "next_action_kind": "unknown",
+        "normalized_status": "unknown",
+        "raw_status": null,
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter.",
+          "next_action": "登记的存储运行文档不提供业务状态或下一步。",
+          "normalized_status": "Status is not mapped.",
+          "raw_status": "登记的存储运行文档不提供业务状态或下一步。"
+        }
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "declared_storage_operation_state_no_business_round",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "python_git_project",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "Audio Clone",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 56,
+          "observed_at": "2026-09-05T06:14:38+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "be0e29b8c4addce1bd7e281e245db53f6daeea1ee26e5c9848bf954eee75e99f",
+          "result_ref": "refresh-result:tc3-real-all-03:audio-clone:be0e29b8c4addce1bd7e281e245db53f6daeea1ee26e5c9848bf954eee75e99f",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 56,
+          "observed_at": "2026-09-05T06:14:38+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "be0e29b8c4addce1bd7e281e245db53f6daeea1ee26e5c9848bf954eee75e99f",
+          "result_ref": "refresh-result:tc3-real-all-03:audio-clone:be0e29b8c4addce1bd7e281e245db53f6daeea1ee26e5c9848bf954eee75e99f",
+          "success": true
+        }
+      },
+      "project_id": "audio-clone",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "cd5ab2cba4b452f9d747696fb27acbce239fb858ee2ae8758c997a879c9c0322",
+        "last_success_result_hash": "be0e29b8c4addce1bd7e281e245db53f6daeea1ee26e5c9848bf954eee75e99f",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "be0e29b8c4addce1bd7e281e245db53f6daeea1ee26e5c9848bf954eee75e99f",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "audio-clone",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:38+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:38+00:00",
+          "sources": [
+            {
+              "bytes": 4121,
+              "format": "markdown",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "e0e0f6054c75912c1f1e2da8bf3f03a2ce1b8259964ec07e808188c63247b189"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:38+00:00",
+        "role": "storage_operations_only",
+        "sources": [
+          {
+            "bytes": 4121,
+            "format": "markdown",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "e0e0f6054c75912c1f1e2da8bf3f03a2ce1b8259964ec07e808188c63247b189"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": null,
+        "next_action_kind": "unknown",
+        "normalized_status": "unknown",
+        "raw_status": "## Phase 2:topic registry + 去重增强 — `in_progress`",
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter.",
+          "next_action": "未勾选验收项是多个候选，不能推断唯一下一步。",
+          "normalized_status": "Status is not mapped."
+        }
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "roadmap_and_AGENTS_phase_summary_in_sync",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "python_git_project",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "Cognitive Asset Library",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 57,
+          "observed_at": "2026-09-05T06:14:38+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "a8b5021812b0a2d36704c6a5d892b8b92b199fbc35161d35d5b14f1ea4586464",
+          "result_ref": "refresh-result:tc3-real-all-03:cognitive-asset-library:a8b5021812b0a2d36704c6a5d892b8b92b199fbc35161d35d5b14f1ea4586464",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 57,
+          "observed_at": "2026-09-05T06:14:38+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "a8b5021812b0a2d36704c6a5d892b8b92b199fbc35161d35d5b14f1ea4586464",
+          "result_ref": "refresh-result:tc3-real-all-03:cognitive-asset-library:a8b5021812b0a2d36704c6a5d892b8b92b199fbc35161d35d5b14f1ea4586464",
+          "success": true
+        }
+      },
+      "project_id": "cognitive-asset-library",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "d6918cb803860c427c4f9538ade49900717e1d8dfec557ad42f81eac84b1d3cb",
+        "last_success_result_hash": "a8b5021812b0a2d36704c6a5d892b8b92b199fbc35161d35d5b14f1ea4586464",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "a8b5021812b0a2d36704c6a5d892b8b92b199fbc35161d35d5b14f1ea4586464",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "cognitive-asset-library",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:38+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:38+00:00",
+          "sources": [
+            {
+              "bytes": 8437,
+              "format": "markdown",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "edc132de8d54b9a9518c0079f97d468ada72d85ee650087c48bee41fda2e9b7c"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:38+00:00",
+        "role": "roadmap_phase_state",
+        "sources": [
+          {
+            "bytes": 8437,
+            "format": "markdown",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "edc132de8d54b9a9518c0079f97d468ada72d85ee650087c48bee41fda2e9b7c"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": "- Phase 1：把 Round 内容进一步迁入统一 Course/Module/Task 模型\n- Phase 2+：Attempt、规则反馈、XP/通关\n- Phase 6：继续对齐完整 Figma。跨屏任务身份、直接操控、H04 Home → Learn 连续关系、移动触控和完成/撤销事务已收敛；下一高价值检查点是 revisioned run operation，解决脚本事件与反馈共用 revision、并发/中断恢复和错误自动验收边界。之后仍须基于新状态继续审计 Components、跨屏关系、窄屏密度与遗留实现；六个屏幕切片和现有流程/动效检查点不得视为整体完成\n- `progress` / `events` / `feedback` 已有最小 loading、ready-empty、error、stale/read-only 状态和请求竞态保护；终端、存档及其他资源尚未统一到同一状态约定，后续只在相关切片确有价值时收敛\n- `progress.html` 仍保留较大的历史内联样式与脚本，新界面由 `progress_ui.css` / `progress_ui.js` 叠加收敛；这是可维护性债务，后续应在可重复回归证据保护下逐步移除重复真源，而不是为清理而重写闭环\n- Phase 8+：已建立只读 Home → Learn 与隔离内存完成/撤销自动化，并有生产 `progress_lib` 临时仓库事务测试；后续按实际切片扩展视觉差异、脚本/终端竞态、错误资源和更多屏幕，不一次性搭建与当前风险无关的完整套件\n- 历史多课程文档若仍出现在 git history 或旧报告中，不代表当前正式范围",
+        "next_action_kind": "backlog",
+        "normalized_status": "unknown",
+        "raw_status": "`computer_study_plan` 处于 **Linux 单课程验证阶段**：",
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter.",
+          "normalized_status": "Status is not mapped."
+        }
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "declared_project_current_facts_with_progress_json_as_task_progress_truth",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "python_node_git_project",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "Computer Study Plan",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 58,
+          "observed_at": "2026-09-05T06:14:38+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "97ec379bde5788f69eb6fe3c26e120222fb9d783ad326532f6a6c65d34154d02",
+          "result_ref": "refresh-result:tc3-real-all-03:computer-study-plan:97ec379bde5788f69eb6fe3c26e120222fb9d783ad326532f6a6c65d34154d02",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 58,
+          "observed_at": "2026-09-05T06:14:38+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "97ec379bde5788f69eb6fe3c26e120222fb9d783ad326532f6a6c65d34154d02",
+          "result_ref": "refresh-result:tc3-real-all-03:computer-study-plan:97ec379bde5788f69eb6fe3c26e120222fb9d783ad326532f6a6c65d34154d02",
+          "success": true
+        }
+      },
+      "project_id": "computer-study-plan",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "238ff12c1decfe44da0bda5ef46b6171225edf66428300148b9fb9d6e205fe39",
+        "last_success_result_hash": "97ec379bde5788f69eb6fe3c26e120222fb9d783ad326532f6a6c65d34154d02",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "97ec379bde5788f69eb6fe3c26e120222fb9d783ad326532f6a6c65d34154d02",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "computer-study-plan",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:38+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:38+00:00",
+          "sources": [
+            {
+              "bytes": 13386,
+              "format": "markdown",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "526bc76cda3f8cba515a5b4868359e6ae0e12e45234a5ebfb3b53a3fb2cc4aa5"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:38+00:00",
+        "role": "project_capability_summary",
+        "sources": [
+          {
+            "bytes": 13386,
+            "format": "markdown",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "526bc76cda3f8cba515a5b4868359e6ae0e12e45234a5ebfb3b53a3fb2cc4aa5"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": null,
+        "next_action_kind": "unknown",
+        "normalized_status": "unknown",
+        "raw_status": null,
+        "reason": "Exact accepted entry content contains no current project-state source; business state is unknown.",
+        "state": "unknown",
+        "unknown_fields": {}
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "no_rules_or_current_state_declared",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "non_git_python_script_collection",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "Desktop Downloads Scripts",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+          "event_sequence": 59,
+          "observed_at": "2026-09-05T06:14:38+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "fcc87febef84a69c711b7bf22b1103ee8d26129b77ec6b9876f28c651f7b2d7a",
+          "result_ref": "refresh-result:tc3-real-all-03:desktop-downloads-scripts:fcc87febef84a69c711b7bf22b1103ee8d26129b77ec6b9876f28c651f7b2d7a",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+          "event_sequence": 59,
+          "observed_at": "2026-09-05T06:14:38+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "fcc87febef84a69c711b7bf22b1103ee8d26129b77ec6b9876f28c651f7b2d7a",
+          "result_ref": "refresh-result:tc3-real-all-03:desktop-downloads-scripts:fcc87febef84a69c711b7bf22b1103ee8d26129b77ec6b9876f28c651f7b2d7a",
+          "success": true
+        }
+      },
+      "project_id": "desktop-downloads-scripts",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": null,
+        "last_success_result_hash": "fcc87febef84a69c711b7bf22b1103ee8d26129b77ec6b9876f28c651f7b2d7a",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "fcc87febef84a69c711b7bf22b1103ee8d26129b77ec6b9876f28c651f7b2d7a",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "desktop-downloads-scripts",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "unknown",
+        "error": null,
+        "last_success_at": null,
+        "latest_observation": {
+          "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:38+00:00",
+          "sources": [],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:38+00:00",
+        "role": null,
+        "sources": []
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": null,
+        "next_action_kind": "unknown",
+        "normalized_status": "unknown",
+        "raw_status": null,
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter.",
+          "next_action": "使用和恢复指南未声明业务当前状态或下一步。",
+          "normalized_status": "Status is not mapped.",
+          "raw_status": "使用和恢复指南未声明业务当前状态或下一步。"
+        }
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "declared_operational_readme_no_business_round",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "non_git_python_tool_directory",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "Desktop JAV Python Tools",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 60,
+          "observed_at": "2026-09-05T06:14:39+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "4b3071bb7526480509a4b95546fbcd0e68e47c99cf516748595dacdc9277bdc1",
+          "result_ref": "refresh-result:tc3-real-all-03:desktop-jav-tools:4b3071bb7526480509a4b95546fbcd0e68e47c99cf516748595dacdc9277bdc1",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 60,
+          "observed_at": "2026-09-05T06:14:39+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "4b3071bb7526480509a4b95546fbcd0e68e47c99cf516748595dacdc9277bdc1",
+          "result_ref": "refresh-result:tc3-real-all-03:desktop-jav-tools:4b3071bb7526480509a4b95546fbcd0e68e47c99cf516748595dacdc9277bdc1",
+          "success": true
+        }
+      },
+      "project_id": "desktop-jav-tools",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "a3f830560f98c407e5406268de9e763afa43fedb332228dd497acb56c19328e7",
+        "last_success_result_hash": "4b3071bb7526480509a4b95546fbcd0e68e47c99cf516748595dacdc9277bdc1",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "4b3071bb7526480509a4b95546fbcd0e68e47c99cf516748595dacdc9277bdc1",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "desktop-jav-tools",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:39+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:39+00:00",
+          "sources": [
+            {
+              "bytes": 2799,
+              "format": "markdown",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "d196fab319442687ac999f93a0cbe30967da883ff8488768f8a94c5c0e7ce4c3"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:39+00:00",
+        "role": "operational_readme",
+        "sources": [
+          {
+            "bytes": 2799,
+            "format": "markdown",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "d196fab319442687ac999f93a0cbe30967da883ff8488768f8a94c5c0e7ce4c3"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": null,
+        "next_action_kind": "unknown",
+        "normalized_status": "unknown",
+        "raw_status": null,
+        "reason": "Exact accepted entry content contains no current project-state source; business state is unknown.",
+        "state": "unknown",
+        "unknown_fields": {}
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "no_rules_or_current_state_declared",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "non_git_python_project",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "Desktop Magnet",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+          "event_sequence": 61,
+          "observed_at": "2026-09-05T06:14:39+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "2fbab5fd65f9929828793b19cc4969937871938bbe6459f7d26d7f33893d56b5",
+          "result_ref": "refresh-result:tc3-real-all-03:desktop-magnet:2fbab5fd65f9929828793b19cc4969937871938bbe6459f7d26d7f33893d56b5",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+          "event_sequence": 61,
+          "observed_at": "2026-09-05T06:14:39+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "2fbab5fd65f9929828793b19cc4969937871938bbe6459f7d26d7f33893d56b5",
+          "result_ref": "refresh-result:tc3-real-all-03:desktop-magnet:2fbab5fd65f9929828793b19cc4969937871938bbe6459f7d26d7f33893d56b5",
+          "success": true
+        }
+      },
+      "project_id": "desktop-magnet",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": null,
+        "last_success_result_hash": "2fbab5fd65f9929828793b19cc4969937871938bbe6459f7d26d7f33893d56b5",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "2fbab5fd65f9929828793b19cc4969937871938bbe6459f7d26d7f33893d56b5",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "desktop-magnet",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "unknown",
+        "error": null,
+        "last_success_at": null,
+        "latest_observation": {
+          "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:39+00:00",
+          "sources": [],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:39+00:00",
+        "role": null,
+        "sources": []
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": null,
+        "next_action_kind": "unknown",
+        "normalized_status": "unknown",
+        "raw_status": null,
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter.",
+          "next_action": "登记来源描述存储维护，不提供业务状态或下一步。",
+          "normalized_status": "Status is not mapped.",
+          "raw_status": "登记来源描述存储维护，不提供业务状态或下一步。"
+        }
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "declared_tool_and_storage_state",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "non_git_python_userscript_directory",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "Desktop Tool",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 62,
+          "observed_at": "2026-09-05T06:14:39+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "4c33d08bbdf9a1584c92ba248a75378b9fa7b0232e809aeb2edd4811264e7248",
+          "result_ref": "refresh-result:tc3-real-all-03:desktop-tool:4c33d08bbdf9a1584c92ba248a75378b9fa7b0232e809aeb2edd4811264e7248",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 62,
+          "observed_at": "2026-09-05T06:14:39+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "4c33d08bbdf9a1584c92ba248a75378b9fa7b0232e809aeb2edd4811264e7248",
+          "result_ref": "refresh-result:tc3-real-all-03:desktop-tool:4c33d08bbdf9a1584c92ba248a75378b9fa7b0232e809aeb2edd4811264e7248",
+          "success": true
+        }
+      },
+      "project_id": "desktop-tool",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "62c45279a8842edc0703a385992e1da91e86c72f00fcf763e4005c180259f23e",
+        "last_success_result_hash": "4c33d08bbdf9a1584c92ba248a75378b9fa7b0232e809aeb2edd4811264e7248",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "4c33d08bbdf9a1584c92ba248a75378b9fa7b0232e809aeb2edd4811264e7248",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "desktop-tool",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:39+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:39+00:00",
+          "sources": [
+            {
+              "bytes": 5618,
+              "format": "markdown",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "76b10322011bea4040e52dbbdcc0a439398c2ce424996505ba59535da0c2e978"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:39+00:00",
+        "role": "tool_storage_operations",
+        "sources": [
+          {
+            "bytes": 5618,
+            "format": "markdown",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "76b10322011bea4040e52dbbdcc0a439398c2ce424996505ba59535da0c2e978"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": null,
+        "next_action_kind": "unknown",
+        "normalized_status": "unknown",
+        "raw_status": null,
+        "reason": "Scheduler operational facts resolved; historical governance YAML is diagnostic and business state remains unknown.",
+        "state": "unknown",
+        "unknown_fields": {}
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "declared_current_round_state_plus_live_probe_precedence",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "python_node_git_project",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [
+        {
+          "code": "SOURCE_INVALID",
+          "message": "Historical governance YAML is invalid or unavailable and remains diagnostic only.",
+          "retryable": false,
+          "source_ref": "current_state_paths[0]"
+        }
+      ],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "Light Novel",
+      "operational": {
+        "facts": [
+          {
+            "kind": "scheduler_tick",
+            "observed_at": "2026-09-05T06:14:39+00:00",
+            "source_ref": "derived:scheduler_tick",
+            "value": {
+              "last_blocked_reason": "paused",
+              "last_successful_tick": "2026-06-12T11:38:21.999898+00:00",
+              "last_tick_status": "skipped_paused"
+            }
+          },
+          {
+            "kind": "scheduler_pause",
+            "observed_at": "2026-09-05T06:14:39+00:00",
+            "source_ref": "derived:scheduler_pause",
+            "value": {
+              "paused": true,
+              "reason": "user_requested_pause",
+              "requested_at": "2026-06-12T13:13:03.153396+00:00"
+            }
+          }
+        ],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 63,
+          "observed_at": "2026-09-05T06:14:39+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "870d4ec37246d9ed76b7922b18f980288d95e953026cbd0c7749a41a69ea4252",
+          "result_ref": "refresh-result:tc3-real-all-03:light-novel:870d4ec37246d9ed76b7922b18f980288d95e953026cbd0c7749a41a69ea4252",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 63,
+          "observed_at": "2026-09-05T06:14:39+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "870d4ec37246d9ed76b7922b18f980288d95e953026cbd0c7749a41a69ea4252",
+          "result_ref": "refresh-result:tc3-real-all-03:light-novel:870d4ec37246d9ed76b7922b18f980288d95e953026cbd0c7749a41a69ea4252",
+          "success": true
+        }
+      },
+      "project_id": "light-novel",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": null,
+        "last_success_result_hash": "870d4ec37246d9ed76b7922b18f980288d95e953026cbd0c7749a41a69ea4252",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "870d4ec37246d9ed76b7922b18f980288d95e953026cbd0c7749a41a69ea4252",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "light-novel",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "unknown",
+        "error": null,
+        "last_success_at": null,
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [
+            {
+              "code": "SOURCE_INVALID",
+              "message": "Historical governance YAML is invalid or unavailable and remains diagnostic only.",
+              "retryable": false,
+              "source_ref": "current_state_paths[0]"
+            }
+          ],
+          "observed_at": "2026-09-05T06:14:39+00:00",
+          "sources": [
+            {
+              "bytes": 26798,
+              "format": "yaml",
+              "ref": "current_state_paths[0]",
+              "role": "diagnostic",
+              "sha256": "4188c064b038a0c56e1daa7897e7e1c7eb735bcaf9baa8c22b84fe4ae4885cd4"
+            },
+            {
+              "bytes": 246,
+              "format": "json",
+              "ref": "derived:scheduler_tick",
+              "role": "operational_state",
+              "sha256": "b0779c077fb381b119836375a55d77fa317ef5e925e44ecfee5997a7cdf6696c"
+            },
+            {
+              "bytes": 145,
+              "format": "json",
+              "ref": "derived:scheduler_pause",
+              "role": "operational_state",
+              "sha256": "bdff818aeaf35b01a0f4638c640e383cc8bc0e091200bbfaf9ef4083ec8b2f57"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:39+00:00",
+        "role": null,
+        "sources": [
+          {
+            "bytes": 26798,
+            "format": "yaml",
+            "ref": "current_state_paths[0]",
+            "role": "diagnostic",
+            "sha256": "4188c064b038a0c56e1daa7897e7e1c7eb735bcaf9baa8c22b84fe4ae4885cd4"
+          },
+          {
+            "bytes": 246,
+            "format": "json",
+            "ref": "derived:scheduler_tick",
+            "role": "operational_state",
+            "sha256": "b0779c077fb381b119836375a55d77fa317ef5e925e44ecfee5997a7cdf6696c"
+          },
+          {
+            "bytes": 145,
+            "format": "json",
+            "ref": "derived:scheduler_pause",
+            "role": "operational_state",
+            "sha256": "bdff818aeaf35b01a0f4638c640e383cc8bc0e091200bbfaf9ef4083ec8b2f57"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": null,
+        "next_action_kind": "unknown",
+        "normalized_status": "unknown",
+        "raw_status": null,
+        "reason": "Registry denies current-goal filesystem access.",
+        "state": "unknown",
+        "unknown_fields": {}
+      },
+      "declared": {
+        "access_profile": "no_current_goal_access",
+        "current_state_status": "accepted_exclusion_no_current_goal_access",
+        "enabled": false,
+        "priority_source": "user",
+        "project_type": "completed_exclusion_record",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": "no successful source result has been recorded",
+        "state": "unknown"
+      },
+      "name": "Manga Localizer",
+      "operational": {
+        "facts": [],
+        "last_success": null,
+        "latest_attempt": {
+          "disposition": "BLOCKED_BY_AUTHORITY",
+          "event_sequence": 64,
+          "observed_at": "2026-09-05T06:14:40+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "14863468fef7a35e5d623acb40f50a3ad915ccc3284687c31d85a56c62745de4",
+          "result_ref": "refresh-result:tc3-real-all-03:manga-localizer:14863468fef7a35e5d623acb40f50a3ad915ccc3284687c31d85a56c62745de4",
+          "success": false
+        }
+      },
+      "project_id": "manga-localizer",
+      "provenance": {
+        "business_authority": null,
+        "business_result_hash": null,
+        "last_success_result_hash": null,
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "14863468fef7a35e5d623acb40f50a3ad915ccc3284687c31d85a56c62745de4",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "manga-localizer",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "unknown",
+        "error": null,
+        "last_success_at": null,
+        "latest_observation": {
+          "disposition": "BLOCKED_BY_AUTHORITY",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:40+00:00",
+          "sources": [],
+          "success": false
+        },
+        "observed_at": null,
+        "role": null,
+        "sources": []
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": "不要再 arm 本机开箱循环。不要开 Round 16。不要复活 Round 00–15 / Uxx / Bxx / Fxx。",
+        "next_action_kind": "explicit",
+        "normalized_status": "complete",
+        "raw_status": "Complete",
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter."
+        }
+      },
+      "declared": {
+        "access_profile": "registered_external_project_read",
+        "current_state_status": "declared_project_state",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "cpp_cmake_git_project",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "MPV Clip Workbench",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 65,
+          "observed_at": "2026-09-05T06:14:40+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "93a68ce2a50d5c90b67d024310ca11c7fe0530f7422e6537be83facc4447a119",
+          "result_ref": "refresh-result:tc3-real-all-03:mpv-clip-workbench:93a68ce2a50d5c90b67d024310ca11c7fe0530f7422e6537be83facc4447a119",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 65,
+          "observed_at": "2026-09-05T06:14:40+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "93a68ce2a50d5c90b67d024310ca11c7fe0530f7422e6537be83facc4447a119",
+          "result_ref": "refresh-result:tc3-real-all-03:mpv-clip-workbench:93a68ce2a50d5c90b67d024310ca11c7fe0530f7422e6537be83facc4447a119",
+          "success": true
+        }
+      },
+      "project_id": "mpv-clip-workbench",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "622935f25bb161e7a6801beaf81c1977bfc9434a021853b8841e551bdf97f4c5",
+        "last_success_result_hash": "93a68ce2a50d5c90b67d024310ca11c7fe0530f7422e6537be83facc4447a119",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "93a68ce2a50d5c90b67d024310ca11c7fe0530f7422e6537be83facc4447a119",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "mpv-clip-workbench",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:40+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:40+00:00",
+          "sources": [
+            {
+              "bytes": 2725,
+              "format": "markdown",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "d3d9a82c365ec7c7cc490822c7e0c88a56602bc3c0da23f6e6b27240de021249"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:40+00:00",
+        "role": "product_round_state",
+        "sources": [
+          {
+            "bytes": 2725,
+            "format": "markdown",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "d3d9a82c365ec7c7cc490822c7e0c88a56602bc3c0da23f6e6b27240de021249"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": "Read exact active R53 contract/activation, failed checkpoint 001/Judgment 001, accepted checkpoint/Judge/Governor 002, and current environment blocker 003; preserve all records without rerun or backfill.\nRead exact checkpoint/Judge/Governor 003 records when present as the projection-only closure disposition; never treat them as WT_001 or final verification.\nAfter checkpoint acceptance, do not modify the verified R53 implementation merely to work around the missing canonical dependency.\nDo not commit, stage, stash, fetch, push or move any protected or volatile ref.\nWithout fresh install authority or compatible local wheels/cache, remain at NEEDS_HUMAN and preserve the sole final run.\nAfter the complete .venv exists, rerun focused/governance checks, then freeze and reproduce WT_001 around the sole fresh all-five verification through the observed-exit controller.\nAfter Candidate Judge and Governor, stop at Pilot disclosure; approval is not source or execution authority.\nRead governance/round_state.yaml and exact active R53 Attempt 001 contract before acting; R18/R32/R35/R39/R40/R41/R42/R43/R44/R45/R46/R47/R48/R49/R50/R51 and both R52 attempts are historical, not executable current instructions.",
+        "next_action_kind": "recommendations",
+        "normalized_status": "active",
+        "raw_status": "in_progress",
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter."
+        }
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "declared_unique_current_and_next_round_state",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "python_node_git_project",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "Novel Continuation Agent",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 66,
+          "observed_at": "2026-09-05T06:14:41+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "80782f6981d10f27f117cb896144d3dc6f097eaf57a871f30d4e211e1ec54e11",
+          "result_ref": "refresh-result:tc3-real-all-03:novel-continuation-agent:80782f6981d10f27f117cb896144d3dc6f097eaf57a871f30d4e211e1ec54e11",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 66,
+          "observed_at": "2026-09-05T06:14:41+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "80782f6981d10f27f117cb896144d3dc6f097eaf57a871f30d4e211e1ec54e11",
+          "result_ref": "refresh-result:tc3-real-all-03:novel-continuation-agent:80782f6981d10f27f117cb896144d3dc6f097eaf57a871f30d4e211e1ec54e11",
+          "success": true
+        }
+      },
+      "project_id": "novel-continuation-agent",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "15fa3e5ffc567f8abd0b545c987511c4df806d7d4607686c6f4355d2e21051b7",
+        "last_success_result_hash": "80782f6981d10f27f117cb896144d3dc6f097eaf57a871f30d4e211e1ec54e11",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "80782f6981d10f27f117cb896144d3dc6f097eaf57a871f30d4e211e1ec54e11",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "novel-continuation-agent",
+        "reason": null,
+        "relations": [
+          {
+            "differences": [
+              "两项目各自维护创作流程，尚未验证实际运行互通。"
+            ],
+            "evidence_refs": [
+              "story-faceless-utopia:README.md:120"
+            ],
+            "id": "story-novel-package-compatibility",
+            "inventory_index": 0,
+            "kind": "pipeline",
+            "not_shared": [
+              "不推断共用视觉系统、代码包或执行授权。"
+            ],
+            "project_ids": [
+              "novel-continuation-agent",
+              "story-faceless-utopia"
+            ],
+            "shared_tasks": [
+              "通过 world_package 契约衔接创作材料；依据为文档兼容性说明。"
+            ],
+            "status": "proposed"
+          }
+        ],
+        "status": "proposed"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:41+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:41+00:00",
+          "sources": [
+            {
+              "bytes": 68626,
+              "format": "yaml",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "ca67ccae5e3a8129cf210ec4fcffce658a738974d8a9b9e08882e880dd14fcb4"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:41+00:00",
+        "role": "current_round_and_blocker",
+        "sources": [
+          {
+            "bytes": 68626,
+            "format": "yaml",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "ca67ccae5e3a8129cf210ec4fcffce658a738974d8a9b9e08882e880dd14fcb4"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": "重验全量刷新与权限边界，完成本轮独立验收。",
+        "next_action_kind": "explicit",
+        "normalized_status": "active",
+        "raw_status": "ACTIVE",
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter."
+        }
+      },
+      "declared": {
+        "access_profile": "bounded_management_records_only",
+        "current_state_status": "compact_hub_current_state_not_storage_execution_authority",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "internal_control_plane",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "personal-control-hub",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 67,
+          "observed_at": "2026-09-05T06:14:41+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "0dd860dbf0abd429460a9845ceb4f7f271875ee9ce7acc92c2587bb1e71995d3",
+          "result_ref": "refresh-result:tc3-real-all-03:personal-control-hub:0dd860dbf0abd429460a9845ceb4f7f271875ee9ce7acc92c2587bb1e71995d3",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 67,
+          "observed_at": "2026-09-05T06:14:41+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "0dd860dbf0abd429460a9845ceb4f7f271875ee9ce7acc92c2587bb1e71995d3",
+          "result_ref": "refresh-result:tc3-real-all-03:personal-control-hub:0dd860dbf0abd429460a9845ceb4f7f271875ee9ce7acc92c2587bb1e71995d3",
+          "success": true
+        }
+      },
+      "project_id": "personal-control-hub",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "17d878525ddd893729e11abcc36c2e6a5cf9b62283cd490d9220134b2c7f6853",
+        "last_success_result_hash": "0dd860dbf0abd429460a9845ceb4f7f271875ee9ce7acc92c2587bb1e71995d3",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "0dd860dbf0abd429460a9845ceb4f7f271875ee9ce7acc92c2587bb1e71995d3",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "personal-control-hub",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:41+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:41+00:00",
+          "sources": [
+            {
+              "bytes": 4871,
+              "format": "yaml",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "8c77eaa3d8010c094027bce16d9fa3f7a887b51054a470a47093d80a2caf9707"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:41+00:00",
+        "role": "hub_current_management",
+        "sources": [
+          {
+            "bytes": 4871,
+            "format": "yaml",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "8c77eaa3d8010c094027bce16d9fa3f7a887b51054a470a47093d80a2caf9707"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": null,
+        "next_action_kind": "unknown",
+        "normalized_status": "unknown",
+        "raw_status": "open",
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter.",
+          "next_action": "轮次映射是任务名称，不是下一步或授权。",
+          "normalized_status": "Status is not mapped."
+        }
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "declared_unique_current_and_next_round_state",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "python_node_git_project",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "Pixel World Asset Forge",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 68,
+          "observed_at": "2026-09-05T06:14:41+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "843f271354f4979203b415e4130e981e1c2da9c13117114c2f0bda378d567fad",
+          "result_ref": "refresh-result:tc3-real-all-03:pixel-world-asset-forge:843f271354f4979203b415e4130e981e1c2da9c13117114c2f0bda378d567fad",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 68,
+          "observed_at": "2026-09-05T06:14:41+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "843f271354f4979203b415e4130e981e1c2da9c13117114c2f0bda378d567fad",
+          "result_ref": "refresh-result:tc3-real-all-03:pixel-world-asset-forge:843f271354f4979203b415e4130e981e1c2da9c13117114c2f0bda378d567fad",
+          "success": true
+        }
+      },
+      "project_id": "pixel-world-asset-forge",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "1bc6ed9de4fc421701b2c698d58e854bfe372ee30596c7e75fb1d1f4426f335c",
+        "last_success_result_hash": "843f271354f4979203b415e4130e981e1c2da9c13117114c2f0bda378d567fad",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "843f271354f4979203b415e4130e981e1c2da9c13117114c2f0bda378d567fad",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "pixel-world-asset-forge",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:41+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:41+00:00",
+          "sources": [
+            {
+              "bytes": 12664,
+              "format": "yaml",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "d4a75e61299352fa9fb47665dcc8a018c9d6cdd8819b516f4405786bf227b88e"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:41+00:00",
+        "role": "round_cycle_state",
+        "sources": [
+          {
+            "bytes": 12664,
+            "format": "yaml",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "d4a75e61299352fa9fb47665dcc8a018c9d6cdd8819b516f4405786bf227b88e"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": null,
+        "next_action_kind": "unknown",
+        "normalized_status": "unknown",
+        "raw_status": "draft",
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter.",
+          "next_action": "next_version_hint是命名模板，不是下一步。",
+          "normalized_status": "Status is not mapped."
+        }
+      },
+      "declared": {
+        "access_profile": "registered_project_read_with_protected_config",
+        "current_state_status": "version_manifest_declares_current_draft_lifecycle_state",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "non_git_shared_development_tooling",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "PyCharm Agent Workspace",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 69,
+          "observed_at": "2026-09-05T06:14:41+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "c1639e04403f9d129dce92ef31c0b78dbda9675d9d2644edd550b410d1d7c694",
+          "result_ref": "refresh-result:tc3-real-all-03:pycharm-agent-workspace:c1639e04403f9d129dce92ef31c0b78dbda9675d9d2644edd550b410d1d7c694",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 69,
+          "observed_at": "2026-09-05T06:14:41+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "c1639e04403f9d129dce92ef31c0b78dbda9675d9d2644edd550b410d1d7c694",
+          "result_ref": "refresh-result:tc3-real-all-03:pycharm-agent-workspace:c1639e04403f9d129dce92ef31c0b78dbda9675d9d2644edd550b410d1d7c694",
+          "success": true
+        }
+      },
+      "project_id": "pycharm-agent-workspace",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "ee22827f4598bc2fed60119462b67c6cfda679cf2024c8771f42ad032dd90c70",
+        "last_success_result_hash": "c1639e04403f9d129dce92ef31c0b78dbda9675d9d2644edd550b410d1d7c694",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "c1639e04403f9d129dce92ef31c0b78dbda9675d9d2644edd550b410d1d7c694",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "pycharm-agent-workspace",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:41+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:41+00:00",
+          "sources": [
+            {
+              "bytes": 8675,
+              "format": "yaml",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "335a969bcaf5791d59151b501d38bd54f1fb939cd4612433cbdc7fa888912105"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:41+00:00",
+        "role": "version_lifecycle",
+        "sources": [
+          {
+            "bytes": 8675,
+            "format": "yaml",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "335a969bcaf5791d59151b501d38bd54f1fb939cd4612433cbdc7fa888912105"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": null,
+        "next_action_kind": "unknown",
+        "normalized_status": "unknown",
+        "raw_status": null,
+        "reason": "Exact accepted entry content contains no current project-state source; business state is unknown.",
+        "state": "unknown",
+        "unknown_fields": {}
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "no_rules_or_current_state_declared",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "non_git_python_script_collection",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "PyCharm Misc Project",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+          "event_sequence": 70,
+          "observed_at": "2026-09-05T06:14:42+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "6eef6fd8319ad40382a619d60d6b0ce6c8558cec2ecbc95bac8eed977d272cf0",
+          "result_ref": "refresh-result:tc3-real-all-03:pycharm-misc-project:6eef6fd8319ad40382a619d60d6b0ce6c8558cec2ecbc95bac8eed977d272cf0",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+          "event_sequence": 70,
+          "observed_at": "2026-09-05T06:14:42+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "6eef6fd8319ad40382a619d60d6b0ce6c8558cec2ecbc95bac8eed977d272cf0",
+          "result_ref": "refresh-result:tc3-real-all-03:pycharm-misc-project:6eef6fd8319ad40382a619d60d6b0ce6c8558cec2ecbc95bac8eed977d272cf0",
+          "success": true
+        }
+      },
+      "project_id": "pycharm-misc-project",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": null,
+        "last_success_result_hash": "6eef6fd8319ad40382a619d60d6b0ce6c8558cec2ecbc95bac8eed977d272cf0",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "6eef6fd8319ad40382a619d60d6b0ce6c8558cec2ecbc95bac8eed977d272cf0",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "pycharm-misc-project",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "unknown",
+        "error": null,
+        "last_success_at": null,
+        "latest_observation": {
+          "disposition": "EXPLICIT_NO_CURRENT_SOURCE_VERIFIED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:42+00:00",
+          "sources": [],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:42+00:00",
+        "role": null,
+        "sources": []
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": null,
+        "next_action_kind": "unknown",
+        "normalized_status": "unknown",
+        "raw_status": "当前处于 **多系统接入与操作说明整理阶段**：\n- 已建立目录结构与基础文档。\n- 已完成 VPS 基础初始化。\n- 已完成 Xray 服务端安装与启动。\n- 已准备 sing-box / Shadowrocket 客户端配置模板。\n- 已完成 iPhone sing-box VT 实机连接验收。\n- 已完成健康检查、远程备份、诊断采集和恢复流程。\n- 已补齐 Mac 端导入、授权、验证和排障流程。\n- 已补齐 Windows v2rayN 配置包和 PowerShell 操作说明。\n- 已把 macOS、Windows、Linux/VPS 的命令写法拆分清楚，避免跨系统复制出错。\n- 已加入 AI 工作流优先级分流策略：AI / 搜索 / GitHub 显式代理，大陆域名和 IP 直连。\n- 已新增默认安全的统一刷新入口，可从活跃 VPS 配置派生并校验九个客户端产物；备份和升级保持显式关闭。\n- 本机独立 sing-box 程序已迁移到身份守卫保护的 AI_WORK_SSD；默认本地校验不再回退 PATH/内盘，真实配置与密钥保持原位保护。",
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter.",
+          "next_action": "无唯一下一步；本地文档未验证远端服务健康。",
+          "normalized_status": "Status is not mapped."
+        }
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "declared_readme_repository_stage_only_remote_configuration_excluded",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "network_operations_git_project",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "Resilient Personal Network",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 71,
+          "observed_at": "2026-09-05T06:14:42+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "32e534b809ee95050427451729539b7c7dfc66bc1960b12bcf398404dc655c31",
+          "result_ref": "refresh-result:tc3-real-all-03:resilient-personal-network:32e534b809ee95050427451729539b7c7dfc66bc1960b12bcf398404dc655c31",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 71,
+          "observed_at": "2026-09-05T06:14:42+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "32e534b809ee95050427451729539b7c7dfc66bc1960b12bcf398404dc655c31",
+          "result_ref": "refresh-result:tc3-real-all-03:resilient-personal-network:32e534b809ee95050427451729539b7c7dfc66bc1960b12bcf398404dc655c31",
+          "success": true
+        }
+      },
+      "project_id": "resilient-personal-network",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "881211155558e472497fa6c876d46254f5af1dc10fe22184fe8b82510a4a4e53",
+        "last_success_result_hash": "32e534b809ee95050427451729539b7c7dfc66bc1960b12bcf398404dc655c31",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "32e534b809ee95050427451729539b7c7dfc66bc1960b12bcf398404dc655c31",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "resilient-personal-network",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:42+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:42+00:00",
+          "sources": [
+            {
+              "bytes": 30919,
+              "format": "markdown",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "ab93be7b73197bfd86d7fb72e4ad1927aa904e214d0aec8441f6dfdc01c5d1cd"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:42+00:00",
+        "role": "repository_stage_claim_only",
+        "sources": [
+          {
+            "bytes": 30919,
+            "format": "markdown",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "ab93be7b73197bfd86d7fb72e4ad1927aa904e214d0aec8441f6dfdc01c5d1cd"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": "本轮外置盘根迁移、GitHub 同步、旧源清理和路径映射已完成；SubPlz 已按业主确认清除本机与外置盘副本，上游 GitHub 未触碰。mpv-clip-workbench 已关联，manga-localizer、personal-control-hub 与治理目录保持保护边界。",
+        "next_action_kind": "explicit",
+        "normalized_status": "unknown",
+        "raw_status": "COMPLETE_WITH_OWNER_REMOVAL",
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter.",
+          "normalized_status": "Status is not mapped."
+        }
+      },
+      "declared": {
+        "access_profile": "named_control_plane_files_only",
+        "current_state_status": "sole_execution_current_state",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "governance_program",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "StorageGovernance",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 72,
+          "observed_at": "2026-09-05T06:14:42+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "c4064f8f35f5f0c9863264477bf6be1cff5bca47e7900e8edec402c1ff395dfb",
+          "result_ref": "refresh-result:tc3-real-all-03:storage_governance:c4064f8f35f5f0c9863264477bf6be1cff5bca47e7900e8edec402c1ff395dfb",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 72,
+          "observed_at": "2026-09-05T06:14:42+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "c4064f8f35f5f0c9863264477bf6be1cff5bca47e7900e8edec402c1ff395dfb",
+          "result_ref": "refresh-result:tc3-real-all-03:storage_governance:c4064f8f35f5f0c9863264477bf6be1cff5bca47e7900e8edec402c1ff395dfb",
+          "success": true
+        }
+      },
+      "project_id": "storage_governance",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "ba70b25d0a43f414eaa048260b456add6c93fc594796c66fda1f6cc0d002a0c2",
+        "last_success_result_hash": "c4064f8f35f5f0c9863264477bf6be1cff5bca47e7900e8edec402c1ff395dfb",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "c4064f8f35f5f0c9863264477bf6be1cff5bca47e7900e8edec402c1ff395dfb",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "storage_governance",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:42+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:42+00:00",
+          "sources": [
+            {
+              "bytes": 39632,
+              "format": "yaml",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "7ce9233e41dbb3fde5073fac9ece4e9dc3af33b6d8b807854065617cc2f501f8"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:42+00:00",
+        "role": "compact_management_summary",
+        "sources": [
+          {
+            "bytes": 39632,
+            "format": "yaml",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "7ce9233e41dbb3fde5073fac9ece4e9dc3af33b6d8b807854065617cc2f501f8"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": null,
+        "next_action_kind": "unknown",
+        "normalized_status": "unknown",
+        "raw_status": "This section is the sole project status summary for local management routing. The existing\nproject contracts and portable package retain their own domain authority; storage execution\nstate is maintained separately by the workspace StorageGovernance program.",
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter.",
+          "next_action": "来源未提供唯一下一步；不将存储完成映射为产品完成。",
+          "normalized_status": "Status is not mapped."
+        }
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "declared_readme_current_stage_status_summary",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "python_git_project",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "Story Faceless Utopia",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 73,
+          "observed_at": "2026-09-05T06:14:43+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "dfee5c761ff558da4cec4daa1dbd08ebecd4484fed5035dcba8deee3ac5d3f69",
+          "result_ref": "refresh-result:tc3-real-all-03:story-faceless-utopia:dfee5c761ff558da4cec4daa1dbd08ebecd4484fed5035dcba8deee3ac5d3f69",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 73,
+          "observed_at": "2026-09-05T06:14:43+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "dfee5c761ff558da4cec4daa1dbd08ebecd4484fed5035dcba8deee3ac5d3f69",
+          "result_ref": "refresh-result:tc3-real-all-03:story-faceless-utopia:dfee5c761ff558da4cec4daa1dbd08ebecd4484fed5035dcba8deee3ac5d3f69",
+          "success": true
+        }
+      },
+      "project_id": "story-faceless-utopia",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "48b001f36201f42131a95061fbde141e304d8b1fb77765cbe4b056de7fee0495",
+        "last_success_result_hash": "dfee5c761ff558da4cec4daa1dbd08ebecd4484fed5035dcba8deee3ac5d3f69",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "dfee5c761ff558da4cec4daa1dbd08ebecd4484fed5035dcba8deee3ac5d3f69",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "story-faceless-utopia",
+        "reason": null,
+        "relations": [
+          {
+            "differences": [
+              "两项目各自维护创作流程，尚未验证实际运行互通。"
+            ],
+            "evidence_refs": [
+              "story-faceless-utopia:README.md:120"
+            ],
+            "id": "story-novel-package-compatibility",
+            "inventory_index": 0,
+            "kind": "pipeline",
+            "not_shared": [
+              "不推断共用视觉系统、代码包或执行授权。"
+            ],
+            "project_ids": [
+              "novel-continuation-agent",
+              "story-faceless-utopia"
+            ],
+            "shared_tasks": [
+              "通过 world_package 契约衔接创作材料；依据为文档兼容性说明。"
+            ],
+            "status": "proposed"
+          },
+          {
+            "differences": [
+              "生产结论与区块反馈的语义不同；页面服务和样式分别维护。"
+            ],
+            "evidence_refs": [
+              "story-faceless-utopia:workbench/editorial_review/season-0-daily-v003/index.html:7",
+              "zarathustra-adaptation:workbench/editorial_review/index.html:7"
+            ],
+            "id": "story-zarathustra-editorial-language",
+            "inventory_index": 1,
+            "kind": "shared_visual_language",
+            "not_shared": [
+              "未发现共用实现，不确认正式视觉家族，不改变项目审核语义。"
+            ],
+            "project_ids": [
+              "story-faceless-utopia",
+              "zarathustra-adaptation"
+            ],
+            "shared_tasks": [
+              "编辑审核页面使用相似纸张与墨色排版和审核控件。"
+            ],
+            "status": "proposed"
+          }
+        ],
+        "status": "proposed"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:43+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:43+00:00",
+          "sources": [
+            {
+              "bytes": 8134,
+              "format": "markdown",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "c4c8cd773a9253853ac9e5b7e740cc4625e45efca7c5f29c6644f5f67a12bf5a"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:43+00:00",
+        "role": "declared_readme_product_summary",
+        "sources": [
+          {
+            "bytes": 8134,
+            "format": "markdown",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "c4c8cd773a9253853ac9e5b7e740cc4625e45efca7c5f29c6644f5f67a12bf5a"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": null,
+        "next_action_kind": "unknown",
+        "normalized_status": "unknown",
+        "raw_status": "IMPLEMENTING",
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter.",
+          "next_action": "仅提供历史产品后续，不是当前下一步。",
+          "normalized_status": "Status is not mapped."
+        }
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "declared_product_truth",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "swift_xcode_git_project",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "Universal Player",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 74,
+          "observed_at": "2026-09-05T06:14:43+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "ca576450943aae1dd503d7b40ff296509e2f82c1499b4eadcdbde83393ad7b97",
+          "result_ref": "refresh-result:tc3-real-all-03:universal-player:ca576450943aae1dd503d7b40ff296509e2f82c1499b4eadcdbde83393ad7b97",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 74,
+          "observed_at": "2026-09-05T06:14:43+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "ca576450943aae1dd503d7b40ff296509e2f82c1499b4eadcdbde83393ad7b97",
+          "result_ref": "refresh-result:tc3-real-all-03:universal-player:ca576450943aae1dd503d7b40ff296509e2f82c1499b4eadcdbde83393ad7b97",
+          "success": true
+        }
+      },
+      "project_id": "universal-player",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "0fd71566a52b8f8d20ce36c97d6ca3ca310c048fc991ee56f8917963514839ad",
+        "last_success_result_hash": "ca576450943aae1dd503d7b40ff296509e2f82c1499b4eadcdbde83393ad7b97",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "ca576450943aae1dd503d7b40ff296509e2f82c1499b4eadcdbde83393ad7b97",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "universal-player",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:43+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:43+00:00",
+          "sources": [
+            {
+              "bytes": 59463,
+              "format": "markdown",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "179938b45328db97a49965ada310a6d3f14789dde9d955c983f7ab4a29e99c09"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:43+00:00",
+        "role": "product_state",
+        "sources": [
+          {
+            "bytes": 59463,
+            "format": "markdown",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "179938b45328db97a49965ada310a6d3f14789dde9d955c983f7ab4a29e99c09"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": null,
+        "next_action_kind": "unknown",
+        "normalized_status": "active",
+        "raw_status": "active",
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter.",
+          "next_action": "无明确下一步；运行配置不是健康状态。"
+        }
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "declared_project_yaml_runtime_and_project_status",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "python_git_project",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "WeChat Article Scheduler",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 75,
+          "observed_at": "2026-09-05T06:14:43+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "6a413afdb264dae9ab49114840dd6640efde368117e1ba4d038683ecdde2f052",
+          "result_ref": "refresh-result:tc3-real-all-03:wechat-article-scheduler:6a413afdb264dae9ab49114840dd6640efde368117e1ba4d038683ecdde2f052",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 75,
+          "observed_at": "2026-09-05T06:14:43+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "6a413afdb264dae9ab49114840dd6640efde368117e1ba4d038683ecdde2f052",
+          "result_ref": "refresh-result:tc3-real-all-03:wechat-article-scheduler:6a413afdb264dae9ab49114840dd6640efde368117e1ba4d038683ecdde2f052",
+          "success": true
+        }
+      },
+      "project_id": "wechat-article-scheduler",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "2c80b40048763148fb0b266bc9c90b5cdbb41556458190702b758e64c65c8ae4",
+        "last_success_result_hash": "6a413afdb264dae9ab49114840dd6640efde368117e1ba4d038683ecdde2f052",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "6a413afdb264dae9ab49114840dd6640efde368117e1ba4d038683ecdde2f052",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "wechat-article-scheduler",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:43+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:43+00:00",
+          "sources": [
+            {
+              "bytes": 1364,
+              "format": "yaml",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "1ee5b0f016b013cf3cf5cc7011ddb57ec8a7d494b0844d345d0b2920c157f858"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:43+00:00",
+        "role": "project_lifecycle",
+        "sources": [
+          {
+            "bytes": 1364,
+            "format": "yaml",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "1ee5b0f016b013cf3cf5cc7011ddb57ec8a7d494b0844d345d0b2920c157f858"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": null,
+        "next_action_kind": "unknown",
+        "normalized_status": "unknown",
+        "raw_status": "**Round 0-4 已完成 ✅**",
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter.",
+          "next_action": "未来扩展列表未排序，不是唯一下一步。",
+          "normalized_status": "Status is not mapped."
+        }
+      },
+      "declared": {
+        "access_profile": "registered_project_read_with_credential_boundary",
+        "current_state_status": "project_status_document_not_explicitly_unique",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "non_git_python_project",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "YouTube HQ Downloader",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 76,
+          "observed_at": "2026-09-05T06:14:43+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "b0eeb61f1e41779b403ba59412efbf21c3506f3c8a4df59389c24173496ebf81",
+          "result_ref": "refresh-result:tc3-real-all-03:youtube-hq-downloader:b0eeb61f1e41779b403ba59412efbf21c3506f3c8a4df59389c24173496ebf81",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 76,
+          "observed_at": "2026-09-05T06:14:43+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "b0eeb61f1e41779b403ba59412efbf21c3506f3c8a4df59389c24173496ebf81",
+          "result_ref": "refresh-result:tc3-real-all-03:youtube-hq-downloader:b0eeb61f1e41779b403ba59412efbf21c3506f3c8a4df59389c24173496ebf81",
+          "success": true
+        }
+      },
+      "project_id": "youtube-hq-downloader",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "a66157fe8288196527c95a1772e11b700f2da9d67b7b2e59256985a3eaa0d891",
+        "last_success_result_hash": "b0eeb61f1e41779b403ba59412efbf21c3506f3c8a4df59389c24173496ebf81",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "b0eeb61f1e41779b403ba59412efbf21c3506f3c8a4df59389c24173496ebf81",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "youtube-hq-downloader",
+        "reason": "No evidence-bound relation proposal is registered.",
+        "relations": [],
+        "status": "unknown"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:43+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:43+00:00",
+          "sources": [
+            {
+              "bytes": 4960,
+              "format": "markdown",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "c8e6d8cee70f5b3f6765d7f18e6cb5add63acc8ba5337c4212f9c54218f6690a"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:43+00:00",
+        "role": "nonunique_project_status_claim",
+        "sources": [
+          {
+            "bytes": 4960,
+            "format": "markdown",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "c8e6d8cee70f5b3f6765d7f18e6cb5add63acc8ba5337c4212f9c54218f6690a"
+          }
+        ]
+      }
+    },
+    {
+      "business": {
+        "blockers": null,
+        "next_action": "1. Phase 2 继续冻结；除非用户明确启动，不定世界观、故事主角、时代，不写长篇正文，默认不 push。",
+        "next_action_kind": "recommendations",
+        "normalized_status": "unknown",
+        "raw_status": "**1d 已完成**（90 / 90 accepted；真实浏览器 QA、完整自动门与修复后 fresh 独立终审通过）。1c 已完成。Phase 2 **冻结**",
+        "reason": null,
+        "state": "v1_snapshot",
+        "unknown_fields": {
+          "blockers": "Blockers are not extracted by this adapter.",
+          "normalized_status": "Status is not mapped."
+        }
+      },
+      "declared": {
+        "access_profile": "registered_project_read",
+        "current_state_status": "declared_unique_product_current_state",
+        "enabled": true,
+        "priority_source": "user",
+        "project_type": "python_git_project",
+        "summary_enabled": true
+      },
+      "design": {
+        "available": false,
+        "effective": {},
+        "history": [],
+        "queues": {},
+        "reason": "DESIGN_STORE_UNAVAILABLE",
+        "references": [],
+        "store_classification": null,
+        "store_revision": null
+      },
+      "errors": [],
+      "freshness": {
+        "authority_drift": false,
+        "stale_reason": null,
+        "state": "fresh"
+      },
+      "name": "Zarathustra Adaptation",
+      "operational": {
+        "facts": [],
+        "last_success": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 77,
+          "observed_at": "2026-09-05T06:14:44+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "daaff39cee92e44c00e50923182141aecffe1cac97894f55564033cfa75b6a3c",
+          "result_ref": "refresh-result:tc3-real-all-03:zarathustra-adaptation:daaff39cee92e44c00e50923182141aecffe1cac97894f55564033cfa75b6a3c",
+          "success": true
+        },
+        "latest_attempt": {
+          "disposition": "SOURCE_RESOLVED",
+          "event_sequence": 77,
+          "observed_at": "2026-09-05T06:14:44+00:00",
+          "request_id": "tc3-real-all-03",
+          "result_hash": "daaff39cee92e44c00e50923182141aecffe1cac97894f55564033cfa75b6a3c",
+          "result_ref": "refresh-result:tc3-real-all-03:zarathustra-adaptation:daaff39cee92e44c00e50923182141aecffe1cac97894f55564033cfa75b6a3c",
+          "success": true
+        }
+      },
+      "project_id": "zarathustra-adaptation",
+      "provenance": {
+        "business_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "business_result_hash": "f38f3ae36a28068d4e92ea41213e80af5b0999b4c0ebc6a690f6a648af572b82",
+        "last_success_result_hash": "daaff39cee92e44c00e50923182141aecffe1cac97894f55564033cfa75b6a3c",
+        "latest_authority": {
+          "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+          "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+          "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+          "adapter_version": "1.0",
+          "manifest_hash": "295b0dd81b9751142c6bd01b832b5d319bdcb2ecc98d4cd58b631442daa5b9a2",
+          "manifest_id": "hub-connections-v2",
+          "registry_hash": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59",
+          "source_plan_hash": "af01642834a33000efe2494d634b37cac06d4442d4ad5428b108dc815395ccc0",
+          "source_plan_id": "hub-source-plan-v1"
+        },
+        "latest_result_hash": "daaff39cee92e44c00e50923182141aecffe1cac97894f55564033cfa75b6a3c",
+        "ledger_head": {
+          "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8",
+          "sequence": 78
+        },
+        "registry_sha256": "3f021a55a0f1e1dda52883cd588fcd054c2ce39a70508e3e1e4d19dfac619b59"
+      },
+      "relations": {
+        "design_selection_authority": false,
+        "program_link_authority": false,
+        "project_id": "zarathustra-adaptation",
+        "reason": null,
+        "relations": [
+          {
+            "differences": [
+              "生产结论与区块反馈的语义不同；页面服务和样式分别维护。"
+            ],
+            "evidence_refs": [
+              "story-faceless-utopia:workbench/editorial_review/season-0-daily-v003/index.html:7",
+              "zarathustra-adaptation:workbench/editorial_review/index.html:7"
+            ],
+            "id": "story-zarathustra-editorial-language",
+            "inventory_index": 1,
+            "kind": "shared_visual_language",
+            "not_shared": [
+              "未发现共用实现，不确认正式视觉家族，不改变项目审核语义。"
+            ],
+            "project_ids": [
+              "story-faceless-utopia",
+              "zarathustra-adaptation"
+            ],
+            "shared_tasks": [
+              "编辑审核页面使用相似纸张与墨色排版和审核控件。"
+            ],
+            "status": "proposed"
+          }
+        ],
+        "status": "proposed"
+      },
+      "schema_version": "1.0",
+      "source": {
+        "availability": "fresh",
+        "error": null,
+        "last_success_at": "2026-09-05T06:14:44+00:00",
+        "latest_observation": {
+          "disposition": "SOURCE_RESOLVED",
+          "errors": [],
+          "observed_at": "2026-09-05T06:14:44+00:00",
+          "sources": [
+            {
+              "bytes": 3191,
+              "format": "markdown",
+              "ref": "current_state_paths[0]",
+              "role": "business_state",
+              "sha256": "5d24836c61294d00c0c268f8bcb6861f1be49bb3a4b7fd9b0d4066af0d148ae3"
+            }
+          ],
+          "success": true
+        },
+        "observed_at": "2026-09-05T06:14:44+00:00",
+        "role": "product_state",
+        "sources": [
+          {
+            "bytes": 3191,
+            "format": "markdown",
+            "ref": "current_state_paths[0]",
+            "role": "business_state",
+            "sha256": "5d24836c61294d00c0c268f8bcb6861f1be49bb3a4b7fd9b0d4066af0d148ae3"
+          }
+        ]
+      }
+    }
+  ],
+  "schema_version": "1.0",
+  "ui_implemented": false
+}

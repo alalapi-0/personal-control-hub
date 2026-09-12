@@ -1,0 +1,34 @@
+{
+  "role": "fresh_read_only_judge",
+  "agent": "/root/tc13_judge",
+  "candidate_sha256": "6b53024c1419582977da6c36bf090080359ca474afe8ace84630e615a34a79c0",
+  "verdict": "PASS",
+  "reviewed_at": "2026-09-06 02:38:34 UTC",
+  "independent_checks": {
+    "candidate_identity": "PASS",
+    "frames": 36,
+    "authored_operations": 959,
+    "matched_source_nodes": 670,
+    "exports": 58,
+    "prototype_links": 133,
+    "contrast_pairs": 33,
+    "minimum_contrast": 5.1817,
+    "protected_files": 16,
+    "state_semantics": "PASS",
+    "repository_check": "PASS",
+    "round_consistency": "PASS",
+    "diff_check": "PASS",
+    "targeted_tests": "2 passed"
+  },
+  "visual_inspection": "Contact sheet and full desktop/mobile overview, detail, design list, comparison, states, long-content and 200% exports across A/B/C.",
+  "findings": [
+    "Directions meaningfully differ: A compact rows; B desktop split workspace; C centered editorial layout, serif hierarchy and softer components.",
+    "Mobile retains key content, actions, source meaning and readable wrapping.",
+    "Loading, empty, offline/error, stale, disabled/permission, conflict, export-failure, recovery and focus/keyboard/reduced-motion designs are explicit and text-supported.",
+    "Native text, instances, variables, styles, bindings and reactions are evidenced; source frame hashes remain unchanged after temporary export clones.",
+    "Synthetic fixtures are explicit. Runtime behavior, persistence, integrations and implementation remain UNVERIFIED; browser console/network are NOT_APPLICABLE for this design stage.",
+    "Owner selection remains pending."
+  ],
+  "blocking_findings": [],
+  "mutations": "none"
+}

@@ -1,0 +1,92 @@
+{
+  "status": "PASS",
+  "store_revision": 15,
+  "facts_preserved": 12,
+  "old_events_preserved": 1,
+  "authorized_new_events": 1,
+  "authorized_action": "defer",
+  "protected_files_unchanged": 337,
+  "authorized_store_successor": true,
+  "ledger_head": 130,
+  "export": {
+    "path": "docs/reports/ui_design_governance/service/exports/real/ui-export-3aec346e-2bed-4e59-bb26-a2744fd070b3.zip",
+    "sha256": "313bb3ec4b5bcbe4e96e6dac7349bf90eab23b7292c0da7f5440af8a3f6f621e",
+    "selection_state": "unselected",
+    "artifact_files": 4
+  },
+  "tc18_candidate_unchanged": "31948ccec7efa9d9901270ac54cad4c6423b5571d4b7418deff7b1f1716af89f",
+  "external_effects": 0,
+  "cursor_operations": 0,
+  "verification_scope": "Local frozen evidence and real Hub readback; no new external source/Figma verification.",
+  "contract": "TC17 v3",
+  "lanes": {
+    "functional": "PASS",
+    "visual": "PASS",
+    "desktop": "PASS",
+    "mobile": "PASS",
+    "keyboard_focus": "PASS",
+    "accessibility": "PASS",
+    "reduced_motion": "PASS",
+    "console": "PASS",
+    "network": "PASS",
+    "data_isolation": "PASS",
+    "persistence": "PASS",
+    "implementation_fit": "PASS"
+  },
+  "checks": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 pytest -q -p no:cacheprovider tests/test_hub*.py",
+      "exit": 0,
+      "passed": 187,
+      "subtests": 140,
+      "seconds": 26.0
+    },
+    {
+      "command": "node --test tests/test_hub_web_logic.mjs",
+      "exit": 0,
+      "passed": 10
+    },
+    {
+      "command": "node --input-type=module --check < src/hub/web/hub.js",
+      "exit": 0
+    },
+    {
+      "command": "python3 -B docs/reports/ui_design_governance/unit-17/verify_closure.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/check_repo.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/round_consistency_check.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/check_registry.py",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "reused_evidence": {
+    "accepted_styling_contrast_states": "unit-15/validation.json; TC18 protected identities unchanged",
+    "directory_failure_retry": "unit-17/hub-browser.json, unchanged v2 hub.js",
+    "external_source_and_figma": "unit-17/observation.md and figma-readback.json frozen before owner scope change; no new remote verification"
+  },
+  "observed_ui": "Root viewed closure-desktop.png/closure-mobile.png: readable 2-column desktop comparison and mobile tabs, original/candidate loaded, decision/history text intact, no overlap/overflow. History Enter activation and route return focus to main verified. Images have alt text; controls/contrast/styles unchanged from accepted TC15.",
+  "provenance": "One delegated Root operation under exact owner chat instruction. The local HTTP trusted reference maps to owner-decision.json; never a claim that owner personally clicked.",
+  "resolved_harness_issues": [
+    "python3 -m pytest unavailable in Python3.14; existing /opt/homebrew/bin/pytest ran all187 tests successfully without installation.",
+    "Initial image-size observation raced loading; final script waits for decoded390x739 previews and passes.",
+    "Initial export identity assertion omitted required scope; corrected to exact identity plus scope.",
+    "Old browser session expired after owned server restart (401 handled by existing session recovery); final fresh-session run has zero error responses and zero console errors."
+  ],
+  "known_warnings": [
+    "Existing Node MODULE_TYPELESS_PACKAGE_JSON warning; no module configuration changed.",
+    "Gate10 existing future-roadmap soft warnings, hard0."
+  ],
+  "cancelled_requirements": "Selected CSP export, further external design iteration/implementation and Cursor execution are cancelled by the owner revision; exported archive is unselected."
+}

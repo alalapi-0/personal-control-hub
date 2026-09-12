@@ -1,0 +1,14 @@
+{
+  "governor": "/root/hub_contract",
+  "contract_id": "HUB-GOV-2026-09-05-TC2",
+  "contract_version": 1,
+  "candidate_id": "hub-design-records-candidate-v2",
+  "candidate_hash": "bc37c0cc626acf2b13321b52eb218f5aad3e787678950786cd15bc6e09db28c3",
+  "fresh_judge": "judge-v2.json",
+  "decision": "REQUEST_REPAIR",
+  "contract_revision_required": false,
+  "repair_scope": "Canonical scope representation only: members strictly ordered by project_id, each pages array strictly lexicographically ordered; reject unsorted input before persistence, never silently normalize after writing. Apply to artifact/candidate/family/event through shared validator. Same canonical scope must continue supersession lineage across candidate IDs.",
+  "required_tests": ["member permutations", "page permutations", "same scope different candidates", "missing supersedes", "existing canonical fixture compatibility"],
+  "cleanup": "Root removed the four exact ignored design-module bytecode files created accidentally by Judge; frozen candidate was unchanged.",
+  "next_review": "Freeze candidate v3, then fresh Judge under unchanged TC2 contract."
+}

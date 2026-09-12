@@ -1,0 +1,385 @@
+{
+  "schema_version": "1.0",
+  "request_id": "tc6-management-cutover-20260905",
+  "head_before": {
+    "sequence": 78,
+    "hash": "d8b199def1f89f1e1df872c858760635757b6f28df5832032ecdb31a6b3744d8"
+  },
+  "head_after": {
+    "sequence": 82,
+    "hash": "53260bfe340015bd066e9447458c25607e24f994b9aafce6d02555988b9c2e4b"
+  },
+  "history_prefix_preserved": true,
+  "prior_rows": {
+    "requests": 3,
+    "events": 78,
+    "results": 72
+  },
+  "project_count": 24,
+  "refreshed_projects": [
+    "storage_governance",
+    "personal-control-hub"
+  ],
+  "other_results_preserved_and_stale_by_authority": true,
+  "source_reads": [
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "STATE.yaml"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub/governance/programs/storage_governance",
+      "path": "STATE.yaml"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "data/design_governance/connection_adapters.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json"
+    },
+    {
+      "root": "/Users/alalapi/PycharmProjects/personal-control-hub",
+      "path": "docs/reports/ui_design_governance/unit-03/source-discovery.json"
+    }
+  ],
+  "manga_probes": 0,
+  "external_business_reads": 0,
+  "resolver_errors": {}
+}

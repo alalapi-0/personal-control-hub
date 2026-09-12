@@ -1,0 +1,12 @@
+{
+  "governor": "/root/hub_contract",
+  "contract_id": "HUB-GOV-2026-09-05-TC2",
+  "contract_version": 1,
+  "candidate_id": "hub-design-records-candidate-v3",
+  "candidate_hash": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+  "fresh_judge": "judge-v3.json",
+  "decision": "APPROVE",
+  "evidence": "Same 27-file candidate independently passed; 85 tests, canonical scope conflict behavior, fixtures, material hashes, protected preimages and 7992-byte bootstrap verified.",
+  "limits": "Approval is TC2 only, not UI/Figma/real user choice/full-connection/Goal completion.",
+  "next_contract": {"id": "HUB-GOV-2026-09-05-TC3", "version": 1, "status": "ACTIVE", "condition": "Root registers decisions and TC3 preimage, and confirms sole writer before implementation or Repair dispatch.", "inventory_basis": {"path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json", "sha256": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c"}, "boundaries": "All 24 IDs retained; Manga zero probes and authority-blocked; no UI/Figma/external writes/Git/publication; source resolution cannot imply final UI-verified connection."}
+}

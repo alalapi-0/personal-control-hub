@@ -6,14 +6,14 @@ Round 0.5 文档。定义 Agent 使用 MCP 与其他外部工具时的审批级�
 
 | 级别 | 名称 | 用户确认 | 日志 | 默认 |
 |---|---|---|---|---|
-| L0 | 只读上下文 | 否 | 可选 | 允许 |
-| L1 | 本仓库低风险写 | 否 | 是 | 允许 |
+| L0 | 只读上下文 | 取决于上级授权 | 可选 | 风险分类 |
+| L1 | 本仓库低风险写 | 需要当前任务授权 | 获准时 | 风险分类 |
 | L2 | 外部/shell 低风险 | 是 | 是 | 须确认 |
 | L3 | 高风险写 | CEO 显式批准 | 是 | **禁止** |
 
-Agent 默认工作在 L0/L1。触及 L2 必须停止并说明；L3 除非 round_state 与用户明确批准，否则不得执行。
+L0-L3 只分类风险，不授予权限。任何动作先服从 system、developer、用户当前指令、宿主权限与工作区策略；触及 L2/L3 还必须满足相应显式确认。
 
-Round 0.5 起，六个已登记 MCP 可处于 default start / 默认可启动状态。default start 只代表 Cursor 工作区可以加载该 MCP，不代表 Agent 获得无限访问权；具体工具动作仍按下表的审批等级判断。
+六个 MCP 是 registry/example 候选且默认 disabled；当前项目配置只含 filesystem，运行时可用性未验证。登记、配置、运行时与授权分别判断。
 
 ## L0：只读上下文
 
@@ -26,7 +26,7 @@ Round 0.5 起，六个已登记 MCP 可处于 default start / 默认可启动状
 - GitHub 只读列出 open issues（启用后、无写操作）。
 - Chrome DevTools 只读 DOM 快照（无登录、无提交）。
 
-**Agent 行为**：可继续；建议在回复中注明数据来源。
+**Agent 行为**：仅在当前已有上级授权范围内执行；建议在回复中注明数据来源，默认不写日志。
 
 ## L1：本仓库低风险写入
 
@@ -37,9 +37,9 @@ Round 0.5 起，六个已登记 MCP 可处于 default start / 默认可启动状
 - 更新 `data/project_scans/` 扫描草案。
 - 写入 MCP 审计报告到 `docs/reports/`。
 - Filesystem MCP 编辑本仓库治理文件（非删除、非大规模迁移）。
-- 追加 `automation_log.jsonl`。
+- 当前任务明确授权时追加 `automation_log.jsonl`。
 
-**Agent 行为**：完成后写入 `data/logs/automation_log.jsonl`，字段含 mcp_id、approval_level、action_summary。
+**Agent 行为**：只有当前任务明确授权写入与记录时才执行，并写入相应审计字段。
 
 ## L2：外部系统或 Shell 低风险
 
@@ -57,7 +57,7 @@ Round 0.5 起，六个已登记 MCP 可处于 default start / 默认可启动状
 1. 停止执行。
 2. 说明工具、范围、数据去向。
 3. 等待用户确认或白名单命中。
-4. 确认后执行并记日志。
+4. 获得动作授权后执行；只有授权另行包含仓库记录时才写日志。
 
 ## L3：高风险写操作
 
@@ -76,7 +76,7 @@ Round 0.5 起，六个已登记 MCP 可处于 default start / 默认可启动状
 
 1. 拒绝默认执行。
 2. 仅当用户/CEO 显式批准且 governance 允许时，方可列入计划。
-3. 必须记完整日志与决策记录。
+3. 若当前授权另行包含仓库记录，则写完整日志与决策记录；动作批准本身不授予日志写入。
 
 ## MCP 与审批级别映射
 
@@ -91,7 +91,7 @@ Round 0.5 起，六个已登记 MCP 可处于 default start / 默认可启动状
 
 ## 跨 Agent 规则
 
-- **Cursor** 是 MCP 宿主，加载配置由用户控制；仓库中的 default start 是治理建议，不替代 Cursor 实际开关。
+- **Cursor** 是 MCP 宿主，加载配置由用户控制；仓库登记不替代 Cursor 实际开关。
 - **Codex** 不得绕过本 policy；等效外部动作适用相同级别。
 - **新增 MCP** 须更新 registry + policy + roadmap。
 - **token** 仅环境变量，禁止入库。
@@ -99,13 +99,13 @@ Round 0.5 起，六个已登记 MCP 可处于 default start / 默认可启动状
 ## Round 0.5 特殊约束
 
 - 不得自行安装 MCP。
-- 六个已登记 MCP 可默认进入启动候选；不得把 L3 启动状态解释为允许高风险动作。
+- 六个已登记 MCP 默认 disabled；不得把任何登记或配置状态解释为动作授权。
 - 不得真实调用外部 MCP 服务。
 - 不得写入真实 token。
 
 ## 日志格式建议
 
-追加到 `data/logs/automation_log.jsonl`：
+只有当前任务明确授权日志写入时，才可追加到 `data/logs/automation_log.jsonl`：
 
 ```json
 {"timestamp":"ISO8601","agent":"cursor","mcp_id":"github","approval_level":"L2","action_summary":"list open PRs","user_confirmed":true}

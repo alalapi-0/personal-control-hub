@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "governor": "/root/tc4_governor",
+  "contract": "HUB-GOV-2026-09-06-TC9",
+  "version": 1,
+  "candidate_hash": "b38e9ae3b8a68c905397260564c49c9228919df611ea9221105f75b64b5e791b",
+  "decision": "APPROVE",
+  "judge": "/root/tc5_judge",
+  "judge_verdict": "PASS",
+  "basis": "Exact16files+STATE;one new Manga exception;185Hub+11control and all authority/API/preservation checks pass;108ledger events unchanged;zero Manga probes/external effects",
+  "authorized_delivery": "registered TC9 scope only;normal currenttrackingbranch push;exact remote verification",
+  "remaining": "Figma OAuth unresolved;overall Goal incomplete",
+  "metadata_semantics": "status/next-action/review/delivery alone do not reopen candidate"
+}

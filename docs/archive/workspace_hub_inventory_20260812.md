@@ -1,0 +1,7 @@
+# Hub 工作区历史登记
+
+Reader: 历史调查者。Purpose: 保留 2026-08-12 Hub 仓库登记；不可作为当前状态或授权。Update: 此归档冻结，当前状态只读根 STATE.yaml。
+
+来源：`/Users/alalapi/PycharmProjects/.agent/STATE.md` 的 Hub 单独段落；其余工作区和全局治理材料原位保留。
+
+- `personal-control-hub` closed on 2026-08-12 under repository `TASK_CONTRACT v1`. Root preserved the owner/host-supplied filesystem-only `.cursor/mcp.json` exactly at blob `6e8c57e847a4b81211d755828a7ccfa4b7ef3ba6` / SHA-256 `d0d691c04866cf97ed94796ebbc74e66978c7c5726ea11716a148c0e82599152`, removed the stale absolute workspace-tooling dependency, aligned current authority to Phase 1 / `ROUND-1-1`, separated MCP registration/project configuration/runtime/action authority, and made gate, runner, environment checks, dry runs, prompts, and logging default read-only and non-authorizing. Two Judges found residual progression and logging self-grants; Root repaired each class, reran all structured parsing and repository/environment/round/gate/runner/MCP/bootstrap/registry/hub validations, and proved the checks left both status and diff hashes unchanged. Fresh Judge v3 returned PASS and the Governor APPROVED exact tree `ec0b5ddc35a2c59b6723362a73a04effe2079ba1` with binary diff SHA-256 `183b47fb3b578049e7aca92e29e179d88d1a03d2bd6d689352805b66702574fc`. Safe branch `agent/governance-closure-20260812` is verified at GitHub SHA `ac9aeef2099fed9c0d3cafc9dcde634505c585b5`; the worktree is clean, upstream is `0/0`, stash is empty, one worktree remains, and no commit is local-only. No PR was opened.

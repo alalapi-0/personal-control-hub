@@ -10,12 +10,15 @@ gates:
     checks:
       - README.md
       - AGENTS.md
+      - STATE.yaml
+      - NORTH_STAR.md
       - project.yaml
       - docs/00_start_here.md
       - docs/01_project_ultimate_goal.md
       - docs/02_master_roadmap.md
       - governance/agent_policy.yaml
       - governance/round_state.yaml
+      - governance/adapters/storage_governance.yaml
       - data/mcp/mcp_capability_registry.yaml
       - data/mcp/mcp_approval_policy.yaml
       - data/mcp/mcp_integration_roadmap.yaml
@@ -41,19 +44,19 @@ gates:
     checks:
       - "data/mcp/mcp_capability_registry.yaml exists"
       - "registered MCP entries include id/name/approval_level/enabled_in_project"
-      - "enabled_in_project defaults to true for the six registered MCPs"
-      - "default start does not bypass MCP L2/L3 confirmation"
+      - "enabled_in_project defaults to false for the six registered MCPs"
+      - "registry, project configuration, runtime availability, and action authority remain distinct"
     on_fail: stop
 
   - id: GATE-NO-DESTRUCTIVE-ACTION
     name: No Destructive Action
-    purpose: "确认本轮不删除文件、不覆盖用户内容、不写 token、不 git push。"
+    purpose: "确认本轮不做未授权删除、覆盖、秘密写入或 Git/外部效果。"
     required: true
     checks:
       - "no delete operation"
       - "no real secret written"
       - "no external project write"
-      - "no git push"
+      - "no unauthorized git push"
       - "no real external API call"
     on_fail: stop
 
@@ -92,11 +95,11 @@ gates:
 
   - id: GATE-ROUND-CONSISTENCY
     name: Round Consistency Check
-    purpose: "确认 round_state、current_status、roadmap 一致。"
+    purpose: "确认唯一 STATE.yaml 与当前 round/roadmap 一致。"
     required: true
     checks:
       - "scripts/round_consistency_check.py exists"
-      - "governance/round_state.yaml current_round matches current_status"
+      - "STATE.yaml declares canonical current-state authority"
       - "current round exists in round_tasks"
     on_fail: stop
 
@@ -113,7 +116,7 @@ gates:
 
   - id: GATE-SENSITIVE-FILE
     name: Sensitive File Check
-    purpose: "commit 前阻止 .env、密钥文件和敏感内容标记。"
+    purpose: "只读报告 .env、密钥文件和敏感内容标记。"
     required: true
     checks:
       - "auto_advance_runner finalize-round scans sensitive paths"
@@ -122,12 +125,11 @@ gates:
 
   - id: GATE-GIT-REMOTE
     name: Git Remote Check
-    purpose: "finalize-round 前检查 git 仓库与 remote 状态。"
+    purpose: "确认 finalize-round 只读检查 Git 状态且不执行 Git 写入；交付由 Root 另行处理。"
     required: true
     checks:
       - "git rev-parse --is-inside-work-tree checked"
-      - "missing remote produces warning not silent success"
-      - "push failure stops runner"
+      - "runner contains no git add, commit, or push path"
     on_fail: warn_and_continue
 
   - id: GATE-AUTO-RUNNER

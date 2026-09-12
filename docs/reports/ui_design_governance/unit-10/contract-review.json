@@ -1,0 +1,11 @@
+{
+  "contract_version": 2,
+  "reviewed_proposal_sha256": "744fc27552d7cc19760bf494f08ea39812bcb9c0e7c34ab22936cdef59d8cbd5",
+  "active_contract_sha256": "5190b10cb30076af5f27d29beb9ee2d6b0b330fc3f27a55821d0fb09fba294a9",
+  "judge": "/root/tc4_judge",
+  "judge_decision": "REVISION_PASS",
+  "governor": "/root/tc4_governor",
+  "governor_decision": "ACTIVATE_V2",
+  "semantic_changes_after_review": false,
+  "implementation_approved": false
+}

@@ -1,0 +1,11 @@
+{
+  "id": "hub-foundation-governor-v3",
+  "contract_id": "HUB-GOV-2026-09-05-TC1",
+  "candidate_id": "hub-foundation-candidate-v3",
+  "candidate_hash": "08229da02fa8264754f19143e90accd60e21f740209d0891c1011b8ce138ea0d",
+  "governor": "/root/hub_contract",
+  "decision": "APPROVE",
+  "basis": "Fresh Judge PASS on exact 25-file candidate; 38 tests, coverage, real smoke and protected preimages matched",
+  "limits": "Foundation acceptance only; no Hub/UI/Figma/full-connections acceptance",
+  "next_contract": "HUB-GOV-2026-09-05-TC2 v1 activated, write after Root records preimage and rechecks ownership"
+}

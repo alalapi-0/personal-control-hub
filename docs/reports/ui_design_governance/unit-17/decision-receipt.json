@@ -1,0 +1,23 @@
+{
+  "status": 200,
+  "body": {
+    "api_version": "1.0",
+    "data": {
+      "event_hash": "b25efe49e40b7db3aa3663fd3e856fb4492fb2eb5e010624c44743c9c66c0946",
+      "event_id": "tc17-owner-retain-original",
+      "outcome": "COMMITTED",
+      "receipt": {
+        "operation": "append_decision",
+        "payload_hash": "b4fbcc023752745fa1d124610eac068d2a2033c3c5d331dd53f81165b8cf6c55",
+        "request_id": "tc17-defer-owner-01a07589-d513-7a01-92f4-eefb9ba5f05b",
+        "result_hash": "b25efe49e40b7db3aa3663fd3e856fb4492fb2eb5e010624c44743c9c66c0946",
+        "result_id": "tc17-owner-retain-original",
+        "result_kind": "decision_event",
+        "result_revision": 15
+      },
+      "request_id": "tc17-defer-owner-01a07589-d513-7a01-92f4-eefb9ba5f05b",
+      "store_revision": 15
+    },
+    "ok": true
+  }
+}

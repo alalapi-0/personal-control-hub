@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "governor": "/root/tc4_governor",
+  "contract": "HUB-GOV-2026-09-06-TC8",
+  "version": 1,
+  "candidate_hash": "564425250a0899103e1a2b764cb7e21c58a117ca3fc516a1205929a5b42741f7",
+  "decision": "APPROVE",
+  "judge": "/root/tc5_judge",
+  "judge_verdict": "PASS",
+  "basis": "Exact19files and STATE semantics match;185Hub+11control and all governance/API checks pass;24members and all permissions preserved, only3exception declarations and dependent storage hash;108ledger events byte-preserved; zero external/project/Manga effects",
+  "authorized_delivery": "exact verified unit plus candidate/Judge/Governor/delivery metadata; staged/sensitive checks; scoped commit; normal currenttrackingbranch push; exactremote verification",
+  "excluded": [
+    "unrelated global dirty files",
+    "runtime lock files"
+  ],
+  "remaining": "Figma and Manga pending; overall Goal incomplete",
+  "metadata_semantics": "status/next-action/review/delivery changes alone do not reopen unchanged candidate"
+}

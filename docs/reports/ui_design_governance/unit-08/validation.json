@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "root_checks": [
+    {
+      "command": "python3 -m unittest discover -s tests -p test_hub*.py",
+      "exit": 0,
+      "output": ".........................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 185 tests in 22.231s\n\nOK\n"
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p test_control_plane_v2.py",
+      "exit": 5,
+      "output": "\n----------------------------------------------------------------------\nRan 0 tests in 0.000s\n\nNO TESTS RAN\n"
+    },
+    {
+      "command": "python3 -m pytest -q tests/test_control_plane_v2.py",
+      "exit": 1,
+      "output": "/opt/homebrew/opt/python@3.14/bin/python3.14: No module named pytest\n"
+    },
+    {
+      "command": "pytest -q tests/test_control_plane_v2.py",
+      "exit": 0,
+      "output": "...........                                                              [100%]\n11 passed in 0.17s\n"
+    },
+    {
+      "command": "python3 scripts/check_repo.py",
+      "exit": 0,
+      "output": "personal-control-hub skeleton check\nroot: /Users/alalapi/PycharmProjects/personal-control-hub\n\nFiles: OK\nDirectories: OK\nMCP registry: OK\nSecret marker scan: OK\n\nResult: PASS\n"
+    },
+    {
+      "command": "python3 scripts/check_registry.py",
+      "exit": 0,
+      "output": "=== External Project Registry Check ===\n项目数：24\n已启用：23\n结果：ok\n硬阻塞：0\n警告：0\n"
+    },
+    {
+      "command": "python3 scripts/round_consistency_check.py",
+      "exit": 0,
+      "output": "=== 轮次一致性检查 ===\n结果：ok\n当前轮次：ROUND-1-1\n下一轮次：ROUND-1-5\n警告：0\n硬阻塞：0\n"
+    },
+    {
+      "command": "python3 scripts/hub_refresh.py validate",
+      "exit": 0,
+      "output": "{\n  \"schema_version\": \"1.0\",\n  \"bundles\": 3,\n  \"projects\": 24,\n  \"current_authorities\": [\n    {\n      \"state\": \"drifted\",\n      \"changed_fields\": [\n        \"registry_hash\"\n      ]\n    },\n    {\n      \"state\": \"drifted\",\n      \"changed_fields\": [\n        \"registry_hash\"\n      ]\n    },\n    {\n      \"state\": \"matched\",\n      \"changed_fields\": []\n    }\n  ],\n  \"relation_proposals\": 2\n}\n"
+    },
+    {
+      "command": "python3 scripts/hub_connections.py validate data/design_governance/manifest-v4.json data/design_governance/connection-exceptions-v1.json",
+      "exit": 0,
+      "output": "{\"valid\": true, \"records\": 7, \"registry_projects\": 24}\n"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0,
+      "output": ""
+    }
+  ],
+  "targeted_tests": "14 project service +8 refresh CLI passed before full suite",
+  "reproducible_readback": "python3 docs/reports/ui_design_governance/unit-08/verify.py passed:24API,3exception,108historicalevents unchanged,zero project reads",
+  "independent_acceptance": "pending",
+  "resolved_validation_issue": {
+    "fingerprint": "TC8/test_control_plane_v2.py/unittest-no-tests",
+    "cause": "control-plane tests use pytest functions, unittest discover collected zero tests",
+    "resolution": "Use accepted TC6 pytest executable from PATH; system python3 lacks pytest. No installation or test change."
+  }
+}

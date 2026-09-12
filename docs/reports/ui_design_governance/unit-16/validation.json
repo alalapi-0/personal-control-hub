@@ -1,0 +1,99 @@
+{
+  "status": "PASS",
+  "contract": "TC16 v1",
+  "lanes": {
+    "functional": "PASS",
+    "visual": "PASS",
+    "desktop": "PASS",
+    "mobile": "PASS",
+    "console": "PASS",
+    "network": "PASS",
+    "data_isolation": "PASS",
+    "protected_preimages": "PASS",
+    "persistence": "PASS"
+  },
+  "checks": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 pytest -q -p no:cacheprovider tests/test_hub*.py",
+      "exit": 0,
+      "passed": 187,
+      "subtests_passed": 140,
+      "seconds": 39.09,
+      "scope": "Python unchanged; final JS syntax repair independently browser-verified"
+    },
+    {
+      "command": "node --test tests/test_hub_web_logic.mjs",
+      "exit": 0,
+      "passed": 10
+    },
+    {
+      "command": "node --input-type=module --check < src/hub/web/hub.js",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/check_repo.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 scripts/round_consistency_check.py",
+      "exit": 0,
+      "warnings": 0,
+      "hard": 0
+    },
+    {
+      "command": "python3 scripts/hub_refresh.py validate",
+      "exit": 0,
+      "current_bundle": "matched",
+      "historical_bundles": "three registry drifts retained by design"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 docs/reports/ui_design_governance/unit-16/verify.py --replay",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check -- src/hub/web/hub.js",
+      "exit": 0
+    },
+    {
+      "command": "unit-16/browser.js final live read-only pass",
+      "exit": 0,
+      "desktop_details": 24,
+      "mobile_details": 24,
+      "deep_link_names": [
+        "Novel Continuation Agent",
+        "Zarathustra Adaptation"
+      ],
+      "same_origin_GET_200": 111,
+      "errors": 0
+    }
+  ],
+  "gate": {
+    "exit": 0,
+    "hard": 0,
+    "existing_roadmap_soft": 10
+  },
+  "experience": {
+    "hierarchy_truth": "Operational facts and unknown business status distinguished; proposed relations retain boundaries; raw provenance in collapsed diagnostics.",
+    "primary_path": "24 list/detail navigation, source/error/provenance parity, filters20/1/24, four exception messages; real same-request replay no new effects.",
+    "loading_empty_error_disabled": "Accepted TC15 mechanics unchanged; TC16 source warning and exception disable states observed.",
+    "keyboard_accessibility_motion": "Accepted TC15 CSS, common.js/designs.js, navigation and controls unchanged. New relation anchors semantic links; text notices do not require motion.",
+    "responsive": "All24 details and lists at1440 and390; no horizontal overflow; rendered screenshots inspected.",
+    "implementation_fit": "Reuses accepted v3 materials and components; only hub.js relation and operational source text changed.",
+    "dangerous_actions": "No new mutation UI; TC15 recovery/confirmation preserved."
+  },
+  "failures_resolved": [
+    "Original one-shot verifier expected registry order; source resolver sorts IDs. Refresh succeeded; immutable history checked before replay.",
+    "Initial recovery comparison assumed raw refresh projection was current-authority-bound. Raw receipt is unscoped; verifier compares raw with raw and current CLI/service/UI with current v4.",
+    "Browser caught relationPoints missing parenthesis despite Node26 .js check returning0. Fixed and verified explicitly as ES module and live browser. No API/data failure.",
+    "Browser harness first expected aria-busy=false rather than removed attribute, then used unavailable URL helper. Fixed harness; final48detail checks pass.",
+    "Fresh Judge v1 found raw related IDs on direct detail. Separate name cache plus directory fetch on cache miss fixes deep-link names; 48details and explicit reload name checks pass."
+  ],
+  "limitations": [
+    "LightNovel operational connection valid; historical YAML diagnostic SOURCE_INVALID retained; business unknown, next action null.",
+    "Four authorized exceptions retain historical/unknown snapshots; they were not refreshed.",
+    "Raw refresh receipt projection is authority-unscoped; current authority rebuild/CLI/API/UI explicitly bind v4.",
+    "Original guard counters were not persisted before ordering assertion; original success under raising guard and replay zero counters are stated separately.",
+    "No external project writes/launches, Figma or design-store effects in TC16. Overall Goal still needs external UI design loop and final handoff."
+  ],
+  "baseline_warning": "Node MODULE_TYPELESS_PACKAGE_JSON warning in CLI logic test; no browser errors after final fix."
+}

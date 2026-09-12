@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "checks": [
+    {
+      "command": "python3 scripts/auto_advance_runner.py --mode check",
+      "exit_code": 0,
+      "result": "PASS; 0 hard / 10 existing roadmap soft warnings"
+    },
+    {
+      "command": "python3 scripts/check_repo.py",
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "python3 scripts/round_consistency_check.py",
+      "exit_code": 0,
+      "result": "ok; 0 warnings / 0 hard"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 pytest -q -p no:cacheprovider tests/test_control_plane_v2.py -k 'default_boot_packet or state_authority'",
+      "exit_code": 0,
+      "result": "2 passed, 9 deselected"
+    },
+    {
+      "command": "parse unit-12 JSON and STATE YAML; compare baseline protected hashes and accepted TC11 config hash",
+      "exit_code": 0,
+      "result": "PASS; 16 protected files and accepted configuration unchanged"
+    }
+  ],
+  "resolved_prerequisite_failure": {
+    "command": "python3 -m pytest",
+    "exit_code": 1,
+    "reason": "system python lacks pytest; existing pytest executable used successfully; no dependency installed"
+  },
+  "scope": "TC12 connection evidence and canonical state only; not full Hub/UI acceptance",
+  "authentication_evidence": "official whoami returned isError=false and identity/plans once; exact email matched visible official UI; only match boolean retained",
+  "external_file_node_calls": 0,
+  "overall_goal_complete": false
+}

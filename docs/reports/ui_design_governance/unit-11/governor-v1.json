@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/tc4_governor",
+  "decision": "APPROVE",
+  "contract_version": 1,
+  "candidate_sha256": "a6f49a862e5bed2d5b31aa8af0c578e78c66f1cacf4973a714a6bf78cb5da48a",
+  "independent_findings": [
+    "Candidate identity, five file hashes and STATE semantics match",
+    "Active contract and fresh Judge PASS match candidate",
+    "Only enabled false→true; exact reverse SHA, mode0600,54protected paths verified",
+    "Verifier, state consistency and diff checks passed",
+    "Runtime tool availability and OAuth remain UNVERIFIED"
+  ],
+  "authorized_next_effect": "Root only registered9Hubpaths normalcommit/push currenttrackingbranch, verifyremoteSHA; globalconfig excluded",
+  "excludes": [
+    "Figma remote calls",
+    "OAuth or permission changes",
+    "credential changes",
+    "client restart",
+    "design writes"
+  ],
+  "overall_goal_complete": false
+}

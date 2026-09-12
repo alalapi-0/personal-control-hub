@@ -12,7 +12,7 @@ UI 控制台服务于三类动作：
 
 - 看清当前项目 OS 的状态：当前轮次、下一轮、风险、验证结果、active programs。
 - 承接人工确认：hard blocker、P0/P1 变更、外部写入、真实集成、MCP L2/L3。
-- 辅助自动推进：显示 agent_gate.py 决策、soft warning、默认继续策略和队列状态。
+- 辅助人工判断：显示 agent_gate.py 检查结果、soft warning、未授予动作权限状态和队列候选。
 
 ## UI 优先级
 
@@ -38,8 +38,7 @@ UI 当前不是第一优先级。Restart Phase 和 Phase 1 的重点仍是治理
 
 数据来源：
 
-- `governance/round_state.yaml`
-- `data/state/current_status.yaml`
+- `STATE.yaml`
 - `data/gates/auto_advance_policy.yaml`
 - `data/logs/automation_log.jsonl`
 - `data/programs/active_programs.yaml`
@@ -149,7 +148,7 @@ UI 当前不是第一优先级。Restart Phase 和 Phase 1 的重点仍是治理
 - `docs/02_master_roadmap.md`
 - `data/roadmap/round_tasks.yaml`
 - `data/roadmap/round_dependencies.yaml`
-- `governance/round_state.yaml`
+- `STATE.yaml`
 
 允许操作：
 

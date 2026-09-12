@@ -1,4 +1,4 @@
-last_checked_at: '2026-06-07T11:44:13.672652+00:00'
+last_checked_at: '2026-08-12T06:23:57+08:00'
 overall_status: ok
 tools:
   python:
@@ -26,15 +26,15 @@ tools:
     version: null
     notes: Codex 是否可用需要用户确认
   mcp_servers:
-    status: manual_check_required
-    expected:
+    status: runtime_unverified
+    registered_candidates:
     - chrome-devtools
     - context7
     - filesystem
     - github
     - playwright
     - stitch
-    notes: 本脚本不直接启用 MCP，只记录检查要求
-    config_files_found:
-    - .cursor/mcp.example.json
-    - .cursor/mcp.json
+    project_configured:
+    - filesystem
+    runtime_available: null
+    notes: 登记、项目配置、运行时可用和动作授权分别判断；本记录不启用 MCP 或授予权限

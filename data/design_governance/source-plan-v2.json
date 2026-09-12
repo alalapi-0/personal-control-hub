@@ -1,0 +1,468 @@
+{
+  "schema_version": "1.0",
+  "kind": "source_plan",
+  "id": "hub-source-plan-v2",
+  "created_at": "2026-09-05T14:12:29+00:00",
+  "authority": {
+    "manifest_id": "hub-connections-v3",
+    "manifest_hash": "6da381ff72d4dcea4e4b491c018dd3704474914e6b453f2d806657b8219ac0d6",
+    "registry_path": "data/registry/external_projects.yaml",
+    "registry_hash": "b41fb0df37556b31c196f179cd1f3b64f6919acc958590d2f97b2ef91e7600bd",
+    "adapter_version": "1.0",
+    "adapter_hash": "e2028a905c1df2d96ae4e836e66da74656e345d532d7f003176ef1b6782b4191",
+    "accepted_inventory_path": "docs/reports/ui_design_governance/unit-02/ui-source-inventory.json",
+    "accepted_inventory_hash": "5e7132ce05a5dc2a569826444ea15f67e9893c725c9ec24c884872bd93917f7c",
+    "accepted_candidate": "f0d2f820f5b3bed541cee64b617f4e23fe6b0342d1b2db1541368df31c573512",
+    "discovery_path": "docs/reports/ui_design_governance/unit-03/source-discovery.json",
+    "discovery_hash": "319515d774c94ed9d89d8133f87e705c2540b47b1d4d04a1d84f172f707cfee0"
+  },
+  "entries": [
+    {
+      "project_id": "storage_governance",
+      "mode": "declared_source",
+      "access_profile": "named_control_plane_files_only",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "yaml",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "personal-control-hub",
+      "mode": "declared_source",
+      "access_profile": "bounded_management_records_only",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "yaml",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "manga-localizer",
+      "mode": "blocked_by_authority",
+      "access_profile": "no_current_goal_access",
+      "permission_basis": "registry access_profile no_current_goal_access; zero filesystem probes",
+      "declared_sources": [],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "universal-player",
+      "mode": "declared_source",
+      "access_profile": "registered_project_read",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "markdown",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "ai-anime-short-factory",
+      "mode": "declared_source",
+      "access_profile": "registered_project_read",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "json",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "ai-music-foundry",
+      "mode": "declared_source",
+      "access_profile": "registered_project_read",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "markdown",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "novel-continuation-agent",
+      "mode": "declared_source",
+      "access_profile": "registered_project_read",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "yaml",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "story-faceless-utopia",
+      "mode": "declared_source",
+      "access_profile": "registered_project_read",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "markdown",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "light-novel",
+      "mode": "static_derived_operational",
+      "access_profile": "registered_project_read",
+      "permission_basis": "registry declaration plus hash-bound static Python literal; no probe execution",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "yaml",
+          "role": "diagnostic"
+        }
+      ],
+      "static_evidence": [
+        {
+          "path": "scripts/local_scheduler_status.py",
+          "sha256": "8a1699fce76af55fb898e0d281c7b1e49bbb52f7ce8b26c413586a2b5d18c86f",
+          "bytes": 2118
+        },
+        {
+          "path": "src/scheduler/status.py",
+          "sha256": "8a686bdd8cb9449ab3a70f2ec838edf39acda13fc0483d55ae6cfb998ec506ac",
+          "bytes": 14450
+        },
+        {
+          "path": "src/scheduler/control.py",
+          "sha256": "5faa94d42514d4ae677100d2d18380980a11bd747348b31a9936f7ef6eaaa77e",
+          "bytes": 8785
+        }
+      ],
+      "derived_sources": [
+        {
+          "ref": "derived:scheduler_tick",
+          "permission_ref": "supporting_authority_paths[5]",
+          "evidence_path": "src/scheduler/status.py",
+          "evidence_sha256": "8a686bdd8cb9449ab3a70f2ec838edf39acda13fc0483d55ae6cfb998ec506ac",
+          "declaration_name": "TICK_STATE_REL",
+          "declaration": "workspace/control/scheduler_tick_state.json",
+          "relative_path": "workspace/control/scheduler_tick_state.json",
+          "format": "json",
+          "field_meanings": [
+            "last_tick_status",
+            "last_successful_tick",
+            "last_blocked_reason"
+          ]
+        },
+        {
+          "ref": "derived:scheduler_pause",
+          "permission_ref": "supporting_authority_paths[5]",
+          "evidence_path": "src/scheduler/control.py",
+          "evidence_sha256": "5faa94d42514d4ae677100d2d18380980a11bd747348b31a9936f7ef6eaaa77e",
+          "declaration_name": "PAUSE_REL",
+          "declaration": "workspace/control/scheduler_paused.json",
+          "relative_path": "workspace/control/scheduler_paused.json",
+          "format": "json",
+          "field_meanings": [
+            "paused",
+            "reason",
+            "requested_at"
+          ]
+        }
+      ],
+      "absence_files": []
+    },
+    {
+      "project_id": "wechat-article-scheduler",
+      "mode": "declared_source",
+      "access_profile": "registered_project_read",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "yaml",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "resilient-personal-network",
+      "mode": "declared_source",
+      "access_profile": "registered_project_read",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "markdown",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "pixel-world-asset-forge",
+      "mode": "declared_source",
+      "access_profile": "registered_project_read",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "yaml",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "desktop-jav-tools",
+      "mode": "declared_source",
+      "access_profile": "registered_project_read",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "markdown",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "zarathustra-adaptation",
+      "mode": "declared_source",
+      "access_profile": "registered_project_read",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "markdown",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "computer-study-plan",
+      "mode": "declared_source",
+      "access_profile": "registered_project_read",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "markdown",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "desktop-tool",
+      "mode": "declared_source",
+      "access_profile": "registered_project_read",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "markdown",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "audio-clone",
+      "mode": "declared_source",
+      "access_profile": "registered_project_read",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "markdown",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "cognitive-asset-library",
+      "mode": "declared_source",
+      "access_profile": "registered_project_read",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "markdown",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "pycharm-agent-workspace",
+      "mode": "declared_source",
+      "access_profile": "registered_project_read_with_protected_config",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "yaml",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "youtube-hq-downloader",
+      "mode": "declared_source",
+      "access_profile": "registered_project_read_with_credential_boundary",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "markdown",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    },
+    {
+      "project_id": "desktop-magnet",
+      "mode": "accepted_inventory_absence",
+      "access_profile": "registered_project_read",
+      "permission_basis": "accepted inventory and exact static source-discovery content proof",
+      "declared_sources": [],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": [
+        {
+          "path": "README.md",
+          "sha256": "42a6f59459895ab2e13a211b7492605a1c20e5dcc6882fa8aad046761dec69a0",
+          "bytes": 1927,
+          "content_proof": "readme_per_item_output_not_project_state"
+        }
+      ]
+    },
+    {
+      "project_id": "pycharm-misc-project",
+      "mode": "accepted_inventory_absence",
+      "access_profile": "registered_project_read",
+      "permission_basis": "accepted inventory and exact static source-discovery content proof",
+      "declared_sources": [],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": [
+        {
+          "path": "fix_mojibake_names.py",
+          "sha256": "b1ca7ead45172d204f22040437e2f54a805b60bcc21eed0a7c3317b9cfe5c1f4",
+          "bytes": 4239,
+          "content_proof": "python_ast_no_state_source_declaration"
+        },
+        {
+          "path": "collect_by_ext.py",
+          "sha256": "299cac9417820fd2cf644b4cea871fcde541451b95b261488ba121ddd7a586b5",
+          "bytes": 3357,
+          "content_proof": "python_ast_no_state_source_declaration"
+        },
+        {
+          "path": "transcribe_ja.py",
+          "sha256": "59b49531bafac4ae2ee1e16d5c20df16bd1eda80efb9b32da923ce466f0a1338",
+          "bytes": 1597,
+          "content_proof": "python_ast_no_state_source_declaration"
+        },
+        {
+          "path": "pack_nwjs_game.py",
+          "sha256": "064c4d9ea024a9909afc559b709aef8c994aa20cebd47ace564ede808a496eab",
+          "bytes": 9841,
+          "content_proof": "python_ast_no_state_source_declaration"
+        }
+      ]
+    },
+    {
+      "project_id": "desktop-downloads-scripts",
+      "mode": "accepted_inventory_absence",
+      "access_profile": "registered_project_read",
+      "permission_basis": "accepted inventory and exact static source-discovery content proof",
+      "declared_sources": [],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": [
+        {
+          "path": "main.py",
+          "sha256": "c23eda4f9cbe14be3d00bf0b788e987efbb30ea488550b47fe9c12d6d1b4b521",
+          "bytes": 493,
+          "content_proof": "python_ast_no_state_source_declaration"
+        }
+      ]
+    },
+    {
+      "project_id": "mpv-clip-workbench",
+      "mode": "declared_source",
+      "access_profile": "registered_external_project_read",
+      "permission_basis": "exact registry current_state_paths declaration",
+      "declared_sources": [
+        {
+          "ref": "current_state_paths[0]",
+          "format": "markdown",
+          "role": "business_state"
+        }
+      ],
+      "static_evidence": [],
+      "derived_sources": [],
+      "absence_files": []
+    }
+  ],
+  "content_hash": "9e8871121f04831d4b70fa3739e142bd498c54f8ea204cca60830b5257b0ece4"
+}

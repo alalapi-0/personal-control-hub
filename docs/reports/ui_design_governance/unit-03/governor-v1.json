@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "governor": "/root/hub_governor_tc3",
+  "contract": "HUB-GOV-2026-09-05-TC3",
+  "contract_version": 1,
+  "candidate": "TC3-candidate-v1",
+  "aggregate_sha256": "d53f6f4af0b4b0eebd0210cbc27633a13b79565a2dda70a9a7cd2586d46e0c31",
+  "judge": "/root/refresh_judge_v1",
+  "judge_result": "FAIL",
+  "decision": "REQUEST_REPAIR",
+  "contract_status": "ACTIVE",
+  "contract_revision_required": false,
+  "reason": "Post-construction registry permission changes do not prevent cached absence-source reads.",
+  "repair_requirements": [
+    "Revalidate current registry and adapter authority before every subsequent external read, across all modes and later reads in one request.",
+    "Detect drift before path expansion or filesystem access, without source evidence or success disposition.",
+    "Preserve completed immutable facts and prevent mixed authority success facts.",
+    "Add isolated post-construction and mid-read registry/adapter/no-access changes with zero subsequent project probes.",
+    "Preserve Manga, TC2 records, unrelated work and remaining TC3 behavior; freeze replacement for fresh Judge then Governor."
+  ],
+  "successor": {
+    "id": "HUB-GOV-2026-09-05-TC4",
+    "version": 1,
+    "status": "DRAFT",
+    "activation": "TC3 approved; Root registers TC2/TC3 identities, preimages and sole writer before dispatch.",
+    "objective": "Local single-user query/command service joining accepted source ledger, relations and design records/export; one application-facing contract, no UI acceptance.",
+    "boundaries": [
+      "Registry and manifests remain authoritative; no second project list or fact store.",
+      "Preserve accepted facts and unknown/unavailable/stale/blocked/proposed meanings.",
+      "No external writes, business execution, arbitrary discovery, Manga probes, Git, publication or remote effects.",
+      "No UI before Figma selection, no Figma while OAuth pending, no fabricated owner choice/review/authorization/implementation.",
+      "Manual refresh inherits TC3 authority, bound, drift, idempotency and concurrency controls.",
+      "Design events require exact explicit owner action; selection and implementation authority separate.",
+      "Artifact delivery only by registered IDs, never caller paths.",
+      "Loopback-only single-user service resistant to hostile webpage reads/writes; no LAN/public exposure.",
+      "Root owns STATE/protocol/evidence/control; Repair disjoint source/tests only, no children/effects."
+    ],
+    "acceptance": [
+      "One deterministic DTO derivation for list/detail; shared fields equal.",
+      "Preserve identity, raw/normalized state, next action, blockers, freshness, times, errors, relations, design state and provenance; missing remains unknown.",
+      "All24 IDs representable, Manga blocked zero probes, no promotion to final connection acceptance.",
+      "Deterministic search/filter/order/pagination if present and errors for identical snapshot.",
+      "Refresh only frozen registered IDs, idempotent identity, partial success and distinct authority/concurrency/validation errors.",
+      "Design actions select/request_changes/defer/withdraw bind request, expected revision, candidate ID/revision/hash, scope/source/supersession; no defaults or Agent choices.",
+      "Stale/invalid/schema/action shapes fail closed; conflict and duplicate handling; committed outcomes preserved across response failure and retry.",
+      "Artifact ID lookup verifies safe ordinary file, symlink boundary, scope/hash/classification/content behavior; no raw path, traversal or filesystem detail leaks.",
+      "Explicit tested trust model; reject non-loopback binds; Host/Origin/CORS and mutation protections; loopback alone is not owner intent.",
+      "Deterministic outcomes for invalid/not-found/authority/conflict/unavailable/precommit/postcommit/corruption; no secrets/business content/stack/unrestricted paths.",
+      "Isolated loopback start/query/stop lifecycle test with temporary fixtures, no external projects or business services.",
+      "Accepted CLI/library behavior stays on same facts/validation; rebuild works and unknown/corrupt records do not silently migrate.",
+      "STATE contains real dependencies and one next action; bootstrap and protected storage preserved."
+    ],
+    "evidence": "Gate checks, DTO parity/coverage/provenance, refresh/decision/conflict/postcommit controls, artifact and hostile-origin tests, lifecycle/restart, schema/repo/state/bootstrap/preservation; exact candidate for fresh Judge and Governor."
+  }
+}

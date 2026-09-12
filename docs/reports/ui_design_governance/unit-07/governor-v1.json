@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "role": "read_only_governor",
+  "agent": "/root/tc4_governor",
+  "candidate_hash": "3c8d74ede9b3ca6b60a6afd5c262f311c1cdff6ca943bb1a5d67ce14947fc641",
+  "contract": "HUB-GOV-2026-09-05-TC7 v1",
+  "decision": "APPROVE",
+  "fresh_judge": "/root/tc7_judge PASS nofindings",
+  "accepted_scope": "exactledgercontinuation/idempotency;20resolved+3absence+1Manga blocked;24API;emptyrealdesignstore;source/testsunchanged;0externalwrites/processes;globalpreserved",
+  "authorized_next_action": "scopedstagedandsecretchecks;onecommit;normalpushverifiedtrackingbranch;verifyexactremote",
+  "excluded_paths": [
+    "data/design_governance/design-store.json.lock",
+    "unrelateddirtyfiles"
+  ],
+  "post_delivery": "status/next-action metadata anddelivery.json only; no semanticreopening",
+  "remaining_dependencies": [
+    "Figma reconnect",
+    "Manga ownerscope",
+    "3sourceabsenceownerdecisions"
+  ],
+  "overall_goal_complete": false,
+  "readiness_successor_authorized": false
+}

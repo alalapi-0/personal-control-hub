@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/design_records_judge_v1",
+  "role": "fresh_read_only_judge",
+  "candidate_id": "hub-design-records-candidate-v1",
+  "candidate_hash": "aa269b64e630a49e6af147902c52b175b3647ef4c2249f2b17c883b2105eab82",
+  "decision": "FAIL",
+  "identity_verification": "19/19 file hashes and aggregate independently matched",
+  "blocking_findings": [
+    {"id": "J1", "criterion": 4, "finding": "Directory fsync failure after os.replace reports OSError although the store revision and new fact are committed; explicit committed/uncertain outcome is missing."},
+    {"id": "J2", "criterion": 7, "finding": "A valid multi-project store cannot export per-project baseline materials because export requires each artifact scope to equal aggregate candidate scope."},
+    {"id": "J3", "criterion": 7, "finding": "Export includes unbound same-scope Figma pointers, silently mixing unrelated candidate materials."},
+    {"id": "J4", "criterion": 7, "finding": "Directory fsync failure after export hard-link publication reports OSError although the complete ZIP remains at destination."}
+  ],
+  "additional_gaps": [
+    "Declared dry-run classification cannot be persisted in either store mode.",
+    "Duplicate baseline behavior action_id values are accepted.",
+    "Non-null family scope remains unsupported despite contract project/family binding language."
+  ],
+  "passing_evidence": {"hub_tests": 66, "fixture_revision": 11, "fixture_events": 4, "real_selections": 0, "effective_withdrawals": 1, "zip_and_material_hashes": "matched", "repository_check": "PASS", "round_consistency": "PASS", "bootstrap_bytes": 8001},
+  "baseline_failure": "Two pre-existing mpv registry check errors; registry hash unchanged.",
+  "review_limits": "Isolated synthetic temporary hubs only. No repository mutation, Manga/external-project probing, Figma access, UI assessment, Git or external effects."
+}

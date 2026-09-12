@@ -1,0 +1,136 @@
+{
+  "schema_version": "1.0",
+  "schema_language": "hub-record-validator-v1",
+  "validator": "hub.connection_records.validate_record",
+  "collection_validator": "hub.connection_records.validate_collection",
+  "common_required": [
+    "schema_version",
+    "record_type",
+    "id",
+    "created_at"
+  ],
+  "project_required_except_manifest": [
+    "project_id"
+  ],
+  "record_required": {
+    "scope": [
+      "authority_ref",
+      "disposition",
+      "evidence_refs",
+      "reason"
+    ],
+    "connection_manifest": [
+      "content_hash",
+      "entries",
+      "registry_ref",
+      "revision"
+    ],
+    "project_snapshot": [
+      "adapter_hash",
+      "adapter_version",
+      "availability",
+      "blockers",
+      "designs",
+      "last_success_at",
+      "manifest_hash",
+      "manifest_id",
+      "next_action",
+      "next_action_kind",
+      "normalized_status",
+      "observed_at",
+      "raw_status",
+      "refresh_error",
+      "relations",
+      "source_role",
+      "sources",
+      "unknown_fields"
+    ],
+    "connection_evidence": [
+      "adapter_hash",
+      "adapter_version",
+      "authority_ref",
+      "command",
+      "exit_code",
+      "manifest_hash",
+      "manifest_id",
+      "observed_at",
+      "reason",
+      "snapshot_hash",
+      "snapshot_ref",
+      "status",
+      "ui_verification"
+    ]
+  },
+  "nested_exact_fields": {
+    "registry_ref": [
+      "path",
+      "schema_version",
+      "sha256"
+    ],
+    "manifest_entry": [
+      "allowed_entries",
+      "evidence_refs",
+      "expected_capabilities",
+      "permission",
+      "project_id",
+      "scope",
+      "source_absence_reason"
+    ],
+    "permission": [
+      "access_profile",
+      "basis",
+      "mode"
+    ],
+    "source": [
+      "bytes",
+      "path",
+      "ref",
+      "sha256"
+    ]
+  },
+  "enums": {
+    "ui_disposition": [
+      "deferred",
+      "in_scope",
+      "no_ui",
+      "protected",
+      "unresolved"
+    ],
+    "connection_status": [
+      "AUTHORIZED_EXCEPTION",
+      "BLOCKED_BY_AUTHORITY",
+      "CONNECTED_AND_VERIFIED",
+      "PENDING",
+      "SOURCE_UNAVAILABLE",
+      "VALIDATION_FAILED"
+    ],
+    "availability": [
+      "blocked_by_authority",
+      "fresh",
+      "invalid",
+      "missing",
+      "source_not_declared",
+      "unavailable",
+      "unreadable"
+    ],
+    "normalized_status": [
+      "active",
+      "blocked",
+      "complete",
+      "paused",
+      "unknown"
+    ]
+  },
+  "constraints": {
+    "id_pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$",
+    "sha256_pattern": "^[0-9a-f]{64}$",
+    "timestamps": "ISO 8601 with timezone",
+    "unknown_fields": "reason required for null status/next",
+    "manifest": "unique complete registry IDs; hash binding; no root copies",
+    "references": "manifest binds authoritative registry; exact named path; snapshot/evidence identity",
+    "adapter_versions": [
+      "1.0"
+    ],
+    "acceptance": "successful read plus UI PASS; authorized exception requires owner/policy ref"
+  }
+}

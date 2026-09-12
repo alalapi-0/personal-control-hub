@@ -1,0 +1,236 @@
+[
+  {
+    "pageId": "0:1",
+    "name": "00 · Foundations",
+    "roots": [
+      {
+        "id": "5:140",
+        "name": "Foundations",
+        "sha256": "a24a25d7cd96d6a2e4da434fa0b1774c80e9ffe035b586ee605b7f7957a34756"
+      },
+      {
+        "id": "9:14",
+        "name": "ProjectRow/A",
+        "sha256": "6066f09989b4c010e7a86a6364883318c3f2b011a05b2042ae40d4a72b440a68"
+      },
+      {
+        "id": "9:20",
+        "name": "ProjectRow/B",
+        "sha256": "fed6e7305b9524909bec3159367f875366b5579539e3e4b116babb786dba08a6"
+      },
+      {
+        "id": "9:25",
+        "name": "ProjectRow/C",
+        "sha256": "3e4dba3141b02ee3cbb64a1be8bf7ae0c7ec6c84302463789f211665c38f3d80"
+      },
+      {
+        "id": "9:30",
+        "name": "ProjectRow/Mobile",
+        "sha256": "506d8c0bd5820cdd73711e4da82fbff72364bcabaa45492126f1386147ddb302"
+      },
+      {
+        "id": "9:35",
+        "name": "DesignCard",
+        "sha256": "ff06a973b6eb8c748f8974c5dd285f52e02f511f19b061878dc034b8ed348726"
+      }
+    ]
+  },
+  {
+    "pageId": "2:2",
+    "name": "A · 清晰编辑台",
+    "roots": [
+      {
+        "id": "14:20",
+        "name": "A/overview/desktop",
+        "sha256": "4d91be63808ec3a90258b421f6397bb1e356ec38219c3d7993af2ec18057df73"
+      },
+      {
+        "id": "14:83",
+        "name": "A/overview/mobile",
+        "sha256": "ef218b5bcccf0ab1082a0c694cf60bcda452926002395073ece8528b26fcd017"
+      },
+      {
+        "id": "16:76",
+        "name": "A/detail/desktop",
+        "sha256": "22bc481bbe828b93a23046539e86d9ee53cebd6e63e46764c2c33d9cc06fd829"
+      },
+      {
+        "id": "16:241",
+        "name": "A/detail/mobile",
+        "sha256": "8cc269fada7600039755d4270a78f1536063b1948b4f10a8b804f312d026c9eb"
+      },
+      {
+        "id": "17:239",
+        "name": "A/designs/desktop",
+        "sha256": "e2bf91ed64836de4d7559c59f9224e1325cf5713fbbbc9e99edd0b86a330b946"
+      },
+      {
+        "id": "17:279",
+        "name": "A/designs/mobile",
+        "sha256": "91ce443eb1998dcff66f05ad1dfdae431973a97a8595928f187af4016f9e20b8"
+      },
+      {
+        "id": "19:170",
+        "name": "A/compare/desktop",
+        "sha256": "9dd49a6e31c2b074f38f2bc04d7a92532c35c4b8057df02958d947e6dfaab251"
+      },
+      {
+        "id": "19:522",
+        "name": "A/compare/mobile",
+        "sha256": "7b49f4989dfecf6fc328a04ef30e9900375a27e0d9fec042ade6fad827f8fb73"
+      },
+      {
+        "id": "23:809",
+        "name": "A/states/desktop",
+        "sha256": "f4f3b5bb83d5deceba5660026e7036b45b1a0ca6b22cf8dc581723867ebed97b"
+      },
+      {
+        "id": "23:928",
+        "name": "A/states/mobile",
+        "sha256": "91b314c3ee80f25e946f55d77beb18da8425d176ec6221fe75d4899f520b23e9"
+      },
+      {
+        "id": "23:1480",
+        "name": "A/original/mobile",
+        "sha256": "30f34dbbcef3a6555dcfa7afece3cc774b1a8d7444968bdf360c271d30275fc4"
+      },
+      {
+        "id": "23:1490",
+        "name": "A/text200/mobile",
+        "sha256": "e69a87869c66b895b49690c0388992d2a3a9acaa5834b09808d280704d3f3268"
+      }
+    ]
+  },
+  {
+    "pageId": "2:3",
+    "name": "B · 专注画布",
+    "roots": [
+      {
+        "id": "14:139",
+        "name": "B/overview/desktop",
+        "sha256": "eb6cdc7f4535a7cdd16161c8665276db9372c348f04c4f4f74b473d8c2e5513c"
+      },
+      {
+        "id": "14:212",
+        "name": "B/overview/mobile",
+        "sha256": "50fcd6793137b3028c13347a44126bd22f7402e13ed2ea4bfe09d2d41c8836be"
+      },
+      {
+        "id": "16:284",
+        "name": "B/detail/desktop",
+        "sha256": "e4bd34eccdb6003e7465e478116c5bbf57ac5d1287d043e08d3c7c2bea078b87"
+      },
+      {
+        "id": "16:328",
+        "name": "B/detail/mobile",
+        "sha256": "b867e2813bf55f4337fb3b9a7217e8331b586d4b7e82b8e90c76b3e3fd644e83"
+      },
+      {
+        "id": "17:314",
+        "name": "B/designs/desktop",
+        "sha256": "52aaf22bde412a596595b61dcd3baa05bcf9bd7311f03577ecd9b2f15f661040"
+      },
+      {
+        "id": "17:350",
+        "name": "B/designs/mobile",
+        "sha256": "ef16fd76d3784b63bfd5d060fccdbd4cddd37364cf44fbc4709050c7113bdd7e"
+      },
+      {
+        "id": "19:685",
+        "name": "B/compare/desktop",
+        "sha256": "bdfd8ed4fc60b35f34addb9459c4050b76e782d485ea4d7beca6daeea3cf4056"
+      },
+      {
+        "id": "19:874",
+        "name": "B/compare/mobile",
+        "sha256": "b99af22b87b2d8631b6945d84b4e8e8e19f6b229af1f7930faf2ac0d52910175"
+      },
+      {
+        "id": "23:1038",
+        "name": "B/states/desktop",
+        "sha256": "e9dfa379e51ab6ef8e5c4877577b0119c41eaa85805bc07cd4a52f12adc823ed"
+      },
+      {
+        "id": "23:1149",
+        "name": "B/states/mobile",
+        "sha256": "a3ce7a7051391d1da10cf90f3fc001584805df68143891b328a1b693ffdfe53a"
+      },
+      {
+        "id": "23:1541",
+        "name": "B/original/mobile",
+        "sha256": "66e106ad5cac2ba807856a10b0ba37f9264f9ee3d1074ff6ea3dd21b49493f85"
+      },
+      {
+        "id": "23:1551",
+        "name": "B/text200/mobile",
+        "sha256": "f5c62092300dac2ffa82a900ca61a3abd4105b31e53bfd2992cc5ddc893021ae"
+      }
+    ]
+  },
+  {
+    "pageId": "2:4",
+    "name": "C · 柔和工作室",
+    "roots": [
+      {
+        "id": "14:268",
+        "name": "C/overview/desktop",
+        "sha256": "c701363ecd0a9013f2af95defab48fd000cab8099e23440cc7e2988359358c68"
+      },
+      {
+        "id": "14:325",
+        "name": "C/overview/mobile",
+        "sha256": "fdd21f4a8ab9d8f94955db8a94364a1c2041a5ae61f662cbc6e5d2dbeb5afb07"
+      },
+      {
+        "id": "16:371",
+        "name": "C/detail/desktop",
+        "sha256": "d6b76e9ffc7b9faee6006e3efbaeb0374df87c08c46dcdfb164b4268d8ddcec1"
+      },
+      {
+        "id": "16:415",
+        "name": "C/detail/mobile",
+        "sha256": "ce6a5bc9be33d3da784e317e41467613a2dc760b071afb32d61111b6b384c3c4"
+      },
+      {
+        "id": "17:385",
+        "name": "C/designs/desktop",
+        "sha256": "9da3cdc09d99b7381ce2740547efd33489ad3092503d94ae80afe8641b877882"
+      },
+      {
+        "id": "17:421",
+        "name": "C/designs/mobile",
+        "sha256": "c07ad2153a2b3c71395be4a4e3b4f9ac0e6095f75ff9a6c626bdefbf5d7fbdb3"
+      },
+      {
+        "id": "19:1037",
+        "name": "C/compare/desktop",
+        "sha256": "619ffced53cde1c0e87e39c238ed524effcc5e4ebfacbedf1dfd140fe3cc85de"
+      },
+      {
+        "id": "19:1212",
+        "name": "C/compare/mobile",
+        "sha256": "39c97894cd58b4503013917797c5fc396a2e1761b45e252b128a52d8cf69aa93"
+      },
+      {
+        "id": "23:1259",
+        "name": "C/states/desktop",
+        "sha256": "eb3e329f4f1e03299fb7fc1a3b29824cccd58876713e02c77670b9246ff7c384"
+      },
+      {
+        "id": "23:1370",
+        "name": "C/states/mobile",
+        "sha256": "448fa3a522d307bc4920c9636902f592ff250c6d14f3f57bc2eb5299126de7a1"
+      },
+      {
+        "id": "23:1602",
+        "name": "C/original/mobile",
+        "sha256": "cc55d856a716c687c80dceae5ea17e84de4529b36695f360a8b73a09f0abc3a3"
+      },
+      {
+        "id": "23:1612",
+        "name": "C/text200/mobile",
+        "sha256": "5e36356c2f3758c0165c1b8d87664de0f3da700595ddbcead300dab18431b40a"
+      }
+    ]
+  }
+]
