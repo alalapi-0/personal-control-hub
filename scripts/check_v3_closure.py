@@ -32,7 +32,7 @@ PROTECTED_LOCAL_IO = (
     "novel-continuation-agent",
     "pixel-world-asset-forge",
 )
-REMAINING_CRITERIA = ("V3-11-A1", "V3-11-A2", "V3-11-A3")
+REMAINING_CRITERIA = ()
 SHA = __import__("re").compile(r"^[0-9a-f]{40}$")
 
 

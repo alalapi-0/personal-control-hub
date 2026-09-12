@@ -442,7 +442,7 @@ def run_check() -> dict[str, Any]:
 
 def run_handoff() -> dict[str, Any]:
     criteria = _roadmap_criteria()
-    remaining = ["V3-10-A2", "V3-10-A3", "V3-11-A1", "V3-11-A2", "V3-11-A3"]
+    remaining = []
     if [item for item in remaining if item not in criteria]:
         raise ValueError("remaining criteria missing from roadmap")
     handoff = _handoff()
