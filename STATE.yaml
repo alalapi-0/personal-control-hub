@@ -22,6 +22,7 @@ candidate_paths:
 - STATE.yaml
 - docs/feishu_project_cloud_sync_plan.md
 - prompts/feishu_project_cloud_sync_goal_mode.md
+- src/hub/service_contract.py
 feishu_cloud_sync:
   task_id: FEISHU-PROJECT-CLOUD-SYNC-V1
   status: PREPARED_NOT_ACTIVATED
@@ -44,3 +45,4 @@ feishu_cloud_sync:
   blocker: null
   unverified: 个人租户、应用、权限、目标、凭据入口、运行环境与所有真实云同步均未验证。
   next_action: 所有者将启动prompt交给新Agent后，从最新main执行P00并集中完成H01-H07。
+  ci_repair: {contract: TC-CI-RESTORE-1, lane: GOVERNED, evidence: git, verdict: approved}
