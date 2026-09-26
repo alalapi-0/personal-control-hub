@@ -918,3 +918,34 @@ projects:
       path
     native_project_id: local-1e00315201990d02930e2c56de2f87e8
     retry_allowed: false
+- id: feishu-sheets-stat-template
+  name: 飞书电子表格统计模板｜原生能力验证与个人自用
+  root_path: /Volumes/AI_WORK_SSD/Projects/feishu-sheets-stat-template
+  enabled: true
+  scan_enabled: false
+  profile_enabled: true
+  summary_enabled: true
+  project_type: local_native_spreadsheet_validation
+  priority_source: user
+  watch_paths:
+  - README.md
+  - AGENTS.md
+  - STATE.yaml
+  - docs/ROADMAP.md
+  - hub.connection.yaml
+  rules_paths:
+  - /Volumes/AI_WORK_SSD/Projects/feishu-sheets-stat-template/AGENTS.md
+  current_state_paths:
+  - /Volumes/AI_WORK_SSD/Projects/feishu-sheets-stat-template/STATE.yaml
+  current_state_status: sole_project_execution_state
+  supporting_authority_paths:
+  - /Volumes/AI_WORK_SSD/Projects/feishu-sheets-stat-template/README.md
+  - /Volumes/AI_WORK_SSD/Projects/feishu-sheets-stat-template/docs/ROADMAP.md
+  access_profile: registered_project_read
+  connection_read_allowed: true
+  external_write_allowed: false
+  storage_governance:
+    scope: owner_named_existing_external_project
+    migration_allowed: false
+    cleanup_allowed: false
+    authority_source: project_user_request; registry is not execution authority
