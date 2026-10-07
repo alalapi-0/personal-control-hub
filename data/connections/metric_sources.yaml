@@ -35,7 +35,7 @@ projects:
     github_repository: alalapi-0/ai-anime-short-factory
   pixel-world-asset-forge:
     adapter: pixel
-    metadata_root: /Volumes/AI_WORK_SSD/ProjectData/pixel-world-asset-forge/assets
+    metadata_root: /data/ProjectOutputs/pixel-world-asset-forge/assets
     github_repository: alalapi-0/pixel-world-asset-forge
   computer-study-plan:
     adapter: study
@@ -54,7 +54,7 @@ projects:
     adapter: validation_runs
     validation_reports:
     - id: saved-verification
-      root: /Volumes/AI_WORK_SSD/Artifacts/audio-clone/codex
+      root: /data/Artifacts/audio-clone/linux-local-profile
       path: verify.json
       format: feature_report
     github_repository: alalapi-0/audio_clone

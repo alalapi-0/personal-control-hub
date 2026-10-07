@@ -1387,7 +1387,7 @@ linux_visual_workbench:
         verification,owner localpasswordonly
       terminal_open: owner requested; not evidence of capability or guaranteedcontinuation
     media_write_window:
-      status: RESERVED_FOR_MEDIA_STORAGE_CURSOR_PENDING_SCOPE_COMPLETION
+      status: RELEASED_TO_HUB_BUSINESS_CURSOR
       holder_thread: null
       holder_task: LINUX-MEDIA-OUTPUT-STORAGE-GOAL-20261007
       generated_media_directory: docs/reports/linux-workbench
@@ -1409,13 +1409,13 @@ linux_visual_workbench:
         units wait, independent units may continue
       media_state_owner: media storage Cursor only media_apps_storage_goal; Hub business
         Cursor only linux_visual_workbench
-      executor: separate Cursor media storage Goal; DOCUMENT_READY_CURSOR_NOT_STARTED
+      executor: media storage Cursor completed this exact group
       executor_handoff_document: prompts/workstation/CURSOR_MEDIA_STORAGE_HANDOFF_PROMPT.md
       executor_state: media_apps_storage_goal.cursor_handoff
       previous_codex_holder_thread: 01a113b8-2626-7a62-8973-b21daf4c7057
       previous_codex_status: PAUSED confirmed in media canonical state; documentation
         only; no further source/migration/validation/Git execution
-      scope_status: Hub25 screenshots andmixedparent not yet migrated; scope unchanged
+      scope_status: 25 screenshots are on DATA and readable from main 1d10d56. Pixel metadata_root and the audio verify.json root now point at the migrated DATA locations. This exact group is released.
     updated_at: '2026-10-08T04:02:48+09:00'
     withheld_from_initial_commit:
     - docs/reports/linux-workbench generated screenshots (25)
