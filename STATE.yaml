@@ -30,8 +30,7 @@ linux_visual_workbench:
   - HUB-LWB-4.1
   - HUB-LWB-4.3
   next_round: HUB-LWB-2.3
-  next_action: 初始代码交付进入 GitHub main 后，先核对远端 SHA；媒体截图组仍由媒体存储任务独占，未纳入本次提交。随后预检精确 SDK
-    授权与 20 小时窗口资格，再恢复 HUB-LWB-2.3。未获授权前不运行 metadata helper。
+  next_action: 远端 main 已核对为 3987f5869199b0f4d94c250d60e89a73c5d4f0de。下一步预检精确 SDK 授权提案与 20 小时窗口资格，再恢复 HUB-LWB-2.3。未获授权前不运行 metadata helper。媒体截图组仍不提交。
   baseline:
     host: lab-root
     date: '2026-10-03'
@@ -1355,7 +1354,7 @@ linux_visual_workbench:
         preserved; no secrets/runtimeDB/unrevieweddata
       protection: normal push/PR/main integration and exactremoteSHA; no force/historyrewrite/protectionbypass
       execution_here: true
-      initial_delivery: PREPARED_REMOTE_SHA_PENDING
+      initial_delivery: DELIVERED origin/main 3987f5869199b0f4d94c250d60e89a73c5d4f0de
       local_snapshot:
         branch: agent/governance-closure-20260812
         HEAD: 8fa0a4e53e00207823e3fb406ee04b94b77141a9
