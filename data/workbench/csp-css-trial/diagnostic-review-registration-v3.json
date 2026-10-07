@@ -1,0 +1,38 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v3-DIAGNOSTIC",
+  "candidate_files": {
+    "scripts/diagnose_css_trial.py": "3dc59c8613ea08e55b2d606ebb9d2b533f8824a6328e3684152503addebc3368",
+    "src/hub/css_trial.py": "b1cff799ea3e2c8acb542f9f53b30b9e692c53964a9e76ed1736629035a12996",
+    "src/hub/codex_adapter.py": "e24bcd1b511e483b83259a2252c1d00ca205275f3e811a45e8bd88d7b78f29b8",
+    "tests/test_hub_css_trial.py": "7a52e3e5b9e3c6a8b9d5eb8de0e8024276e51c42b0ddaa602a8a461f505bc7fa"
+  },
+  "evidence_files": {
+    "data/workbench/csp-css-trial/empty-thread-read-diagnostic.json": "cb047daa82662efb2ac1f3ec12af74165396db24db74d4f26f3407895c0dd5e2",
+    "data/workbench/csp-css-trial/isolation-diagnostic-v3-r1.json": "5b15f0f28e6f84bf576815bd94e5907a72b89033366de72ae5f894d4f056493d",
+    "data/workbench/csp-css-trial/isolation-diagnostic-v3.json": "6ee43391d3e696515bf6be97a6b7fcbd57571d38bb3583e41ed0ac1f41e1fd9a",
+    "data/workbench/csp-css-trial/thread-recovery-diagnostic.json": "37418aa83463cefcb523e22f9e06f452a19a152a54795979f0866a6ded5d991b",
+    "data/workbench/csp-css-trial/unscoped-capability-diagnostic-v3.json": "ee6e227deba5ce0f70243d200cde9d8e20cae0da24d1e4e9139c3d4ccdbf28e5"
+  },
+  "original_failure": {
+    "file": "data/workbench/csp-css-trial/preflight-failure.json",
+    "sha256": "07f9f30ff5b69c272eef6f3f7981c7f7b1a7b94551583926f167f516769cd184"
+  },
+  "source_effects": 0,
+  "model_turns": 0,
+  "new_threads_v3": 0,
+  "native_command_count_v3": 1,
+  "result": "observed_not_security_pass",
+  "failure": "parent_open/enumeration/create allowed only virtual namespace; cannot call required parent write denied; native placeholders not recreated by command-only lifecycle",
+  "protected_design_sha256": "cb27ff3bd8806e87609873d452cce21710ac0112721bde960cea801fecc8ad65",
+  "source_targets": {
+    "progress_ui.css": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+    "docs/PROJECT_STATE.md": "afcd3027fcace6120c4c436af804fcc3594f6ed889f5364386bacd676c1c2b7e",
+    "docs/NEXT_ACTIONS.md": "4a5cea91842a95695f1ed9a8752edd7e2cdd683a8190a13349121d7e36fdf5e8"
+  },
+  "review_metadata_excluded": [
+    "STATE nextaction/reviewstatus",
+    "INDEX registration/decisions"
+  ],
+  "candidate_sha256": "c46ef02ca379f73405420800e1e570b50abcb772a16ba608dab8ca0a7123fe96",
+  "evidence_sha256": "8162b59f56c30eba7a6c31f4b88babda2b357ab2ef859bc7dab5986985c6e64c"
+}

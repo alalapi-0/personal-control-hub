@@ -1,0 +1,46 @@
+{
+  "all_denied": true,
+  "requests": [
+    {
+      "method": "POST",
+      "origin": "http://127.0.0.1:34341",
+      "status": 405
+    },
+    {
+      "method": "PUT",
+      "origin": "http://127.0.0.1:34341",
+      "status": 405
+    },
+    {
+      "method": "PATCH",
+      "origin": "http://127.0.0.1:34341",
+      "status": 405
+    },
+    {
+      "method": "DELETE",
+      "origin": "http://127.0.0.1:34341",
+      "status": 405
+    },
+    {
+      "method": "POST",
+      "origin": "http://127.0.0.1:34067",
+      "status": 405
+    },
+    {
+      "method": "PUT",
+      "origin": "http://127.0.0.1:34067",
+      "status": 405
+    },
+    {
+      "method": "PATCH",
+      "origin": "http://127.0.0.1:34067",
+      "status": 405
+    },
+    {
+      "method": "DELETE",
+      "origin": "http://127.0.0.1:34067",
+      "status": 405
+    }
+  ],
+  "source_writes": 0
+}

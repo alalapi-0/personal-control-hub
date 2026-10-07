@@ -1,0 +1,229 @@
+{
+  "actual_effects": {
+    "model_turns": 0,
+    "resumes_total": 1,
+    "source_writes": 0,
+    "threads_total": 2
+  },
+  "candidate_sha256": "74789f58d8cefe329f71decfdf77a21475d2dffc98488d6a2a669b175cbf9d77",
+  "checks": [
+    {
+      "check": "CSS targeted",
+      "count": 27,
+      "exit": 0
+    },
+    {
+      "check": "all Hub",
+      "count": 333,
+      "exit": 0
+    },
+    {
+      "check": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "config_observation": {
+    "default_effort_is_frozen": true,
+    "default_model_is_frozen": true,
+    "identity": [
+      66306,
+      12092677,
+      4122,
+      1791360611135693175,
+      1791360611135693175
+    ],
+    "projection": {
+      "excluded_default_fields": [
+        "model",
+        "model_reasoning_effort"
+      ],
+      "mcp_names": [
+        "chrome-devtools",
+        "context7",
+        "github",
+        "node_repl",
+        "openaiDeveloperDocs",
+        "playwright"
+      ],
+      "protected_sha256": "2f3221497d84381ad9b9e52c58516e8be69f47b00677be04c433f3ff92de633d",
+      "secret_values_or_hashes_retained": false,
+      "sensitive_structure": {
+        "chrome-devtools": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        },
+        "context7": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        },
+        "github": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        },
+        "node_repl": {
+          "args": {
+            "item_types": [],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          },
+          "env": {
+            "BROWSER_USE_AVAILABLE_BACKENDS": {
+              "type": "str"
+            },
+            "BROWSER_USE_CODEX_APP_BUILD_FLAVOR": {
+              "type": "str"
+            },
+            "BROWSER_USE_CODEX_APP_VERSION": {
+              "type": "str"
+            },
+            "BROWSER_USE_TINYSKY_ENABLED": {
+              "type": "str"
+            },
+            "CODEX_CLI_PATH": {
+              "type": "str"
+            },
+            "CODEX_HOME": {
+              "type": "str"
+            },
+            "NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER": {
+              "type": "str"
+            },
+            "NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME": {
+              "type": "str"
+            },
+            "NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS": {
+              "type": "str"
+            },
+            "NODE_REPL_NODE_MODULE_DIRS": {
+              "type": "str"
+            },
+            "NODE_REPL_NODE_PATH": {
+              "type": "str"
+            },
+            "NODE_REPL_TRUSTED_CODE_PATHS": {
+              "type": "str"
+            },
+            "NODE_REPL_TRUSTED_SERVICES": {
+              "type": "str"
+            }
+          },
+          "startup_timeout_sec": {
+            "type": "int"
+          }
+        },
+        "openaiDeveloperDocs": {
+          "url": {
+            "type": "str"
+          }
+        },
+        "playwright": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        }
+      },
+      "top_key_types": {
+        "agents": "dict",
+        "approval_policy": "str",
+        "approvals_reviewer": "str",
+        "desktop": "dict",
+        "features": "dict",
+        "marketplaces": "dict",
+        "mcp_servers": "dict",
+        "memories": "dict",
+        "model": "str",
+        "model_reasoning_effort": "str",
+        "plugins": "dict",
+        "projects": "dict",
+        "sandbox_mode": "str",
+        "service_tier": "str",
+        "skills": "dict"
+      }
+    }
+  },
+  "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v7-PROCESS-CONFIG",
+  "created_at": "2026-10-07T08:26:51.895357+00:00",
+  "evidence_files": {
+    "data/workbench/csp-css-trial/owned-resume-authority-v6.json": "df94797b0d75db3169d2e79afbc4e77288d6adff52b71ec497d5d565810765e4",
+    "data/workbench/csp-css-trial/owned-resume-failure-v6.json": "6e7d7b1f738e6d1374850215fb10e616614557b5bb3cff9264747c4b644dd50a",
+    "data/workbench/csp-css-trial/owned-resume-registration-v6.json": "3c132af5095736a8ac5bc9d044ac123682b05815a5d9051a393ab350e3ed2c89",
+    "data/workbench/csp-css-trial/process-config-preflight-intent-v7.json": "007de25267724d9e5a288c7030bd6fcd0d33f22172d0135bc0ff57da8e231a6b",
+    "data/workbench/csp-css-trial/process-config-preflight-v7.json": "6ed6957b72183d6fb2ffca00c48fcbec9f311c92f39f5815e7a7dbd3001b8661",
+    "data/workbench/csp-css-trial/process-config-projection-repair-v7-r2.json": "c453c73d541ca6dcb9dd46f20a877e13e3db623e51b1ec87c8666fa4819705a4",
+    "data/workbench/csp-css-trial/recovery-authority-v5.json": "31c534bbb2b3ab2086c3fa24937e4f654e70dffab0198e1628b0f440841eb29b"
+  },
+  "evidence_sha256": "84f3d4efa605e35664b0e64178bc2eb07e4fe2fdfb47b064e868ff373e2ca90b",
+  "files": {
+    "scripts/diagnose_css_trial.py": "826061d2374ab8faf74ad11a3e48170f5a00cf29a93119b560da198803dbe746",
+    "scripts/diagnose_css_trial_read.py": "82b215c7e8b040f006b48779cdbb4bb074bc5f9553e66bb0a0447d2db6332387",
+    "scripts/hub_worker.py": "dd4c3713dbe2c36f3e62cebc0d4fe7bc919588813ff7a9df8fb6bfa40054a1cc",
+    "src/hub/codex_adapter.py": "d21c3a8f91447ef0087d02ba99bb277721000bcdd42b1d661a2856cdeb548b34",
+    "src/hub/css_process_config.py": "f8a9e4f633e42d5515f5df83f9241a4f9077dbf1ef9fffafebc85986233d1551",
+    "src/hub/css_read_diagnostic.py": "836919f79fd7ee8460e88a794cae36a70b7f781da95518f9226ce0d71def6242",
+    "src/hub/css_trial.py": "599f4b3bb9fb9f471e5deec5b72524d30e93189dcb8f7439df2f285194da6a22",
+    "src/hub/task_store.py": "150c617696f0ce13dde3b2d55b12637275d0562260ccb1f78fd310d77a2cccb6",
+    "src/hub/task_worker.py": "10cebfc686edbeeec33c9c9d86bb10f1b27317d0620183153c6b2368dcb4c41c",
+    "tests/test_hub_css_process_config.py": "aabce071983e50a591e9d0a452827376bdb1a9ef15b07a773aee0d63312dbf28",
+    "tests/test_hub_css_read_diagnostic.py": "803f5a22f498ef5f3dfbb2c5c3af0d001879a018b88ac964f6fd3ac24a7a4e33",
+    "tests/test_hub_css_trial.py": "1d32cbd7360aed6f458809f8b2b72b34f59e3fb6760436ffe6c07c2d9665288f"
+  },
+  "frozen": {
+    "abort": "unverified frozen model/effort; protected projection drift; wrong thread/cwd/idle; unknown effects; isolation failure; turn duplication; expiry; missing Judge/Gov",
+    "allowed_effects_after_review": "Root v7 terminal CAS, same task exact sameID final resume excludeTurns true; loaded idle/profile/capability/native denial gates before sole original model; exact isolated CSS delta then Root three-path promotion/checks and old/new preview; no Git/publication/production/globalconfig changes",
+    "effort": "xhigh",
+    "expires_at_no_later_than": 1791362363.438937,
+    "limits": {
+      "model_turns_remaining": 1,
+      "model_turns_total": 1,
+      "native_threads_total": 2,
+      "new_threads_remaining": 0,
+      "resumes_remaining": 1,
+      "resumes_total": 2
+    },
+    "model": "gpt-6.1-sol",
+    "protected": "original grant/intent/annotation/failures/4 empty directory identities; all source bytes outside exact CSS delta and 2 factual docs; source data and runtime; legal ChatGPT auth; no API billing; no secret values or value hashes retained"
+  },
+  "phase": "PRE_DISPATCH_CANDIDATE",
+  "preflight_status": "PASS_NO_MODEL_PROCESS_CONFIG",
+  "repair": "freeze nonsecret marketplaces; redact only sensitive descendants; preserved native no-model preflight same config identity, launch/schema/effective values",
+  "repair_of": "process-resume-registration-v7.json",
+  "runtime_after_candidate": "NOT_RUN; requires fresh Judge PASS and Governor decision",
+  "task": {
+    "grant_hash": "d116bbbc46ad678876f77e2e2a6437923d2efa5722fb58aa154f7673626ab21c",
+    "id": "csp-css-trial-20261007",
+    "intent_hash": "bcef1ef45fee92309f469d2a5b3eed76df2f7cc2496cff0b4cc2ce37f676d699",
+    "prior_authority_hash": "7c3a68ee126ff716c98fd9e1f40b6f41cfd59dd29e076f7e32e1153d9e9f6c88",
+    "status": "requires_reconcile",
+    "thread": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+    "turn": null
+  }
+}

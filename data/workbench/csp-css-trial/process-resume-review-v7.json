@@ -1,0 +1,9 @@
+{
+  "at": "2026-10-07T08:30:02.390270+00:00",
+  "candidate": "74789f58d8cefe329f71decfdf77a21475d2dffc98488d6a2a669b175cbf9d77",
+  "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v7-PROCESS-CONFIG",
+  "evidence": "84f3d4efa605e35664b0e64178bc2eb07e4fe2fdfb47b064e868ff373e2ca90b",
+  "governor": "entry_governor APPROVE",
+  "judge": "process_config_repair_judge PASS",
+  "scope": "PRE_DISPATCH_ONLY"
+}

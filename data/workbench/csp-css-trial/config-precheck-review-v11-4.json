@@ -1,0 +1,16 @@
+{
+  "candidate": "ac8afd4f648f9ce99cc47ef400dcb8e309c07248bda8e0bd16812ff90d56884f",
+  "contract": "HUB-LWB-2.3-CSP-CONFIG-DIAGNOSTIC-GOV-v11.4",
+  "created_at": 1791373913.0308537,
+  "decision": "REQUEST_REPAIR",
+  "effects": "offlineonly samefrozencontract",
+  "evidence": "7300fbc5d835b5f98f74b7ee6908fd91d3172b866a8ad2525d279cf87518d7dd",
+  "findings": [
+    "original histogram selfreference may fingerprint unknownprivate subtrees",
+    "required DTO origins mapping/row validation missing"
+  ],
+  "governor": "/root/entry_governor",
+  "judge": "/root/config_diagnostic_v11_4_judge",
+  "passed": "all106pins;20scoped/89relatedCSS;AST3;methods initconfig only; no runtime",
+  "result": "FAIL"
+}

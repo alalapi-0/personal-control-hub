@@ -1,0 +1,170 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v3-DIAGNOSTIC",
+  "source_sha256": "6b8149dd4af1b69c24f49e5cce4a5df8d69767e20ef9b8b8b4a773a9bd4fdcf5",
+  "old_task": {
+    "id": "csp-css-trial-20261007",
+    "thread_id": "01a11536-4647-7030-a9aa-8e397078d146",
+    "turn_id": null
+  },
+  "auth_before": {
+    "source": "supported codex login status",
+    "mode": "ChatGPT",
+    "exit": 0,
+    "credential_bytes_read": 0
+  },
+  "config_identity_before": [
+    66306,
+    12073401,
+    4117,
+    1791356257936833499,
+    1791356257936833499
+  ],
+  "model_turns": 0,
+  "new_threads": 0,
+  "stages": {
+    "closed_before": {
+      "fingerprint": [
+        [
+          ".agents",
+          "directory"
+        ],
+        [
+          ".aws",
+          "directory"
+        ],
+        [
+          ".codex",
+          "directory"
+        ],
+        [
+          ".git",
+          "directory"
+        ],
+        [
+          "progress_ui.css",
+          "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+        ]
+      ],
+      "empty_directories": [
+        {
+          "name": ".agents",
+          "identity": [
+            66306,
+            45761617,
+            1000,
+            493
+          ],
+          "empty": true,
+          "mount": false
+        },
+        {
+          "name": ".aws",
+          "identity": [
+            66306,
+            45761618,
+            1000,
+            493
+          ],
+          "empty": true,
+          "mount": false
+        },
+        {
+          "name": ".codex",
+          "identity": [
+            66306,
+            45761615,
+            1000,
+            493
+          ],
+          "empty": true,
+          "mount": false
+        },
+        {
+          "name": ".git",
+          "identity": [
+            66306,
+            45761616,
+            1000,
+            493
+          ],
+          "empty": true,
+          "mount": false
+        }
+      ]
+    },
+    "payload_before": {
+      "fingerprint": [
+        [
+          "progress_ui.css",
+          "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+        ]
+      ],
+      "empty_directories": []
+    },
+    "initialized": {
+      "fingerprint": [
+        [
+          "progress_ui.css",
+          "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+        ]
+      ],
+      "empty_directories": []
+    },
+    "closed_after": {
+      "fingerprint": [
+        [
+          "progress_ui.css",
+          "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+        ]
+      ],
+      "empty_directories": []
+    }
+  },
+  "canary_before": {
+    "sha256": "311ebbd772612a9d858318adbeeb8e9046e8ba4c36f48ea149eca6821fdd2b68",
+    "identity": [
+      66306,
+      45761615,
+      61,
+      1791357806528254467,
+      1791357806528254467
+    ]
+  },
+  "child": {
+    "pid": 903641,
+    "start_ticks": "2705321"
+  },
+  "error": {
+    "code": "DIAGNOSTIC_CAPABILITY_UNVERIFIED",
+    "details": {}
+  },
+  "adapter_closed": true,
+  "canary_after": {
+    "sha256": "311ebbd772612a9d858318adbeeb8e9046e8ba4c36f48ea149eca6821fdd2b68",
+    "identity": [
+      66306,
+      45761615,
+      61,
+      1791357806528254467,
+      1791357806528254467
+    ]
+  },
+  "canary_unchanged": true,
+  "auth_after": {
+    "source": "supported codex login status",
+    "mode": "ChatGPT",
+    "exit": 0,
+    "credential_bytes_read": 0
+  },
+  "config_identity_after": [
+    66306,
+    12073401,
+    4117,
+    1791356257936833499,
+    1791356257936833499
+  ],
+  "source_css_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+  "trial_css_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+  "parent_write_effect": false,
+  "owned_canary_cleanup": true
+}

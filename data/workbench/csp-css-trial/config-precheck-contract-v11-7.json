@@ -1,0 +1,324 @@
+{
+  "acceptance": [
+    "strict public layers/origins/DTO, 4layerprecedence and actualtyped finalconfig",
+    "opaque desktop exactrawforward +finaloriginal +expectedbuilderpreserves +fullfinalconfig equality; no ignore/reverse/shape leaks",
+    "other14groups+preciseMCPDuration+trust/layer+semantic exact",
+    "config/read exactsixconfiguredfalse; unscoped six sourceorderedrows runtimeStatusnull/authStatusunsupported/emptytools/resources/templates/nullcapabilities/plugin/serverInfo/errors; null notdisabled/idle/loadedthread",
+    "2 feature snapshots exact152sourceorderedtemplates/schema; missing/duplicate/extra/unknown/invalidcursor/pagingFAIL; frozen14false/hosttrue both; otherenabled exactbeforeafter",
+    "remote/startupoff; unknown/contradictorynotice rejected",
+    "originalguards except unchangedcredential replaced explicit boundedSDKfileeffect; officialloginmode beforeafterChatGPT; stderrsafeenum; no unexpectedcredentialchangeoutsideMCP; staticcatalogidentity/hashstable; closedexit0/notwall/expiry/cleanup/effectlimits mandatory"
+  ],
+  "activation_order": [
+    "Root offline exactcandidate",
+    "freshJudge contract+candidate",
+    "directowner grantspossibleSDKrefresh/non-atomicfileupdate",
+    "Governor executiondecision exactsamecandidate",
+    "one shortnonrenewableauthority thenonehelper"
+  ],
+  "adaptive_candidate_update": "process-only official staticcatalog eliminates startup /models/cache/secondauth; originalprojectdefaultstartup/session/Mac/human/M2 unaccepted",
+  "authentication_billing": "existing same legal ChatGPT mode; possibleofficialSDKrefresh onlyconditionalnewgrant; noAPIbilling/model/accountswitch",
+  "authentication_guard": "exacttwologinstatus modesbefore/closure; privateinmemory credentiallstatnofollow ownerregularsinglelinkprivatemode; storeonlysafe/changebooleans; no token/JWT readcopyhashbackup/manualrollback; SDKfileupdate is non-atomiccreate/truncate/write0600",
+  "auxiliary_process_inventory": {
+    "audit": "standalone owner run Python process audit hook installed before admission; all subprocess.Popen fixed argv/cwd/env/count; source-pinned timeout for existing mount/git, controlled run timeouts for nativeaux; extra rejected before start; envNone allowed solely source-pinned mount/git, inheritedparentenvironment compared privately to preadmission snapshot; auth uses4keys, helper/version/schema5keys exact; exact pinned callerfilename/function required; css_trial.verify Git is forbidden despite identicalargv; current publicbinary/source receipt rechecked before everycodex spawn",
+    "auth_mode": {
+      "argv": [
+        "codex",
+        "login",
+        "status"
+      ],
+      "count": 2,
+      "cwd": null,
+      "env": {
+        "HOME": "OS-owned registered user home",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      },
+      "positions": [
+        "before",
+        "closure"
+      ],
+      "receipt": "immutable controlledmode+exit only; no stdout/stderr/account/credentialvalue retained or hashed",
+      "source": "src/hub/css_trial.py auth_check timeout5; inherited effectivecwdHubRoot",
+      "timeout": 5
+    },
+    "codex_schema": {
+      "argv": [
+        "codex",
+        "app-server",
+        "generate-json-schema",
+        "--experimental",
+        "--out",
+        "NEW_HUB_OWNED_TEMP"
+      ],
+      "count": 1,
+      "cwd": "HubRoot",
+      "env": {
+        "CODEX_INTERNAL_APP_SERVER_REMOTE_CONTROL_DISABLED": "1",
+        "HOME": "OS-owned registered user home",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      },
+      "timeout": 10
+    },
+    "codex_version": {
+      "argv": [
+        "codex",
+        "--version"
+      ],
+      "count": 1,
+      "cwd": "HubRoot",
+      "env": {
+        "CODEX_INTERNAL_APP_SERVER_REMOTE_CONTROL_DISABLED": "1",
+        "HOME": "OS-owned registered user home",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      },
+      "timeout": 5
+    },
+    "git_total_max_count": 8,
+    "helper": {
+      "argv": "exact isolated_launch of codexappserverstdio +pOVERRIDES +fixed model_catalog_json +sixMCPOFF/features/profile; onehelper",
+      "count": 1,
+      "cwd": "TRIAL",
+      "env": {
+        "CODEX_INTERNAL_APP_SERVER_REMOTE_CONTROL_DISABLED": "1",
+        "HOME": "OS-owned registered user home",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      },
+      "wall_seconds": 120
+    },
+    "mount": {
+      "argv": [
+        "findmnt",
+        "--json",
+        "--target",
+        "HubRoot",
+        "--output",
+        "TARGET,SOURCE,FSTYPE,UUID"
+      ],
+      "cwd": null,
+      "env": null,
+      "max_count": 5,
+      "private_output": "fixed guard match only; no UUID/device/source/output/hash",
+      "source": "src/hub/task_storage.py mount_identity",
+      "timeout": 1
+    },
+    "other_parent_spawns": 0,
+    "preview_head": {
+      "argv": [
+        "git",
+        "-C",
+        "canonicalCSP",
+        "rev-parse",
+        "HEAD"
+      ],
+      "capture": "bytes",
+      "check": true,
+      "cwd": null,
+      "env": null,
+      "max_count": 4,
+      "private_output": "same authorizedHEAD match only; no stdout/environment/path expansion saved or hashed",
+      "source": "src/hub/readonly_preview.py check",
+      "timeout": 2
+    },
+    "retry": false,
+    "source_head": {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "canonicalCSP",
+      "env": null,
+      "max_count": 4,
+      "private_output": "HEAD match only no output/hash",
+      "source": "src/hub/css_capability_recovery.py mapping_check",
+      "timeout": 5
+    }
+  },
+  "budget": "same native cumulative; reserve contract/candidate/runtimeJudge6000each +closure; remaining/costunknown; no reset",
+  "cumulative": {
+    "closed_rounds": 16,
+    "metadata_helpers": 5,
+    "model_turns": 1,
+    "resumes": 4,
+    "threads": 2
+  },
+  "design_registration": "data/workbench/csp-css-trial/readonly-registration-protection-v11-6-r4.json",
+  "design_registration_sha256": "47f5bff79ffa8bd75863d828cd9567d57cf5a108484586b2095e3b9238d3f02a",
+  "effects_now": "OFFLINE ONLY; owner SDKeffect grant absent; nativeauthority0",
+  "environment_source": "src/hub/codex_adapter.py child_environment four exact keys; src/hub/css_process_config.py:198-201 adds remote-disabled marker; src/hub/css_trial.py:54-59 auth_check uses base4 and cwdNone",
+  "failure": "any gate PARTIAL_BLOCKED/FAIL; retainpartialfacts/denominator; no autoretry/resume/model/diagnosticPASS",
+  "feature_source": "data/workbench/csp-css-trial/feature-catalog-source-closure-v11-7.json",
+  "feature_source_sha256": "95872e17955ce713e29eb0b610048f96b2921f79a5dfc7f12b272ae8670ec38f",
+  "fifth_resume_allowed": false,
+  "frozen_disables": [
+    "apps",
+    "plugins",
+    "remote_plugin",
+    "browser_use",
+    "browser_use_external",
+    "browser_use_full_cdp_access",
+    "computer_use",
+    "in_app_browser",
+    "hooks",
+    "image_generation",
+    "multi_agent",
+    "multi_agent_v2",
+    "goals",
+    "memories"
+  ],
+  "frozen_model": {
+    "effort": "xhigh",
+    "model": "gpt-6.1-sol"
+  },
+  "full_metadata_acceptance": "NOT_RUN",
+  "governor": "/root/entry_governor",
+  "id": "HUB-LWB-2.3-CSP-FULL-METADATA-AUTH-REFRESH-GOV-v11.7",
+  "lane": "GOVERNED",
+  "mcp_runtime_required_original": "unchanged originalfullmetadata/M2 requirement remains blocked; subsetsuccess cannotunlock",
+  "mcp_status_rpc_count": 1,
+  "methods": [
+    "initialize",
+    "config/read",
+    "mcpServerStatus/list",
+    "experimentalFeature/list"
+  ],
+  "native_helpers_allowed_now": 0,
+  "network_evidence": {
+    "allowed": "only if explicitownergrant activated: one logicalMCPSDKAuthManager normalOAuth/provider tokenrefresh; physicalnetworkcountsNOT_OBSERVED; no onlinecatalog path",
+    "child_visibility": "NOT_RUN no attestation of zero child networking",
+    "forbidden": "model/turn/tools/Web/MCPexecution/remote/onlinecatalog/providerinference/APIbilling/accountswitch; anyunknownstderr orSDKrefreshfailure PARTIAL_BLOCKED",
+    "parent": "socket creation/connect rejected by process audit"
+  },
+  "objective": "one complete metadata helper with exact config/opaque desktop/two feature catalogs/sourcecorrect unscopedMCP; no execution before owner SDK effect grant and Governor",
+  "owner_action": "approve exactly one complete official SDK metadata helper with possible OAuth/provider tokenrefresh and non-atomicofficialcredentialstorageupdate; no automaticretry, manualcredentialhandling, model, thread, TaskStore, CSSpromotion, Git, config, service or Mac effects",
+  "parent_contract_sha256": "8c857bfa28eaa56a5627a1cbd8c4a31fe64aa661923994d0299ba0b07252573b",
+  "prerequisites": [
+    "same cumulative5metadatahelpers/2threads4resumes1model/16closed; prioractualfails retained",
+    "fresh exactsafecontract+candidateJudge/Gov required; native currently0",
+    "any futurehelper auth/provider effects must fit explicitactual authorization, not assumedfromsubsetPASS"
+  ],
+  "privacy": "no raworiginaldesktop/dynamic keys/responsebody/origins/privatehash or secret evidence; fixed facts and public feature names/nonsecretbooleans only; all privatecomparison memory",
+  "process_only_catalog": {
+    "bytes": 472512,
+    "default_online_validation": "NOT_RUN",
+    "identity_unchanged": true,
+    "mode": 420,
+    "models": 11,
+    "nofollow": true,
+    "overrides": [
+      "-c",
+      "model_catalog_json=\"/home/alalapi/Projects/personal-control-hub/data/workbench/csp-css-trial/public-source-v11-6-mcp/bundled-models.json\""
+    ],
+    "owner": "currentowner",
+    "path": "/home/alalapi/Projects/personal-control-hub/data/workbench/csp-css-trial/public-source-v11-6-mcp/bundled-models.json",
+    "schema": "exact SDK embeddedModelsResponse perfixedpublicsource; containerchecked; fullSDKparseNOT_RUN",
+    "sha256": "fd219bd9f061278275f528939f82f54d2eb97df4b25c23b022adbe48813d920b",
+    "source_proof": "data/workbench/csp-css-trial/metadata-auth-refresh-source-v11-7.json",
+    "source_proof_sha256": "8664e599522b6355db84d943284d12b90cc20285a74b7299b0b75162356c55c8"
+  },
+  "profile_arguments": [
+    "-c",
+    "default_permissions=\"hub_lwb_evidence_v11\"",
+    "-c",
+    "permissions.hub_lwb_evidence_v11.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"read\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+    "-c",
+    "permissions.hub_lwb_evidence_v11.network.enabled=false"
+  ],
+  "registered_servers": [
+    "chrome-devtools",
+    "context7",
+    "github",
+    "node_repl",
+    "openaiDeveloperDocs",
+    "playwright"
+  ],
+  "revision": "v11.7",
+  "runtime_conditional": {
+    "authority_max_seconds": 900,
+    "config_read": {
+      "cwd": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+      "includeLayers": true
+    },
+    "feature_params": "A afterinit/drain; B afterconfig/MCP/drain; fixedthreadIdNone/limit100/canonicalcursor;shared8pages",
+    "forbidden": [
+      "otherRPC",
+      "thread/start/read/resume",
+      "turn",
+      "command",
+      "provider",
+      "tool",
+      "TaskStorewrite",
+      "projectsource",
+      "globalconfig",
+      "productionservice",
+      "Mac/otherproject",
+      "Gitmutation/otherGit",
+      "manualcredentialvalues/copies/hashes/backup/rollback",
+      "othercredentialtargets",
+      "onlinecatalog request/cache"
+    ],
+    "helpers": 1,
+    "initialized_notifications": 1,
+    "mcp_params": {
+      "detail": "toolsAndAuthOnly",
+      "limit": 100,
+      "threadId": null
+    },
+    "methods": [
+      "initialize",
+      "config/read",
+      "mcpServerStatus/list",
+      "experimentalFeature/list"
+    ],
+    "renewal": false,
+    "rpc_counts": {
+      "config/read": 1,
+      "experimentalFeature/list": {
+        "shared_max_pages": 8,
+        "snapshots": 2
+      },
+      "initialize": 1,
+      "mcpServerStatus/list": 1
+    },
+    "start_headroom_seconds": 150,
+    "wall_seconds": 120
+  },
+  "schema_temp": {
+    "cleanup": "delete own new directory only; before close accepted record cleanup true; failure cleanup also mandatory",
+    "create": "new mkdtemp0700 under nonsymlink owned dir, never reuse",
+    "limits": {
+      "bytes": 8388608,
+      "files": 440
+    },
+    "prefix": "schema-native-v11-6-",
+    "root": "HubRoot/data/workbench/csp-css-trial",
+    "validation": "all440 paths regular/no symlinks/owner/boundedbytes, exact public experimental export hashes, ten required method/schema pins; reuse base schema validation for every response/notice"
+  },
+  "scope": "Hub owned offline harness/fixtures/tests/canonicalSTATEINDEX/source evidence; no other writers",
+  "source_callgraph": "data/workbench/csp-css-trial/full-metadata-callgraph-v11-7.json",
+  "source_callgraph_sha256": "cccb98eb764724453fda98bb4385aa0366a36294ec129902241493bd74ad636a",
+  "source_effect_limit": "one logical official AuthManager path duringMCP mayOAuth/providerrefresh andnon-atomicfixedofficialfilewrite; physicalrequestsNOT_OBSERVED; nootherproviderexecution",
+  "source_record": "data/workbench/csp-css-trial/feature-catalog-source-closure-v11-7.json",
+  "source_sha256": "95872e17955ce713e29eb0b610048f96b2921f79a5dfc7f12b272ae8670ec38f",
+  "status": "STAGED_INACTIVE",
+  "stderr": {
+    "enums": [
+      "SDK_REFRESH_FAILURE_REPORTED",
+      "NO_REFRESH_FAILURE_SIGNAL",
+      "UNKNOWN_STDERR"
+    ],
+    "failure_or_unknown": "PARTIAL_BLOCKED",
+    "fixed_marker": "Failed to refresh token: ",
+    "no_failure_meaning": "no fixed failure signal only; no refreshsuccess/no-network claim",
+    "raw_hash_count_retained": false
+  },
+  "supersedes_contract_sha256": "c0832182f43108596f069cc2da93858c7e94244a942f43ef31d6be63c04ea3ed",
+  "supersedes_failed_contract_sha256": "cfdc848b5a6a4fc94ff7467bb1b40d7d6dd4200f9b54cfbb1486832e7faaec4e"
+}

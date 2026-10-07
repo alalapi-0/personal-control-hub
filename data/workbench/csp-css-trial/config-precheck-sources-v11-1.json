@@ -1,0 +1,33 @@
+{
+  "checks": {
+    "DTO_fields_exact": true,
+    "config_params_exact": true,
+    "embedded_defaults_match": true,
+    "packaged_system_layer_consumers_match": true
+  },
+  "native_effects": 0,
+  "source_scope": "public versioned schemas/defaults and layer consumers; no private config/layer versions/bodies retained",
+  "sources": {
+    "app-server-protocol/schema/json/v2/ConfigReadParams.json": {
+      "line_count": 17,
+      "sha256": "257c54a423b47c1d209ff1076765a1564d82322fd5161670fd489a2874de1bac",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/schema/json/v2/ConfigReadParams.json"
+    },
+    "app-server-protocol/schema/json/v2/ConfigReadResponse.json": {
+      "line_count": 1181,
+      "sha256": "69a32e3d84e16045802dff8abf01770d759ebc758965c3258a30ea4a93159fce",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/schema/json/v2/ConfigReadResponse.json"
+    },
+    "config/defaults.toml": {
+      "line_count": 17,
+      "sha256": "c669759d7422f378c724256737eda9613b4b4a6760c59a1715ed6e7813bf7214",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/defaults.toml"
+    },
+    "config/src/loader/mod.rs": {
+      "line_count": 2011,
+      "sha256": "0e3131c8186b391ecb425620bee2a8649d10364d062eee21a15d1cbe48dbbb0d",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/loader/mod.rs"
+    }
+  },
+  "version": "rust-v0.159.3"
+}

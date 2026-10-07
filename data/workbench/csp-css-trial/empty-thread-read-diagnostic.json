@@ -1,0 +1,37 @@
+{
+  "source": "supported exact thread/read diagnostic",
+  "task_id": "csp-css-trial-20261007",
+  "thread_id": "01a11536-4647-7030-a9aa-8e397078d146",
+  "observed_at": 1791357605.5515704,
+  "reads": [
+    {
+      "includeTurns": true,
+      "error_class": "CODEX_RPC_REJECTED",
+      "details": {
+        "rpc_code": -32600
+      },
+      "diagnostic": {
+        "rpc_code": -32600,
+        "message_bytes": 55,
+        "message_sha256": "a466643ea0246842177d02bfc48a4f28555f179263e768f26842d4d9988c5a1d",
+        "classes": [],
+        "secret_bytes_retained": 0
+      }
+    },
+    {
+      "includeTurns": false,
+      "error_class": "CODEX_RPC_REJECTED",
+      "details": {
+        "rpc_code": -32600
+      },
+      "diagnostic": {
+        "rpc_code": -32600,
+        "message_bytes": 55,
+        "message_sha256": "a466643ea0246842177d02bfc48a4f28555f179263e768f26842d4d9988c5a1d",
+        "classes": [],
+        "secret_bytes_retained": 0
+      }
+    }
+  ],
+  "adapter_closed": true
+}

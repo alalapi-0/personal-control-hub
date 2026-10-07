@@ -1,0 +1,86 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v5-RUNTIME-PIN-2",
+  "pin": {
+    "sha256": "5c6675dfb1465a13212cf99e878a6476659f854b9325b70a3f3d96ee13401538",
+    "identity": [
+      66306,
+      12092677,
+      4122,
+      1791359976648157153,
+      1791359976648157153
+    ],
+    "projection": {
+      "top_key_types": {
+        "model": "str",
+        "model_reasoning_effort": "str",
+        "service_tier": "str",
+        "approval_policy": "str",
+        "approvals_reviewer": "str",
+        "sandbox_mode": "str",
+        "desktop": "dict",
+        "marketplaces": "dict",
+        "plugins": "dict",
+        "mcp_servers": "dict",
+        "features": "dict",
+        "memories": "dict",
+        "projects": "dict",
+        "skills": "dict",
+        "agents": "dict"
+      },
+      "mcp_key_types": {
+        "chrome-devtools": {
+          "command": "str",
+          "args": "list"
+        },
+        "context7": {
+          "command": "str",
+          "args": "list"
+        },
+        "playwright": {
+          "command": "str",
+          "args": "list"
+        },
+        "openaiDeveloperDocs": {
+          "url": "str"
+        },
+        "github": {
+          "command": "str",
+          "args": "list"
+        },
+        "node_repl": {
+          "args": "list",
+          "command": "str",
+          "startup_timeout_sec": "int",
+          "env": "dict"
+        }
+      },
+      "model": "gpt-6.1-sol",
+      "reasoning_effort": "ultra",
+      "approval_policy": "never",
+      "sandbox_mode": "danger-full-access",
+      "features": {
+        "memories": true
+      },
+      "permission_profile_names": [],
+      "mcp_names": [
+        "chrome-devtools",
+        "context7",
+        "github",
+        "node_repl",
+        "openaiDeveloperDocs",
+        "playwright"
+      ],
+      "body_retained": false,
+      "credential_bytes_read": 0
+    },
+    "auth": {
+      "source": "supported codex login status",
+      "mode": "ChatGPT",
+      "exit": 0,
+      "credential_bytes_read": 0
+    }
+  },
+  "original_authority_hash": "22de2b92f72eded23b86efce2d7ff5ce0fb1bb77ab046198e36261b4214dd9fe",
+  "scope": "one R2 metadataread only; no model/resume/CAS/source effects",
+  "original_authority_unchanged": true
+}

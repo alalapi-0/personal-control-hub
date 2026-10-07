@@ -1,0 +1,14 @@
+{
+  "src/hub/codex_adapter.py": {
+    "preimage_ref": "data/workbench/csp-css-trial/notification-retention-preimage-codex_adapter.py",
+    "sha256": "782b96b1281ee70ccb9891312aebb9f2c7fb9e17e5ffd43df7c8b3396a0234ae"
+  },
+  "src/hub/css_capability_recovery.py": {
+    "preimage_ref": "data/workbench/csp-css-trial/notification-retention-preimage-css_capability_recovery.py",
+    "sha256": "bfc894579bd7de87b6f5126145645e0aa60f6c950218946294b4913e7b2d99dc"
+  },
+  "src/hub/css_read_diagnostic.py": {
+    "preimage_ref": "data/workbench/csp-css-trial/notification-retention-preimage-css_read_diagnostic.py",
+    "sha256": "836919f79fd7ee8460e88a794cae36a70b7f781da95518f9226ce0d71def6242"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "candidate": "eceaff3ae4f6f5ca32efa8da2ddce1ff7dc807edc1315512ddb11b63b93a276c",
+  "checks": "9 offline/348 Hub PASS independently",
+  "decision": "FAIL",
+  "defects": [
+    "filtered six MCP names did not require unknown_server_count zero",
+    "closure omitted readonlypreview14 recheck"
+  ],
+  "evidence": "d237b424af70742d42fd7be4d94acc9a5bd3553140896699c762daff9fafdaa9",
+  "judge": "capability_recovery_judge",
+  "native_effects": 0
+}

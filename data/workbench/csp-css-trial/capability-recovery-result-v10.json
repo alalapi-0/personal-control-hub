@@ -1,0 +1,73 @@
+{
+  "auth_metadata_unchanged": true,
+  "before_load_status": "notLoaded",
+  "capability_facts": [
+    {
+      "kind": "notification",
+      "method": "remoteControl/status/changed",
+      "status": "disabled"
+    }
+  ],
+  "closed": true,
+  "closure_errors": [
+    {
+      "check": "final_capabilities_consistent",
+      "code": "CSS_RECOVERY_TERMINAL_FRAME_REJECTED"
+    }
+  ],
+  "config_contents_changed": false,
+  "config_identity_changed": false,
+  "contract": "HUB-LWB-2.3-CSP-CAPABILITY-RECOVERY-GOV-v10",
+  "effective_process": {
+    "body_retained": false,
+    "model": "gpt-6.1-sol",
+    "reasoning_effort": "xhigh",
+    "source": "native config/read effective process snapshot"
+  },
+  "error": "DIAGNOSTIC_NOTIFICATION_REJECTED",
+  "exit": 0,
+  "expiry_valid_at_close": true,
+  "final_capabilities_consistent": false,
+  "helper_wall_limit_exceeded": false,
+  "historical_v7_postcheck": "PARTIAL_BLOCKED unchanged; this is fresh current loaded evidence after completed turn",
+  "methods": [
+    {
+      "cursor_present": false,
+      "method": "initialize",
+      "thread_id": null
+    },
+    {
+      "cursor_present": false,
+      "method": "config/read",
+      "thread_id": null
+    },
+    {
+      "cursor_present": false,
+      "method": "thread/read",
+      "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+    },
+    {
+      "cursor_present": false,
+      "method": "thread/resume",
+      "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+    },
+    {
+      "cursor_present": false,
+      "method": "thread/read",
+      "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+    }
+  ],
+  "model_turns": 0,
+  "new_threads": 0,
+  "notifications": [],
+  "pid": 1516155,
+  "protected_config_unchanged": true,
+  "readonly_preview14_unchanged": true,
+  "resume_calls_consumed": 1,
+  "source_unchanged": true,
+  "source_writes": 0,
+  "status": "PARTIAL_BLOCKED",
+  "task_row_unchanged": true,
+  "taskstore_row_writes": 0,
+  "trial_unchanged": true
+}

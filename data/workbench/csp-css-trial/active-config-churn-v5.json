@@ -1,0 +1,48 @@
+{
+  "sha256": "5c6675dfb1465a13212cf99e878a6476659f854b9325b70a3f3d96ee13401538",
+  "identity": [
+    66306,
+    12092677,
+    4122,
+    1791359976648157153,
+    1791359976648157153
+  ],
+  "top_key_types": {
+    "model": "str",
+    "model_reasoning_effort": "str",
+    "service_tier": "str",
+    "approval_policy": "str",
+    "approvals_reviewer": "str",
+    "sandbox_mode": "str",
+    "desktop": "dict",
+    "marketplaces": "dict",
+    "plugins": "dict",
+    "mcp_servers": "dict",
+    "features": "dict",
+    "memories": "dict",
+    "projects": "dict",
+    "skills": "dict",
+    "agents": "dict"
+  },
+  "top_inventory_match": true,
+  "mcp_inventory_match": true,
+  "core_selected": {
+    "model": "gpt-6.1-sol",
+    "model_reasoning_effort": "ultra",
+    "approval_policy": "never",
+    "sandbox_mode": "danger-full-access"
+  },
+  "features": {
+    "memories": true
+  },
+  "feature_keys": [
+    "memories"
+  ],
+  "agent_key_types": {
+    "default_subagent_reasoning_effort": "str",
+    "interrupt_message": "bool",
+    "max_concurrent_threads_per_session": "int"
+  },
+  "r2_native_reads": 0,
+  "root_global_config_changes": 0
+}

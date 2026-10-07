@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from governance_scope import add_scope_argument, activate_scope, selected_task, excluded_path
+from governance_scope import load_canonical_state, task_entry, candidate_paths, WORKBENCH_TASK_ID
 
 import argparse
 import json
@@ -41,6 +42,8 @@ def _load_yaml(relative: str) -> Any:
     path = ROOT / relative
     if not path.is_file() or yaml is None:
         return None
+    if relative == 'STATE.yaml':
+        return load_canonical_state(ROOT)
     with path.open(encoding="utf-8") as handle:
         return yaml.safe_load(handle)
 
@@ -76,7 +79,7 @@ def _get_round_context() -> dict[str, Any]:
         project = {}
     if not isinstance(current_round, dict):
         current_round = {}
-    task = state.get("all_projects_governance", {}) if selected_task() else {}
+    task = task_entry(state) if selected_task() else {}
     work = task or (state.get("current_work", {}) if isinstance(state, dict) else {})
     work = work if isinstance(work, dict) else {}
     return {
@@ -84,10 +87,10 @@ def _get_round_context() -> dict[str, Any]:
         "task_unit": task.get("unit"),
         "task_next_action": task.get("next_action"),
         "work_status": work.get("status"),
-        "current_round": task.get("unit") if selected_task() else current_round.get("id"),
+        "current_round": (task.get('current_round') if selected_task() == WORKBENCH_TASK_ID else task.get("unit")) if selected_task() else current_round.get("id"),
         "current_round_name": current_round.get("name"),
-        "next_round": None if selected_task() else current_round.get("next_round"),
-        "current_phase": project.get("phase"),
+        "next_round": task.get('next_round') if selected_task() == WORKBENCH_TASK_ID else (None if selected_task() else current_round.get("next_round")),
+        "current_phase": task.get('stage') if selected_task() == WORKBENCH_TASK_ID else project.get("phase"),
     }
 
 
@@ -268,6 +271,9 @@ def _generate_prompt(round_item: dict[str, Any], executor: str) -> str:
 
 
 def mode_prepare_next() -> dict[str, Any]:
+    if selected_task() == WORKBENCH_TASK_ID:
+        print('Workbench prepare-next is unsupported; read the canonical task card. No effects authorized.')
+        return {'decision': 'stop', 'prompts_written': False, 'previewed': False, 'authority_granted': False}
     if str(_get_round_context().get("work_status", "")).upper() == "PAUSED":
         print("当前产品任务 PAUSED；旧路线图或验证通过不构成恢复授权。")
         return {"decision": "stop", "prompts_written": False, "previewed": False}
@@ -302,22 +308,7 @@ def _candidate_paths() -> list[str]:
     if not selected_task():
         return []
     state = _load_yaml("STATE.yaml") or {}
-    task = state.get("all_projects_governance", {})
-    if not isinstance(task, dict) or task.get("task_id") != selected_task():
-        raise ValueError("Selected task lacks canonical candidate authority")
-    paths = task.get("candidate_paths")
-    if not isinstance(paths, list) or not paths:
-        raise ValueError("Current task candidate_paths must list owned files")
-    for path in paths:
-        if (not isinstance(path, str) or not path or Path(path).is_absolute()
-                or any(part in {"..", ".", "", ".git"} for part in path.split("/"))):
-            raise ValueError("Invalid candidate path for scoped Git check")
-        current = ROOT
-        for part in Path(path).parts:
-            current = current / part
-            if current.is_symlink():
-                raise ValueError("Candidate path cannot traverse symlinks")
-    return sorted(set([*paths, "STATE.yaml"]))
+    return candidate_paths(ROOT, task_entry(state))
 
 
 def _git_status_porcelain() -> tuple[int, str]:
@@ -451,14 +442,18 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     activate_scope(args.task_id)
 
-    if args.mode == "check":
-        result = mode_check()
-        return 0 if result["checks_passed"] else 1
-    if args.mode == "prepare-next":
-        result = mode_prepare_next()
-        return 0 if result.get("decision") != "stop" else 1
-    result = mode_finalize_round()
-    return 0 if result["decision"] != "stop" else 1
+    try:
+        if args.mode == "check":
+            result = mode_check()
+            return 0 if result["checks_passed"] else 1
+        if args.mode == "prepare-next":
+            result = mode_prepare_next()
+            return 0 if result.get("decision") != "stop" else 1
+        result = mode_finalize_round()
+        return 0 if result["decision"] != "stop" else 1
+    except (ValueError, OSError):
+        print('Invalid selected task authority; no effects authorized.', file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":

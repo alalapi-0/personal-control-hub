@@ -1,0 +1,38 @@
+{
+  "contract": {
+    "decision": "REVISE_TASK offline only",
+    "effects_now": "no helper/fifth/model/TaskStore/source/docs/Git/globalconfig/auth writes",
+    "frozen": "all15 top keys/types and6MCP names exact; each subtree explicitly overridden or proven inert from0.159.3source/schema; unclassified effects block; no secrets/secret hashes; model+effort exclusions require argv/effectiveconfig/resume agreement; freshJudge/Gov before helpers",
+    "governor": "entry_governor",
+    "id": "HUB-LWB-2.3-CSP-CONFIG-REBASELINE-GOV-v11",
+    "lane": "GOVERNED",
+    "objective": "prove current config semantic safety for exact evidence-only RPCs without old config body; then separate no-model precheck before fifth resume",
+    "status": "IMPLEMENTING_OFFLINE"
+  },
+  "counts": {
+    "model_turns": 1,
+    "resumes": 4,
+    "threads": 2
+  },
+  "effects_now": "offline owned code/tests/evidence/state/index only; no helper/resume/model/taskstore/source/promotion/global/auth/Git",
+  "semantic_config_rebaseline": {
+    "current_observed_pin": "bd9dab9fc3549e5170ee1d6c1748caf404696c184d53312d2ace42414a8aff41",
+    "current_pin_authorized": false,
+    "fifth_resume_allowed_now": false,
+    "native_helpers_allowed_now": 0,
+    "next_required": "implement exhaustive15-subtree safe semantic projection/coverage map in css_process_config with fixedargv/sourceproof/unknown-effect rejection tests; register exactcandidate freshJudge/Gov; no-model precheck separately authorized before fifthresume",
+    "old_pin": "2f3221497d84381ad9b9e52c58516e8be69f47b00677be04c433f3ff92de633d",
+    "same_types_and_mcp_names": true,
+    "source_lookup_failure": "old core/src/features.rs path404; actual features/src/lib.rs verified; no retry same path",
+    "source_promotion_allowed": false,
+    "source_references": [
+      "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server/src/lib.rs",
+      "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/features/src/lib.rs",
+      "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core/config.schema.json"
+    ],
+    "source_version": "rust-v0.159.3",
+    "status": "IMPLEMENTING_OFFLINE",
+    "top_key_count": 15,
+    "verified_source_finding": "AppServer startup derives config/cloud-auth/environment components before request dispatch; no-model method gate alone cannot prove every config subtree inert"
+  }
+}

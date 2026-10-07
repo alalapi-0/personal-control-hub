@@ -1,0 +1,13 @@
+{
+  "candidate": "3e2003d31c2c14811bc9d98e858c0920449ae127e0ceefde4568cf830fab9bc4",
+  "contract": "HUB-LWB-2.3-CSP-CONFIG-DIAGNOSTIC-GOV-v11.4",
+  "created_at": 1791374214.661571,
+  "effects": "no runtime",
+  "evidence": "ac8b1fda10119a968fe8308c62de522bf79b95d8b73b137cb5ae0926356442a6",
+  "findings": [
+    "serialized user source profile required null/string; currentorigin andlayer accept missingprofile"
+  ],
+  "judge": "/root/config_diagnostic_v11_4_r2_judge",
+  "passed": "all113pins;22scoped411Hub; staticmasks/unknownsentinel privacy fixed",
+  "result": "FAIL"
+}

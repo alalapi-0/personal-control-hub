@@ -1,0 +1,551 @@
+{
+  "findings_r2": {
+    "cold_resume": "explicit permissions maps to default_permissions; override prevents persisted-profile fallback; load_for_cwd result reaches resume_thread_with_history",
+    "layers": "only exact TRIAL .codex candidate, currently empty and missing_trust disabled; enabled/unknown local or auxiliary layer rejected; native layer stack separately required",
+    "loaded_resume": "loaded permission override is ignored; exact notLoaded pre-read required and later loaded read revokes proof",
+    "lookup": "canonical/original cwd then project/root/repo precedence bound; actual path has no valid ancestor git HEAD so roots fall back to exact TRIAL",
+    "permission": "dedicated profile maps exact cwd/minimal runtime to read, roots/tmp/network denied; no native capability claim",
+    "preservation": "before/after global identity, private content equality and complete projects equality must pass; public booleans only",
+    "trust_setter_correction": "sole setter witness is in thread_start_task; no witness establishes reachability from thread_resume_inner; drift cause remains UNPROVEN"
+  },
+  "lookup_corrections": [
+    {
+      "file": "app-server/src/lib.rs",
+      "matches": 0,
+      "old_anchor": "enable_codex_api_key_env: false",
+      "reason": "Rust positional argument with inline comment, not named field; no native attempt"
+    },
+    {
+      "file": "git-utils/src/trust.rs",
+      "matches": 0,
+      "old_anchor": "pub fn resolve_root_git_project_for_trust",
+      "reason": "async function; verified definition used"
+    },
+    {
+      "file": "core/src/config/permissions.rs",
+      "matches": 0,
+      "old_anchor": "FilesystemPermissionToml::Read/Write",
+      "reason": "Access wrapper carries typed access; verified consumer used"
+    },
+    {
+      "file": "core/src/config/permissions.rs",
+      "matches": 0,
+      "old_anchor": "FileSystemSandboxEntry::new",
+      "reason": "no constructor witness; discarded guessed anchor and used actual Access match consumer"
+    }
+  ],
+  "native_effects": 0,
+  "proof_scope": "offline exact TRIAL trust/layer closure and dedicated readonly cold-resume; native checks pending",
+  "raw_config_retained": false,
+  "revision": "v11-r2",
+  "sources": {
+    "app-server-transport/src/transport/remote_control/controller.rs": {
+      "line_count": 368,
+      "sha256": "eca8afee2ab912bedef8813d4c3972ee0f01cf5e4fdf5ef99856d516838767c3",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-transport/src/transport/remote_control/controller.rs",
+      "witnesses": [
+        {
+          "anchor": "RemoteControlStartupMode::DisabledEphemeral => RemoteControlDesiredState::Disabled",
+          "lines": [
+            280
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "app-server-transport/src/transport/remote_control/mod.rs": {
+      "line_count": 1007,
+      "sha256": "07146b098b5bd854d43673f343a237c3ec185d78f1e92409a173600a61cdd359",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-transport/src/transport/remote_control/mod.rs",
+      "witnesses": [
+        {
+          "anchor": "CODEX_INTERNAL_APP_SERVER_REMOTE_CONTROL_DISABLED",
+          "lines": [
+            88
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "value == \"1\"",
+          "lines": [
+            93
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "app-server/src/lib.rs": {
+      "line_count": 1607,
+      "sha256": "720bec82a5f8eaf1580a0b56bc52852cc39c3f1406406cb8d06de44a32e401da",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server/src/lib.rs",
+      "witnesses": [
+        {
+          "anchor": "/*enable_codex_api_key_env*/ false",
+          "lines": [
+            539,
+            575
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "PluginStartupTasks::Start",
+          "lines": [
+            480,
+            986
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "app-server/src/message_processor.rs": {
+      "line_count": 1889,
+      "sha256": "f1a1bb0029e7c2f46de3048cbbc52b55ccca413dacb8ce67c63796372468318f",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server/src/message_processor.rs",
+      "witnesses": [
+        {
+          "anchor": "gateway_login_control.require_explicit_login()",
+          "lines": [
+            296
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "maybe_start_plugin_startup_tasks_for_config",
+          "lines": [
+            554
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "app-server/src/request_processors/thread_processor.rs": {
+      "line_count": 6359,
+      "sha256": "786c0549e5c1b57421e03472f3b8c3519090849fb8401163f3da5cc2c55b66be",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server/src/request_processors/thread_processor.rs",
+      "witnesses": [
+        {
+          "anchor": "fn thread_start_task",
+          "lines": [
+            1315
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "fn thread_resume_inner",
+          "lines": [
+            3641
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "default_permissions: permissions",
+          "lines": [
+            1686
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "typesafe_overrides.default_permissions.is_some()",
+          "lines": [
+            291
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "self.build_thread_config_overrides(",
+          "lines": [
+            1200,
+            3899,
+            5007
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "load_for_cwd(request_overrides, typesafe_overrides, history_cwd)",
+          "lines": [
+            3955,
+            5100
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "if !has_permission_override",
+          "lines": [
+            4252
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "resume_thread_with_history(",
+          "lines": [
+            2289,
+            3974
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "set_project_trust_level(",
+          "lines": [
+            1374
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "permissions override was provided and ignored while running",
+          "lines": [
+            201
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "cli/src/main.rs": {
+      "line_count": 4909,
+      "sha256": "dc0356a131108ace0f63f7e9f5040b1f0fc19a71057eeeb4108e04623267c502",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/cli/src/main.rs",
+      "witnesses": [
+        {
+          "anchor": "take_remote_control_disabled_env()",
+          "lines": [
+            1015
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "(false, true)",
+          "lines": [
+            1254
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "RemoteControlStartupMode::DisabledEphemeral",
+          "lines": [
+            1255
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "config/src/config_toml.rs": {
+      "line_count": 1091,
+      "sha256": "05b6d259c8882322d33a997d69c0898f7ca3693552bf9ec5f4a8f1c60457bb1e",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/config_toml.rs",
+      "witnesses": [
+        {
+          "anchor": "pub desktop: Option<HashMap<String, JsonValue>>",
+          "lines": [
+            541
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "pub struct AgentsToml",
+          "lines": [
+            723
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "pub struct ProjectConfig",
+          "lines": [
+            596
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "config/src/loader/mod.rs": {
+      "line_count": 2011,
+      "sha256": "0e3131c8186b391ecb425620bee2a8649d10364d062eee21a15d1cbe48dbbb0d",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/loader/mod.rs",
+      "witnesses": [
+        {
+          "anchor": "fn decision_for_dir",
+          "lines": [
+            1041
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "normalized_project_trust_keys",
+          "lines": [
+            1042,
+            1271,
+            1280,
+            1371,
+            1378
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "fn discover_project_root",
+          "lines": [
+            1490
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "fn find_git_checkout_root",
+          "lines": [
+            1528
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "fn disabled_reason_for",
+          "lines": [
+            1086
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "load_root_checkout_hooks",
+          "lines": [
+            1578,
+            1613,
+            1710,
+            1740,
+            1753
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "config/src/mcp_types.rs": {
+      "line_count": 686,
+      "sha256": "08bdfe6bcc0ca607b1ead8b373029f895528604290f94bf1ba18c2dc83db8fd8",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/mcp_types.rs",
+      "witnesses": [
+        {
+          "anchor": "pub enabled: bool",
+          "lines": [
+            246
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "config/src/project_root_markers.rs": {
+      "line_count": 50,
+      "sha256": "21d3a86eea7a34f39b1ebc82037d78dd9c1c46fef0c4c74de584bae7cab17f53",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/project_root_markers.rs",
+      "witnesses": [
+        {
+          "anchor": "DEFAULT_PROJECT_ROOT_MARKERS",
+          "lines": [
+            5,
+            46
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "config/src/project_trust.rs": {
+      "line_count": 108,
+      "sha256": "ed577aa57d3281b5047ed51b42aa04da96800c6e1184dcde1b8b644bbae7a001",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/project_trust.rs",
+      "witnesses": [
+        {
+          "anchor": "pub fn get_active_project_for_lookup",
+          "lines": [
+            76
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "pub fn from_paths",
+          "lines": [
+            50
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "config/src/skills_config.rs": {
+      "line_count": 215,
+      "sha256": "bc2eb9fcb92c2c99fedaa25d1ca4bbff6d69a009499ba34762249bdc3b05cc8c",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/skills_config.rs",
+      "witnesses": [
+        {
+          "anchor": "pub struct SkillConfig",
+          "lines": [
+            20,
+            79,
+            86
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "core-plugins/src/manager.rs": {
+      "line_count": 3805,
+      "sha256": "381ce90509b4f40341669fa01a637451716993cd05fcf7b719e1898743700d9c",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core-plugins/src/manager.rs",
+      "witnesses": [
+        {
+          "anchor": "if !config.plugins_enabled",
+          "lines": [
+            769,
+            793,
+            979,
+            1252,
+            1549,
+            1576,
+            1763,
+            1854,
+            1885,
+            2372,
+            2479,
+            2514
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "if config.plugins_enabled",
+          "lines": [
+            733,
+            2792
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "maybe_start_plugin_startup_tasks_for_config",
+          "lines": [
+            2786
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "if config.plugins_enabled",
+          "lines": [
+            733,
+            2792
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "core/src/config/mod.rs": {
+      "line_count": 4935,
+      "sha256": "df6d6871a35a9e365e36beb3d388c2c39cae59d95bd84834321c8501390ec397",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core/src/config/mod.rs",
+      "witnesses": [
+        {
+          "anchor": "default_permissions_override.as_deref()",
+          "lines": [
+            3480,
+            3504
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "else if profiles_are_active",
+          "lines": [
+            3611
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "compile_permission_profile(",
+          "lines": [
+            3637,
+            4766
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "core/src/config/permissions.rs": {
+      "line_count": 893,
+      "sha256": "cda9109f6a5405dbf2abbe7d53883b755419c5b6d0b3e7f5834c65710db3479a",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core/src/config/permissions.rs",
+      "witnesses": [
+        {
+          "anchor": "pub fn compile_permission_profile",
+          "lines": [
+            376
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "FilesystemPermissionToml::Access(access)",
+          "lines": [
+            278,
+            284,
+            298,
+            304,
+            311,
+            565,
+            774
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "features/src/lib.rs": {
+      "line_count": 1918,
+      "sha256": "4c702a9479fdbf955b0640f8d52e327dff5cc273c0e9587f29f62e5cbbcd59aa",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/features/src/lib.rs",
+      "witnesses": [
+        {
+          "anchor": "key: \"memories\"",
+          "lines": [
+            1156
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "overrides.apply(&mut features)",
+          "lines": [
+            687
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "git-utils/src/trust.rs": {
+      "line_count": 250,
+      "sha256": "62a1a258814e3f215e5632eaea1f8b83b8f0bc2529a921aea05760bb194d9d31",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/git-utils/src/trust.rs",
+      "witnesses": [
+        {
+          "anchor": "pub async fn resolve_root_git_project_for_trust",
+          "lines": [
+            16
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "join(\"HEAD\")",
+          "lines": [
+            113
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "protocol/src/permissions.rs": {
+      "line_count": 4674,
+      "sha256": "78a1c80b9b5cda29c563538d90003005d26c411eea533bd00db54a185a6aed54",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/protocol/src/permissions.rs",
+      "witnesses": [
+        {
+          "anchor": "pub fn can_write_local_path_with_cwd",
+          "lines": [
+            998
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "pub fn can_read_local_path_with_cwd",
+          "lines": [
+            992
+          ],
+          "matched": true
+        }
+      ]
+    }
+  },
+  "version": "rust-v0.159.3"
+}

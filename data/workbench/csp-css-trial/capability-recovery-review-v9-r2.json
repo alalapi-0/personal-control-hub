@@ -1,0 +1,12 @@
+{
+  "candidate": "89e0c088d1a920a150098b57b527af757a57527f444a2b4fb7de26e697d48436",
+  "checks": "11 offline/350 Hub independently PASS",
+  "decision": "FAIL",
+  "defects": [
+    "late capability contradiction not asserted at closure",
+    "critical mapping_check dependencies omitted from candidate identity"
+  ],
+  "evidence": "3aa36fe15e1f88f91a049727ea8928a25970a704079250959ee408a56b04a371",
+  "judge": "capability_recovery_repair_judge",
+  "native_effects": 0
+}

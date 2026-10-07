@@ -1,0 +1,13 @@
+{
+  "status": "proposal_no_effect",
+  "new_evidence": "exact installed CLI0.159.3 official source explicitly denied ancestor masked tmpfs111/remount-ro and childwrite rebound",
+  "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/linux-sandbox/src/bwrap.rs",
+  "lines": [
+    1291,
+    1321
+  ],
+  "proposed_change": "process-only permissions.hub_lwb_fixture_v1.filesystem exactTRIAL.parent=deny +existingTRIALwrite; no globalconfig/sibling/root/write/remote/authchanges",
+  "verification_needed": "one newly registered no-thread fixedprobe; parentopen/enumeration/writeactualdenied and trialCSSread/writeoriginal; samecoredenials/config/auth/cleanup; no model/replacement",
+  "inference": true,
+  "not_actual_runtime_proof": true
+}

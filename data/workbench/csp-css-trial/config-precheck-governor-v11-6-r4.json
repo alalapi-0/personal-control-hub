@@ -1,0 +1,19 @@
+{
+  "actual_runtime_review_required": true,
+  "authority_max_seconds": 900,
+  "callgraph_sha256": "39125fd258c469feafc5fdc27c3ec92aaff13cab05a3667ea03c8a897e786dc5",
+  "candidate_sha256": "5749e7fa33c13f082d30fdf53d80b979aae6ca4031a9d547e09df0cf2e7ae791",
+  "child_network_visibility": "NOT_RUN",
+  "contract": "HUB-LWB-2.3-CSP-FULL-METADATA-PRECHECK-GOV-v11.6-r4",
+  "contract_sha256": "45119b30715357810ea150852a945941bd638ab60b8fa3980e18604aba8fe087",
+  "decision": "APPROVE_NATIVE_PRECHECK",
+  "evidence_sha256": "e0d5f8cb624ecdab4726404b1d796da2c63f053b993c185b65f734e114ab8b0a",
+  "fresh_judge": "/root/full_metadata_v11_6_r4_judge",
+  "governor": "/root/entry_governor",
+  "helper_wall_seconds": 120,
+  "native_helpers_allowed": 1,
+  "prohibited": "thread/start/read/resume,turn,model,command,MCPtools,TaskStorewrite,projectsource,Gitmutation,productionservice,Mac,globalconfig",
+  "renewal": false,
+  "start_headroom_seconds": 150,
+  "supplemental_pytest": "FAIL retained; not registered440suite; governor nonblocking forbounded runtime"
+}

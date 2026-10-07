@@ -1,0 +1,72 @@
+{
+  "candidate_sha256": "6a6627b52eb9b114b2af232ca7587c1b460ac9a590f74e1f02bd754bd2e7f017",
+  "checks": [
+    {
+      "count": 6,
+      "exit": 0,
+      "id": "capability evidence offline"
+    },
+    {
+      "count": 339,
+      "exit": 0,
+      "id": "all Hub"
+    },
+    {
+      "count": 4,
+      "exit": 0,
+      "id": "real Linux before/after desktop+narrow"
+    },
+    {
+      "count": 8,
+      "exit": 0,
+      "id": "fixture write requests405"
+    }
+  ],
+  "contract": "HUB-LWB-2.3-CSP-CAPABILITY-EVIDENCE-GOV-v8",
+  "created_at": "2026-10-07T08:41:09.481359+00:00",
+  "diagnosis": {
+    "native_failure_status": "PARTIAL_BLOCKED unchanged; missingpost proof not inferred",
+    "new_runtime": "NOT_RUN; no helper/thread/resume/turn/command/TaskStoreCAS",
+    "offline_before_repair": "identical mocked MCP/features/profile pass beforepoll and CODEX_CAPABILITY_UNVERIFIED details{} after remote notification drained; zero native effects"
+  },
+  "evidence_files": {
+    "data/workbench/csp-css-trial/preview-before-narrow-repair-v8.json": "069ddb560a617e280231b7fb5807b4e1cae5e533dc9bb3a42534947c7b937db3",
+    "data/workbench/csp-css-trial/preview-browser-evidence-v8.json": "28c65a9a2eecb3b96bc831eb9c2ab6fc82ee2a424b3de1b3b29f646eadacb7bd",
+    "data/workbench/csp-css-trial/preview-render-inputs-and-requests-v8-r2.json": "ed466e58b027f62fdd7a90332790b17023c0c7a4ddb801d624fbd9043886e6a9",
+    "data/workbench/csp-css-trial/preview-render-inputs-and-requests-v8.json": "1a52338e87df6cabee87a12217989ad7ab7b01bca1325d9e05ce28231ef29f06",
+    "data/workbench/csp-css-trial/preview-trial-manifest-v8.json": "183225434ca35ff195d514efa2ed2d5195387cce96823e3ca623b16419a58555",
+    "data/workbench/csp-css-trial/preview-write-denial-v8.json": "dad87b16799e0afa5396b2b04104b8e0b0e9eeedadd5a0f1928e4bc5cf29e21f",
+    "data/workbench/csp-css-trial/process-resume-partial-v7.json": "73fe28149240bf622e19c51e6e1b4885a8c4827c13b1b44e7cea2a4c4df53510",
+    "data/workbench/csp-css-trial/process-resume-registration-v7-r2.json": "ad88eab555916950b3094e13015be08298cb5a9e75579bc3d374020b0d06ccc1",
+    "data/workbench/csp-css-trial/process-resume-review-v7.json": "63e1dfd4fcf4bdfcb11c9535e1d9d4d136ae91b5c5afe309ea67e4847ed5e772",
+    "docs/reports/linux-workbench/csp-css-trial-after-desktop-v2.jpg": "fb67ae1aa8229b72b51c74648e900542a6aaf8f0ae72815a81d6538df771e7a9",
+    "docs/reports/linux-workbench/csp-css-trial-after-narrow.jpg": "e3d2e01af95845ef166b5bbe69b1a92294f537da6b4d582ae7e4006aff276ad7",
+    "docs/reports/linux-workbench/csp-css-trial-before-desktop.jpg": "e8b72e43321559e46c83de28c2fd045d8b1387fbe2c88947b851ed3353966728",
+    "docs/reports/linux-workbench/csp-css-trial-before-narrow-v2.jpg": "ecbc33b7c0bf83e4b68bb158bb1582ed21d01427366162c379e3ca7ddc951fa0"
+  },
+  "evidence_sha256": "128ca8e3deee01168355ac34ca1e9afa823f427aa816be7a2279deddd10433b4",
+  "files": {
+    "data/workbench/csp-css-trial/capture_trial_preview.py": "6190f62e1f300fabb6a19b2b8131a55f5c5232608a0450ca2e0945eb28de031b",
+    "src/hub/codex_adapter.py": "782b96b1281ee70ccb9891312aebb9f2c7fb9e17e5ffd43df7c8b3396a0234ae",
+    "src/hub/css_process_config.py": "f8a9e4f633e42d5515f5df83f9241a4f9077dbf1ef9fffafebc85986233d1551",
+    "src/hub/css_read_diagnostic.py": "836919f79fd7ee8460e88a794cae36a70b7f781da95518f9226ce0d71def6242",
+    "src/hub/css_trial.py": "d4b8454dc033ed710f5f909de064f0925e120cecf65ebeee06095644527d868e",
+    "src/hub/task_store.py": "150c617696f0ce13dde3b2d55b12637275d0562260ccb1f78fd310d77a2cccb6",
+    "src/hub/task_worker.py": "10cebfc686edbeeec33c9c9d86bb10f1b27317d0620183153c6b2368dcb4c41c",
+    "tests/test_hub_capability_evidence.py": "bba8bf61df17c60c7d0ec6aa9e3a464598f1a8da0ee114bf760dd8c641687068",
+    "tests/test_hub_css_process_config.py": "aabce071983e50a591e9d0a452827376bdb1a9ef15b07a773aee0d63312dbf28",
+    "tests/test_hub_css_trial.py": "1d32cbd7360aed6f458809f8b2b72b34f59e3fb6760436ffe6c07c2d9665288f"
+  },
+  "frozen": {
+    "TaskStore_recovery_allowed": false,
+    "acceptance": "offline order/drain/two pages/unknown notifications/success response then error/immutable evidence; same-size real marked previews/405writes/closed/no sourceeffects; freshJudge/Gov before any nativeevidence recovery",
+    "model_turns_total_consumed": 1,
+    "native_effects_allowed": 0,
+    "protected": "original task/grant/intent/failure/counters/source3+learningdata/globalconfig/auth/production/Git/DesignStore",
+    "resume_calls_total_consumed": 2,
+    "scope": "retain schema-validated remote/startup metadata independently of notification queue; immutable controlled MCP/feature response evidence before later errors; six exactMCPnames/status/zero-tool-resource-template-capability and all14false/page completeness; Root readonly old/trial desktop+narrow captures only",
+    "source_promotion_allowed": false,
+    "thread_count_total": 2
+  },
+  "phase": "OFFLINE_REPAIR_AND_UNPROMOTED_PREVIEWS"
+}

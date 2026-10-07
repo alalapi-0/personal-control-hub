@@ -1,0 +1,27 @@
+{
+  "coercion": {
+    "field": "startup_timeout_sec",
+    "finite": true,
+    "integral": true,
+    "original_private_type": "int",
+    "original_private_value_equality_required": true,
+    "other_numeric_coercion_allowed": false,
+    "range": [
+      1,
+      120
+    ],
+    "semantic_projection_equality_required": true,
+    "server": "node_repl",
+    "wire_type": "float"
+  },
+  "duration_source": "config-precheck-sources-v11-2.json pinnedmcp_types.rs SHA08bdfe6...233-315 fields/624-656transport/664-679 as_secs_f64",
+  "privacy": "rawbody/originalint privateinmemoryonly no output/retention/hash; no nativeeffect",
+  "schema_DTO": "config-precheck-sources-v11-1.json/config-precheck-api-dto-v11-2.json unchanged",
+  "source": {
+    "anchors": "1424-1446 ConfigToml roundtrip;1453-1475 preserveoriginalkeys/typedleafvalues",
+    "file": "data/workbench/csp-css-trial/public-source-v11-3-loader.rs",
+    "sha256": "0e3131c8186b391ecb425620bee2a8649d10364d062eee21a15d1cbe48dbbb0d",
+    "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/loader/mod.rs"
+  },
+  "version": "rust-v0.159.3"
+}

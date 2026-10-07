@@ -1,0 +1,21 @@
+{
+  "acceptance": "order/duplicate/wrong/outside/secret/pendingresponse/persistence-beforethrow tests and relevant checks; fresh Judge",
+  "baseline": "schema-known thread/tokenUsage/updated zero-or-once only resume-after/before-postcap dedicated drain; exact thread/unique completed turn/terminal event/modeltotal1; outside/duplicate/new/wrong/unknown/contradictory reject",
+  "contract": "HUB-LWB-2.3-COMPLETED-USAGE-BASELINE-OFFLINE-v10",
+  "decision": "REQUEST_REPAIR offline only",
+  "effects": {
+    "Git": 0,
+    "configuration_or_auth": 0,
+    "fifth_resume": false,
+    "models": 0,
+    "native": 0,
+    "source_project_or_docs": 0,
+    "taskstore": 0
+  },
+  "future": "only after offline freshJudgePASS may request separate prospective v11 contract; fifthrequires explicit independent approval, no inheritance/reset",
+  "governor": "entry_governor",
+  "historical": "2threads4resumes1model/source0; v7/v9/v10FAIL/expiry unchanged; no newround",
+  "objective": "exact completed-turn usage baseline and pendingRPC safe metadata; preserve failed v10",
+  "pendingRPC": "fixed method, owned numeric requestID, phase enum, schema-valid response bool; late pending never counts success",
+  "privacy": "no usage values/rawbody/account/value hashes; only fixed projection method/binding/field types/digest"
+}

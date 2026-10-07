@@ -1,0 +1,11 @@
+{
+  "actual_status": "PARTIAL_BLOCKED",
+  "created_at": 1791380628.6974452,
+  "decision": "FAIL",
+  "error": "CSS_PRECHECK_LAYER_STRUCTURE_REJECTED",
+  "judge": "/root/metadata_v11_6_r4_runtime_judge",
+  "native_retry_authorized": false,
+  "preserved": "all8guards/authmode/schemaCleanup/effectlimits true; helperclosed0; noViolation/wallfalse; catalogA152exact2pages; MCP/B/fullconfigNOT_RUN",
+  "runtime_evidence_sha256": "6913e4a26059a834f2c886eace33d0371369d8a4e590d7bbe9893e345353d8d6",
+  "source_rootcause": "highconfidence: src/hub/css_config_precheck.py183 requires4keys; pinned protocol-v2__config.rs329–334 omitdisabledReason None; fixturewrongnull; 2filecanonicalwirefix"
+}

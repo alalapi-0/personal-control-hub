@@ -1,0 +1,107 @@
+--- src/hub/css_config_precheck.py
++++ src/hub/css_config_precheck.py
+@@ -25,7 +25,7 @@
+ METHODS=('initialize','config/read','mcpServerStatus/list','experimentalFeature/list')
+ REFRESH_GRANT='csp-metadata-sdk-refresh-v11-7'
+ NOTICES=frozenset({'remoteControl/status/changed','account/updated','account/rateLimits/updated','configWarning'})
+-REGISTRATION='config-precheck-registration-v11-7.json'
++REGISTRATION='config-precheck-registration-v11-7-r1.json'
+ AUTHORITY='config-precheck-authority-v11-7.json'
+ INTENT='config-precheck-intent-v11-7.json'
+ RESULT='config-precheck-result-v11-7.json'
+@@ -910,12 +910,15 @@
+         'full_metadata_acceptance':'BLOCKED','mcp_status_rpc_count':0,'fifth_resume_allowed':False}
+     a=None;before=None;source=None;trial=None;auth=None;receipt=None;mcp_after=None
+     try:
++        auth=credential_snapshot()
+         initial=admit(authority)
+         effects.source_receipt=initial.source
+         effects.source_check=lambda:(desktop_source_snapshot(),protocol_source_snapshot())
+         if authority['expires_at']-time.time()<150:raise ServiceError('CSS_PRECHECK_CLOSE_HEADROOM')
+-        receipt=authentication_receipt();before=observed_verified(authority['semantic_pin'],receipt)
+-        source=r.source_snapshot();trial=c.placeholder_snapshot();auth=credential_snapshot()
++        receipt=authentication_receipt()
++        if credential_snapshot()!=auth:raise ServiceError('CSS_SDK_CREDENTIAL_CHANGED_DURING_FIRST_AUTH')
++        before=observed_verified(authority['semantic_pin'],receipt)
++        source=r.source_snapshot();trial=c.placeholder_snapshot()
+         task=r.TaskStore(c.HUB_ROOT).task(c.TASK)
+         if source!=authority['source']or trial!=authority['trial']or authority.get('credential_storage_safe')is not True or c.digest(task)!=authority['task_hash']:
+             raise ServiceError('CSS_PRECHECK_INPUT_CHANGED')
+--- tests/test_hub_css_config_precheck.py
++++ tests/test_hub_css_config_precheck.py
+@@ -623,6 +623,8 @@
+             import os
+             os.link(path,self.root/'hardlink')
+             with self.assertRaises(ServiceError):q.credential_snapshot()
++            (self.root/'hardlink').unlink();path.unlink()
++            with self.assertRaises(FileNotFoundError):q.credential_snapshot()
+         fact=q.credential_fact(before,(before[0],before[1]+1,*before[2:]),'NO_REFRESH_FAILURE_SIGNAL')
+         self.assertTrue(fact['identity_changed']);self.assertEqual(fact['refresh_success'],'NOT_OBSERVED')
+         self.assertNotIn(str(before),json.dumps(fact))
+@@ -635,7 +637,7 @@
+             with mock.patch.dict(q.PACKAGED_DEFAULTS,cli_auth_credentials_store=mode),self.assertRaises(ServiceError):
+                 q.config_fact(self.native(),self.pin)
+ 
+-    def run_auth_fixture(self,outcome,identities,closure_mode='ChatGPT'):
++    def run_auth_fixture(self,outcome,identities,closure_mode='ChatGPT',first_auth_error=False):
+         folder=self.root/q.c.PRIVATE;folder.mkdir(parents=True,exist_ok=True)
+         task={'intent':{'grant':{}}};authority={**self.authority,'semantic_pin':self.pin,'source':{},'trial':{},
+             'credential_storage_safe':True,'task_hash':q.c.digest(task),'approved_candidate':'fixture','approved_evidence':'fixture'}
+@@ -655,7 +657,7 @@
+             mock.patch.object(q.r,'TaskStore',return_value=SimpleNamespace(task=lambda _:task)),\
+             mock.patch.object(q.r,'mapping_check'),mock.patch.object(q,'adapter',return_value=fake),mock.patch.object(q,'drain'),\
+             mock.patch.object(q,'original_config',return_value=self.user),\
+-            mock.patch.object(q,'authentication_receipt',side_effect=[q.AuthReceipt('ChatGPT',0),q.AuthReceipt(closure_mode,0)]),\
++            mock.patch.object(q,'authentication_receipt',side_effect=[ServiceError('CSS_AUTH_MODE_UNVERIFIED')if first_auth_error else q.AuthReceipt('ChatGPT',0),q.AuthReceipt(closure_mode,0)]),\
+             mock.patch.object(q,'feature_snapshot',return_value={k:False for k in q.p.FROZEN_DISABLES}|{'code_mode_host':True}),\
+             mock.patch.object(q.MetadataEffects,'install'),mock.patch.object(q.MetadataEffects,'fact',return_value={'effect_limits_satisfied':True}),\
+             mock.patch.object(q.r,'final_capability_state',return_value=True):result=q.run()
+@@ -665,7 +667,7 @@
+     def test_official_storage_change_in_mcp_window_does_not_claim_refresh_success(self):
+         import os
+         before=(1,2,3,4,5,33152,os.getuid(),1);after=(1,9,8,7,6,33152,os.getuid(),1)
+-        result=self.run_auth_fixture('NO_REFRESH_FAILURE_SIGNAL',[before,before,after,after])
++        result=self.run_auth_fixture('NO_REFRESH_FAILURE_SIGNAL',[before,before,before,after,after])
+         self.assertEqual(result['status'],'PASS_NATIVE_CONFIG_PRECHECK')
+         self.assertEqual(result['full_metadata_acceptance'],'PASS_UNSCOPED_PROCESS_ONLY')
+         self.assertTrue(result['auth_storage_effect_bounded']);self.assertTrue(result['credential_effect']['identity_changed'])
+@@ -676,15 +678,36 @@
+     def test_sdk_failure_unknown_log_auth_mode_and_outside_window_changes_block(self):
+         import os
+         before=(1,2,3,4,5,33152,os.getuid(),1);after=(1,9,8,7,6,33152,os.getuid(),1)
+-        cases=[('SDK_REFRESH_FAILURE_REPORTED',[before]*4,'ChatGPT'),('UNKNOWN_STDERR',[before]*4,'ChatGPT'),
+-            ('NO_REFRESH_FAILURE_SIGNAL',[before]*4,'API'),('NO_REFRESH_FAILURE_SIGNAL',[before,before,before,after],'ChatGPT'),
+-            ('NO_REFRESH_FAILURE_SIGNAL',[before,after,after],'ChatGPT')]
++        cases=[('SDK_REFRESH_FAILURE_REPORTED',[before]*5,'ChatGPT'),('UNKNOWN_STDERR',[before]*5,'ChatGPT'),
++            ('NO_REFRESH_FAILURE_SIGNAL',[before]*5,'API'),('NO_REFRESH_FAILURE_SIGNAL',[before,before,before,before,after],'ChatGPT'),
++            ('NO_REFRESH_FAILURE_SIGNAL',[before,before,after,after],'ChatGPT')]
+         for outcome,ids,mode in cases:
+             with self.subTest(outcome=outcome,mode=mode):
+                 result=self.run_auth_fixture(outcome,ids,mode)
+                 self.assertEqual(result['status'],'PARTIAL_BLOCKED');self.assertEqual(result['full_metadata_acceptance'],'BLOCKED')
+             for name in (q.INTENT,q.RESULT):
+                 (self.root/q.c.PRIVATE/name).unlink()
++
++    def test_first_auth_change_fails_even_when_following_identity_is_stable(self):
++        before=(1,2,3,4,5,33152,q.os.getuid(),1);after=(1,9,8,7,6,33152,q.os.getuid(),1)
++        result=self.run_auth_fixture('NO_REFRESH_FAILURE_SIGNAL',[before,after,after,after,after])
++        self.assertEqual(result['status'],'PARTIAL_BLOCKED')
++        self.assertEqual(result['error'],'CSS_SDK_CREDENTIAL_CHANGED_DURING_FIRST_AUTH')
++        self.assertEqual(result['methods'],[]);self.assertEqual(result['mcp_status_rpc_count'],0)
++
++    def test_first_auth_failure_does_not_reach_helper_or_mcp(self):
++        identity=(1,2,3,4,5,33152,q.os.getuid(),1)
++        result=self.run_auth_fixture('NO_REFRESH_FAILURE_SIGNAL',[identity,identity],first_auth_error=True)
++        self.assertEqual(result['status'],'PARTIAL_BLOCKED');self.assertEqual(result['error'],'CSS_AUTH_MODE_UNVERIFIED')
++        self.assertEqual(result['methods'],[]);self.assertEqual(result['mcp_status_rpc_count'],0)
++
++    def test_missing_or_unsafe_initial_credential_snapshot_does_not_reach_helper(self):
++        for error in (FileNotFoundError(),ServiceError('CSS_SDK_CREDENTIAL_STORAGE_UNSAFE')):
++            with self.subTest(error=type(error).__name__):
++                result=self.run_auth_fixture('NO_REFRESH_FAILURE_SIGNAL',[error,error])
++                self.assertEqual(result['status'],'PARTIAL_BLOCKED');self.assertEqual(result['methods'],[])
++                self.assertEqual(result['mcp_status_rpc_count'],0)
++            (self.root/q.c.PRIVATE/q.RESULT).unlink()
+ 
+     def test_public_catalog_exact_content_mode_alias_and_source_identity(self):
+         path=self.root/'public-models.json';raw=q.MODEL_CATALOG.read_bytes();path.write_bytes(raw);path.chmod(0o644)

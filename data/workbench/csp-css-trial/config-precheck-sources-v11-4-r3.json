@@ -1,0 +1,834 @@
+{
+  "allowlist_basis": "fixed pinned module c.CONFIG_TOP_TYPES,c.CONFIG_MCP_TYPES,p.DESKTOP_TYPES and public nested serializer field lists; public rowtemplates only; no private data-derived reference",
+  "existing_exact_sources": [
+    "semantic-config-sources-v11-r2.json",
+    "config-precheck-sources-v11-2.json",
+    "config-precheck-sources-v11-3.json",
+    "config-precheck-api-dto-v11-2.json"
+  ],
+  "groups": {
+    "agents": {
+      "ConfigToml_field": {
+        "anchor": "pub agents:",
+        "line": 478,
+        "source": "config/src/config_toml.rs"
+      },
+      "consumer": {
+        "anchor": "pub struct AgentsToml",
+        "classification": "multi_agent_off",
+        "sha256": "05b6d259c8882322d33a997d69c0898f7ca3693552bf9ec5f4a8f1c60457bb1e",
+        "source": "config/src/config_toml.rs",
+        "witnesses": [
+          {
+            "anchor": "pub desktop: Option<HashMap<String, JsonValue>>",
+            "lines": [
+              541
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "pub struct AgentsToml",
+            "lines": [
+              723
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "pub struct ProjectConfig",
+            "lines": [
+              596
+            ],
+            "matched": true
+          }
+        ]
+      }
+    },
+    "approval_policy": {
+      "ConfigToml_field": {
+        "anchor": "pub approval_policy:",
+        "line": 192,
+        "source": "config/src/config_toml.rs"
+      },
+      "consumer": {
+        "anchor": "approval_policy",
+        "classification": "invariant",
+        "sha256": "df6d6871a35a9e365e36beb3d388c2c39cae59d95bd84834321c8501390ec397",
+        "source": "core/src/config/mod.rs",
+        "witnesses": [
+          {
+            "anchor": "default_permissions_override.as_deref()",
+            "lines": [
+              3480,
+              3504
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "else if profiles_are_active",
+            "lines": [
+              3611
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "compile_permission_profile(",
+            "lines": [
+              3637,
+              4766
+            ],
+            "matched": true
+          }
+        ]
+      }
+    },
+    "approvals_reviewer": {
+      "ConfigToml_field": {
+        "anchor": "pub approvals_reviewer:",
+        "line": 197,
+        "source": "config/src/config_toml.rs"
+      },
+      "consumer": {
+        "anchor": "constrained_approvals_reviewer",
+        "classification": "invariant",
+        "sha256": "df6d6871a35a9e365e36beb3d388c2c39cae59d95bd84834321c8501390ec397",
+        "source": "core/src/config/mod.rs",
+        "witnesses": [
+          {
+            "anchor": "default_permissions_override.as_deref()",
+            "lines": [
+              3480,
+              3504
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "else if profiles_are_active",
+            "lines": [
+              3611
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "compile_permission_profile(",
+            "lines": [
+              3637,
+              4766
+            ],
+            "matched": true
+          }
+        ]
+      }
+    },
+    "desktop": {
+      "ConfigToml_field": {
+        "anchor": "pub desktop:",
+        "line": 541,
+        "source": "config/src/config_toml.rs"
+      },
+      "consumer": {
+        "anchor": "pub desktop: Option<HashMap<String, JsonValue>>",
+        "classification": "opaque_frontend",
+        "sha256": "05b6d259c8882322d33a997d69c0898f7ca3693552bf9ec5f4a8f1c60457bb1e",
+        "source": "config/src/config_toml.rs",
+        "witnesses": [
+          {
+            "anchor": "pub desktop: Option<HashMap<String, JsonValue>>",
+            "lines": [
+              541
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "pub struct AgentsToml",
+            "lines": [
+              723
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "pub struct ProjectConfig",
+            "lines": [
+              596
+            ],
+            "matched": true
+          }
+        ]
+      }
+    },
+    "features": {
+      "ConfigToml_field": {
+        "anchor": "pub features:",
+        "line": 504,
+        "source": "config/src/config_toml.rs"
+      },
+      "consumer": {
+        "anchor": "overrides.apply(&mut features)",
+        "classification": "fixed_disabled",
+        "sha256": "4c702a9479fdbf955b0640f8d52e327dff5cc273c0e9587f29f62e5cbbcd59aa",
+        "source": "features/src/lib.rs",
+        "witnesses": [
+          {
+            "anchor": "key: \"memories\"",
+            "lines": [
+              1156
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "overrides.apply(&mut features)",
+            "lines": [
+              687
+            ],
+            "matched": true
+          }
+        ]
+      }
+    },
+    "marketplaces": {
+      "ConfigToml_field": {
+        "anchor": "pub marketplaces:",
+        "line": 498,
+        "source": "config/src/config_toml.rs"
+      },
+      "consumer": {
+        "anchor": "if config.plugins_enabled",
+        "classification": "plugins_off",
+        "sha256": "381ce90509b4f40341669fa01a637451716993cd05fcf7b719e1898743700d9c",
+        "source": "core-plugins/src/manager.rs",
+        "witnesses": [
+          {
+            "anchor": "if !config.plugins_enabled",
+            "lines": [
+              769,
+              793,
+              979,
+              1252,
+              1549,
+              1576,
+              1763,
+              1854,
+              1885,
+              2372,
+              2479,
+              2514
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "if config.plugins_enabled",
+            "lines": [
+              733,
+              2792
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "maybe_start_plugin_startup_tasks_for_config",
+            "lines": [
+              2786
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "if config.plugins_enabled",
+            "lines": [
+              733,
+              2792
+            ],
+            "matched": true
+          }
+        ]
+      }
+    },
+    "mcp_servers": {
+      "ConfigToml_field": {
+        "anchor": "pub mcp_servers:",
+        "line": 293,
+        "source": "config/src/config_toml.rs"
+      },
+      "consumer": {
+        "anchor": "pub enabled: bool",
+        "classification": "six_disabled",
+        "sha256": "08bdfe6bcc0ca607b1ead8b373029f895528604290f94bf1ba18c2dc83db8fd8",
+        "source": "config/src/mcp_types.rs",
+        "witnesses": [
+          {
+            "anchor": "pub enabled: bool",
+            "lines": [
+              246
+            ],
+            "matched": true
+          }
+        ]
+      }
+    },
+    "memories": {
+      "ConfigToml_field": {
+        "anchor": "pub memories:",
+        "line": 484,
+        "source": "config/src/config_toml.rs"
+      },
+      "consumer": {
+        "anchor": "key: \"memories\"",
+        "classification": "memory_off",
+        "sha256": "4c702a9479fdbf955b0640f8d52e327dff5cc273c0e9587f29f62e5cbbcd59aa",
+        "source": "features/src/lib.rs",
+        "witnesses": [
+          {
+            "anchor": "key: \"memories\"",
+            "lines": [
+              1156
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "overrides.apply(&mut features)",
+            "lines": [
+              687
+            ],
+            "matched": true
+          }
+        ]
+      }
+    },
+    "model": {
+      "ConfigToml_field": {
+        "anchor": "pub model:",
+        "line": 167,
+        "source": "config/src/config_toml.rs"
+      },
+      "consumer": {
+        "anchor": "model.or(cfg.model)",
+        "classification": "override",
+        "sha256": "df6d6871a35a9e365e36beb3d388c2c39cae59d95bd84834321c8501390ec397",
+        "source": "core/src/config/mod.rs",
+        "witnesses": [
+          {
+            "anchor": "default_permissions_override.as_deref()",
+            "lines": [
+              3480,
+              3504
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "else if profiles_are_active",
+            "lines": [
+              3611
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "compile_permission_profile(",
+            "lines": [
+              3637,
+              4766
+            ],
+            "matched": true
+          }
+        ]
+      }
+    },
+    "model_reasoning_effort": {
+      "ConfigToml_field": {
+        "anchor": "pub model_reasoning_effort:",
+        "line": 391,
+        "source": "config/src/config_toml.rs"
+      },
+      "consumer": {
+        "anchor": "model_reasoning_effort",
+        "classification": "override",
+        "sha256": "df6d6871a35a9e365e36beb3d388c2c39cae59d95bd84834321c8501390ec397",
+        "source": "core/src/config/mod.rs",
+        "witnesses": [
+          {
+            "anchor": "default_permissions_override.as_deref()",
+            "lines": [
+              3480,
+              3504
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "else if profiles_are_active",
+            "lines": [
+              3611
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "compile_permission_profile(",
+            "lines": [
+              3637,
+              4766
+            ],
+            "matched": true
+          }
+        ]
+      }
+    },
+    "plugins": {
+      "ConfigToml_field": {
+        "anchor": "pub plugins:",
+        "line": 494,
+        "source": "config/src/config_toml.rs"
+      },
+      "consumer": {
+        "anchor": "if !config.plugins_enabled",
+        "classification": "plugins_off",
+        "sha256": "381ce90509b4f40341669fa01a637451716993cd05fcf7b719e1898743700d9c",
+        "source": "core-plugins/src/manager.rs",
+        "witnesses": [
+          {
+            "anchor": "if !config.plugins_enabled",
+            "lines": [
+              769,
+              793,
+              979,
+              1252,
+              1549,
+              1576,
+              1763,
+              1854,
+              1885,
+              2372,
+              2479,
+              2514
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "if config.plugins_enabled",
+            "lines": [
+              733,
+              2792
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "maybe_start_plugin_startup_tasks_for_config",
+            "lines": [
+              2786
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "if config.plugins_enabled",
+            "lines": [
+              733,
+              2792
+            ],
+            "matched": true
+          }
+        ]
+      }
+    },
+    "projects": {
+      "ConfigToml_field": {
+        "anchor": "pub projects:",
+        "line": 466,
+        "source": "config/src/config_toml.rs"
+      },
+      "consumer": {
+        "anchor": "fn decision_for_dir",
+        "classification": "bound_trust_and_layers",
+        "sha256": "0e3131c8186b391ecb425620bee2a8649d10364d062eee21a15d1cbe48dbbb0d",
+        "source": "config/src/loader/mod.rs",
+        "witnesses": [
+          {
+            "anchor": "fn decision_for_dir",
+            "lines": [
+              1041
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "normalized_project_trust_keys",
+            "lines": [
+              1042,
+              1271,
+              1280,
+              1371,
+              1378
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "fn discover_project_root",
+            "lines": [
+              1490
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "fn find_git_checkout_root",
+            "lines": [
+              1528
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "fn disabled_reason_for",
+            "lines": [
+              1086
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "load_root_checkout_hooks",
+            "lines": [
+              1578,
+              1613,
+              1710,
+              1740,
+              1753
+            ],
+            "matched": true
+          }
+        ]
+      }
+    },
+    "sandbox_mode": {
+      "ConfigToml_field": {
+        "anchor": "pub sandbox_mode:",
+        "line": 221,
+        "source": "config/src/config_toml.rs"
+      },
+      "consumer": {
+        "anchor": "else if profiles_are_active",
+        "classification": "profile_override",
+        "sha256": "df6d6871a35a9e365e36beb3d388c2c39cae59d95bd84834321c8501390ec397",
+        "source": "core/src/config/mod.rs",
+        "witnesses": [
+          {
+            "anchor": "default_permissions_override.as_deref()",
+            "lines": [
+              3480,
+              3504
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "else if profiles_are_active",
+            "lines": [
+              3611
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "compile_permission_profile(",
+            "lines": [
+              3637,
+              4766
+            ],
+            "matched": true
+          }
+        ]
+      }
+    },
+    "service_tier": {
+      "ConfigToml_field": {
+        "anchor": "pub service_tier:",
+        "line": 406,
+        "source": "config/src/config_toml.rs"
+      },
+      "consumer": {
+        "anchor": "let service_tier = match service_tier_override",
+        "classification": "no_model_request",
+        "sha256": "df6d6871a35a9e365e36beb3d388c2c39cae59d95bd84834321c8501390ec397",
+        "source": "core/src/config/mod.rs",
+        "witnesses": [
+          {
+            "anchor": "default_permissions_override.as_deref()",
+            "lines": [
+              3480,
+              3504
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "else if profiles_are_active",
+            "lines": [
+              3611
+            ],
+            "matched": true
+          },
+          {
+            "anchor": "compile_permission_profile(",
+            "lines": [
+              3637,
+              4766
+            ],
+            "matched": true
+          }
+        ]
+      }
+    },
+    "skills": {
+      "ConfigToml_field": {
+        "anchor": "pub skills:",
+        "line": 487,
+        "source": "config/src/config_toml.rs"
+      },
+      "consumer": {
+        "anchor": "pub struct SkillConfig",
+        "classification": "disabled_selector_only",
+        "sha256": "bc2eb9fcb92c2c99fedaa25d1ca4bbff6d69a009499ba34762249bdc3b05cc8c",
+        "source": "config/src/skills_config.rs",
+        "witnesses": [
+          {
+            "anchor": "pub struct SkillConfig",
+            "lines": [
+              20,
+              79,
+              86
+            ],
+            "matched": true
+          }
+        ]
+      }
+    }
+  },
+  "metadata_acceptance": "NOT_RUN",
+  "native_effects": 0,
+  "nested_sources": {
+    "apiDTO": "33-109ConfigLayerSource/318-323Metadata/402-407ReadResponse",
+    "config_toml": "163-558 fields/723-756 agents",
+    "features": "789-824",
+    "mcp_types": "233-315fields/624-656transport",
+    "permissions": "113-119profile/224-231filesystem/330-348network",
+    "skills": "20-47",
+    "types": "298-331memories/1004-1011plugin/1102-1121marketplace"
+  },
+  "privacy": "no nested labels/privatevalue/body/hash/origin/version; unknownprivate subtree single sentinelcount without histogram",
+  "r3": "pinned public ConfigLayerSource User lines74-87 no skip profile Option => emitted fieldrequirednull/str; currentuserlayerprofileNone; matchingoriginexactNone; missingfieldnotnull; at leastone userorigin from thisfixeduserinput",
+  "repair": "fixed independent allowlists, never original/wire/effective as reference; unknown subtrees one sentinel; strict origin DTO required map/row/name/version, existing adapter separately validates schema",
+  "revision": "v11.4-r3",
+  "schema": {
+    "container": 512,
+    "count_saturation": 255,
+    "depth": 12,
+    "groups": [
+      "agents",
+      "approval_policy",
+      "approvals_reviewer",
+      "desktop",
+      "features",
+      "marketplaces",
+      "mcp_servers",
+      "memories",
+      "model",
+      "model_reasoning_effort",
+      "plugins",
+      "projects",
+      "sandbox_mode",
+      "service_tier",
+      "skills",
+      "effective_config"
+    ],
+    "nodes": 4096,
+    "output_bytes": 32768,
+    "reasons": [
+      "PRESENCE_DIFF",
+      "TYPE_DIFF",
+      "KEYS_DIFF",
+      "COUNT_DIFF",
+      "VALUE_DIFF",
+      "UNKNOWN_PRIVATE_STRUCTURE"
+    ],
+    "types": [
+      "missing",
+      "null",
+      "bool",
+      "int",
+      "float",
+      "str",
+      "list",
+      "dict"
+    ]
+  },
+  "serializer_loader_processor": "same pinned sources reused; no serializer/coercion changes; shape only",
+  "sources": {
+    "app-server-protocol/src/protocol/v2/config.rs": {
+      "exactrecord": "config-precheck-api-dto-v11-2.json"
+    },
+    "app-server/src/config_manager_service.rs": {
+      "file": "data/workbench/csp-css-trial/public-source-v11-2/app-server__src__config_manager_service.rs",
+      "lines": 912,
+      "sha256": "cb5e0862e3402aed6349d870f4a8b38472ad1835edd906f797ea1e3aeeac8209",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server/src/config_manager_service.rs"
+    },
+    "app-server/src/request_processors/config_processor.rs": {
+      "file": "data/workbench/csp-css-trial/public-source-v11-2/app-server__src__request_processors__config_processor.rs",
+      "lines": 1152,
+      "sha256": "66d0f303742fc268f9f4557cc01418c89c85854ff58f3feb7321e19a891b1db2",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server/src/request_processors/config_processor.rs"
+    },
+    "config/src/config_toml.rs": {
+      "file": "data/workbench/csp-css-trial/public-source-v11-2/config__src__config_toml.rs",
+      "lines": 1091,
+      "sha256": "05b6d259c8882322d33a997d69c0898f7ca3693552bf9ec5f4a8f1c60457bb1e",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/config_toml.rs"
+    },
+    "config/src/loader/mod.rs": {
+      "line_count": 2011,
+      "sha256": "0e3131c8186b391ecb425620bee2a8649d10364d062eee21a15d1cbe48dbbb0d",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/loader/mod.rs",
+      "witnesses": [
+        {
+          "anchor": "fn decision_for_dir",
+          "lines": [
+            1041
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "normalized_project_trust_keys",
+          "lines": [
+            1042,
+            1271,
+            1280,
+            1371,
+            1378
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "fn discover_project_root",
+          "lines": [
+            1490
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "fn find_git_checkout_root",
+          "lines": [
+            1528
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "fn disabled_reason_for",
+          "lines": [
+            1086
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "load_root_checkout_hooks",
+          "lines": [
+            1578,
+            1613,
+            1710,
+            1740,
+            1753
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "config/src/mcp_types.rs": {
+      "file": "data/workbench/csp-css-trial/public-source-v11-2/config__src__mcp_types.rs",
+      "lines": 686,
+      "sha256": "08bdfe6bcc0ca607b1ead8b373029f895528604290f94bf1ba18c2dc83db8fd8",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/mcp_types.rs"
+    },
+    "config/src/skills_config.rs": {
+      "file": "data/workbench/csp-css-trial/public-source-v11-2/config__src__skills_config.rs",
+      "lines": 215,
+      "sha256": "bc2eb9fcb92c2c99fedaa25d1ca4bbff6d69a009499ba34762249bdc3b05cc8c",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/skills_config.rs"
+    },
+    "config/src/state.rs": {
+      "file": "data/workbench/csp-css-trial/public-source-v11-2/config__src__state.rs",
+      "lines": 640,
+      "sha256": "b9a64a791a8b7884626890f06b13fb4630c5160f75ead198635e0111ecdd46ed",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/state.rs"
+    },
+    "core-plugins/src/manager.rs": {
+      "line_count": 3805,
+      "sha256": "381ce90509b4f40341669fa01a637451716993cd05fcf7b719e1898743700d9c",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core-plugins/src/manager.rs",
+      "witnesses": [
+        {
+          "anchor": "if !config.plugins_enabled",
+          "lines": [
+            769,
+            793,
+            979,
+            1252,
+            1549,
+            1576,
+            1763,
+            1854,
+            1885,
+            2372,
+            2479,
+            2514
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "if config.plugins_enabled",
+          "lines": [
+            733,
+            2792
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "maybe_start_plugin_startup_tasks_for_config",
+          "lines": [
+            2786
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "if config.plugins_enabled",
+          "lines": [
+            733,
+            2792
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "core/src/config/mod.rs": {
+      "line_count": 4935,
+      "sha256": "df6d6871a35a9e365e36beb3d388c2c39cae59d95bd84834321c8501390ec397",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core/src/config/mod.rs",
+      "witnesses": [
+        {
+          "anchor": "default_permissions_override.as_deref()",
+          "lines": [
+            3480,
+            3504
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "else if profiles_are_active",
+          "lines": [
+            3611
+          ],
+          "matched": true
+        },
+        {
+          "anchor": "compile_permission_profile(",
+          "lines": [
+            3637,
+            4766
+          ],
+          "matched": true
+        }
+      ]
+    },
+    "features/src/lib.rs": {
+      "file": "data/workbench/csp-css-trial/public-source-v11-2/features__src__lib.rs",
+      "lines": 1918,
+      "sha256": "4c702a9479fdbf955b0640f8d52e327dff5cc273c0e9587f29f62e5cbbcd59aa",
+      "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/features/src/lib.rs"
+    }
+  },
+  "version": "rust-v0.159.3"
+}

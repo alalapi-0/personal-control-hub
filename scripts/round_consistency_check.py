@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from governance_scope import add_scope_argument, activate_scope, selected_task, excluded_path
+from governance_scope import load_canonical_state, task_entry, candidate_paths, WORKBENCH_TASK_ID
 
 import argparse
 import json
@@ -37,6 +38,8 @@ def _load_yaml(relative: str, hard_blockers: list[str]) -> Any:
         hard_blockers.append("PyYAML 未安装，无法解析 YAML")
         return None
     try:
+        if relative == 'STATE.yaml':
+            return load_canonical_state(ROOT)
         with path.open(encoding="utf-8") as handle:
             return yaml.safe_load(handle)
     except Exception as exc:  # pragma: no cover
@@ -79,8 +82,21 @@ def run_check() -> dict[str, Any]:
     warnings: list[str] = []
 
     state = _load_yaml(FILES["state"], hard_blockers) or {}
-    task = state.get("all_projects_governance") if isinstance(state, dict) else None
     if selected_task():
+        try:
+            task = task_entry(state)
+            candidate_paths(ROOT, task)
+        except ValueError as exc:
+            hard_blockers.append(str(exc))
+            task = {}
+        if selected_task() == WORKBENCH_TASK_ID:
+            for field in ('plan', 'round_cards', 'acceptance_contract'):
+                path = task.get(field)
+                if not isinstance(path, str) or not (ROOT / path).is_file():
+                    hard_blockers.append('Selected workbench authority document is missing')
+            return {'result': 'fail' if hard_blockers else 'ok',
+                    'current_round': task.get('current_round'), 'next_round': task.get('next_round'),
+                    'current_phase': task.get('stage'), 'warnings': [], 'hard_blockers': hard_blockers}
         required = {"task_id", "status", "unit", "execution_document", "delivery", "next_action", "candidate_paths"}
         if not isinstance(task, dict) or not required <= task.keys() or task.get("task_id") != selected_task():
             hard_blockers.append("Selected task management entry is malformed")

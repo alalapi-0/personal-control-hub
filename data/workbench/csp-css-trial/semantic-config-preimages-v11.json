@@ -1,0 +1,18 @@
+{
+  "src/hub/codex_adapter.py": {
+    "preimage": "data/workbench/csp-css-trial/semantic-config-preimage-v11-codex_adapter.py",
+    "sha256": "17f980811707babcc79522ddec951d4e6e8f23dae9b097769f1a6a0b688a9df1"
+  },
+  "src/hub/css_capability_recovery.py": {
+    "preimage": "data/workbench/csp-css-trial/semantic-config-preimage-v11-css_capability_recovery.py",
+    "sha256": "0c3d2485c09c5ac033408a276820d3100ce26cfaf6b62e4a8e490a46debfe650"
+  },
+  "src/hub/css_process_config.py": {
+    "preimage": "data/workbench/csp-css-trial/semantic-config-preimage-v11-css_process_config.py",
+    "sha256": "f8a9e4f633e42d5515f5df83f9241a4f9077dbf1ef9fffafebc85986233d1551"
+  },
+  "tests/test_hub_css_process_config.py": {
+    "preimage": "data/workbench/csp-css-trial/semantic-config-preimage-v11-test_hub_css_process_config.py",
+    "sha256": "aabce071983e50a591e9d0a452827376bdb1a9ef15b07a773aee0d63312dbf28"
+  }
+}

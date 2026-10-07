@@ -1,10 +1,19 @@
 import hashlib
+import json
 from pathlib import Path
+import sys
+from unittest.mock import patch
 
+import pytest
 import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'scripts'))
+import governance_scope as scope
+import agent_gate
+import auto_advance_runner as runner
+import round_consistency_check as consistency
 
 
 def load_yaml(relative: str):
@@ -12,8 +21,83 @@ def load_yaml(relative: str):
 
 
 def test_default_boot_packet_is_bounded():
-    total = sum((ROOT / name).stat().st_size for name in ("AGENTS.md", "STATE.yaml"))
-    assert total <= 8192
+    for task in scope.TASK_KEYS:
+        assert len(scope.boot_packet(ROOT, task)) <= 8192
+
+
+def scoped_fixture(tmp_path):
+    state = load_yaml('STATE.yaml')
+    (tmp_path / 'AGENTS.md').write_text('Fixture rules\n')
+    (tmp_path / 'STATE.yaml').write_text(yaml.safe_dump(state, allow_unicode=True))
+    return state
+
+
+def test_scoped_projection_validates_whole_state_and_is_deterministic(tmp_path):
+    state = scoped_fixture(tmp_path)
+    first = scope.boot_packet(tmp_path, scope.WORKBENCH_TASK_ID)
+    assert first == scope.boot_packet(tmp_path, scope.WORKBENCH_TASK_ID)
+    payload = json.loads(first[len((tmp_path / 'AGENTS.md').read_bytes()):])
+    assert set(payload) == {'metadata', 'boot_contract_version', 'linux_visual_workbench'}
+    assert 'baseline' not in payload['linux_visual_workbench']
+    # Even unrelated malformed/duplicated YAML must fail before projection.
+    for suffix in ('\nunrelated: [', '\nunrelated: 1\nunrelated: 2\n', '\nunrelated:\n  a: 1\n  a: 2\n'):
+        (tmp_path / 'STATE.yaml').write_text(yaml.safe_dump(state) + suffix)
+        with pytest.raises(ValueError):
+            scope.boot_packet(tmp_path, scope.WORKBENCH_TASK_ID)
+
+
+@pytest.mark.parametrize('bad', [None, {}, {'task_id': 'wrong'}])
+def test_scoped_missing_or_malformed_entry_rejected(tmp_path, bad):
+    state = scoped_fixture(tmp_path)
+    state['linux_visual_workbench'] = bad
+    (tmp_path / 'STATE.yaml').write_text(yaml.safe_dump(state))
+    with pytest.raises(ValueError):
+        scope.boot_packet(tmp_path, scope.WORKBENCH_TASK_ID)
+
+
+@pytest.mark.parametrize('paths', [[], ['/outside'], ['../outside'], ['a/../b'], ['.git/config'], ['a//b']])
+def test_scoped_candidate_escape_rejected(tmp_path, paths):
+    state = scoped_fixture(tmp_path)
+    state['linux_visual_workbench']['candidate_paths'] = paths
+    (tmp_path / 'STATE.yaml').write_text(yaml.safe_dump(state))
+    with pytest.raises(ValueError):
+        scope.boot_packet(tmp_path, scope.WORKBENCH_TASK_ID)
+
+
+def test_scope_unknown_symlink_oversize_and_legacy_behavior(tmp_path):
+    state = scoped_fixture(tmp_path)
+    with pytest.raises(ValueError):
+        scope.boot_packet(tmp_path, 'unknown')
+    with pytest.raises(ValueError):
+        scope.activate_scope('unknown')
+    state['linux_visual_workbench']['candidate_paths'] = ['link/file']
+    (tmp_path / 'link').symlink_to(ROOT, target_is_directory=True)
+    (tmp_path / 'STATE.yaml').write_text(yaml.safe_dump(state))
+    with pytest.raises(ValueError):
+        scope.boot_packet(tmp_path, scope.WORKBENCH_TASK_ID)
+    state['linux_visual_workbench']['candidate_paths'] = ['owned']
+    state['linux_visual_workbench']['next_action'] = 'x' * 8193
+    (tmp_path / 'STATE.yaml').write_text(yaml.safe_dump(state))
+    with patch.dict('os.environ', {scope.ENV_NAME: scope.WORKBENCH_TASK_ID}), patch.object(agent_gate, 'ROOT', tmp_path):
+        hard = []
+        agent_gate._check_default_boot(hard)
+        assert any('8192' in h for h in hard)
+    with patch.dict('os.environ', {scope.ENV_NAME: ''}):
+        assert scope.boot_packet(tmp_path) == (tmp_path / 'AGENTS.md').read_bytes() + (tmp_path / 'STATE.yaml').read_bytes()
+
+
+def test_selected_runner_identity_and_unsupported_prepare_next():
+    with patch.dict('os.environ', {scope.ENV_NAME: scope.WORKBENCH_TASK_ID}):
+        state = scope.load_canonical_state(ROOT)['linux_visual_workbench']
+        assert runner._get_round_context()['current_round'] == state['current_round']
+        assert consistency.run_check()['current_round'] == state['current_round']
+        with patch.object(runner, '_run_checks', side_effect=AssertionError('unsupported transition must stop')):
+            assert runner.mode_prepare_next()['decision'] == 'stop'
+        with patch.object(runner, '_run_script_command', return_value=(0, '')) as call:
+            runner._git_status_porcelain()
+            args = call.call_args.args[0]
+            assert set(a.removeprefix(':(literal)') for a in args[args.index('--')+1:]) == set(runner._candidate_paths())
+            assert 'README.md' not in args
 
 
 def test_state_authority_is_unique_and_legacy_files_are_demoted():

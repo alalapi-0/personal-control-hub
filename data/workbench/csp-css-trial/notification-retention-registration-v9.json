@@ -1,0 +1,77 @@
+{
+  "candidate_sha256": "ac5b76271f1b95d6dfe10d35e605d6bceafbcb7031d4e01f20cd4c1650b1d728",
+  "checks": [
+    {
+      "count": 8,
+      "exit": 0,
+      "id": "notification retention offline"
+    },
+    {
+      "count": 360,
+      "exit": 0,
+      "id": "all Hub"
+    },
+    {
+      "exit": 0,
+      "id": "syntax/diffcheck"
+    }
+  ],
+  "contract": "HUB-LWB-2.3-NOTIFICATION-RETENTION-OFFLINE-v9",
+  "created_at": "2026-10-07T09:23:52.127186+00:00",
+  "diagnosis": {
+    "first_local8test_run": "2fixtureerrors missingtypednotification schemas; corrected fixed-version typedfixture; no nativeeffects",
+    "new_native": "NOT_RUN/forbidden",
+    "unknown_v9_notice": "identity remains unavailable, no inference"
+  },
+  "evidence_files": {
+    "data/workbench/csp-css-trial/capability-recovery-result-v9.json": "3ac88cbc826332839bc80d145e2c37ab591818f08c4b0e0d1dbf6548a0fe9c2b",
+    "data/workbench/csp-css-trial/capability-recovery-runtime-registration-v9.json": "7b66a09712c1ce06e61a0422b5eebd32a392626aad4db886faeb1a17c76a7f89",
+    "data/workbench/csp-css-trial/notification-retention-preimage-codex_adapter.py": "782b96b1281ee70ccb9891312aebb9f2c7fb9e17e5ffd43df7c8b3396a0234ae",
+    "data/workbench/csp-css-trial/notification-retention-preimage-css_capability_recovery.py": "bfc894579bd7de87b6f5126145645e0aa60f6c950218946294b4913e7b2d99dc",
+    "data/workbench/csp-css-trial/notification-retention-preimage-css_read_diagnostic.py": "836919f79fd7ee8460e88a794cae36a70b7f781da95518f9226ce0d71def6242",
+    "data/workbench/csp-css-trial/notification-retention-preimages-v9.json": "81688db6ebadba8af067bc14ef41b4e5c2acd8628b7e02efa8697b8a1a48110e"
+  },
+  "evidence_sha256": "feeec00ae4e1448fdf4ec69450a71d09df92cf48e939b68bd4318e6d1642b3bc",
+  "files": {
+    "scripts/recover_css_capability_evidence.py": "d1fa0178cd02940b01c932675392d805b841a5ab436f9bffb2c7f1af8cce51b1",
+    "src/hub/__init__.py": "0c487b25bcc2442a0cb2d480bf0cc95213b6b2820db780b3daf6cf7593fb6fb4",
+    "src/hub/codex_adapter.py": "17f980811707babcc79522ddec951d4e6e8f23dae9b097769f1a6a0b688a9df1",
+    "src/hub/connection_records.py": "ea64d77714700e1d4179b06150e1a97317a0a65f1c3c581ac3a1e68f98639745",
+    "src/hub/connection_refresh.py": "21c4d1f0c7cb495c7e939afba85c8052bd715b15a57a04abc32100d904d69188",
+    "src/hub/connection_sources.py": "0648baa808ac566ff8c1e1a6f1e6c5a6b826b230787e32665424060776014435",
+    "src/hub/connections.py": "b9fa95e08272b8747dc0326ac149ba6c384993a9e1bc131125929ec617619033",
+    "src/hub/css_capability_recovery.py": "119ed181d62cf85275c8cecad40b3b8618eb051f122b77caf61028fdf7488fae",
+    "src/hub/css_process_config.py": "f8a9e4f633e42d5515f5df83f9241a4f9077dbf1ef9fffafebc85986233d1551",
+    "src/hub/css_read_diagnostic.py": "836919f79fd7ee8460e88a794cae36a70b7f781da95518f9226ce0d71def6242",
+    "src/hub/css_trial.py": "d4b8454dc033ed710f5f909de064f0925e120cecf65ebeee06095644527d868e",
+    "src/hub/design_export.py": "21d85349384a3744a33c56e0d86ae544413fb74ea0225e36c4271f5832521145",
+    "src/hub/design_records.py": "c735b628ffc89b2831b0224b1b69d5b25e11c90122209b2ac77c6d727dcb7735",
+    "src/hub/design_service.py": "94335830c9dc9610aee9f8da0a8959cf5c758bf19c99d2c65d557835ba6089ed",
+    "src/hub/design_store.py": "323277a889f21e6aba88e89da538fc27573a437e4e2eeae48f29e4675ed1afc6",
+    "src/hub/notification_metadata.py": "644bba3028cec019a75c8f27b7ad420a74b1a8f64d7e8630bec4057afca5313d",
+    "src/hub/preview_bridge.py": "c7bcf5620a4260802a7e31266753d2cc86660cd9fef76b113aac78a2e06b2fd4",
+    "src/hub/preview_service.py": "315bf14b092427ccf77c8497728ccd7ef701a4116290d9aa6cc99c6bf41274c0",
+    "src/hub/project_service.py": "34a2dc0d9cfdfb49ee12b545ad9e85f603f3749aa952ec1c1bcf1de476709f5a",
+    "src/hub/readonly_preview.py": "60df34ae65224f2827ec7d70da57a72669205739e89f18d971dd8a333159b6df",
+    "src/hub/service_contract.py": "f06b00793aad42d07f2ba708a97090645412688dc72bbaece08bf33df5a43f52",
+    "src/hub/task_service.py": "0523575f9d9d349ce32a0bc5f59e6ae9788c5ee1861b1ff83b4da7c34edaf4bb",
+    "src/hub/task_storage.py": "f3b6528ce995f37b48395ca520b63e50a6b168e891f9646dfa2ec183c61e1649",
+    "src/hub/task_store.py": "150c617696f0ce13dde3b2d55b12637275d0562260ccb1f78fd310d77a2cccb6",
+    "src/hub/workbench_store.py": "41363bbab18d64d04e7d7e3ac48148506f45bfc001711f4acba5a79e3153b7a7",
+    "tests/test_hub_css_capability_recovery.py": "b56852c3403da279165c960a7be99566cc9f16abb3d69f46b2a94d08c88e3525",
+    "tests/test_hub_notification_metadata.py": "5f6928db81ff5bafbe250327e13e7914dca2012cc65e29b2d47368816cbcda89"
+  },
+  "frozen": {
+    "acceptance": "late/unknown/malformed bindings and bodies/secret-bearing differentcontents-lengths-sameprojection/persistence-beforethrow/closedqueue ordering/immutable priorrecords; knownunallowlisted still rejected; originalpartial/deadline/counters/source3/taskrow preserved; freshJudgePASS",
+    "digest": "SHA256 fixed schema-safe projection only; no raw body/name/value/size/credential input; unknownmethod sentinel unregistered; body coarseinterval enum outside digest",
+    "future_native": "no authority from this offline repair; prospective v10 contract/grant/deadline and any fourthresume separately reviewed",
+    "goal": "durably preserve method category/fixedschema method/validation/fixedbindingbooleans/allowlistedfieldpresence-types before rejected notice throws; raw values and rawbody hashes prohibited",
+    "native_effects_allowed": 0,
+    "protected": "all originalv9 evidence/positivefacts/historicalsourcecode preimages/originaldenominator/expired1791364398/threads2/resumes3/model1/source0/global/auth/production/Git",
+    "source_or_trial_writes_allowed": 0,
+    "taskstore_writes_allowed": 0
+  },
+  "preserved_runtime_evidence": "ec740105ebe7a9ff146572b87c5296fb923adce5897c169fddc166af6feca024",
+  "scope": "entry_governor REQUEST_REPAIR and REVISE_TASK schema-safe notification projection retention only",
+  "task_hash": "8350c389a14a60f2c13c36b66efc78e34cfc56682dc87d2733aed00ad91ea6de"
+}

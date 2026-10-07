@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from governance_scope import add_scope_argument, activate_scope, selected_task, excluded_path
+from governance_scope import boot_packet, load_canonical_state, WORKBENCH_TASK_ID, TASK_KEYS
 
 import argparse
 import os
@@ -122,6 +123,8 @@ def _load_yaml(relative: str, hard_blockers: list[str]) -> Any:
         hard_blockers.append("PyYAML 未安装，无法解析 YAML；请安装依赖或改用 JSON/简化检查。")
         return None
     try:
+        if relative == "STATE.yaml":
+            return load_canonical_state(ROOT)
         with path.open(encoding="utf-8") as handle:
             return yaml.safe_load(handle)
     except Exception as exc:  # pragma: no cover - defensive
@@ -187,7 +190,14 @@ def _check_default_boot(hard_blockers: list[str]) -> None:
     paths = [ROOT / relative for relative in DEFAULT_BOOT_FILES]
     if any(not path.is_file() for path in paths):
         return
-    total = sum(path.stat().st_size for path in paths)
+    try:
+        if selected_task():
+            total = len(boot_packet(ROOT))
+        else:
+            total = max(len(boot_packet(ROOT, task_id)) for task_id in TASK_KEYS)
+    except (ValueError, OSError) as exc:
+        hard_blockers.append(str(exc))
+        return
     if total > DEFAULT_BOOT_LIMIT_BYTES:
         hard_blockers.append(
             f"默认启动包 {total} bytes，超过 {DEFAULT_BOOT_LIMIT_BYTES} bytes"
@@ -338,7 +348,8 @@ def run_gate(requested_round: str | None = None) -> dict[str, Any]:
     soft_warnings: list[str] = []
 
     _check_core_files(hard_blockers)
-    if selected_task():
+    _check_default_boot(hard_blockers)
+    if selected_task() and selected_task() != WORKBENCH_TASK_ID:
         for file in ("governance/agent_policy.yaml", "data/gates/auto_advance_policy.yaml"):
             policy = _load_yaml(file, hard_blockers) or {}
             scope = policy.get("task_overrides", {}).get(selected_task(), {})
@@ -350,9 +361,6 @@ def run_gate(requested_round: str | None = None) -> dict[str, Any]:
     state = _load_yaml("STATE.yaml", hard_blockers)
     if not isinstance(state, dict) or state.get("metadata", {}).get("authority") != "canonical":
         hard_blockers.append("STATE.yaml must be the canonical current state")
-    boot = [ROOT / "AGENTS.md", ROOT / "STATE.yaml"]
-    if all(p.is_file() for p in boot) and sum(p.stat().st_size for p in boot) > 8192:
-        hard_blockers.append("Startup packet exceeds 8192 bytes")
     rounds = [] if selected_task() else _check_round_tasks(hard_blockers, soft_warnings)
     _check_policy(hard_blockers)
     if not selected_task():

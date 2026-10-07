@@ -8,12 +8,14 @@ import socket
 import sys
 import threading
 import unittest
+import secrets
 from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from hub.local_service import HubHTTPServer, MAX_BODY_BYTES, _Sessions, WEB_ASSETS
+from hub.owner_auth import OwnerAuth
 from hub.service_contract import ArtifactResponse, OwnerAction, ServiceError
 
 
@@ -90,7 +92,9 @@ class LocalHTTPTests(unittest.TestCase):
 
     def setUp(self):
         self.projects, self.designs = ProjectSpy(), DesignSpy()
-        self.server = HubHTTPServer(self.projects, self.designs)
+        self.owner_proof = secrets.token_urlsafe(40)
+        self.server = HubHTTPServer(self.projects, self.designs,
+                                    owner_auth=OwnerAuth(provider=lambda: self.owner_proof))
         self.thread = threading.Thread(target=self.server.serve_forever, kwargs={"poll_interval": 0.01})
         self.thread.start()
         self.addCleanup(self.stop)
@@ -130,6 +134,10 @@ class LocalHTTPTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.cookie = headers["Set-Cookie"].split(";", 1)[0]
         self.csrf = data["data"]["csrf_token"]
+        status, headers, data = self.call('POST', '/api/owner/login', {'token': self.owner_proof})
+        self.assertEqual(status, 200)
+        self.cookie = headers['Set-Cookie'].split(';', 1)[0]
+        self.csrf = data['data']['csrf_token']
         return headers
 
     def test_bind_rejects_every_nonliteral_loopback_form(self):

@@ -1,0 +1,160 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v7-PROCESS-CONFIG",
+  "model_turns": 0,
+  "native_result_reused": "config/read effective values + fixed process launch/caps from unchanged actual config; nonsecret marketplace values now frozen",
+  "new_helper_calls": 0,
+  "observed_config": {
+    "default_effort_is_frozen": true,
+    "default_model_is_frozen": true,
+    "identity": [
+      66306,
+      12092677,
+      4122,
+      1791360611135693175,
+      1791360611135693175
+    ],
+    "projection": {
+      "excluded_default_fields": [
+        "model",
+        "model_reasoning_effort"
+      ],
+      "mcp_names": [
+        "chrome-devtools",
+        "context7",
+        "github",
+        "node_repl",
+        "openaiDeveloperDocs",
+        "playwright"
+      ],
+      "protected_sha256": "2f3221497d84381ad9b9e52c58516e8be69f47b00677be04c433f3ff92de633d",
+      "secret_values_or_hashes_retained": false,
+      "sensitive_structure": {
+        "chrome-devtools": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        },
+        "context7": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        },
+        "github": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        },
+        "node_repl": {
+          "args": {
+            "item_types": [],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          },
+          "env": {
+            "BROWSER_USE_AVAILABLE_BACKENDS": {
+              "type": "str"
+            },
+            "BROWSER_USE_CODEX_APP_BUILD_FLAVOR": {
+              "type": "str"
+            },
+            "BROWSER_USE_CODEX_APP_VERSION": {
+              "type": "str"
+            },
+            "BROWSER_USE_TINYSKY_ENABLED": {
+              "type": "str"
+            },
+            "CODEX_CLI_PATH": {
+              "type": "str"
+            },
+            "CODEX_HOME": {
+              "type": "str"
+            },
+            "NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER": {
+              "type": "str"
+            },
+            "NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME": {
+              "type": "str"
+            },
+            "NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS": {
+              "type": "str"
+            },
+            "NODE_REPL_NODE_MODULE_DIRS": {
+              "type": "str"
+            },
+            "NODE_REPL_NODE_PATH": {
+              "type": "str"
+            },
+            "NODE_REPL_TRUSTED_CODE_PATHS": {
+              "type": "str"
+            },
+            "NODE_REPL_TRUSTED_SERVICES": {
+              "type": "str"
+            }
+          },
+          "startup_timeout_sec": {
+            "type": "int"
+          }
+        },
+        "openaiDeveloperDocs": {
+          "url": {
+            "type": "str"
+          }
+        },
+        "playwright": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        }
+      },
+      "top_key_types": {
+        "agents": "dict",
+        "approval_policy": "str",
+        "approvals_reviewer": "str",
+        "desktop": "dict",
+        "features": "dict",
+        "marketplaces": "dict",
+        "mcp_servers": "dict",
+        "memories": "dict",
+        "model": "str",
+        "model_reasoning_effort": "str",
+        "plugins": "dict",
+        "projects": "dict",
+        "sandbox_mode": "str",
+        "service_tier": "str",
+        "skills": "dict"
+      }
+    }
+  },
+  "old_candidate_review": "FAIL marketplace ordinary values incorrectly structure-only; first registration retained",
+  "original_actual_preflight_sha256": "6ed6957b72183d6fb2ffca00c48fcbec9f311c92f39f5815e7a7dbd3001b8661",
+  "process_argv_schema_and_effective_values_unchanged": true,
+  "same_config_identity_as_completed_native_preflight": true,
+  "source_writes": 0,
+  "status": "PASS_INCREMENTAL_PROJECTION_REPAIR"
+}

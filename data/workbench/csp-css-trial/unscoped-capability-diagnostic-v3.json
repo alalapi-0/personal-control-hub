@@ -1,0 +1,35 @@
+{
+  "source": "supported unscoped capability APIs only",
+  "command_exec_count": 0,
+  "new_threads": 0,
+  "model_turns": 0,
+  "observed_at": 1791357828.167228,
+  "error": {
+    "class": "DIAGNOSTIC_CAPABILITY_UNVERIFIED",
+    "details": {
+      "features": {
+        "apps": false,
+        "plugins": false,
+        "remote_plugin": false,
+        "browser_use": false,
+        "browser_use_external": false,
+        "browser_use_full_cdp_access": false,
+        "computer_use": false,
+        "in_app_browser": false,
+        "hooks": false,
+        "image_generation": null,
+        "multi_agent": false,
+        "multi_agent_v2": false,
+        "goals": null,
+        "memories": false
+      },
+      "local_native_tool_host": true,
+      "feature_cursor_present": true,
+      "mcp_cursor_present": false,
+      "mcp_count": 6,
+      "remote_disabled_observed": true,
+      "mcp_active_count": 6
+    }
+  },
+  "closed": true
+}

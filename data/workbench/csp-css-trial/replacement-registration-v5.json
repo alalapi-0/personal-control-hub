@@ -1,0 +1,68 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v5-REPLACEMENT",
+  "phase": "before sole replacement dispatch",
+  "files": [
+    [
+      "src/hub/css_trial.py",
+      "8299f5ea02cf5fff40a531fa041308272aa6c134f3ec6f8464463992e557ecd6"
+    ],
+    [
+      "src/hub/codex_adapter.py",
+      "bd3bd07bd90870d7fd5030875f71abed55701f32a68e2bde2da03e68cb3aabf7"
+    ],
+    [
+      "src/hub/task_store.py",
+      "a31eaa2bfb9ce5c45f15cacd6a3f94a91edeadc49b0bb289791fb50b8667ab15"
+    ],
+    [
+      "src/hub/task_worker.py",
+      "a0b76e3a024e04dc367244d5f2ec8c658f87f68aedb0d7ff54303118f64d9b52"
+    ],
+    [
+      "src/hub/task_service.py",
+      "0523575f9d9d349ce32a0bc5f59e6ae9788c5ee1861b1ff83b4da7c34edaf4bb"
+    ],
+    [
+      "src/hub/preview_service.py",
+      "315bf14b092427ccf77c8497728ccd7ef701a4116290d9aa6cc99c6bf41274c0"
+    ],
+    [
+      "src/hub/workbench_store.py",
+      "41363bbab18d64d04e7d7e3ac48148506f45bfc001711f4acba5a79e3153b7a7"
+    ],
+    [
+      "scripts/hub_worker.py",
+      "dd4c3713dbe2c36f3e62cebc0d4fe7bc919588813ff7a9df8fb6bfa40054a1cc"
+    ],
+    [
+      "scripts/diagnose_css_trial.py",
+      "826061d2374ab8faf74ad11a3e48170f5a00cf29a93119b560da198803dbe746"
+    ],
+    [
+      "tests/test_hub_css_trial.py",
+      "821cac30032edc1d71187aef6846016f039073165b3b0d30efaaf3a43115e4de"
+    ]
+  ],
+  "candidate_sha256": "f141377fa63a372c789ce739b81306c5356e43910c9c858e8c0094236c5b5620",
+  "authority_receipt_sha256": "b35f613a1182f3609423ef7daa418f69535c1bc6c8c90d9037ad3babf07e826b",
+  "authority_record": "data/workbench/csp-css-trial/recovery-authority-v5.json",
+  "original_grant_hash": "d116bbbc46ad678876f77e2e2a6437923d2efa5722fb58aa154f7673626ab21c",
+  "original_intent_hash": "bcef1ef45fee92309f469d2a5b3eed76df2f7cc2496cff0b4cc2ce37f676d699",
+  "checks": {
+    "css_targeted": {
+      "count": 15,
+      "exit": 0
+    },
+    "hub_regression": {
+      "count": 321,
+      "exit": 0
+    }
+  },
+  "replacement_threads": 0,
+  "total_old_threads": 1,
+  "model_turns": 0,
+  "source_effects": 0,
+  "human_acceptance": "pending",
+  "git": "closed",
+  "old_errors_retained": true
+}

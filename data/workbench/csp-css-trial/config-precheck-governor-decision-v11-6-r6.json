@@ -1,0 +1,21 @@
+{
+  "CSS_promotion_allowed": false,
+  "M2_complete": false,
+  "MCP_runtime": "NOT_RUN",
+  "TaskStore_reconcile_allowed": false,
+  "accepted_unit": "offline config/feature/MCP-disabled source only",
+  "candidate_sha256": "b755f80276ae8a0b559add575057bb856f98617f38cf4ee4d7ad8f911065e7a3",
+  "contract": "HUB-LWB-2.3-CSP-SAFE-CONFIG-FEATURE-PRECHECK-GOV-v11.6-r6",
+  "contract_sha256": "8c857bfa28eaa56a5627a1cbd8c4a31fe64aa661923994d0299ba0b07252573b",
+  "created_at": 1791382238.1889706,
+  "decision": "APPROVE_OFFLINE_ONLY",
+  "evidence_sha256": "c8e8c2275762146e224037a22ddab7c96e0ac28444d44da2a922d102c580d840",
+  "fifth_resume_allowed": false,
+  "full_metadata_acceptance": "BLOCKED",
+  "governor": "/root/entry_governor",
+  "historical": "r4/r5 failures and five helpers/two threads/four resumes/one model/16closed unchanged",
+  "judge_review": "data/workbench/csp-css-trial/config-precheck-review-v11-6-r6.json",
+  "native_helpers_allowed": 0,
+  "owner_action": "new direct authorization for one official installed Codex metadata helper that may perform SDK OAuth refresh/provider metadata request/official credential storage update; no manual credentials or billing switch",
+  "revision": "v11.6-r6"
+}

@@ -1,0 +1,31 @@
+{
+  "acceptance": "all fixed schema groups aggregated; only group/type/presence enums boundedcounts equality booleans fixedreasons; no raw/privatekeys/paths/origin/version/valuehash; unknownprivate sentinel only, unknownpublic reject; privacy/limit/drift tests; prior semantic/typed/effective/security/counters unchanged",
+  "budget": "no reset; fresh offline/runtime Judge and Governor/closure reserved, actual separateusage unknown",
+  "created_at": 1791373449.9515052,
+  "cumulative": {
+    "closed_rounds": 16,
+    "model_turns": 1,
+    "resumes": 4,
+    "threads": 2
+  },
+  "governor": "/root/entry_governor",
+  "id": "HUB-LWB-2.3-CSP-CONFIG-DIAGNOSTIC-GOV-v11.4",
+  "lane": "GOVERNED",
+  "now_effects": "offlineonly; no nativehelper/fifthresume/model/command/task/source/global/auth/Git",
+  "objective": "one bounded fixed-group structural diagnostic; stop guessed coercions; diagnostic success is not config acceptance",
+  "preimages": {
+    "scripts/precheck_css_config.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-precheck_css_config.py",
+      "sha256": "e08e65605ebf9fc5582538de616dff909ad05945afacaea0774ea96e545a2326"
+    },
+    "src/hub/css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-css_config_precheck.py",
+      "sha256": "8d04ad568f95f3ee52a13d900894a64caf346a117a20e2ad932df6c3976fdaa9"
+    },
+    "tests/test_hub_css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-test_hub_css_config_precheck.py",
+      "sha256": "430794073b19e414a8388fa5e1f106f15f8778ec87243af9d6718aaef5df14bd"
+    }
+  },
+  "scope": "owned precheck/script/tests/public proof and sole STATE/INDEX"
+}

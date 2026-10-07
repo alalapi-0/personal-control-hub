@@ -1,0 +1,12 @@
+{
+  "contract_unchanged": "HUB-LWB-2.3-CSP-DESKTOP-OPAQUE-ROUNDTRIP-GOV-v11.5-r1",
+  "decision": "REQUEST_REPAIR",
+  "governor": "/root/entry_governor",
+  "prior_r2": "FAIL retained; no native effects",
+  "requirements": [
+    "source closure/feature/binary before authority consumption, adapter creation/open, intent, spawn or RPC",
+    "immutable non-secret admission token",
+    "recheck current token immediately before intent/spawn",
+    "missing/wrong hash/graph/binary drift/direct open/postadmit drift reject with zero effects"
+  ]
+}

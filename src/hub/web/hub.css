@@ -126,3 +126,26 @@ details[open]>summary {margin-bottom:16px}
 @media(prefers-reduced-transparency:reduce) {
   .topbar{background:#35313B;backdrop-filter:none;-webkit-backdrop-filter:none}
 }
+/* Connection follows the existing dusk/apricot tokens and input conventions. */
+.connection {padding:12px 4px;flex-wrap:wrap;gap:12px}
+.connection-details {margin-left:auto;overflow-wrap:anywhere}
+.connection-details p {margin:8px 0}
+.owner-dialog {width:min(480px,calc(100vw - 40px));color:var(--text);background:var(--surface-light);border:1px solid var(--border);border-radius:16px;padding:24px}
+.owner-dialog::backdrop {background:rgba(12,9,18,.7)}
+.owner-dialog input {width:100%;box-sizing:border-box}
+@media (max-width:600px) {.connection-details {margin-left:0;width:100%}}
+.host-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:18px}
+.host-metric{overflow-wrap:anywhere}.host-value{font-size:1.35rem;font-variant-numeric:tabular-nums}
+.workbench-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(270px,.8fr);gap:22px;align-items:start}
+.image-stage{position:relative;max-width:100%;background:var(--surface);overflow:hidden}
+.image-stage img{display:block;width:100%;height:auto}
+.annotation-overlay{position:absolute;inset:0;touch-action:none;cursor:crosshair;background:rgba(20,10,35,.08)}
+.annotation-overlay:focus-visible{outline:3px solid var(--accent);outline-offset:-3px}
+.annotation-box{position:absolute;border:2px solid var(--accent);background:rgba(232,186,145,.22);pointer-events:none;box-sizing:border-box}
+.workbench-grid textarea{width:100%;box-sizing:border-box;resize:vertical}
+.workbench-grid p{overflow-wrap:anywhere}
+.artifact-provenance{overflow-wrap:anywhere}
+.session-view code{overflow-wrap:anywhere}
+@media(max-width:860px){.workbench-grid{grid-template-columns:1fr}}
+@media(max-width:600px){.topbar{flex-wrap:wrap}.topbar nav{width:100%;display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}.topbar nav .button{min-width:0;padding-inline:4px}}
+.controlled-preview { display:block; width:100%; height:420px; border:1px solid var(--border); border-radius:8px; }

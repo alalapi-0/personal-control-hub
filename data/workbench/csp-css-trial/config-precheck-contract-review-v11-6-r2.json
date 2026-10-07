@@ -1,0 +1,13 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-FULL-METADATA-PRECHECK-GOV-v11.6",
+  "contract_sha256": "cfdc848b5a6a4fc94ff7467bb1b40d7d6dd4200f9b54cfbb1486832e7faaec4e",
+  "created_at": 1791378573.3986912,
+  "findings": [
+    "contract incorrectly declaredp.process_environment four keys; actual5 vs authbase4",
+    "all24sourcepins/440schemas/10selected/152templates/wireclosure otherwise PASS"
+  ],
+  "governor_decision": "REVISE_TASK",
+  "judge": "/root/metadata_contract_v11_6_r2_judge",
+  "runtime_effects": 0,
+  "verdict": "REVISION_FAIL"
+}

@@ -1,5 +1,24 @@
 let csrfToken = null;
 
+export function connectionState(identity, error, wasOwner = false) {
+  if (error) return {kind: error.code === 'NOT_FOUND' ? 'unavailable' : 'offline',
+    label: error.code === 'NOT_FOUND' ? '连接信息待更新' : '后端暂时失联', owner: false};
+  if (identity?.owner_authenticated) return {kind: 'owner', label: '所有者已连接', owner: true};
+  if (wasOwner) return {kind: 'expired', label: '所有者会话已失效', owner: false};
+  return {kind: 'guest', label: identity?.owner_configured ? '已连接 · 未认证' : '已连接 · 所有者身份未配置', owner: false};
+}
+
+export async function ownerLogin(proof) {
+  const result = await api('/api/owner/login', {token: proof});
+  if (typeof result.csrf_token !== 'string') throw new Error('INVALID_RESPONSE');
+  csrfToken = result.csrf_token;
+}
+
+export async function ownerLogout() {
+  await api('/api/owner/logout', {});
+  csrfToken = null;
+}
+
 export function validRefreshCommand(value) {
   if (!value || typeof value.request_id !== "string" || !/^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$/.test(value.request_id)) return null;
   if (!Array.isArray(value.project_ids) || !value.project_ids.length ||

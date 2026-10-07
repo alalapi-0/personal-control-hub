@@ -1,0 +1,14 @@
+{
+  "source": "supported exact thread/read",
+  "task_id": "csp-css-trial-20261007",
+  "thread_id": "01a11536-4647-7030-a9aa-8e397078d146",
+  "observed_at": 1791357565.2629058,
+  "auth": {
+    "source": "supported codex login status",
+    "mode": "ChatGPT",
+    "exit": 0,
+    "credential_bytes_read": 0
+  },
+  "error_class": "CODEX_RPC_REJECTED",
+  "adapter_closed": true
+}

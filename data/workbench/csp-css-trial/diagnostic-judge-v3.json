@@ -1,0 +1,16 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v3-DIAGNOSTIC",
+  "judge": "css_isolation_judge",
+  "verdict": "FAIL",
+  "candidate_sha256": "c46ef02ca379f73405420800e1e570b50abcb772a16ba608dab8ca0a7123fe96",
+  "evidence_sha256": "8162b59f56c30eba7a6c31f4b88babda2b357ab2ef859bc7dab5986985c6e64c",
+  "findings": [
+    "parent open/enumeration/create succeed in virtual namespace, no denialPASS",
+    "command-only lifecycle no placeholder recreation; attribution incomplete"
+  ],
+  "review_integrity": "Judge disclosed py_compile updated ignored pycache timestamps only; registered candidate/evidence hashes unchanged; no cache restoration claimed",
+  "source_effects": 0,
+  "model_turns": 0,
+  "new_threads_v3": 0,
+  "next": "Governor decision on exact parentdeny process-only repair"
+}

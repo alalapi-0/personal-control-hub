@@ -1,0 +1,31 @@
+{
+  "acceptance": "v11.2 security/private/typed/derived/layers/closure boundaries unchanged; onlyexactnode_repl startup_timeout_sec finiteintegralfloat1..120 exactlyequalprivateoriginalint, then semantic projection exact; othernumeric/server/field drift reject; wirebody remainsprivatewithoutrewrite for effectivevalidation; oldtwofailures/countersimmutable",
+  "budget": "cumulative noreset; reservefreshJudge/Gov/runtimeclosure actualunknown",
+  "created_at": 1791372765.321916,
+  "cumulative": {
+    "closed_rounds": 16,
+    "model_turns": 1,
+    "resumes": 4,
+    "threads": 2
+  },
+  "governor": "/root/entry_governor",
+  "id": "HUB-LWB-2.3-CSP-CONFIG-PRECHECK-REPAIR-GOV-v11.3",
+  "lane": "GOVERNED",
+  "now_effects": "offlineonly; nativehelper/fifthresume/model/command/task/source/global/auth/Git closed",
+  "objective": "exactsourceprovednode_repl startup_timeout_sec wirefloat1..120integer matchprivateoriginalint and originalsemanticpin before normalizing for projection; no numericwidening",
+  "preimages": {
+    "scripts/precheck_css_config.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-3-precheck_css_config.py",
+      "sha256": "e08e65605ebf9fc5582538de616dff909ad05945afacaea0774ea96e545a2326"
+    },
+    "src/hub/css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-3-css_config_precheck.py",
+      "sha256": "8347f90f0dd10166f4cbd714ae63c22a4b7e63bc64f2112e949dbc99952ff9b7"
+    },
+    "tests/test_hub_css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-3-test_hub_css_config_precheck.py",
+      "sha256": "dfff0286ec37c459900b687f0ce63751a5449d244f77e77294b3ad8d56c4e831"
+    }
+  },
+  "scope": "offlineownedprecheck/script/test/publicsourceproof/registration/soleSTATEandINDEX"
+}

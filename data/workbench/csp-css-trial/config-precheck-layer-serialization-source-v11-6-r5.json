@@ -1,0 +1,22 @@
+{
+  "disabled_project_native_keys": [
+    "config",
+    "disabledReason",
+    "name",
+    "version"
+  ],
+  "enabled_native_keys": [
+    "config",
+    "name",
+    "version"
+  ],
+  "invalid": "enablednull/nonempty/extra; disabledmissing/null/nonstring/wrongreason; missingmandatory/wrongtype/wronglayer",
+  "new_native_effects": 0,
+  "prior_runtime_registration": "data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-6-r4.json",
+  "public_witness_lines": "321–335 ConfigLayerMetadata/ConfigLayer; serde camelCase +skipOptionNone",
+  "remaining_native": 0,
+  "rootcause": "candidate strict4keys contradictedpinnedserializer; fixtureincorrectNonefield; no privatebody used",
+  "same_frozen_contract": "HUB-LWB-2.3-CSP-FULL-METADATA-PRECHECK-GOV-v11.6-r4",
+  "source_file": "data/workbench/csp-css-trial/public-source-v11-6/protocol-v2__config.rs",
+  "source_sha256": "8187edb07de0259f5a96927ca69b749a7ba9049062bf2ef2eb1ff9c7d8696447"
+}

@@ -1,0 +1,10 @@
+{
+  "authority": "data/workbench/csp-css-trial/capability-recovery-authority-v10.json",
+  "candidate": "f884e13beed27d1ca8671b4f766a41bf7afe90e184e7b45d5b42cef1a1c2442d",
+  "contract": "HUB-LWB-2.3-CSP-CAPABILITY-RECOVERY-GOV-v10",
+  "decision": "APPROVE one helper/final fourth evidence-only resume; no fifth/model/TaskStore/source/Git/config/auth effects",
+  "evidence": "1dd739dea98e096502abd0a0cd928d7d08dcea341f378841141c78b5867a49f0",
+  "expires_at": 1791366681.8198423,
+  "governor": "entry_governor APPROVE",
+  "judge": "capability_v10_judge PASS"
+}

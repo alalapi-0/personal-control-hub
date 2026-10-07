@@ -1,0 +1,11 @@
+{
+  "candidate": "8e41bd10910e76c997f19eb5cd7d68d3b8bd5ce3b6a1f8298afde7e3cee0511e",
+  "checks": "independent13/352PASS;25code/10evidencepins; row/grant/intent/source3/preview14/trial preserved",
+  "contract": "HUB-LWB-2.3-CSP-CAPABILITY-RECOVERY-GOV-v9",
+  "evidence": "74d98dd8261fba3da383d690764f1f52b8ccba14604b3d380c27428d9ceb1fcf",
+  "governor": "entry_governor",
+  "governor_decision": "APPROVE",
+  "judge": "capability_recovery_final_judge",
+  "judge_decision": "PASS",
+  "runtime_scope": "one evidence-only helper/exactthirdresume/read-onlyprobe/close; no model/TaskStore/sourcewrites"
+}

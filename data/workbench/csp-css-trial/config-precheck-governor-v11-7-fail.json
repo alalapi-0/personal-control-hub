@@ -1,0 +1,13 @@
+{
+  "candidate_sha256": "c48e2df330e10860d627097a5067e0d9f97ed3915d571b470b4f92d3f4112efb",
+  "contract": "HUB-LWB-2.3-CSP-FULL-METADATA-AUTH-REFRESH-GOV-v11.7",
+  "contract_status": "PASS_STAGED_INACTIVE_UNCHANGED",
+  "created_at": 1791383643.1311724,
+  "decision": "REQUEST_REPAIR",
+  "defect": "firstauth identitychange lost bypostauthbaseline",
+  "evidence_sha256": "413f9dd8cc5890be5bd4768cba29bf9d1b459c0492300445aae9af69fe14b445",
+  "governor": "/root/entry_governor",
+  "native_helpers_allowed": 0,
+  "owner_grant": "ABSENT",
+  "repair": "privateidentity before anyadmit/auth; immediatelycompare afterfirstlogin; regressionfirstauthonlychange/loginfailed/unsafe/missing/phase; no neweffects/budget/methods"
+}

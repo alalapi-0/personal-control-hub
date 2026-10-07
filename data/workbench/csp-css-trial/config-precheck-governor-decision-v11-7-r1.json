@@ -1,0 +1,16 @@
+{
+  "activation": "owner direct exact SDK provider/credential-storage effect grant then Governor current protection and exact one-time activation; no runtime before both",
+  "callgraph_sha256": "71561183ccd494009d1b064565fcb5a44dd85d1d496efef1c3c3149a88b01d1a",
+  "candidate_sha256": "862215cc3e95df74310e2a913b233e5fd02ef63a0d77fa96a2dc255d8c63ef96",
+  "contract_sha256": "7991b8eaf1cb50e6250938e62b56d3f1bc74d22364ec9d8cdfc3a2343741809e",
+  "contract_status": "STAGED_INACTIVE",
+  "created_at": 1791384061.5118053,
+  "decision": "APPROVE_OFFLINE_PREPARATION_ONLY",
+  "evidence_sha256": "23922c677f72e731cb38f16b9dc2d1594fc80370ee1524603052033615383f22",
+  "fresh_judge": "data/workbench/csp-css-trial/config-precheck-review-v11-7-r1.json",
+  "governor": "/root/entry_governor",
+  "native_helpers_allowed": 0,
+  "original_failure": "v11.7 FAIL retained; no budget/effect/round/denominator reset",
+  "owner_effect_grant": "ABSENT",
+  "owner_request": "one complete official App Server metadata helper <=120seconds/nonrenewable/no automatic retry; currentChatGPT auth; possible official OAuth/providerrefresh and non-atomic create/truncate/write credentialstoreupdate; no manual credentialcontent/copy/hash/backup/restore; booleans/enums only; no model/turn/thread/resume/tools/TaskStore/CSSpromotion/Git/globalconfig/service/Mac"
+}

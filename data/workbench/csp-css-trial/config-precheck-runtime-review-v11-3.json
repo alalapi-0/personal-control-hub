@@ -1,0 +1,13 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-CONFIG-PRECHECK-REPAIR-GOV-v11.3",
+  "created_at": 1791373467.746826,
+  "fact_validity": "7runtime and94candidate pins exact; helperclosedexit0/initconfigonly/fourlayers/all8preservation; zeroexecution effects",
+  "governor": "/root/entry_governor",
+  "governor_decision": "REVISE_TASK",
+  "helper_consumed": true,
+  "judge": "/root/config_precheck_runtime_v11_3_judge",
+  "judge_result": "FAIL",
+  "missing": "fullusersemantic/typed/effective/caps unaccepted; genericerror cannotlocatesubgroup orresolvedcause",
+  "next_contract": "HUB-LWB-2.3-CSP-CONFIG-DIAGNOSTIC-GOV-v11.4",
+  "runtime_evidence_sha256": "a82d6a3589cf36d4587cdb0a75fa27f2d09fef046e2a88f3d4b847a910470b7c"
+}

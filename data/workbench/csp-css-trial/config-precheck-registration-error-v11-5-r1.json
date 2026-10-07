@@ -1,0 +1,7 @@
+{
+  "cause": "candidate_sha256 wrongly included in evidence digest; validator excludes candidate/evidence/created_at",
+  "native_effects": false,
+  "original_record_retained": true,
+  "registration": "config-precheck-registration-v11-5-r1.json",
+  "root_check": "FAIL_EVIDENCE_DIGEST"
+}

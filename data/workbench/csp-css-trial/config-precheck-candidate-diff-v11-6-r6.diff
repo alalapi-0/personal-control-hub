@@ -1,0 +1,221 @@
+--- a/scripts/precheck_css_config.py
++++ b/scripts/precheck_css_config.py
+@@ -4,4 +4,4 @@
+ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
+ from hub.css_config_precheck import run
+ if __name__=='__main__':
+-    result=run();print(result['status']);raise SystemExit(0 if result['status']=='PASS_FULL_METADATA_PRECHECK'else 1)
++    result=run();print(result['status']);raise SystemExit(0 if result['status']=='PASS_SAFE_CONFIG_FEATURE_PRECHECK'else 1)
+--- a/src/hub/css_config_precheck.py
++++ b/src/hub/css_config_precheck.py
+@@ -21,15 +21,15 @@
+ from .service_contract import ServiceError
+ from .css_metadata_effects import MetadataEffects
+ 
+-CONTRACT='HUB-LWB-2.3-CSP-FULL-METADATA-PRECHECK-GOV-v11.6-r4'
+-METHODS=('initialize','config/read','mcpServerStatus/list','experimentalFeature/list')
++CONTRACT='HUB-LWB-2.3-CSP-SAFE-CONFIG-FEATURE-PRECHECK-GOV-v11.6-r6'
++METHODS=('initialize','config/read','experimentalFeature/list')
+ NOTICES=frozenset({'remoteControl/status/changed','account/updated','account/rateLimits/updated','configWarning'})
+-REGISTRATION='config-precheck-registration-v11-6-r5.json'
+-AUTHORITY='config-precheck-authority-v11-6-r5.json'
+-INTENT='config-precheck-intent-v11-6-r5.json'
+-RESULT='config-precheck-result-v11-6-r5.json'
+-PROTOCOL_SOURCE='feature-catalog-source-closure-v11-6-r2.json'
+-PROTOCOL_SOURCE_SHA='f2410fceb603951c4e8dcf948435ad23ab9b7ae0c34b4d6ff36266d02d34cd4b'
++REGISTRATION='config-precheck-registration-v11-6-r6.json'
++AUTHORITY='config-precheck-authority-v11-6-r6.json'
++INTENT='config-precheck-intent-v11-6-r6.json'
++RESULT='config-precheck-result-v11-6-r6.json'
++PROTOCOL_SOURCE='feature-catalog-source-closure-v11-6-r6.json'
++PROTOCOL_SOURCE_SHA='f3995f31fdd23205ebc2c6ee71a3a2fc80d593464f6edf53f5767e5050507619'
+ DESKTOP_SOURCE='desktop-roundtrip-source-closure-v11-5-r1.json'
+ DESKTOP_SOURCE_SHA='d7e40c9226ccfe7049bffa388673d0223e5dbf0c5f87053b487a7bab9681fcd0'
+ NUMBER_TOKEN='$serde_json::private::Number'
+@@ -215,9 +215,13 @@
+     if effective['model']!=p.MODEL or effective['model_reasoning_effort']!=p.EFFORT or \
+         effective['default_permissions']!=EVIDENCE_PERMISSION_PROFILE:
+         raise ServiceError('CSS_PRECHECK_EFFECTIVE_PROFILE_REJECTED')
++    if set(effective['mcp_servers'])!=set(REGISTERED_SERVERS)or any(
++        effective['mcp_servers'][name].get('enabled')is not False for name in REGISTERED_SERVERS):
++        raise ServiceError('CSS_PRECHECK_MCP_CONFIGURATION_REJECTED')
+     return {'exact_cwd':str(c.TRIAL),'model':p.MODEL,'effort':p.EFFORT,'configured_profile':EVIDENCE_PERMISSION_PROFILE,
+         'active_project_trust':None,'layer_count':len(facts),'layers':facts,'wire_precedence':'high_to_low',
+         'packaged_defaults_filtered':True,'typed_serialization_verified':True,'resolved_feature_overlay_verified':True,
++        'configured_mcp_disabled':True,'configured_mcp_count':len(REGISTERED_SERVERS),
+         'desktop':{'desktop_present':True,'roundtrip_supported':True,'raw_forward_equal':True,
+             'final_desktop_equal':True,'expected_builder_preserves_desktop':True,'final_config_equal':True,'reasons':[]},
+         'native_profile_echo':'NOT_RUN requires later cold resume',
+@@ -699,12 +703,10 @@
+             if time.monotonic()>=getattr(self,'deadline',float('inf')):raise ServiceError('CSS_PRECHECK_WALL_EXPIRED')
+             if method not in METHODS:raise ServiceError('CSS_PRECHECK_METHOD_REJECTED')
+             fixed={'initialize':{'clientInfo':{'name':'personal_control_hub','version':'0.1.0'},'capabilities':{'experimentalApi':True}},
+-                'config/read':config_params(),'mcpServerStatus/list':{'threadId':None,'limit':100,'detail':'toolsAndAuthOnly'}}
++                'config/read':config_params()}
+             if method in fixed:
+                 if params!=fixed[method]or method in self.consumed:raise ServiceError('CSS_PRECHECK_PARAMS_REJECTED')
+-                if method in ('config/read','mcpServerStatus/list')and (self.snapshots!=1 or not self.feature_complete or self.feature_active):
+-                    raise ServiceError('CSS_PRECHECK_PHASE_REJECTED')
+-                if method=='mcpServerStatus/list'and 'config/read'not in self.consumed:
++                if method=='config/read'and (self.snapshots!=1 or not self.feature_complete or self.feature_active):
+                     raise ServiceError('CSS_PRECHECK_PHASE_REJECTED')
+                 self.consumed.add(method)
+             else:
+@@ -749,22 +751,16 @@
+     raise ServiceError('CSS_PRECHECK_NOTIFICATION_CAPACITY')
+ 
+ 
+-def capability_fact(a,servers,flags):
+-    fields={'name','runtimeStatus','pluginId','httpOrigin','serverInfo','serverCapabilities',
+-        'tools','toolsError','resources','resourceTemplates','authStatus'}
+-    if type(servers)is not dict or set(servers)!={'data','nextCursor'}or type(servers['data'])is not list or \
+-        any(type(row)is not dict or set(row)!=fields for row in servers['data']):
+-        raise ServiceError('CSS_PRECHECK_CAPABILITY_REJECTED')
+-    rows=servers['data']
+-    if servers['nextCursor']is not None or len(rows)!=6 or sorted(x['name']for x in rows)!=sorted(REGISTERED_SERVERS)or \
+-        any(x['runtimeStatus']!='disabled'or x['tools']or x['resources']or x['resourceTemplates']or x['serverCapabilities']is not None for x in rows)or \
+-        any(x['pluginId']is not None or x['serverInfo']is not None or x['toolsError']is not None or
+-            x['authStatus']not in {'unknown','unsupported','notLoggedIn','bearerToken','oAuth'}for x in rows)or \
++def configured_feature_fact(a,configuration,flags):
++    if configuration.get('configured_mcp_disabled')is not True or configuration.get('configured_mcp_count')!=6 or \
+         any(flags.get(k)is not False for k in p.FROZEN_DISABLES)or flags.get('code_mode_host')is not True or \
+         a.remote_control_status!='disabled'or a.mcp_startup_seen or a.denials:
+         raise ServiceError('CSS_PRECHECK_CAPABILITY_REJECTED')
+-    return {'scope':'unscoped process metadata; no loaded thread claim',
+-        'mcp':{k:'disabled'for k in REGISTERED_SERVERS},'features':{k:False for k in p.FROZEN_DISABLES},
++    return {'scope':'configuration and features only; no MCP runtime or loaded thread claim',
++        'mcp_configuration':{k:{'enabled':False}for k in REGISTERED_SERVERS},
++        'mcp_status_rpc_count':0,'mcp_runtime':{k:'NOT_RUN'for k in (
++            'runtimeStatus','authStatus','tools','resources','resourceTemplates','serverCapabilities','loaded_thread')},
++        'full_metadata_acceptance':'BLOCKED','features':{k:False for k in p.FROZEN_DISABLES},
+         'remote':'disabled','startup_seen':False,'local_native_tool_host':True}
+ 
+ 
+@@ -809,7 +805,8 @@
+ def run():
+     folder=c.HUB_ROOT/c.PRIVATE;authority=json.loads((folder/AUTHORITY).read_text())
+     effects=MetadataEffects();effects.install()
+-    record={'contract':CONTRACT,'status':'PARTIAL_BLOCKED','threads':0,'resumes':0,'model_turns':0}
++    record={'contract':CONTRACT,'status':'PARTIAL_BLOCKED','threads':0,'resumes':0,'model_turns':0,
++        'full_metadata_acceptance':'BLOCKED','mcp_status_rpc_count':0,'fifth_resume_allowed':False}
+     a=None;before=None;source=None;trial=None;auth=None;receipt=None
+     try:
+         initial=admit(authority)
+@@ -823,22 +820,21 @@
+             raise ServiceError('CSS_PRECHECK_INPUT_CHANGED')
+         r.mapping_check(task['intent']['grant'])
+         a=adapter(authority['semantic_pin'],authority,receipt,effects)
+-        a.notification_recorder=lambda n,f:atomic_record(folder/f'config-precheck-notification-v11-6-r5-{n}.json',f)
++        a.notification_recorder=lambda n,f:atomic_record(folder/f'config-precheck-notification-v11-6-r6-{n}.json',f)
+         a.open();record['pid']=a.proc.pid
+         drain(a);flags_before=feature_snapshot(a)
+         record['catalog']={'public_catalog_count':152,'expected_complete_snapshots':2,'complete_snapshots':1,
+             'shared_pages':a.pages,'before_templates_exact':True,'after_templates_exact':False,
+             'all_enabled_flags_stable':'NOT_RUN','source_sha256':PROTOCOL_SOURCE_SHA}
+         response=a.call('config/read',config_params());record['configuration']=config_fact(response,authority['semantic_pin'])
+-        servers=a.call('mcpServerStatus/list',{'threadId':None,'limit':100,'detail':'toolsAndAuthOnly'})
+-        record['capabilities']=capability_fact(a,servers,flags_before)
++        record['configuration_features']=configured_feature_fact(a,record['configuration'],flags_before)
+         drain(a);flags_after=feature_snapshot(a)
+         record['catalog'].update(complete_snapshots=2,after_templates_exact=True,shared_pages=a.pages,
+             all_enabled_flags_stable=same_json(flags_before,flags_after))
+         if not same_json(flags_before,flags_after):raise ServiceError('CSS_PRECHECK_FEATURE_STATE_CHANGED')
+-        record['capabilities']=capability_fact(a,servers,flags_after)
++        record['configuration_features']=configured_feature_fact(a,record['configuration'],flags_after)
+         record['catalog']['all_public_templates_exact']=True
+-        drain(a);record['status']='PASS_FULL_METADATA_PRECHECK'
++        drain(a);record['status']='PASS_SAFE_CONFIG_FEATURE_PRECHECK'
+     except Exception as error:record['error']=error.code if isinstance(error,ServiceError)else type(error).__name__
+     finally:
+         def check(name,fn):
+--- a/tests/test_hub_css_config_precheck.py
++++ b/tests/test_hub_css_config_precheck.py
+@@ -382,11 +382,11 @@
+             with self.assertRaises(ServiceError):self.a.call('config/read',q.config_params())
+             self.a.snapshots=1;self.a.feature_complete=True
+             with self.assertRaises(ServiceError):self.a.call('mcpServerStatus/list',mcp)
+-            self.a.call('config/read',q.config_params());self.a.call('mcpServerStatus/list',mcp)
++            self.a.call('config/read',q.config_params())
+             with self.assertRaises(ServiceError):self.a.call('mcpServerStatus/list',mcp)
+             self.a.snapshots=2
+             with self.assertRaises(ServiceError):self.a.call('config/read',q.config_params())
+-        self.assertEqual(call.call_count,2)
++        self.assertEqual(call.call_count,1)
+ 
+     def test_contradictory_remote_or_auth_notice_is_rejected_immediately(self):
+         with mock.patch.object(q.AppServerAdapter,'_notification_observation'):
+@@ -402,7 +402,7 @@
+         with mock.patch.object(q.AppServerAdapter,'call',return_value={'data':[],'nextCursor':'private-cursor'})as call:
+             for method in ('experimentalFeature/list','mcpServerStatus/list'):
+                 with self.assertRaises(ServiceError):self.a.call(method,{'threadId':None,'limit':100,'cursor':None})
+-        call.assert_not_called();self.assertEqual(q.METHODS,('initialize','config/read','mcpServerStatus/list','experimentalFeature/list'))
++        call.assert_not_called();self.assertEqual(q.METHODS,('initialize','config/read','experimentalFeature/list'))
+ 
+     def test_no_helper_without_independent_authority(self):
+         with mock.patch.object(q,'admit',side_effect=ServiceError('NO_AUTHORITY')),mock.patch.object(q.AppServerAdapter,'open')as opened:
+@@ -505,7 +505,6 @@
+         def call(method,params):
+             fake.audit.append({'method':method,'unscoped':True})
+             if method=='config/read':return self.native()
+-            if method=='mcpServerStatus/list':return self.servers()
+             raise AssertionError('unregistered method')
+         fake.call=call
+         before={'identity':[1,2,3,4,5],'_private_content_hash':'private','_private_projects_hash':'private-projects'}
+@@ -524,22 +523,35 @@
+             result=q.run()
+         self.assertEqual(result['status'],'PARTIAL_BLOCKED');self.assertFalse(result['global_config_preserved'])
+         self.assertEqual(result['catalog']['public_catalog_count'],152);self.assertEqual(result['resumes'],0)
+-        self.assertEqual([x['method']for x in result['methods']],['config/read','mcpServerStatus/list'])
++        self.assertEqual([x['method']for x in result['methods']],['config/read'])
++        self.assertEqual(result['full_metadata_acceptance'],'BLOCKED')
++        self.assertEqual(result['mcp_status_rpc_count'],0)
++        self.assertFalse(result['fifth_resume_allowed'])
+         self.assertEqual(result['model_turns'],0);self.assertNotIn('NEVER_RETAIN',(folder/q.RESULT).read_text())
+ 
+-    def servers(self):
+-        return {'nextCursor':None,'data':[{'name':name,'runtimeStatus':'disabled','tools':{},'resources':[],
+-            'resourceTemplates':[],'serverCapabilities':None,'pluginId':None,'httpOrigin':None,
+-            'serverInfo':None,'toolsError':None,'authStatus':'unsupported'}for name in q.REGISTERED_SERVERS]}
+-
+-    def test_unscoped_capabilities_are_exact_and_do_not_claim_loaded_thread(self):
+-        servers=self.servers()
++    def test_configured_features_do_not_claim_unobserved_mcp_runtime(self):
++        configuration=q.config_fact(self.native(),self.pin)
+         flags={k:False for k in q.p.FROZEN_DISABLES}|{'code_mode_host':True}
+         a=SimpleNamespace(remote_control_status='disabled',mcp_startup_seen=False,denials=[])
+-        fact=q.capability_fact(a,servers,flags);self.assertIn('no loaded thread claim',fact['scope'])
+-        for change in (lambda:servers['data'][0].update(runtimeStatus='enabled'),lambda:flags.update(hooks=True),lambda:setattr(a,'remote_control_status','enabled')):
++        fact=q.configured_feature_fact(a,configuration,flags)
++        self.assertEqual(fact['mcp_status_rpc_count'],0)
++        self.assertEqual(fact['full_metadata_acceptance'],'BLOCKED')
++        self.assertEqual(set(fact['mcp_runtime'].values()),{'NOT_RUN'})
++        self.assertEqual(set(fact['mcp_configuration']),set(q.REGISTERED_SERVERS))
++        for change in (lambda:configuration.update(configured_mcp_disabled=False),lambda:flags.update(hooks=True),lambda:setattr(a,'remote_control_status','enabled')):
+             change()
+-            with self.assertRaises(ServiceError):q.capability_fact(a,servers,flags)
++            with self.assertRaises(ServiceError):q.configured_feature_fact(a,configuration,flags)
++
++    def test_mcp_rpc_and_direct_send_are_always_rejected_without_native_call(self):
++        params={'threadId':None,'limit':100,'detail':'toolsAndAuthOnly'}
++        for phase in (0,1,2):
++            self.a.snapshots=phase
++            with mock.patch.object(q.AppServerAdapter,'call')as call:
++                with self.assertRaises(ServiceError):self.a.call('mcpServerStatus/list',params)
++            call.assert_not_called()
++        with mock.patch.object(q.AppServerAdapter,'_send')as send:
++            with self.assertRaises(ServiceError):self.a._send({'id':1,'method':'mcpServerStatus/list','params':params})
++        send.assert_not_called()
+ 
+ class DesktopRoundtripTests(unittest.TestCase):
+     def setUp(self):
+--- a/tests/test_hub_css_full_metadata.py
++++ b/tests/test_hub_css_full_metadata.py
+@@ -67,7 +67,7 @@
+         a=self.fake_adapter()
+         with mock.patch.object(q,'protocol_proof',return_value=self.proof):
+             before=q.feature_snapshot(a)
+-            a.consumed|={'config/read','mcpServerStatus/list'}
++            a.consumed|={'config/read'}
+             after=q.feature_snapshot(a)
+             self.assertEqual(before,after);self.assertEqual((a.snapshots,a.pages),(2,4))
+             with self.assertRaises(ServiceError):q.feature_snapshot(a)

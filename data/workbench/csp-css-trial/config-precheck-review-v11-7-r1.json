@@ -1,0 +1,25 @@
+{
+  "callgraph_sha256": "71561183ccd494009d1b064565fcb5a44dd85d1d496efef1c3c3149a88b01d1a",
+  "candidate_sha256": "862215cc3e95df74310e2a913b233e5fd02ef63a0d77fa96a2dc255d8c63ef96",
+  "checks": {
+    "AST2_whitespace": "PASS",
+    "code": "35 exact; only2 changed versus original v11.7",
+    "digests": "both exact using hub.workbench_store.digest",
+    "evidence": "262 exact; all255 inherited exact",
+    "repair": "A before admission/auth; immediate first-login bracket; A to B then stable blocks before helper/MCP; failed login/missing/unsafe storage block; later closure cannot promote",
+    "targeted": "65passed exit0"
+  },
+  "contract": "HUB-LWB-2.3-CSP-FULL-METADATA-AUTH-REFRESH-GOV-v11.7",
+  "contract_decision": "PASS_STAGED_INACTIVE",
+  "contract_sha256": "7991b8eaf1cb50e6250938e62b56d3f1bc74d22364ec9d8cdfc3a2343741809e",
+  "created_at": 1791383983.125928,
+  "decision": "PASS",
+  "effects": "Judge native/auth/credential-content/Git/mount/provider/runtime0",
+  "evidence_sha256": "23922c677f72e731cb38f16b9dc2d1594fc80370ee1524603052033615383f22",
+  "full_metadata_actual": "NOT_RUN",
+  "judge": "/root/full_metadata_v11_7_r1_judge",
+  "native_authority": 0,
+  "original_acceptance": "staged offline PASS only; M2 required unchanged",
+  "owner_grant": "ABSENT",
+  "prior_candidate_failure": "data/workbench/csp-css-trial/config-precheck-review-v11-7.json"
+}

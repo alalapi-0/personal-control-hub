@@ -1,0 +1,617 @@
+--- src/hub/css_config_precheck.py
++++ src/hub/css_config_precheck.py
+@@ -21,20 +21,23 @@
+ from .service_contract import ServiceError
+ from .css_metadata_effects import MetadataEffects
+ 
+-CONTRACT='HUB-LWB-2.3-CSP-SAFE-CONFIG-FEATURE-PRECHECK-GOV-v11.6-r6'
+-METHODS=('initialize','config/read','experimentalFeature/list')
++CONTRACT='HUB-LWB-2.3-CSP-FULL-METADATA-AUTH-REFRESH-GOV-v11.7'
++METHODS=('initialize','config/read','mcpServerStatus/list','experimentalFeature/list')
++REFRESH_GRANT='csp-metadata-sdk-refresh-v11-7'
+ NOTICES=frozenset({'remoteControl/status/changed','account/updated','account/rateLimits/updated','configWarning'})
+-REGISTRATION='config-precheck-registration-v11-6-r6.json'
+-AUTHORITY='config-precheck-authority-v11-6-r6.json'
+-INTENT='config-precheck-intent-v11-6-r6.json'
+-RESULT='config-precheck-result-v11-6-r6.json'
+-PROTOCOL_SOURCE='feature-catalog-source-closure-v11-6-r6.json'
+-PROTOCOL_SOURCE_SHA='f3995f31fdd23205ebc2c6ee71a3a2fc80d593464f6edf53f5767e5050507619'
++REGISTRATION='config-precheck-registration-v11-7.json'
++AUTHORITY='config-precheck-authority-v11-7.json'
++INTENT='config-precheck-intent-v11-7.json'
++RESULT='config-precheck-result-v11-7.json'
++PROTOCOL_SOURCE='feature-catalog-source-closure-v11-7.json'
++PROTOCOL_SOURCE_SHA='95872e17955ce713e29eb0b610048f96b2921f79a5dfc7f12b272ae8670ec38f'
+ DESKTOP_SOURCE='desktop-roundtrip-source-closure-v11-5-r1.json'
+ DESKTOP_SOURCE_SHA='d7e40c9226ccfe7049bffa388673d0223e5dbf0c5f87053b487a7bab9681fcd0'
+ NUMBER_TOKEN='$serde_json::private::Number'
+ RAW_VALUE_TOKEN='$serde_json::private::RawValue'
+ DESKTOP_INPUT_BYTES=262144
++MODEL_CATALOG=c.HUB_ROOT/c.PRIVATE/'public-source-v11-6-mcp/bundled-models.json'
++MODEL_CATALOG_SHA='fd219bd9f061278275f528939f82f54d2eb97df4b25c23b022adbe48813d920b'
+ SERIALIZATION=json.loads((c.HUB_ROOT/c.PRIVATE/'config-precheck-sources-v11-2.json').read_text())['spec']
+ # Public embedded defaults from the pinned release, not a private config body.
+ PACKAGED_DEFAULTS=tomllib.loads('''
+@@ -59,9 +62,56 @@
+ def config_params():return {'cwd':str(c.TRIAL),'includeLayers':True}
+ 
+ 
++def mcp_params():return {'threadId':None,'limit':100,'detail':'toolsAndAuthOnly'}
++
++
++def metadata_overrides():return (*p.OVERRIDES,'-c','model_catalog_json='+json.dumps(str(MODEL_CATALOG)))
++
++
++def catalog_snapshot():
++    if MODEL_CATALOG.is_symlink()or any(x.is_symlink()for x in MODEL_CATALOG.parents):
++        raise ServiceError('CSS_PUBLIC_MODEL_CATALOG_REJECTED')
++    raw,identity=c.read_file(MODEL_CATALOG,mode=0o644)
++    info=MODEL_CATALOG.lstat()
++    if info.st_uid!=os.getuid()or c.sha(raw)!=MODEL_CATALOG_SHA or \
++        not 0<len(raw)<=1048576 or not json.loads(raw).get('models'):
++        raise ServiceError('CSS_PUBLIC_MODEL_CATALOG_REJECTED')
++    return tuple(identity)
++
++
++def credential_snapshot():
++    """Stat only; the private identity is never serialized or hashed."""
++    path=c.CREDENTIAL_PATH
++    if any(parent.is_symlink()for parent in path.parents):
++        raise ServiceError('CSS_SDK_CREDENTIAL_STORAGE_UNSAFE')
++    info=path.lstat()
++    if not stat.S_ISREG(info.st_mode)or info.st_uid!=os.getuid()or info.st_nlink!=1 or \
++        stat.S_IMODE(info.st_mode)&0o077 or not 0<info.st_size<=1048576:
++        raise ServiceError('CSS_SDK_CREDENTIAL_STORAGE_UNSAFE')
++    return tuple(getattr(info,k)for k in ('st_dev','st_ino','st_size','st_mtime_ns','st_ctime_ns','st_mode','st_uid','st_nlink'))
++
++
++def credential_fact(before,after,outcome):
++    def safe(identity):
++        return type(identity)is tuple and len(identity)==8 and all(type(x)is int for x in identity)and \
++            stat.S_ISREG(identity[5])and identity[6]==os.getuid()and identity[7]==1 and \
++            not(stat.S_IMODE(identity[5])&0o077)and 0<identity[2]<=1048576
++    if not safe(before)or not safe(after)or outcome not in (
++        'SDK_REFRESH_FAILURE_REPORTED','NO_REFRESH_FAILURE_SIGNAL','UNKNOWN_STDERR'):
++        raise ServiceError('CSS_SDK_CREDENTIAL_EFFECT_UNVERIFIED')
++    return {'before_exists':True,'after_exists':True,'safe_attributes':True,
++        'before_safe':dict.fromkeys(('nofollow','owner','regular','single_link','private_mode'),True),
++        'after_safe':dict.fromkeys(('nofollow','owner','regular','single_link','private_mode'),True),
++        'identity_changed':before!=after,'official_storage_only_source_bound':True,
++        'refresh_outcome':outcome,'refresh_success':'NOT_OBSERVED',
++        'child_network_visibility':'NOT_RUN','physical_request_count':'NOT_OBSERVED',
++        'content_read_copied_hashed':False}
++
++
+ def session_config():
+     args=profile_arguments(c.TRIAL,read_only=True)
+     return {'model':p.MODEL,'model_reasoning_effort':p.EFFORT,'web_search':'disabled',
++        'model_catalog_json':str(MODEL_CATALOG),
+         'features':{k:False for k in p.FROZEN_DISABLES},
+         'mcp_servers':{k:{'enabled':False}for k in REGISTERED_SERVERS},
+         **tomllib.loads('\n'.join(args[i]for i in (1,3,5)))}
+@@ -212,6 +262,8 @@
+         raise ServiceError('CSS_PRECHECK_DESKTOP_BUILDER_REJECTED')
+     if type(effective)is not dict or not same_json(effective,expected_config):
+         raise ServiceError('CSS_PRECHECK_EFFECTIVE_CONFIG_REJECTED')
++    if effective.get('cli_auth_credentials_store')!='file':
++        raise ServiceError('CSS_SDK_CREDENTIAL_STORAGE_MODE_REJECTED')
+     if effective['model']!=p.MODEL or effective['model_reasoning_effort']!=p.EFFORT or \
+         effective['default_permissions']!=EVIDENCE_PERMISSION_PROFILE:
+         raise ServiceError('CSS_PRECHECK_EFFECTIVE_PROFILE_REJECTED')
+@@ -540,8 +592,8 @@
+         if len(bundle)!=440 or {k:c.sha(v.encode())for k,v in bundle.items()}!=proof['schema_bundle']['files']:
+             return None
+         if len(proof['templates'])!=152 or len({t['name']for t in proof['templates']})!=152:return None
+-        return (PROTOCOL_SOURCE_SHA,tuple(sorted(proof['sources'].items())))
+-    except (OSError,ValueError,KeyError,TypeError):return None
++        return (PROTOCOL_SOURCE_SHA,tuple(sorted(proof['sources'].items())),catalog_snapshot())
++    except (OSError,ValueError,KeyError,TypeError,ServiceError):return None
+ 
+ 
+ def protocol_proof():
+@@ -623,9 +675,11 @@
+     task=r.TaskStore(c.HUB_ROOT).task(c.TASK)
+     r.mapping_check(task['intent']['grant'])
+     after=p.observe(semantic=True)
++    credential_snapshot()
+     return before['projection']==reg['semantic_pin']and after['projection']==reg['semantic_pin']and \
+         all(p.preservation_fact(before,after).values())and r.source_snapshot()==reg['source']and \
+-        c.placeholder_snapshot()==reg['trial']and r.auth_identity()==reg['auth_identity']and \
++        c.placeholder_snapshot()==reg['trial']and reg.get('credential_storage_safe')is True and \
++        original_config(reg['semantic_pin']).get('cli_auth_credentials_store','file')=='file'and \
+         c.digest(task)==reg['task_hash']
+ 
+ 
+@@ -637,6 +691,7 @@
+     source=(source,protocol)
+     r.unexpired(authority)
+     expected={'contract':CONTRACT,'task_id':c.TASK,'methods':list(METHODS),'config_read_params':config_params(),
++        'mcp_status_params':mcp_params(),'official_sdk_refresh_allowed':True,'effect_grant_id':REFRESH_GRANT,
+         'profile_arguments':list(profile_arguments(c.TRIAL,read_only=True)),'helpers_allowed':1,
+         'helper_wall_seconds':120,'threads_allowed':0,'resumes_allowed':0,'model_turns_allowed':0,'renewal_allowed':False,
+         'auth_mode':'ChatGPT'}
+@@ -650,21 +705,25 @@
+         raise ServiceError('CSS_PRECHECK_AUTHORITY_REJECTED')
+     for name,h in {**reg['files'],**reg['evidence_files']}.items():
+         if c.sha((c.HUB_ROOT/name).read_bytes())!=h:raise ServiceError('CSS_PRECHECK_CANDIDATE_CHANGED')
+-    if any(authority.get(k)!=reg[k]for k in ('semantic_pin','source','trial','auth_identity','task_hash')):
++    if any(authority.get(k)!=reg[k]for k in ('semantic_pin','source','trial','credential_storage_safe','task_hash')):
+         raise ServiceError('CSS_PRECHECK_AUTHORITY_REJECTED')
+     text=(c.HUB_ROOT/'STATE.yaml').read_text();match=re.search(r'^linux_visual_workbench:\n.*?(?=^[^ \n#][^\n]*:\n|\Z)',text,re.M|re.S)
+     state=yaml.safe_load(match[0])['linux_visual_workbench']if match else{}
+     contract=state.get('contract',{});owner=state.get('authorization',{}).get('conditional_pilot_write_grant',{})
++    refresh=state.get('authorization',{}).get('sdk_metadata_refresh_grant',{})
+     if contract.get('id')!=CONTRACT or contract.get('decision')!='APPROVE_NATIVE_PRECHECK'or \
+         contract.get('status')!='APPROVED_SINGLE_NATIVE_PRECHECK'or \
+         owner.get('state')!='active_exact_css_trial'or owner.get('task_id')!=c.TASK or \
+         owner.get('project_id')!='computer-study-plan'or owner.get('grant_id')!='csp-css-trial-grant-v1'or \
+-        state.get('trial_registration',{}).get('resume_calls')!=4:
++        state.get('trial_registration',{}).get('resume_calls')!=4 or \
++        refresh.get('state')!='explicit_one_sample'or refresh.get('grant_id')!=REFRESH_GRANT or \
++        refresh.get('contract')!=CONTRACT or refresh.get('candidate_sha256')!=reg['candidate_sha256']or \
++        refresh.get('evidence_sha256')!=reg['evidence_sha256']or refresh.get('official_sdk_refresh_allowed')is not True:
+         raise ServiceError('CSS_PRECHECK_STATE_REJECTED')
+     if (c.HUB_ROOT/c.PRIVATE/INTENT).exists():raise ServiceError('CSS_PRECHECK_ALREADY_CONSUMED')
+     if not fixed_inputs_current(reg):raise ServiceError('CSS_PRECHECK_INPUT_CHANGED')
+     return Admission(reg['candidate_sha256'],reg['evidence_sha256'],source,source[0][1],
+-        c.digest({k:reg[k]for k in ('semantic_pin','source','trial','auth_identity','task_hash')}))
++        c.digest({k:reg[k]for k in ('semantic_pin','source','trial','credential_storage_safe','task_hash')}))
+ 
+ 
+ def adapter(pin,authority,receipt=None,effects=None):
+@@ -673,6 +732,22 @@
+     class ConfigOnly(AppServerAdapter):
+         def _child_environment(self):return p.process_environment()
+         def _configuration_hash(self):return observed_verified(pin,receipt)['_private_content_hash']
++        def _read_errors(self):
++            # A fixed prefix matcher carries only its index between chunks.
++            # No inherited stderr hash, length, raw log or dynamic suffix.
++            marker=b'Failed to refresh token: ';matched=0
++            try:
++                while chunk:=self.proc.stderr.read(4096):
++                    if self.stderr_outcome!='SDK_REFRESH_FAILURE_REPORTED':self.stderr_outcome='UNKNOWN_STDERR'
++                    for byte in chunk:
++                        matched=matched+1 if byte==marker[matched]else (1 if byte==marker[0]else 0)
++                        if matched==len(marker):
++                            self.stderr_outcome='SDK_REFRESH_FAILURE_REPORTED';matched=0
++                    self.failed='CSS_SDK_REFRESH_EFFECT_UNCERTAIN'
++                    del chunk
++            except (OSError,ValueError):
++                if self.stderr_outcome!='SDK_REFRESH_FAILURE_REPORTED':self.stderr_outcome='UNKNOWN_STDERR'
++                self.failed='CSS_SDK_REFRESH_EFFECT_UNCERTAIN'
+         def _send(self,value):
+             method=value.get('method')
+             if method=='initialized':
+@@ -703,11 +778,13 @@
+             if time.monotonic()>=getattr(self,'deadline',float('inf')):raise ServiceError('CSS_PRECHECK_WALL_EXPIRED')
+             if method not in METHODS:raise ServiceError('CSS_PRECHECK_METHOD_REJECTED')
+             fixed={'initialize':{'clientInfo':{'name':'personal_control_hub','version':'0.1.0'},'capabilities':{'experimentalApi':True}},
+-                'config/read':config_params()}
++                'config/read':config_params(),'mcpServerStatus/list':mcp_params()}
+             if method in fixed:
+                 if params!=fixed[method]or method in self.consumed:raise ServiceError('CSS_PRECHECK_PARAMS_REJECTED')
+                 if method=='config/read'and (self.snapshots!=1 or not self.feature_complete or self.feature_active):
+                     raise ServiceError('CSS_PRECHECK_PHASE_REJECTED')
++                if method=='mcpServerStatus/list'and (self.snapshots!=1 or not self.feature_complete or self.feature_active or \
++                    'config/read'not in self.consumed):raise ServiceError('CSS_PRECHECK_PHASE_REJECTED')
+                 self.consumed.add(method)
+             else:
+                 if params!={'threadId':None,'limit':100,'cursor':self.cursor}or self.pages>=8 or self.feature_complete or \
+@@ -731,9 +808,10 @@
+                 raise ServiceError('CSS_PRECHECK_REMOTE_STATUS_REJECTED')
+             if value['method']=='account/updated'and value['params'].get('authMode')not in {'chatgpt','chatgptAuthTokens'}:
+                 raise ServiceError('CSS_PRECHECK_AUTH_MODE_NOTIFICATION_REJECTED')
+-    a=ConfigOnly(c.TRIAL,command=('codex','app-server','--stdio',*p.OVERRIDES),read_only=True)
++    a=ConfigOnly(c.TRIAL,command=('codex','app-server','--stdio',*metadata_overrides()),read_only=True)
+     a.consumed=set();a.audit=[];a.pages=0;a.cursor=None;a.feature_complete=False;a.wall_exceeded=False
+     a.feature_active=False;a.snapshots=0;a.schema_temp_cleaned=False
++    a.stderr_outcome='NO_REFRESH_FAILURE_SIGNAL'
+     a.initialized_accepted=False;a.active_request=None
+     a.notification_allowed=NOTICES
+     return a
+@@ -762,6 +840,29 @@
+             'runtimeStatus','authStatus','tools','resources','resourceTemplates','serverCapabilities','loaded_thread')},
+         'full_metadata_acceptance':'BLOCKED','features':{k:False for k in p.FROZEN_DISABLES},
+         'remote':'disabled','startup_seen':False,'local_native_tool_host':True}
++
++
++def capability_fact(a,servers,configuration,flags):
++    configured_feature_fact(a,configuration,flags)
++    fields={'name','runtimeStatus','pluginId','httpOrigin','serverInfo','serverCapabilities',
++        'tools','toolsError','resources','resourceTemplates','authStatus'}
++    if type(servers)is not dict or set(servers)!={'data','nextCursor'}or \
++        type(servers['data'])is not list or servers['nextCursor']is not None or len(servers['data'])!=6:
++        raise ServiceError('CSS_PRECHECK_CAPABILITY_REJECTED')
++    rows=servers['data']
++    if any(type(row)is not dict or set(row)!=fields or type(row['name'])is not str for row in rows)or \
++        [x['name']for x in rows]!=sorted(REGISTERED_SERVERS)or \
++        any(x['runtimeStatus']is not None or x['authStatus']!='unsupported'or \
++            type(x['tools'])is not dict or x['tools']!={}or type(x['resources'])is not list or x['resources']!=[]or \
++            type(x['resourceTemplates'])is not list or x['resourceTemplates']!=[]or \
++            any(x[k]is not None for k in ('pluginId','serverInfo','serverCapabilities','toolsError'))or \
++            x['httpOrigin']is not None and type(x['httpOrigin'])is not str for x in rows):
++        raise ServiceError('CSS_PRECHECK_CAPABILITY_REJECTED')
++    return {'scope':'unscoped process metadata; runtimeStatus null is no loaded-thread status',
++        'mcp':{k:{'configured_enabled':False,'runtimeStatus':None,'authStatus':'unsupported',
++            'tools_empty':True,'resources_empty':True,'templates_empty':True,'capabilities_null':True}
++            for k in REGISTERED_SERVERS},'loaded_thread':'NOT_RUN','mcp_status_rpc_count':1,
++        'remote':'disabled','startup_seen':False,'private_fields_retained':False}
+ 
+ 
+ def feature_page(result,templates,start):
+@@ -807,20 +908,20 @@
+     effects=MetadataEffects();effects.install()
+     record={'contract':CONTRACT,'status':'PARTIAL_BLOCKED','threads':0,'resumes':0,'model_turns':0,
+         'full_metadata_acceptance':'BLOCKED','mcp_status_rpc_count':0,'fifth_resume_allowed':False}
+-    a=None;before=None;source=None;trial=None;auth=None;receipt=None
++    a=None;before=None;source=None;trial=None;auth=None;receipt=None;mcp_after=None
+     try:
+         initial=admit(authority)
+         effects.source_receipt=initial.source
+         effects.source_check=lambda:(desktop_source_snapshot(),protocol_source_snapshot())
+         if authority['expires_at']-time.time()<150:raise ServiceError('CSS_PRECHECK_CLOSE_HEADROOM')
+         receipt=authentication_receipt();before=observed_verified(authority['semantic_pin'],receipt)
+-        source=r.source_snapshot();trial=c.placeholder_snapshot();auth=r.auth_identity()
++        source=r.source_snapshot();trial=c.placeholder_snapshot();auth=credential_snapshot()
+         task=r.TaskStore(c.HUB_ROOT).task(c.TASK)
+-        if source!=authority['source']or trial!=authority['trial']or auth!=authority['auth_identity']or c.digest(task)!=authority['task_hash']:
++        if source!=authority['source']or trial!=authority['trial']or authority.get('credential_storage_safe')is not True or c.digest(task)!=authority['task_hash']:
+             raise ServiceError('CSS_PRECHECK_INPUT_CHANGED')
+         r.mapping_check(task['intent']['grant'])
+         a=adapter(authority['semantic_pin'],authority,receipt,effects)
+-        a.notification_recorder=lambda n,f:atomic_record(folder/f'config-precheck-notification-v11-6-r6-{n}.json',f)
++        a.notification_recorder=lambda n,f:atomic_record(folder/f'config-precheck-notification-v11-7-{n}.json',f)
+         a.open();record['pid']=a.proc.pid
+         drain(a);flags_before=feature_snapshot(a)
+         record['catalog']={'public_catalog_count':152,'expected_complete_snapshots':2,'complete_snapshots':1,
+@@ -828,13 +929,18 @@
+             'all_enabled_flags_stable':'NOT_RUN','source_sha256':PROTOCOL_SOURCE_SHA}
+         response=a.call('config/read',config_params());record['configuration']=config_fact(response,authority['semantic_pin'])
+         record['configuration_features']=configured_feature_fact(a,record['configuration'],flags_before)
++        if credential_snapshot()!=auth:raise ServiceError('CSS_SDK_CREDENTIAL_CHANGED_OUTSIDE_MCP')
++        record['mcp_status_rpc_count']=1
++        servers=a.call('mcpServerStatus/list',mcp_params());mcp_after=credential_snapshot()
++        record['capabilities']=capability_fact(a,servers,record['configuration'],flags_before)
+         drain(a);flags_after=feature_snapshot(a)
+         record['catalog'].update(complete_snapshots=2,after_templates_exact=True,shared_pages=a.pages,
+             all_enabled_flags_stable=same_json(flags_before,flags_after))
+         if not same_json(flags_before,flags_after):raise ServiceError('CSS_PRECHECK_FEATURE_STATE_CHANGED')
+         record['configuration_features']=configured_feature_fact(a,record['configuration'],flags_after)
++        record['capabilities']=capability_fact(a,servers,record['configuration'],flags_after)
+         record['catalog']['all_public_templates_exact']=True
+-        drain(a);record['status']='PASS_SAFE_CONFIG_FEATURE_PRECHECK'
++        drain(a);record['status']='PASS_NATIVE_CONFIG_PRECHECK'
+     except Exception as error:record['error']=error.code if isinstance(error,ServiceError)else type(error).__name__
+     finally:
+         def check(name,fn):
+@@ -849,8 +955,13 @@
+             observed_verified(authority['semantic_pin'],receipt)).values()))
+         check('source3_unchanged',lambda:r.source_snapshot()==source)
+         check('trial_css_four_dirs_unchanged',lambda:c.placeholder_snapshot()==trial)
+-        check('auth_metadata_unchanged',lambda:r.auth_identity()==auth)
++        def credential_close():
++            after=credential_snapshot()
++            record['credential_effect']=credential_fact(auth,after,getattr(a,'stderr_outcome','UNKNOWN_STDERR'))
++            return mcp_after is not None and after==mcp_after and a.stderr_outcome=='NO_REFRESH_FAILURE_SIGNAL'
++        check('auth_storage_effect_bounded',credential_close)
+         check('task_row_unchanged',lambda:before is not None and c.digest(r.TaskStore(c.HUB_ROOT).task(c.TASK))==authority['task_hash'])
++        check('public_catalog_unchanged',lambda:initial.source[1]==protocol_source_snapshot())
+         check('expiry_at_close',lambda:(r.unexpired(authority),True)[1])
+         record.update(exit=a.proc.returncode if a and a.proc else None,methods=a.audit if a else[],
+             wall_exceeded=a.wall_exceeded if a else False,schema_temp_cleaned=a.schema_temp_cleaned if a else False,
+@@ -858,7 +969,8 @@
+         if a and a.proc:record['pid']=a.proc.pid
+         if record['exit']!=0 or record['wall_exceeded']or not record['schema_temp_cleaned']or \
+             not record['effects']['effect_limits_satisfied']or not all(record[k]for k in ('closed','final_notice_state','auth_mode_preserved',
+-            'global_config_preserved','source3_unchanged','trial_css_four_dirs_unchanged','auth_metadata_unchanged',
+-            'task_row_unchanged','expiry_at_close')):record['status']='PARTIAL_BLOCKED'
++            'global_config_preserved','source3_unchanged','trial_css_four_dirs_unchanged','auth_storage_effect_bounded',
++            'task_row_unchanged','public_catalog_unchanged','expiry_at_close')):record['status']='PARTIAL_BLOCKED'
++        if record['status']=='PASS_NATIVE_CONFIG_PRECHECK':record['full_metadata_acceptance']='PASS_UNSCOPED_PROCESS_ONLY'
+         atomic_record(folder/RESULT,record)
+     return record
+--- src/hub/css_metadata_effects.py
++++ src/hub/css_metadata_effects.py
+@@ -38,7 +38,8 @@
+         raise ServiceError('CSS_PRECHECK_EFFECT_REJECTED')
+ 
+     def bind_helper(self, config_hash):
+-        self.helper_command = isolated_launch(('codex', 'app-server', '--stdio', *p.OVERRIDES),
++        from .css_config_precheck import metadata_overrides
++        self.helper_command = isolated_launch(('codex', 'app-server', '--stdio', *metadata_overrides()),
+             root=c.TRIAL, expected_config_sha256=config_hash, read_only=True)[0]
+ 
+     def caller(self):
+--- scripts/precheck_css_config.py
++++ scripts/precheck_css_config.py
+@@ -4,4 +4,4 @@
+ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
+ from hub.css_config_precheck import run
+ if __name__=='__main__':
+-    result=run();print(result['status']);raise SystemExit(0 if result['status']=='PASS_SAFE_CONFIG_FEATURE_PRECHECK'else 1)
++    result=run();print(result['status']);raise SystemExit(0 if result['status']=='PASS_NATIVE_CONFIG_PRECHECK'else 1)
+--- tests/test_hub_css_config_precheck.py
++++ tests/test_hub_css_config_precheck.py
+@@ -38,7 +38,8 @@
+         patch.start();self.addCleanup(patch.stop)
+         patch=mock.patch.object(q,'protocol_source_snapshot',return_value=('protocol',()))
+         patch.start();self.addCleanup(patch.stop)
+-        self.fixture_admission=q.Admission('fixture','fixture','fixture','fixture','fixture')
++        self.fixture_admission=q.Admission('fixture','fixture',
++            (q.desktop_source_snapshot(),q.protocol_source_snapshot()),'fixture','fixture')
+         with mock.patch.object(q,'admit',return_value=self.fixture_admission):
+             self.a=q.adapter(self.pin,self.authority)
+         self.a.snapshots=1;self.a.feature_complete=True
+@@ -64,6 +65,13 @@
+         return {'layers':layers,'config':effective,'origins':{'NEVER_RETAIN_KEY':{
+             'name':{'type':'packagedDefaults','file':'/NEVER_RETAIN_FILE'},'version':'NEVER_RETAIN_ORIGIN'},
+             'NEVER_RETAIN_USER_KEY':{'name':{'type':'user','file':user,'profile':None},'version':'NEVER_RETAIN_USER_VERSION'}}}
++
++    def native_mcp(self):
++        # Public unscoped source: no runtime-status map or enabled clients.
++        return {'data':[{'name':name,'runtimeStatus':None,'authStatus':'unsupported',
++            'pluginId':None,'httpOrigin':None,'serverInfo':None,'serverCapabilities':None,
++            'tools':{},'toolsError':None,'resources':[],'resourceTemplates':[]}
++            for name in sorted(q.REGISTERED_SERVERS)],'nextCursor':None}
+ 
+     def test_fixed_layers_and_effective_profile_have_no_private_body_or_version(self):
+         self.user['mcp_servers']['github']['command']='NEVER_RETAIN_COMMAND'
+@@ -383,10 +391,11 @@
+             self.a.snapshots=1;self.a.feature_complete=True
+             with self.assertRaises(ServiceError):self.a.call('mcpServerStatus/list',mcp)
+             self.a.call('config/read',q.config_params())
++            self.a.call('mcpServerStatus/list',mcp)
+             with self.assertRaises(ServiceError):self.a.call('mcpServerStatus/list',mcp)
+             self.a.snapshots=2
+             with self.assertRaises(ServiceError):self.a.call('config/read',q.config_params())
+-        self.assertEqual(call.call_count,1)
++        self.assertEqual(call.call_count,2)
+ 
+     def test_contradictory_remote_or_auth_notice_is_rejected_immediately(self):
+         with mock.patch.object(q.AppServerAdapter,'_notification_observation'):
+@@ -402,7 +411,7 @@
+         with mock.patch.object(q.AppServerAdapter,'call',return_value={'data':[],'nextCursor':'private-cursor'})as call:
+             for method in ('experimentalFeature/list','mcpServerStatus/list'):
+                 with self.assertRaises(ServiceError):self.a.call(method,{'threadId':None,'limit':100,'cursor':None})
+-        call.assert_not_called();self.assertEqual(q.METHODS,('initialize','config/read','experimentalFeature/list'))
++        call.assert_not_called();self.assertEqual(q.METHODS,('initialize','config/read','mcpServerStatus/list','experimentalFeature/list'))
+ 
+     def test_no_helper_without_independent_authority(self):
+         with mock.patch.object(q,'admit',side_effect=ServiceError('NO_AUTHORITY')),mock.patch.object(q.AppServerAdapter,'open')as opened:
+@@ -410,22 +419,31 @@
+         opened.assert_not_called()
+ 
+     def test_registration_integrity_exact_state_counter_and_consumed_intent_gate(self):
+-        reg={'files':{},'evidence_files':{},'semantic_pin':{},'source':{},'trial':{},'auth_identity':[],'task_hash':'task','created_at':1.}
++        reg={'files':{},'evidence_files':{},'semantic_pin':{},'source':{},'trial':{},'credential_storage_safe':True,'task_hash':'task','created_at':1.}
+         reg['candidate_sha256']=q.c.digest(reg['files'])
+         reg['evidence_sha256']=q.c.digest({k:v for k,v in reg.items()if k not in ('candidate_sha256','evidence_sha256','created_at')})
+         authority={**self.authority,'contract':q.CONTRACT,'task_id':q.c.TASK,'methods':list(q.METHODS),
+             'config_read_params':q.config_params(),'profile_arguments':list(q.profile_arguments(q.c.TRIAL,read_only=True)),
++            'mcp_status_params':q.mcp_params(),'official_sdk_refresh_allowed':True,'effect_grant_id':q.REFRESH_GRANT,
+             'helpers_allowed':1,'helper_wall_seconds':120,'threads_allowed':0,'resumes_allowed':0,'model_turns_allowed':0,
+             'renewal_allowed':False,'auth_mode':'ChatGPT','approved_candidate':reg['candidate_sha256'],'approved_evidence':reg['evidence_sha256'],
+-            **{k:reg[k]for k in ('semantic_pin','source','trial','auth_identity','task_hash')}}
++            **{k:reg[k]for k in ('semantic_pin','source','trial','credential_storage_safe','task_hash')}}
+         state={'linux_visual_workbench':{'contract':{'id':q.CONTRACT,'decision':'APPROVE_NATIVE_PRECHECK','status':'APPROVED_SINGLE_NATIVE_PRECHECK'},
+             'authorization':{'conditional_pilot_write_grant':{'state':'active_exact_css_trial','task_id':q.c.TASK,
+-                'grant_id':'csp-css-trial-grant-v1','project_id':'computer-study-plan'}},'trial_registration':{'resume_calls':4}}}
++                'grant_id':'csp-css-trial-grant-v1','project_id':'computer-study-plan'},
++                'sdk_metadata_refresh_grant':{'state':'explicit_one_sample','grant_id':q.REFRESH_GRANT,'contract':q.CONTRACT,
++                    'candidate_sha256':reg['candidate_sha256'],'evidence_sha256':reg['evidence_sha256'],'official_sdk_refresh_allowed':True}},
++                'trial_registration':{'resume_calls':4}}}
+         def read(path,*args,**kwargs):return q.yaml.safe_dump(state)if path.name=='STATE.yaml'else json.dumps(reg)
+         with mock.patch.object(Path,'read_text',read),mock.patch.object(Path,'exists',return_value=False),\
+             mock.patch.object(q,'fixed_inputs_current',return_value=True):
+             admitted=q.admit(authority);self.assertEqual(admitted.candidate,reg['candidate_sha256'])
+             self.assertEqual(admitted.evidence,reg['evidence_sha256'])
++            refresh=state['linux_visual_workbench']['authorization']['sdk_metadata_refresh_grant']
++            for key,bad in [('state','STAGED_INACTIVE'),('official_sdk_refresh_allowed',False),('candidate_sha256','other')]:
++                original=refresh[key];refresh[key]=bad
++                with self.assertRaises(ServiceError):q.admit(authority)
++                refresh[key]=original
+             with self.assertRaises(AttributeError):admitted.binary='forged'
+             state['linux_visual_workbench']['trial_registration']['resume_calls']=5
+             with self.assertRaises(ServiceError):q.admit(authority)
+@@ -494,24 +512,25 @@
+ 
+     def test_zero_model_fixture_flow_retains_positive_facts_after_preservation_failure(self):
+         folder=self.root/q.c.PRIVATE;folder.mkdir(parents=True)
+-        task={'intent':{'grant':{}}};authority={**self.authority,'semantic_pin':self.pin,'source':{},'trial':{},'auth_identity':[],
++        task={'intent':{'grant':{}}};authority={**self.authority,'semantic_pin':self.pin,'source':{},'trial':{},'credential_storage_safe':True,
+             'task_hash':q.c.digest(task),'approved_candidate':'fixture','approved_evidence':'fixture'}
+         (folder/q.AUTHORITY).write_text(json.dumps(authority))
+         fake=SimpleNamespace(proc=SimpleNamespace(pid=123,returncode=0,poll=lambda:0),audit=[],cursor=None,feature_complete=False,
+             wall_exceeded=False,remote_control_status='disabled',mcp_startup_seen=False,denials=[],close=lambda:None,
+-            schema_temp_cleaned=True,pages=4)
++            schema_temp_cleaned=True,pages=4,stderr_outcome='NO_REFRESH_FAILURE_SIGNAL')
+         def opened():q.atomic_record(folder/q.INTENT,{'fixture':True});return fake
+         fake.open=opened
+         def call(method,params):
+             fake.audit.append({'method':method,'unscoped':True})
+             if method=='config/read':return self.native()
++            if method=='mcpServerStatus/list':return self.native_mcp()
+             raise AssertionError('unregistered method')
+         fake.call=call
+         before={'identity':[1,2,3,4,5],'_private_content_hash':'private','_private_projects_hash':'private-projects'}
+         after=dict(before,identity=[1,2,3,4,6])
+         with mock.patch.object(q.c,'HUB_ROOT',self.root),mock.patch.object(q,'admit',return_value=self.fixture_admission),\
+             mock.patch.object(q,'observed_verified',side_effect=[before,after]),mock.patch.object(q.r,'source_snapshot',return_value={}),\
+-            mock.patch.object(q.c,'placeholder_snapshot',return_value={}),mock.patch.object(q.r,'auth_identity',return_value=[]),\
++            mock.patch.object(q.c,'placeholder_snapshot',return_value={}),mock.patch.object(q,'credential_snapshot',return_value=(1,2,3,4,5,33152,q.os.getuid(),1)),\
+             mock.patch.object(q.r,'TaskStore',return_value=SimpleNamespace(task=lambda _:task)),\
+             mock.patch.object(q.r,'mapping_check'),mock.patch.object(q,'adapter',return_value=fake),mock.patch.object(q,'drain'),\
+             mock.patch.object(q,'original_config',return_value=self.user),\
+@@ -523,9 +542,9 @@
+             result=q.run()
+         self.assertEqual(result['status'],'PARTIAL_BLOCKED');self.assertFalse(result['global_config_preserved'])
+         self.assertEqual(result['catalog']['public_catalog_count'],152);self.assertEqual(result['resumes'],0)
+-        self.assertEqual([x['method']for x in result['methods']],['config/read'])
++        self.assertEqual([x['method']for x in result['methods']],['config/read','mcpServerStatus/list'])
+         self.assertEqual(result['full_metadata_acceptance'],'BLOCKED')
+-        self.assertEqual(result['mcp_status_rpc_count'],0)
++        self.assertEqual(result['mcp_status_rpc_count'],1)
+         self.assertFalse(result['fifth_resume_allowed'])
+         self.assertEqual(result['model_turns'],0);self.assertNotIn('NEVER_RETAIN',(folder/q.RESULT).read_text())
+ 
+@@ -542,7 +561,7 @@
+             change()
+             with self.assertRaises(ServiceError):q.configured_feature_fact(a,configuration,flags)
+ 
+-    def test_mcp_rpc_and_direct_send_are_always_rejected_without_native_call(self):
++    def test_mcp_rpc_outside_config_phase_and_direct_send_rejected_without_native_call(self):
+         params={'threadId':None,'limit':100,'detail':'toolsAndAuthOnly'}
+         for phase in (0,1,2):
+             self.a.snapshots=phase
+@@ -552,6 +571,140 @@
+         with mock.patch.object(q.AppServerAdapter,'_send')as send:
+             with self.assertRaises(ServiceError):self.a._send({'id':1,'method':'mcpServerStatus/list','params':params})
+         send.assert_not_called()
++
++    def test_source_correct_unscoped_null_is_not_disabled_or_loaded_thread(self):
++        flags={k:False for k in q.p.FROZEN_DISABLES}|{'code_mode_host':True}
++        config=q.config_fact(self.native(),self.pin)
++        a=SimpleNamespace(remote_control_status='disabled',mcp_startup_seen=False,denials=[])
++        fact=q.capability_fact(a,self.native_mcp(),config,flags)
++        self.assertEqual(fact['loaded_thread'],'NOT_RUN')
++        self.assertTrue(all(x['runtimeStatus']is None for x in fact['mcp'].values()))
++        changes=[lambda x:x['data'][0].update(runtimeStatus='disabled'),
++            lambda x:x['data'][0].update(authStatus='unknown'),lambda x:x['data'][0].update(authStatus='oAuth'),
++            lambda x:x['data'][0].update(tools=[]),lambda x:x['data'][0].update(resources={}),
++            lambda x:x['data'][0].update(resourceTemplates={}),lambda x:x['data'][0].update(serverCapabilities={}),
++            lambda x:x['data'][0].update(pluginId='NEVER_RETAIN'),lambda x:x['data'][0].update(toolsError='NEVER_RETAIN'),
++            lambda x:x['data'][0].update(httpOrigin=4),lambda x:x['data'].reverse(),
++            lambda x:x['data'].__setitem__(1,copy.deepcopy(x['data'][0])),lambda x:x.update(nextCursor='6')]
++        for change in changes:
++            rows=self.native_mcp();change(rows)
++            with self.subTest(change=change),self.assertRaises(ServiceError):q.capability_fact(a,rows,config,flags)
++
++    def test_mcp_lost_response_consumes_once_without_replay(self):
++        self.a.consumed={'initialize','config/read'}
++        with mock.patch.object(q.AppServerAdapter,'call',side_effect=ServiceError('LOST_RESPONSE'))as call:
++            with self.assertRaises(ServiceError):self.a.call('mcpServerStatus/list',q.mcp_params())
++            with self.assertRaises(ServiceError):self.a.call('mcpServerStatus/list',q.mcp_params())
++        self.assertEqual(call.call_count,1)
++
++    def test_metadata_stderr_is_fixed_enum_only_never_base_hash_or_count(self):
++        for text,expected in [(b'','NO_REFRESH_FAILURE_SIGNAL'),
++            (b'prefix Failed to refresh token: NEVER_RETAIN_TOKEN_URL','SDK_REFRESH_FAILURE_REPORTED'),
++            (b'NEVER_RETAIN_UNKNOWN_PRIVATE_LOG','UNKNOWN_STDERR')]:
++            self.a.proc=SimpleNamespace(stderr=io.BytesIO(text));self.a.stderr_outcome='NO_REFRESH_FAILURE_SIGNAL'
++            before=self.a.stderr_hash.hexdigest();self.a._read_errors()
++            self.assertEqual(self.a.stderr_outcome,expected)
++            self.assertEqual(self.a.stderr_hash.hexdigest(),before);self.assertEqual(self.a.stderr_bytes,0)
++            if text:self.assertEqual(self.a.failed,'CSS_SDK_REFRESH_EFFECT_UNCERTAIN')
++        class Chunks:
++            def __init__(self):self.items=iter([b'Failed to ref',b'resh token: NEVER_RETAIN',b''])
++            def read(self,size):return next(self.items)
++        self.a.proc=SimpleNamespace(stderr=Chunks());self.a.stderr_outcome='NO_REFRESH_FAILURE_SIGNAL'
++        self.a._read_errors();self.assertEqual(self.a.stderr_outcome,'SDK_REFRESH_FAILURE_REPORTED')
++
++    def test_credentials_stat_only_alias_permissions_and_hardlink_reject(self):
++        path=self.root/'credential-fixture';path.write_text('synthetic noncredential fixture');path.chmod(0o600)
++        with mock.patch.object(q.c,'CREDENTIAL_PATH',path),mock.patch.object(Path,'read_bytes',side_effect=AssertionError('no content')),\
++            mock.patch.object(Path,'read_text',side_effect=AssertionError('no content')):
++            before=q.credential_snapshot();path.chmod(0o644)
++            with self.assertRaises(ServiceError):q.credential_snapshot()
++            path.chmod(0o600);link=self.root/'alias';link.symlink_to(path)
++            with mock.patch.object(q.c,'CREDENTIAL_PATH',link),self.assertRaises(ServiceError):q.credential_snapshot()
++            import os
++            os.link(path,self.root/'hardlink')
++            with self.assertRaises(ServiceError):q.credential_snapshot()
++        fact=q.credential_fact(before,(before[0],before[1]+1,*before[2:]),'NO_REFRESH_FAILURE_SIGNAL')
++        self.assertTrue(fact['identity_changed']);self.assertEqual(fact['refresh_success'],'NOT_OBSERVED')
++        self.assertNotIn(str(before),json.dumps(fact))
++
++    def test_nonfile_credential_store_is_rejected_before_metadata_acceptance(self):
++        for mode in ('keyring','auto','ephemeral'):
++            self.user['cli_auth_credentials_store']=mode
++            with self.subTest(mode=mode),self.assertRaises(ServiceError):q.p.semantic_projection(self.user)
++            self.user.pop('cli_auth_credentials_store')
++            with mock.patch.dict(q.PACKAGED_DEFAULTS,cli_auth_credentials_store=mode),self.assertRaises(ServiceError):
++                q.config_fact(self.native(),self.pin)
++
++    def run_auth_fixture(self,outcome,identities,closure_mode='ChatGPT'):
++        folder=self.root/q.c.PRIVATE;folder.mkdir(parents=True,exist_ok=True)
++        task={'intent':{'grant':{}}};authority={**self.authority,'semantic_pin':self.pin,'source':{},'trial':{},
++            'credential_storage_safe':True,'task_hash':q.c.digest(task),'approved_candidate':'fixture','approved_evidence':'fixture'}
++        (folder/q.AUTHORITY).write_text(json.dumps(authority))
++        fake=SimpleNamespace(proc=SimpleNamespace(pid=123,returncode=0,poll=lambda:0),audit=[],
++            wall_exceeded=False,remote_control_status='disabled',mcp_startup_seen=False,denials=[],close=lambda:None,
++            schema_temp_cleaned=True,pages=4,stderr_outcome=outcome)
++        def opened():q.atomic_record(folder/q.INTENT,{'fixture':True});return fake
++        def call(method,params):
++            fake.audit.append({'method':method,'unscoped':True})
++            return self.native()if method=='config/read'else self.native_mcp()
++        fake.open=opened;fake.call=call
++        config={'identity':[1,2,3,4,5],'_private_content_hash':'private','_private_projects_hash':'private-projects'}
++        with mock.patch.object(q.c,'HUB_ROOT',self.root),mock.patch.object(q,'admit',return_value=self.fixture_admission),\
++            mock.patch.object(q,'observed_verified',return_value=config),mock.patch.object(q.r,'source_snapshot',return_value={}),\
++            mock.patch.object(q.c,'placeholder_snapshot',return_value={}),mock.patch.object(q,'credential_snapshot',side_effect=identities),\
++            mock.patch.object(q.r,'TaskStore',return_value=SimpleNamespace(task=lambda _:task)),\
++            mock.patch.object(q.r,'mapping_check'),mock.patch.object(q,'adapter',return_value=fake),mock.patch.object(q,'drain'),\
++            mock.patch.object(q,'original_config',return_value=self.user),\
++            mock.patch.object(q,'authentication_receipt',side_effect=[q.AuthReceipt('ChatGPT',0),q.AuthReceipt(closure_mode,0)]),\
++            mock.patch.object(q,'feature_snapshot',return_value={k:False for k in q.p.FROZEN_DISABLES}|{'code_mode_host':True}),\
++            mock.patch.object(q.MetadataEffects,'install'),mock.patch.object(q.MetadataEffects,'fact',return_value={'effect_limits_satisfied':True}),\
++            mock.patch.object(q.r,'final_capability_state',return_value=True):result=q.run()
++        self.assertNotIn('NEVER_RETAIN',(folder/q.RESULT).read_text())
++        return result
++
++    def test_official_storage_change_in_mcp_window_does_not_claim_refresh_success(self):
++        import os
++        before=(1,2,3,4,5,33152,os.getuid(),1);after=(1,9,8,7,6,33152,os.getuid(),1)
++        result=self.run_auth_fixture('NO_REFRESH_FAILURE_SIGNAL',[before,before,after,after])
++        self.assertEqual(result['status'],'PASS_NATIVE_CONFIG_PRECHECK')
++        self.assertEqual(result['full_metadata_acceptance'],'PASS_UNSCOPED_PROCESS_ONLY')
++        self.assertTrue(result['auth_storage_effect_bounded']);self.assertTrue(result['credential_effect']['identity_changed'])
++        self.assertEqual(result['credential_effect']['refresh_success'],'NOT_OBSERVED')
++        self.assertEqual(result['credential_effect']['physical_request_count'],'NOT_OBSERVED')
++        self.assertFalse(result['fifth_resume_allowed']);self.assertEqual(result['model_turns'],0)
++
++    def test_sdk_failure_unknown_log_auth_mode_and_outside_window_changes_block(self):
++        import os
++        before=(1,2,3,4,5,33152,os.getuid(),1);after=(1,9,8,7,6,33152,os.getuid(),1)
++        cases=[('SDK_REFRESH_FAILURE_REPORTED',[before]*4,'ChatGPT'),('UNKNOWN_STDERR',[before]*4,'ChatGPT'),
++            ('NO_REFRESH_FAILURE_SIGNAL',[before]*4,'API'),('NO_REFRESH_FAILURE_SIGNAL',[before,before,before,after],'ChatGPT'),
++            ('NO_REFRESH_FAILURE_SIGNAL',[before,after,after],'ChatGPT')]
++        for outcome,ids,mode in cases:
++            with self.subTest(outcome=outcome,mode=mode):
++                result=self.run_auth_fixture(outcome,ids,mode)
++                self.assertEqual(result['status'],'PARTIAL_BLOCKED');self.assertEqual(result['full_metadata_acceptance'],'BLOCKED')
++            for name in (q.INTENT,q.RESULT):
++                (self.root/q.c.PRIVATE/name).unlink()
++
++    def test_public_catalog_exact_content_mode_alias_and_source_identity(self):
++        path=self.root/'public-models.json';raw=q.MODEL_CATALOG.read_bytes();path.write_bytes(raw);path.chmod(0o644)
++        with mock.patch.object(q,'MODEL_CATALOG',path):
++            before=q.catalog_snapshot();self.assertEqual(before,q.catalog_snapshot())
++            path.write_bytes(raw+b' ')
++            with self.assertRaises(ServiceError):q.catalog_snapshot()
++            path.write_bytes(raw);path.chmod(0o600)
++            with self.assertRaises(ServiceError):q.catalog_snapshot()
++            path.chmod(0o644);path.unlink();path.symlink_to(q.c.HUB_ROOT/q.c.PRIVATE/'public-source-v11-6-mcp/bundled-models.json')
++            with self.assertRaises(ServiceError):q.catalog_snapshot()
++
++    def test_model_catalog_override_is_only_in_helper_and_expected_session(self):
++        self.assertEqual(q.metadata_overrides()[:-2],q.p.OVERRIDES)
++        self.assertEqual(q.metadata_overrides()[-2:],('-c','model_catalog_json='+json.dumps(str(q.MODEL_CATALOG))))
++        self.assertEqual(q.session_config()['model_catalog_json'],str(q.MODEL_CATALOG))
++        effects=q.MetadataEffects()
++        with mock.patch('hub.css_metadata_effects.isolated_launch',return_value=(('fixed-helper',),[]))as launch:
++            effects.bind_helper('private-config-hash')
++        self.assertEqual(launch.call_args.args[0],('codex','app-server','--stdio',*q.metadata_overrides()))
+ 
+ class DesktopRoundtripTests(unittest.TestCase):
+     def setUp(self):
+--- tests/test_hub_css_full_metadata.py
++++ tests/test_hub_css_full_metadata.py
+@@ -67,7 +67,7 @@
+         a=self.fake_adapter()
+         with mock.patch.object(q,'protocol_proof',return_value=self.proof):
+             before=q.feature_snapshot(a)
+-            a.consumed|={'config/read'}
++            a.consumed|={'config/read','mcpServerStatus/list'}
+             after=q.feature_snapshot(a)
+             self.assertEqual(before,after);self.assertEqual((a.snapshots,a.pages),(2,4))
+             with self.assertRaises(ServiceError):q.feature_snapshot(a)

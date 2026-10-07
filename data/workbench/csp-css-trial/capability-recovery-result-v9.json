@@ -1,0 +1,408 @@
+{
+  "auth_metadata_unchanged": true,
+  "before_load_status": "notLoaded",
+  "capability_facts": [
+    {
+      "kind": "notification",
+      "method": "remoteControl/status/changed",
+      "status": "disabled"
+    },
+    {
+      "has_next_page": false,
+      "kind": "rpc_result",
+      "method": "mcpServerStatus/list",
+      "raw_body_retained": false,
+      "request_cursor_present": false,
+      "row_count": 6,
+      "servers": [
+        {
+          "capabilities_present": false,
+          "name": "chrome-devtools",
+          "resources_count": 0,
+          "runtime_status": "disabled",
+          "templates_count": 0,
+          "tools_count": 0
+        },
+        {
+          "capabilities_present": false,
+          "name": "context7",
+          "resources_count": 0,
+          "runtime_status": "disabled",
+          "templates_count": 0,
+          "tools_count": 0
+        },
+        {
+          "capabilities_present": false,
+          "name": "github",
+          "resources_count": 0,
+          "runtime_status": "disabled",
+          "templates_count": 0,
+          "tools_count": 0
+        },
+        {
+          "capabilities_present": false,
+          "name": "node_repl",
+          "resources_count": 0,
+          "runtime_status": "disabled",
+          "templates_count": 0,
+          "tools_count": 0
+        },
+        {
+          "capabilities_present": false,
+          "name": "openaiDeveloperDocs",
+          "resources_count": 0,
+          "runtime_status": "disabled",
+          "templates_count": 0,
+          "tools_count": 0
+        },
+        {
+          "capabilities_present": false,
+          "name": "playwright",
+          "resources_count": 0,
+          "runtime_status": "disabled",
+          "templates_count": 0,
+          "tools_count": 0
+        }
+      ],
+      "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+      "unknown_server_count": 0
+    },
+    {
+      "features": [
+        {
+          "enabled": true,
+          "name": "code_mode_host"
+        },
+        {
+          "enabled": false,
+          "name": "memories"
+        },
+        {
+          "enabled": false,
+          "name": "hooks"
+        },
+        {
+          "enabled": false,
+          "name": "multi_agent"
+        },
+        {
+          "enabled": false,
+          "name": "multi_agent_v2"
+        },
+        {
+          "enabled": false,
+          "name": "apps"
+        },
+        {
+          "enabled": false,
+          "name": "plugins"
+        },
+        {
+          "enabled": false,
+          "name": "in_app_browser"
+        },
+        {
+          "enabled": false,
+          "name": "browser_use"
+        },
+        {
+          "enabled": false,
+          "name": "browser_use_full_cdp_access"
+        },
+        {
+          "enabled": false,
+          "name": "browser_use_external"
+        },
+        {
+          "enabled": false,
+          "name": "computer_use"
+        },
+        {
+          "enabled": false,
+          "name": "remote_plugin"
+        }
+      ],
+      "has_next_page": true,
+      "kind": "rpc_result",
+      "method": "experimentalFeature/list",
+      "other_feature_count": 87,
+      "raw_body_retained": false,
+      "request_cursor_present": false,
+      "row_count": 100,
+      "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+    },
+    {
+      "features": [
+        {
+          "enabled": false,
+          "name": "image_generation"
+        },
+        {
+          "enabled": false,
+          "name": "goals"
+        }
+      ],
+      "has_next_page": false,
+      "kind": "rpc_result",
+      "method": "experimentalFeature/list",
+      "other_feature_count": 50,
+      "raw_body_retained": false,
+      "request_cursor_present": true,
+      "row_count": 52,
+      "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+    }
+  ],
+  "closed": true,
+  "config_contents_changed": false,
+  "config_identity_changed": false,
+  "contract": "HUB-LWB-2.3-CSP-CAPABILITY-RECOVERY-GOV-v9",
+  "current_capabilities": {
+    "argv": [
+      "codex",
+      "app-server",
+      "--stdio",
+      "-c",
+      "model=\"gpt-6.1-sol\"",
+      "-c",
+      "model_reasoning_effort=\"xhigh\"",
+      "-c",
+      "mcp_servers.chrome-devtools.enabled=false",
+      "-c",
+      "mcp_servers.context7.enabled=false",
+      "-c",
+      "mcp_servers.github.enabled=false",
+      "-c",
+      "mcp_servers.node_repl.enabled=false",
+      "-c",
+      "mcp_servers.openaiDeveloperDocs.enabled=false",
+      "-c",
+      "mcp_servers.playwright.enabled=false",
+      "--disable",
+      "apps",
+      "--disable",
+      "plugins",
+      "--disable",
+      "remote_plugin",
+      "--disable",
+      "browser_use",
+      "--disable",
+      "browser_use_external",
+      "--disable",
+      "browser_use_full_cdp_access",
+      "--disable",
+      "computer_use",
+      "--disable",
+      "in_app_browser",
+      "--disable",
+      "hooks",
+      "--disable",
+      "image_generation",
+      "--disable",
+      "multi_agent",
+      "--disable",
+      "multi_agent_v2",
+      "--disable",
+      "goals",
+      "--disable",
+      "memories",
+      "-c",
+      "web_search=\"disabled\"",
+      "-c",
+      "default_permissions=\"hub_lwb_fixture_v1\"",
+      "-c",
+      "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+      "-c",
+      "permissions.hub_lwb_fixture_v1.network.enabled=false"
+    ],
+    "disabled_configured_servers": [
+      "chrome-devtools",
+      "context7",
+      "github",
+      "node_repl",
+      "openaiDeveloperDocs",
+      "playwright"
+    ],
+    "disabled_features": {
+      "apps": false,
+      "browser_use": false,
+      "browser_use_external": false,
+      "browser_use_full_cdp_access": false,
+      "computer_use": false,
+      "goals": false,
+      "hooks": false,
+      "image_generation": false,
+      "in_app_browser": false,
+      "memories": false,
+      "multi_agent": false,
+      "multi_agent_v2": false,
+      "plugins": false,
+      "remote_plugin": false
+    },
+    "local_native_tool_host": true,
+    "mcp_servers": 0,
+    "permission_profile": "hub_lwb_fixture_v1",
+    "profile_argv": [
+      "-c",
+      "default_permissions=\"hub_lwb_fixture_v1\"",
+      "-c",
+      "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+      "-c",
+      "permissions.hub_lwb_fixture_v1.network.enabled=false"
+    ],
+    "remote_control_status": "disabled",
+    "remote_state_source": "last schema-validated notification, retained independently of polling",
+    "source": "native loaded-thread feature and MCP status APIs",
+    "web_search_launch": "disabled"
+  },
+  "current_idle": {
+    "completed_turn_binding": "existing immutable exactTaskStore terminal event; no hydrated history inference",
+    "exact_cwd": true,
+    "status": "idle",
+    "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+  },
+  "effective_process": {
+    "body_retained": false,
+    "model": "gpt-6.1-sol",
+    "reasoning_effort": "xhigh",
+    "source": "native config/read effective process snapshot"
+  },
+  "error": "DIAGNOSTIC_NOTIFICATION_REJECTED",
+  "exit": 0,
+  "expiry_valid_at_close": true,
+  "final_capabilities_consistent": true,
+  "final_mcp_startup_seen": false,
+  "final_remote_control_status": "disabled",
+  "historical_v7_postcheck": "PARTIAL_BLOCKED unchanged; this is fresh current loaded evidence after completed turn",
+  "loaded_six_mcp": [
+    {
+      "capabilities_present": false,
+      "name": "chrome-devtools",
+      "resources_count": 0,
+      "runtime_status": "disabled",
+      "templates_count": 0,
+      "tools_count": 0
+    },
+    {
+      "capabilities_present": false,
+      "name": "context7",
+      "resources_count": 0,
+      "runtime_status": "disabled",
+      "templates_count": 0,
+      "tools_count": 0
+    },
+    {
+      "capabilities_present": false,
+      "name": "github",
+      "resources_count": 0,
+      "runtime_status": "disabled",
+      "templates_count": 0,
+      "tools_count": 0
+    },
+    {
+      "capabilities_present": false,
+      "name": "node_repl",
+      "resources_count": 0,
+      "runtime_status": "disabled",
+      "templates_count": 0,
+      "tools_count": 0
+    },
+    {
+      "capabilities_present": false,
+      "name": "openaiDeveloperDocs",
+      "resources_count": 0,
+      "runtime_status": "disabled",
+      "templates_count": 0,
+      "tools_count": 0
+    },
+    {
+      "capabilities_present": false,
+      "name": "playwright",
+      "resources_count": 0,
+      "runtime_status": "disabled",
+      "templates_count": 0,
+      "tools_count": 0
+    }
+  ],
+  "methods": [
+    {
+      "cursor_present": false,
+      "method": "initialize",
+      "thread_id": null
+    },
+    {
+      "cursor_present": false,
+      "method": "config/read",
+      "thread_id": null
+    },
+    {
+      "cursor_present": false,
+      "method": "thread/read",
+      "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+    },
+    {
+      "cursor_present": false,
+      "method": "thread/resume",
+      "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+    },
+    {
+      "cursor_present": false,
+      "method": "thread/read",
+      "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+    },
+    {
+      "cursor_present": false,
+      "method": "mcpServerStatus/list",
+      "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+    },
+    {
+      "cursor_present": false,
+      "method": "experimentalFeature/list",
+      "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+    },
+    {
+      "cursor_present": true,
+      "method": "experimentalFeature/list",
+      "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+    },
+    {
+      "cursor_present": false,
+      "method": "command/exec",
+      "thread_id": null
+    }
+  ],
+  "model_turns": 0,
+  "new_threads": 0,
+  "notifications": [],
+  "pid": 1404205,
+  "protected_config_unchanged": true,
+  "read_only_isolation": {
+    "css_sha256": "babb5bc2f53a92017df6042f4246e8b3c41ec803d4ba3b34bde188f70c286ac1",
+    "denials": {
+      "canonical_read": 2,
+      "canonical_write": 2,
+      "credential_read": 2,
+      "credential_write": 2,
+      "parent_canary_read": 2,
+      "parent_canary_write": 2,
+      "sibling_read": 2,
+      "sibling_write": 2,
+      "symlink_read": 2,
+      "symlink_write": 2,
+      "tmp_read": 13,
+      "tmp_write": 13
+    },
+    "network_errno": 1,
+    "parent_list_errno": 13,
+    "parent_open_errno": 13,
+    "protected_bytes_read": 0,
+    "trial_bytes_read": 143428
+  },
+  "readonly_preview14_unchanged": true,
+  "resume_calls_consumed": 1,
+  "source_unchanged": true,
+  "source_writes": 0,
+  "status": "PARTIAL_BLOCKED",
+  "task_row_unchanged": true,
+  "taskstore_row_writes": 0,
+  "trial_unchanged": true
+}

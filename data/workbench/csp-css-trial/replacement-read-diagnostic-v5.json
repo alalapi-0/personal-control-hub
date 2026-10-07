@@ -1,0 +1,68 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v5-REPLACEMENT-DIAG-READ",
+  "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+  "thread_read_calls": 1,
+  "actual": "FAILED DIAGNOSTIC_NOTIFICATION_REJECTED after exactread; response and notification evidence unavailable due missing finally retention",
+  "read_result": "UNKNOWN; do not infer readable or unavailable",
+  "process_closed": true,
+  "model_turns": 0,
+  "new_threads": 0,
+  "source_effects": 0,
+  "source_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+  "docs": {
+    "docs/PROJECT_STATE.md": "afcd3027fcace6120c4c436af804fcc3594f6ed889f5364386bacd676c1c2b7e",
+    "docs/NEXT_ACTIONS.md": "4a5cea91842a95695f1ed9a8752edd7e2cdd683a8190a13349121d7e36fdf5e8"
+  },
+  "trial_after": {
+    "fingerprint": [
+      [
+        ".agents",
+        "directory"
+      ],
+      [
+        ".aws",
+        "directory"
+      ],
+      [
+        ".codex",
+        "directory"
+      ],
+      [
+        ".git",
+        "directory"
+      ],
+      [
+        "progress_ui.css",
+        "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+      ]
+    ],
+    "directories": {
+      ".agents": [
+        66306,
+        45772554,
+        1000,
+        493
+      ],
+      ".aws": [
+        66306,
+        45772555,
+        1000,
+        493
+      ],
+      ".codex": [
+        66306,
+        45772401,
+        1000,
+        493
+      ],
+      ".git": [
+        66306,
+        45772425,
+        1000,
+        493
+      ]
+    },
+    "host_mounts": false
+  },
+  "config_pin_match": "12d3f7fb223f801b8a63db97fe03d3d7803c1b13adda2ea7da042f3e78c84ab5"
+}

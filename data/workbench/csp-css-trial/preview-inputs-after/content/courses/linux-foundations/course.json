@@ -1,0 +1,61 @@
+{
+  "course_id": "linux-foundations",
+  "title": "Linux 基础与工程实践",
+  "status": "active",
+  "stage": "single_course_validation",
+  "summary": "当前仓库唯一正式课程。用一门 Linux 课程验证：持续学习意愿、任务记录、动作反馈、掌握度与通关感、网页交互体验。",
+  "active": true,
+  "modules": [
+    {
+      "module_id": "module-00-terminal",
+      "title": "Terminal 初见",
+      "order": 0,
+      "legacy_round": "round_00",
+      "overview": "content/courses/linux-foundations/modules/module-00-terminal/overview.md",
+      "content_root": "rounds/round_00",
+      "overview_doc": "round_00.md"
+    },
+    {
+      "module_id": "module-01-filesystem",
+      "title": "文件系统与基础命令",
+      "order": 1,
+      "legacy_round": "round_01",
+      "overview": "content/courses/linux-foundations/modules/module-01-filesystem/overview.md",
+      "content_root": "rounds/round_01",
+      "overview_doc": "round_01.md"
+    },
+    {
+      "module_id": "module-02-shell-git",
+      "title": "Shell、管道与 Git 最小工作流",
+      "order": 2,
+      "legacy_round": "round_02",
+      "overview": "content/courses/linux-foundations/modules/module-02-shell-git/overview.md",
+      "content_root": "rounds/round_02",
+      "overview_doc": "round_02.md",
+      "notes": "Git 为本课程邻接实践，不是独立 Git 课程。"
+    },
+    {
+      "module_id": "module-03-automation",
+      "title": "Linux 进阶与自动化",
+      "order": 3,
+      "legacy_round": "round_06",
+      "overview": "content/courses/linux-foundations/modules/module-03-automation/overview.md",
+      "content_root": "rounds/round_06",
+      "overview_doc": "round_06.md"
+    },
+    {
+      "module_id": "module-04-remote-vps",
+      "title": "VPS 远程实操（只读优先）",
+      "order": 4,
+      "legacy_round": "stage_03_vps_remote_ops",
+      "overview": "content/courses/linux-foundations/modules/module-04-remote-vps/overview.md",
+      "content_root": "rounds/stage_03_vps_remote_ops",
+      "overview_doc": "rounds/stage_03_vps_remote_ops/README.md"
+    }
+  ],
+  "compatibility": {
+    "progress_lane": "linux-foundations",
+    "web_ui_round_ids": ["round_00", "round_01", "round_02", "round_06"],
+    "note": "Phase 0 保留 rounds/ 作为可执行内容真源，保证 Round 00 现有链路；Phase 1 再完成物理迁入 modules/。"
+  }
+}

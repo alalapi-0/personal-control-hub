@@ -1,0 +1,8 @@
+{
+  "exact_bound_cwd": true,
+  "method": "thread/read",
+  "recoverable": "UNVERIFIED",
+  "status": "metadata_read_succeeded",
+  "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+  "zero_turns": "UNVERIFIED"
+}

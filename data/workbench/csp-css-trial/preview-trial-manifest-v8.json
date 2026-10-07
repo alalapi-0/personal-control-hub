@@ -1,0 +1,68 @@
+{
+  "artifacts": {
+    "after_desktop": {
+      "css_sha256": "babb5bc2f53a92017df6042f4246e8b3c41ec803d4ba3b34bde188f70c286ac1",
+      "file_saved_at": "2026-10-07T08:37:13.035261+00:00",
+      "path": "docs/reports/linux-workbench/csp-css-trial-after-desktop-v2.jpg",
+      "sha256": "fb67ae1aa8229b72b51c74648e900542a6aaf8f0ae72815a81d6538df771e7a9",
+      "size": [
+        1265,
+        742
+      ],
+      "status": "unpromoted trial — post-capability blocked"
+    },
+    "after_narrow": {
+      "css_sha256": "babb5bc2f53a92017df6042f4246e8b3c41ec803d4ba3b34bde188f70c286ac1",
+      "file_saved_at": "2026-10-07T08:37:42.900970+00:00",
+      "path": "docs/reports/linux-workbench/csp-css-trial-after-narrow.jpg",
+      "sha256": "e3d2e01af95845ef166b5bbe69b1a92294f537da6b4d582ae7e4006aff276ad7",
+      "size": [
+        375,
+        911
+      ],
+      "status": "unpromoted trial — post-capability blocked"
+    },
+    "before_desktop": {
+      "css_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+      "file_saved_at": "2026-10-07T08:36:39.474268+00:00",
+      "path": "docs/reports/linux-workbench/csp-css-trial-before-desktop.jpg",
+      "sha256": "e8b72e43321559e46c83de28c2fd045d8b1387fbe2c88947b851ed3353966728",
+      "size": [
+        1265,
+        742
+      ],
+      "status": "unpromoted trial — post-capability blocked"
+    },
+    "before_narrow": {
+      "css_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+      "file_saved_at": "2026-10-07T08:39:22.105256+00:00",
+      "path": "docs/reports/linux-workbench/csp-css-trial-before-narrow-v2.jpg",
+      "sha256": "ecbc33b7c0bf83e4b68bb158bb1582ed21d01427366162c379e3ca7ddc951fa0",
+      "size": [
+        375,
+        911
+      ],
+      "status": "unpromoted trial — post-capability blocked"
+    }
+  },
+  "browser_timestamp_meaning": "preview-browser-evidence-v8.json top timestamp is record creation, not asset capture time; perasset file_saved_at above",
+  "canonical_source_promoted": false,
+  "classification": "real_isolated_trial_evidence",
+  "execution_allowed": false,
+  "human_acceptance": "pending",
+  "retained_capture_failures": [
+    "csp-css-trial-after-desktop.jpg first1280x720 non-comparable",
+    "csp-css-trial-before-narrow.jpg scaled375x220 unusable"
+  ],
+  "schema": 1,
+  "scope": "Gov permitted immutable standalone evidence only; no DesignStore/current canonical candidate/decision registration",
+  "source_files": {
+    "docs/NEXT_ACTIONS.md": "4a5cea91842a95695f1ed9a8752edd7e2cdd683a8190a13349121d7e36fdf5e8",
+    "docs/PROJECT_STATE.md": "afcd3027fcace6120c4c436af804fcc3594f6ed889f5364386bacd676c1c2b7e",
+    "progress_ui.css": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+  },
+  "task": "csp-css-trial-20261007",
+  "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+  "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19",
+  "visual_inspection": "Root actualpixels: both matched1265x742 desktop complete; both375x911 narrow complete; visible unpromoted marker; expected subtle border only"
+}

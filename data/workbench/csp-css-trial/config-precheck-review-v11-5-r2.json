@@ -1,0 +1,10 @@
+{
+  "agent": "/root/desktop_opaque_v11_5_r2_judge",
+  "blocking_defect": "source/binary gate runs after config/read; admit() must reject before intent/adapter/spawn/RPC",
+  "candidate_sha256": "2eb41698f43cf0d803e0a56ad3f34f70979905ba731254ccc2ba9791648ea1b6",
+  "decision": "FAIL",
+  "deterministic": "33code129evidence exact; binary ECDSA/sourcefeature accepted;32scoped421HubPASS",
+  "evidence_sha256": "2123d4d8f9ddae38818c5308db64672ebf40a20627430e0753b58c6abfd64ace",
+  "governor": "REQUEST_REPAIR frozen v11.5-r1; immutable admission snapshot and pre-spawn revalidation",
+  "native_effects": false
+}

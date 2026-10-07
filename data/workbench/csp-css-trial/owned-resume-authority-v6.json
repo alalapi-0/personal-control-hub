@@ -1,0 +1,135 @@
+{
+  "authority": {
+    "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v6-OWNED-RESUME",
+    "actor": "trusted_local_owner",
+    "task_hash": "e8781982cf27b4b6b3d72a63eb4102a9f98e4c9e25dcdf59c7ff91ab3ae74e86",
+    "intent_hash": "bcef1ef45fee92309f469d2a5b3eed76df2f7cc2496cff0b4cc2ce37f676d699",
+    "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+    "thread_limit": 2,
+    "resume_limit": 1,
+    "model_turn_limit": 1,
+    "expires_at": 1791362363.438937,
+    "original_authority_hash": "22de2b92f72eded23b86efce2d7ff5ce0fb1bb77ab046198e36261b4214dd9fe",
+    "recovery_config_pin": {
+      "auth": {
+        "credential_bytes_read": 0,
+        "exit": 0,
+        "mode": "ChatGPT",
+        "source": "supported codex login status"
+      },
+      "identity": [
+        66306,
+        12092677,
+        4122,
+        1791359976648157153,
+        1791359976648157153
+      ],
+      "projection": {
+        "approval_policy": "never",
+        "body_retained": false,
+        "credential_bytes_read": 0,
+        "features": {
+          "memories": true
+        },
+        "mcp_key_types": {
+          "chrome-devtools": {
+            "args": "list",
+            "command": "str"
+          },
+          "context7": {
+            "args": "list",
+            "command": "str"
+          },
+          "github": {
+            "args": "list",
+            "command": "str"
+          },
+          "node_repl": {
+            "args": "list",
+            "command": "str",
+            "env": "dict",
+            "startup_timeout_sec": "int"
+          },
+          "openaiDeveloperDocs": {
+            "url": "str"
+          },
+          "playwright": {
+            "args": "list",
+            "command": "str"
+          }
+        },
+        "mcp_names": [
+          "chrome-devtools",
+          "context7",
+          "github",
+          "node_repl",
+          "openaiDeveloperDocs",
+          "playwright"
+        ],
+        "model": "gpt-6.1-sol",
+        "permission_profile_names": [],
+        "reasoning_effort": "ultra",
+        "sandbox_mode": "danger-full-access",
+        "top_key_types": {
+          "agents": "dict",
+          "approval_policy": "str",
+          "approvals_reviewer": "str",
+          "desktop": "dict",
+          "features": "dict",
+          "marketplaces": "dict",
+          "mcp_servers": "dict",
+          "memories": "dict",
+          "model": "str",
+          "model_reasoning_effort": "str",
+          "plugins": "dict",
+          "projects": "dict",
+          "sandbox_mode": "str",
+          "service_tier": "str",
+          "skills": "dict"
+        }
+      },
+      "sha256": "5c6675dfb1465a13212cf99e878a6476659f854b9325b70a3f3d96ee13401538"
+    },
+    "lineage": {
+      "sole_owned_native_start": true,
+      "turn_intents": 0,
+      "turn_id": null,
+      "provider_calls": 0,
+      "method_audit_basis": "immutable original f141... code permits turn/start only after css-unique-model-turn-v5 event, absent; native stream events before dispatch only; not inferred from omittedturns",
+      "closed_owner_fence": "b95f398ebe8e335fa0d6e0a8e63e8c9901a041a3d2a51824bd8a78fe773eb465"
+    },
+    "source_audit": {
+      "cli": "0.159.3",
+      "resume_parameter": "excludeTurns=true",
+      "initialTurnsPage": "omitted",
+      "include_turns": false,
+      "history_path": "load_latest_model_context for paginated stored thread; no list_turns; response pending.include_turns=false",
+      "implicit_turn": "none; resume constructs InitialHistory and pending response; goals disabled",
+      "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server/src/request_processors/thread_processor.rs",
+      "lines": [
+        3725,
+        4575,
+        4389
+      ],
+      "response_source": "thread_lifecycle.rs:566-618"
+    }
+  },
+  "prior_result": {
+    "details": {
+      "error_categories": [],
+      "message_bytes": 31,
+      "message_sha256": "c82d1cc7cb99800445758cc2a93c5fbcc676b14afac6373faaa32040cf2d3493",
+      "raw_message_retained": false,
+      "rpc_code": -32601
+    },
+    "effects_rolled_back": false,
+    "error_class": "CODEX_RPC_REJECTED",
+    "request_denials": [],
+    "stream_observation": {
+      "count": 0,
+      "methods": {},
+      "sha256_chain": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "version": 1
+}

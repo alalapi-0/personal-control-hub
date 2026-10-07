@@ -1,0 +1,16 @@
+{
+  "candidate_decision": "FAIL",
+  "candidate_sha256": "c48e2df330e10860d627097a5067e0d9f97ed3915d571b470b4f92d3f4112efb",
+  "checks": "35code255evidence hashes/digests exact;62targetedpassed; native/auth/provider/mount/Git0",
+  "contract": "HUB-LWB-2.3-CSP-FULL-METADATA-AUTH-REFRESH-GOV-v11.7",
+  "contract_decision": "PASS_STAGED_INACTIVE",
+  "contract_sha256": "7991b8eaf1cb50e6250938e62b56d3f1bc74d22364ec9d8cdfc3a2343741809e",
+  "created_at": 1791383571.1923628,
+  "decision": "FAIL",
+  "defect": "firstloginstatus credentialchange not bracketed; admission snapshot discarded andrunbaseline afterfirstauth accepts A→B→B→B→B",
+  "evidence_sha256": "413f9dd8cc5890be5bd4768cba29bf9d1b459c0492300445aae9af69fe14b445",
+  "judge": "/root/full_metadata_v11_7_staged_judge",
+  "native_authority": 0,
+  "owner_grant": "ABSENT",
+  "required_repair": "credential privateidentitybeforefirstauth andcompareimmediatelyafter; regressionfirstauthonlychangePARTIAL_BLOCKED"
+}

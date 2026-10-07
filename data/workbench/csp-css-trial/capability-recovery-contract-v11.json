@@ -1,0 +1,42 @@
+{
+  "baseline_approval": {
+    "candidate": "9a075b908f5bd1ffe6af3d6e75da63e2eff9fdc05c9eb4b8dc928cb90ee12efc",
+    "evidence": "16910b074c76636daa244db147bd187eb36d2ee20660d781b2678644f72bd6b7",
+    "governor": "entry_governor APPROVE",
+    "judge": "completed_baseline_judge PASS"
+  },
+  "contract": "HUB-LWB-2.3-CSP-CAPABILITY-RECOVERY-GOV-v11",
+  "decision": "AUTHORIZE_PREDISPATCH_IMPLEMENTATION",
+  "forbidden": [
+    "newthread",
+    "anyturn/model",
+    "sixthresume",
+    "TaskStore writes",
+    "source/docs promotion",
+    "Git",
+    "globalconfiguration",
+    "authentication changes"
+  ],
+  "governor": "entry_governor",
+  "history": "allv7/v9/v10 FAIL and original expiredgrant preserved; cumulative limits notreset",
+  "lane": "GOVERNED",
+  "limits": {
+    "authority_seconds": 900,
+    "helper_total_seconds": 120,
+    "helpers": 1,
+    "model_turns_total": 1,
+    "new_model_turns": 0,
+    "prior_resumes": 4,
+    "renewal": false,
+    "resumes_total": 5,
+    "rpc_seconds": 100,
+    "sixth_resume": false,
+    "startup_headroom_seconds": 150,
+    "threads_total": 2,
+    "watchdog_seconds": 108
+  },
+  "objective": "current complete capability evidence for exact completed CSS turn using approved bound completed-turn baseline",
+  "postruntime": "register exact result/fresh Judge/Governor before separately considering reconcile or promotion",
+  "predispatch": "fresh Judge PASS and Governor decision before live authority/helper",
+  "required": "successfulresume/excludeTurns then unique baseline phase before postread/cap; zero-or-one knownusage exactlybound to unique completedturn/terminal event/model1; no usage values; currentidle/exactcwd/model+effort/profile/sixMCP-zero-capabilities/all14featuresfalse/remote-disabled/startupfalse/readonlyisolation/allpreservation; pendingRPC safe metadata and neveraccept lateframe"
+}

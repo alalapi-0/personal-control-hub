@@ -1,0 +1,300 @@
+{
+  "at": "2026-10-07T09:54:31.256994+00:00",
+  "cause": "UNPROVEN; same top types/six MCP names/sensitive structure; no rawconfig/sensitive values/hash saved",
+  "changed_projection_fields": [
+    "protected_sha256"
+  ],
+  "contract": "HUB-LWB-2.3-CSP-CAPABILITY-RECOVERY-GOV-v11",
+  "current_public_observation": {
+    "default_effort_is_frozen": true,
+    "default_model_is_frozen": true,
+    "identity": [
+      66306,
+      12092677,
+      4211,
+      1791366368347320191,
+      1791366368347320191
+    ],
+    "projection": {
+      "excluded_default_fields": [
+        "model",
+        "model_reasoning_effort"
+      ],
+      "mcp_names": [
+        "chrome-devtools",
+        "context7",
+        "github",
+        "node_repl",
+        "openaiDeveloperDocs",
+        "playwright"
+      ],
+      "protected_sha256": "bd9dab9fc3549e5170ee1d6c1748caf404696c184d53312d2ace42414a8aff41",
+      "secret_values_or_hashes_retained": false,
+      "sensitive_structure": {
+        "chrome-devtools": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        },
+        "context7": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        },
+        "github": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        },
+        "node_repl": {
+          "args": {
+            "item_types": [],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          },
+          "env": {
+            "BROWSER_USE_AVAILABLE_BACKENDS": {
+              "type": "str"
+            },
+            "BROWSER_USE_CODEX_APP_BUILD_FLAVOR": {
+              "type": "str"
+            },
+            "BROWSER_USE_CODEX_APP_VERSION": {
+              "type": "str"
+            },
+            "BROWSER_USE_TINYSKY_ENABLED": {
+              "type": "str"
+            },
+            "CODEX_CLI_PATH": {
+              "type": "str"
+            },
+            "CODEX_HOME": {
+              "type": "str"
+            },
+            "NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER": {
+              "type": "str"
+            },
+            "NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME": {
+              "type": "str"
+            },
+            "NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS": {
+              "type": "str"
+            },
+            "NODE_REPL_NODE_MODULE_DIRS": {
+              "type": "str"
+            },
+            "NODE_REPL_NODE_PATH": {
+              "type": "str"
+            },
+            "NODE_REPL_TRUSTED_CODE_PATHS": {
+              "type": "str"
+            },
+            "NODE_REPL_TRUSTED_SERVICES": {
+              "type": "str"
+            }
+          },
+          "startup_timeout_sec": {
+            "type": "int"
+          }
+        },
+        "openaiDeveloperDocs": {
+          "url": {
+            "type": "str"
+          }
+        },
+        "playwright": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        }
+      },
+      "top_key_types": {
+        "agents": "dict",
+        "approval_policy": "str",
+        "approvals_reviewer": "str",
+        "desktop": "dict",
+        "features": "dict",
+        "marketplaces": "dict",
+        "mcp_servers": "dict",
+        "memories": "dict",
+        "model": "str",
+        "model_reasoning_effort": "str",
+        "plugins": "dict",
+        "projects": "dict",
+        "sandbox_mode": "str",
+        "service_tier": "str",
+        "skills": "dict"
+      }
+    }
+  },
+  "failure": "CSS_PROCESS_PROTECTED_CONFIG_DRIFT",
+  "method": "v11 candidate registration preflight p.verify, no adapter/helper invoked",
+  "model_total": 1,
+  "old_pin": {
+    "excluded_default_fields": [
+      "model",
+      "model_reasoning_effort"
+    ],
+    "mcp_names": [
+      "chrome-devtools",
+      "context7",
+      "github",
+      "node_repl",
+      "openaiDeveloperDocs",
+      "playwright"
+    ],
+    "protected_sha256": "2f3221497d84381ad9b9e52c58516e8be69f47b00677be04c433f3ff92de633d",
+    "secret_values_or_hashes_retained": false,
+    "sensitive_structure": {
+      "chrome-devtools": {
+        "args": {
+          "item_types": [
+            "str"
+          ],
+          "type": "list"
+        },
+        "command": {
+          "type": "str"
+        }
+      },
+      "context7": {
+        "args": {
+          "item_types": [
+            "str"
+          ],
+          "type": "list"
+        },
+        "command": {
+          "type": "str"
+        }
+      },
+      "github": {
+        "args": {
+          "item_types": [
+            "str"
+          ],
+          "type": "list"
+        },
+        "command": {
+          "type": "str"
+        }
+      },
+      "node_repl": {
+        "args": {
+          "item_types": [],
+          "type": "list"
+        },
+        "command": {
+          "type": "str"
+        },
+        "env": {
+          "BROWSER_USE_AVAILABLE_BACKENDS": {
+            "type": "str"
+          },
+          "BROWSER_USE_CODEX_APP_BUILD_FLAVOR": {
+            "type": "str"
+          },
+          "BROWSER_USE_CODEX_APP_VERSION": {
+            "type": "str"
+          },
+          "BROWSER_USE_TINYSKY_ENABLED": {
+            "type": "str"
+          },
+          "CODEX_CLI_PATH": {
+            "type": "str"
+          },
+          "CODEX_HOME": {
+            "type": "str"
+          },
+          "NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER": {
+            "type": "str"
+          },
+          "NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME": {
+            "type": "str"
+          },
+          "NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS": {
+            "type": "str"
+          },
+          "NODE_REPL_NODE_MODULE_DIRS": {
+            "type": "str"
+          },
+          "NODE_REPL_NODE_PATH": {
+            "type": "str"
+          },
+          "NODE_REPL_TRUSTED_CODE_PATHS": {
+            "type": "str"
+          },
+          "NODE_REPL_TRUSTED_SERVICES": {
+            "type": "str"
+          }
+        },
+        "startup_timeout_sec": {
+          "type": "int"
+        }
+      },
+      "openaiDeveloperDocs": {
+        "url": {
+          "type": "str"
+        }
+      },
+      "playwright": {
+        "args": {
+          "item_types": [
+            "str"
+          ],
+          "type": "list"
+        },
+        "command": {
+          "type": "str"
+        }
+      }
+    },
+    "top_key_types": {
+      "agents": "dict",
+      "approval_policy": "str",
+      "approvals_reviewer": "str",
+      "desktop": "dict",
+      "features": "dict",
+      "marketplaces": "dict",
+      "mcp_servers": "dict",
+      "memories": "dict",
+      "model": "str",
+      "model_reasoning_effort": "str",
+      "plugins": "dict",
+      "projects": "dict",
+      "sandbox_mode": "str",
+      "service_tier": "str",
+      "skills": "dict"
+    }
+  },
+  "resume_total": 4,
+  "runtime": "NOT_RUN",
+  "source/taskstore/global/Git_writes": 0,
+  "source3/trial4dirs/taskrow/auth_identity": "unchanged"
+}

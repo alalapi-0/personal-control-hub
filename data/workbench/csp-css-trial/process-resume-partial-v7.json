@@ -1,0 +1,3113 @@
+{
+  "actual_total": {
+    "canonical_source_writes": 0,
+    "model_turns": 1,
+    "native_threads": 2,
+    "resume_calls": 2
+  },
+  "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v7-PROCESS-CONFIG",
+  "events": [
+    {
+      "data": {
+        "at": 1791357240.773332,
+        "grant_hash": "d116bbbc46ad678876f77e2e2a6437923d2efa5722fb58aa154f7673626ab21c",
+        "transport": "app_server_stdio",
+        "worker": {
+          "owner": "worker-d391c498315f0aae234795e95c1630b3",
+          "pid": 865650,
+          "start_ticks": "2648671"
+        }
+      },
+      "key": "dispatch-intent-worker-d391c498315f0aae234795e95c1630b3",
+      "received": 1791357240.774694,
+      "sequence": 1
+    },
+    {
+      "data": {
+        "pid": 866293,
+        "schema_hash": "65c6f1ec6c60c8a7ed4919e37530afadd7d7cb7bc519c48fc08ff1009f00c4de",
+        "start_ticks": "2648746",
+        "transport": "app_server_stdio"
+      },
+      "key": "stdio-child-worker-d391c498315f0aae234795e95c1630b3",
+      "received": 1791357240.8958344,
+      "sequence": 2
+    },
+    {
+      "data": {
+        "argv": [
+          "codex",
+          "app-server",
+          "--stdio",
+          "-c",
+          "mcp_servers.chrome-devtools.enabled=false",
+          "-c",
+          "mcp_servers.context7.enabled=false",
+          "-c",
+          "mcp_servers.github.enabled=false",
+          "-c",
+          "mcp_servers.node_repl.enabled=false",
+          "-c",
+          "mcp_servers.openaiDeveloperDocs.enabled=false",
+          "-c",
+          "mcp_servers.playwright.enabled=false",
+          "--disable",
+          "apps",
+          "--disable",
+          "plugins",
+          "--disable",
+          "remote_plugin",
+          "--disable",
+          "browser_use",
+          "--disable",
+          "browser_use_external",
+          "--disable",
+          "browser_use_full_cdp_access",
+          "--disable",
+          "computer_use",
+          "--disable",
+          "in_app_browser",
+          "--disable",
+          "hooks",
+          "--disable",
+          "image_generation",
+          "--disable",
+          "multi_agent",
+          "--disable",
+          "multi_agent_v2",
+          "--disable",
+          "goals",
+          "--disable",
+          "memories",
+          "-c",
+          "web_search=\"disabled\"",
+          "-c",
+          "default_permissions=\"hub_lwb_fixture_v1\"",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\"}",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.network.enabled=false"
+        ],
+        "disabled_configured_servers": [
+          "chrome-devtools",
+          "context7",
+          "github",
+          "node_repl",
+          "openaiDeveloperDocs",
+          "playwright"
+        ],
+        "disabled_features": {
+          "apps": false,
+          "browser_use": false,
+          "browser_use_external": false,
+          "browser_use_full_cdp_access": false,
+          "computer_use": false,
+          "goals": false,
+          "hooks": false,
+          "image_generation": false,
+          "in_app_browser": false,
+          "memories": false,
+          "multi_agent": false,
+          "multi_agent_v2": false,
+          "plugins": false,
+          "remote_plugin": false
+        },
+        "local_native_tool_host": true,
+        "mcp_servers": 0,
+        "permission_profile": "hub_lwb_fixture_v1",
+        "profile_argv": [
+          "-c",
+          "default_permissions=\"hub_lwb_fixture_v1\"",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\"}",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.network.enabled=false"
+        ],
+        "remote_control_status": "disabled",
+        "source": "native loaded-thread feature and MCP status APIs",
+        "web_search_launch": "disabled"
+      },
+      "key": "capability-proof-worker-d391c498315f0aae234795e95c1630b3",
+      "received": 1791357243.5692172,
+      "sequence": 3
+    },
+    {
+      "data": {
+        "digest": "4a4337fb51352e8691d31feb092a9bcdb039f8bcbfcd081c7314642934530be9",
+        "method": "remoteControl/status/changed",
+        "phase": "before_turn_dispatch",
+        "source_emitted_ms": 1791357240893,
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "baseline-4a4337fb51352e8691d31feb092a9bcdb039f8bcbfcd081c7314642934530be9",
+      "received": 1791357243.572888,
+      "sequence": 4
+    },
+    {
+      "data": {
+        "digest": "58da37cb66da19d1067691c9cee8744e439614eda3ee45e2556bf3dba7458ac8",
+        "method": "thread/started",
+        "phase": "before_turn_dispatch",
+        "source_emitted_ms": 1791357243535,
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "baseline-58da37cb66da19d1067691c9cee8744e439614eda3ee45e2556bf3dba7458ac8",
+      "received": 1791357243.5761487,
+      "sequence": 5
+    },
+    {
+      "data": {
+        "adapter_closed": true,
+        "auth": {
+          "credential_bytes_read": 0,
+          "exit": 0,
+          "mode": "ChatGPT",
+          "source": "supported codex login status"
+        },
+        "error_class": "CODEX_RPC_REJECTED",
+        "observed_at": 1791357565.2629058,
+        "source": "supported exact thread/read",
+        "task_id": "csp-css-trial-20261007",
+        "thread_id": "01a11536-4647-7030-a9aa-8e397078d146"
+      },
+      "key": "empty-thread-observation-2c8e00f73bd3bc76046e7385f357dd1c8edb3cd65a3e7430de63790178fdbb92",
+      "received": 1791357565.4522223,
+      "sequence": 6
+    },
+    {
+      "data": {
+        "adapter_closed": true,
+        "observed_at": 1791357605.5515704,
+        "reads": [
+          {
+            "details": {
+              "rpc_code": -32600
+            },
+            "diagnostic": {
+              "classes": [],
+              "message_bytes": 55,
+              "message_sha256": "a466643ea0246842177d02bfc48a4f28555f179263e768f26842d4d9988c5a1d",
+              "rpc_code": -32600,
+              "secret_bytes_retained": 0
+            },
+            "error_class": "CODEX_RPC_REJECTED",
+            "includeTurns": true
+          },
+          {
+            "details": {
+              "rpc_code": -32600
+            },
+            "diagnostic": {
+              "classes": [],
+              "message_bytes": 55,
+              "message_sha256": "a466643ea0246842177d02bfc48a4f28555f179263e768f26842d4d9988c5a1d",
+              "rpc_code": -32600,
+              "secret_bytes_retained": 0
+            },
+            "error_class": "CODEX_RPC_REJECTED",
+            "includeTurns": false
+          }
+        ],
+        "source": "supported exact thread/read diagnostic",
+        "task_id": "csp-css-trial-20261007",
+        "thread_id": "01a11536-4647-7030-a9aa-8e397078d146"
+      },
+      "key": "empty-read-diagnostic-11d9dd48d1bafcfed2bdee84b4bdc96a85d3c362f4c41af38a7918416872b664",
+      "received": 1791357605.765009,
+      "sequence": 7
+    },
+    {
+      "data": {
+        "adapter_closed": true,
+        "auth": {
+          "credential_bytes_read": 0,
+          "exit": 0,
+          "mode": "ChatGPT",
+          "source": "supported codex login status"
+        },
+        "canonical_css_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+        "config_sha256": "768973adc2a0fc9683f7e12c59af7323c3c81636d25f84ce9cc0e61f865a1b04",
+        "docs_sha256": {
+          "docs/NEXT_ACTIONS.md": "4a5cea91842a95695f1ed9a8752edd7e2cdd683a8190a13349121d7e36fdf5e8",
+          "docs/PROJECT_STATE.md": "afcd3027fcace6120c4c436af804fcc3594f6ed889f5364386bacd676c1c2b7e"
+        },
+        "list": {
+          "backwardsCursor": null,
+          "nextCursor": null,
+          "rows": []
+        },
+        "observed_at": 1791357643.0563815,
+        "profile": "hub_lwb_fixture_v1",
+        "profile_argv": [
+          "-c",
+          "default_permissions=\"hub_lwb_fixture_v1\"",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\"}",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.network.enabled=false"
+        ],
+        "read": {
+          "details": {
+            "error_categories": [
+              "thread_unavailable"
+            ],
+            "message_bytes": 55,
+            "message_sha256": "a466643ea0246842177d02bfc48a4f28555f179263e768f26842d4d9988c5a1d",
+            "raw_message_retained": false,
+            "rpc_code": -32600
+          },
+          "error_class": "CODEX_RPC_REJECTED"
+        },
+        "source": "supported read(false)+exactcwd list diagnosis",
+        "task_id": "csp-css-trial-20261007",
+        "thread_id": "01a11536-4647-7030-a9aa-8e397078d146",
+        "trial_css_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+      },
+      "key": "thread-recovery-diagnostic-dd8ab849abd8963c57f87823079b9fa9f045467db3de3c9a11cffd49439f1853",
+      "received": 1791357643.270252,
+      "sequence": 8
+    },
+    {
+      "data": {
+        "model_turns": 0,
+        "new_threads": 0,
+        "record": "data/workbench/csp-css-trial/isolation-diagnostic-v3.json",
+        "sha256": "6ee43391d3e696515bf6be97a6b7fcbd57571d38bb3583e41ed0ac1f41e1fd9a"
+      },
+      "key": "isolation-diagnostic-v3",
+      "received": 1791357806.7090857,
+      "sequence": 9
+    },
+    {
+      "data": {
+        "model_turns": 0,
+        "new_threads": 0,
+        "record": "data/workbench/csp-css-trial/isolation-diagnostic-v3-r1.json",
+        "sha256": "5b15f0f28e6f84bf576815bd94e5907a72b89033366de72ae5f894d4f056493d"
+      },
+      "key": "isolation-diagnostic-v3-r1",
+      "received": 1791357925.1355097,
+      "sequence": 10
+    },
+    {
+      "data": {
+        "model_turns": 0,
+        "new_threads": 0,
+        "record": "data/workbench/csp-css-trial/isolation-diagnostic-v4.json",
+        "sha256": "2b25aa51ddd3c3920265e8d229768496c4a64a6e1f404aa8d0f080a1d0f4275f"
+      },
+      "key": "isolation-diagnostic-v4",
+      "received": 1791358249.5090528,
+      "sequence": 11
+    },
+    {
+      "data": {
+        "method": "exact proc PID/start ticks absent or reused; expired terminal lease; semantic row CAS",
+        "old_lease_until": 1791357258.8341522,
+        "old_owner": "worker-d391c498315f0aae234795e95c1630b3",
+        "old_result_hash": "3a0080ddaee5968c1a3ae9ba7c0448f41dfd3544380cbbb20925a2b315dfd412",
+        "old_thread_id": "01a11536-4647-7030-a9aa-8e397078d146",
+        "proof": {
+          "actor": "trusted_local_owner",
+          "child": {
+            "pid": 866293,
+            "start_ticks": "2648746"
+          },
+          "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v5-REPLACEMENT",
+          "observed_at": 1791359694.4961815,
+          "task_hash": "f2db2567e57c14b0280d55de238bf8a6f1699c0bf884992430cb636d743bff5c",
+          "worker": {
+            "pid": 865650,
+            "start_ticks": "2648671"
+          }
+        },
+        "version": 1
+      },
+      "key": "closed-terminal-owner-v5",
+      "received": 1791359694.518355,
+      "sequence": 12
+    },
+    {
+      "data": {
+        "action": "one_replacement_same_task",
+        "authority": {
+          "actor": "trusted_local_owner",
+          "annotation_hash": "4adcb994411f85f3130ff5b450c9492cb11dd2396b5e4a1a57c4f12bba829e64",
+          "auth": {
+            "credential_bytes_read": 0,
+            "exit": 0,
+            "mode": "ChatGPT",
+            "source": "supported codex login status"
+          },
+          "capability_requirement": "unscoped strict null metadata + loaded thread six disabled; all14featuresfalse; remote/browser/web/memoryoff",
+          "closed_owner_receipt_hash": "73796553398bb45ad91cb5be9773a2dee9df0793ffcc437c2f8a69bcd0613a72",
+          "config_identity": [
+            66306,
+            12090357,
+            4122,
+            1791359347398206632,
+            1791359347398206632
+          ],
+          "config_sha256": "12d3f7fb223f801b8a63db97fe03d3d7803c1b13adda2ea7da042f3e78c84ab5",
+          "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v5-REPLACEMENT",
+          "docs_preimages": {
+            "docs/NEXT_ACTIONS.md": "4a5cea91842a95695f1ed9a8752edd7e2cdd683a8190a13349121d7e36fdf5e8",
+            "docs/PROJECT_STATE.md": "afcd3027fcace6120c4c436af804fcc3594f6ed889f5364386bacd676c1c2b7e"
+          },
+          "expires_at": 1791363294.5242357,
+          "grant_hash": "d116bbbc46ad678876f77e2e2a6437923d2efa5722fb58aa154f7673626ab21c",
+          "head": "f5570473cf213f42b52b597e3e46e368dc53932e",
+          "intent_hash": "bcef1ef45fee92309f469d2a5b3eed76df2f7cc2496cff0b4cc2ce37f676d699",
+          "model_turn_limit": 1,
+          "old_thread_id": "01a11536-4647-7030-a9aa-8e397078d146",
+          "old_thread_unavailable": {
+            "error_categories": [
+              "thread_unavailable"
+            ],
+            "message_bytes": 55,
+            "message_sha256": "a466643ea0246842177d02bfc48a4f28555f179263e768f26842d4d9988c5a1d",
+            "raw_message_retained": false,
+            "rpc_code": -32600
+          },
+          "parent_canary": {
+            "identity": [
+              66306,
+              45763806,
+              62,
+              1791359694524072943,
+              1791359694524072943
+            ],
+            "sha256": "fab4ea7c43fde89586c8eed255a81bdb5f0c46039f145afca3846bde8129ff22"
+          },
+          "profile_argv": [
+            "-c",
+            "default_permissions=\"hub_lwb_fixture_v1\"",
+            "-c",
+            "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+            "-c",
+            "permissions.hub_lwb_fixture_v1.network.enabled=false"
+          ],
+          "recovery_config_pin": {
+            "auth": {
+              "credential_bytes_read": 0,
+              "exit": 0,
+              "mode": "ChatGPT",
+              "source": "supported codex login status"
+            },
+            "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v5-REPLACEMENT",
+            "identity": [
+              66306,
+              12090357,
+              4122,
+              1791359347398206632,
+              1791359347398206632
+            ],
+            "observed_at": 1791359694.5414531,
+            "original_grant_identity": [
+              66306,
+              12073401,
+              4117,
+              1791356257936833499,
+              1791356257936833499
+            ],
+            "projection": {
+              "approval_policy": "never",
+              "body_retained": false,
+              "credential_bytes_read": 0,
+              "features": {
+                "memories": true
+              },
+              "mcp_key_types": {
+                "chrome-devtools": {
+                  "args": "list",
+                  "command": "str"
+                },
+                "context7": {
+                  "args": "list",
+                  "command": "str"
+                },
+                "github": {
+                  "args": "list",
+                  "command": "str"
+                },
+                "node_repl": {
+                  "args": "list",
+                  "command": "str",
+                  "env": "dict",
+                  "startup_timeout_sec": "int"
+                },
+                "openaiDeveloperDocs": {
+                  "url": "str"
+                },
+                "playwright": {
+                  "args": "list",
+                  "command": "str"
+                }
+              },
+              "mcp_names": [
+                "chrome-devtools",
+                "context7",
+                "github",
+                "node_repl",
+                "openaiDeveloperDocs",
+                "playwright"
+              ],
+              "model": "gpt-6.1-sol",
+              "permission_profile_names": [],
+              "reasoning_effort": "xhigh",
+              "sandbox_mode": "danger-full-access",
+              "top_key_types": {
+                "agents": "dict",
+                "approval_policy": "str",
+                "approvals_reviewer": "str",
+                "desktop": "dict",
+                "features": "dict",
+                "marketplaces": "dict",
+                "mcp_servers": "dict",
+                "memories": "dict",
+                "model": "str",
+                "model_reasoning_effort": "str",
+                "plugins": "dict",
+                "projects": "dict",
+                "sandbox_mode": "str",
+                "service_tier": "str",
+                "skills": "dict"
+              }
+            },
+            "scope": "exact task replacement; original grant and intent unchanged",
+            "sha256": "12d3f7fb223f801b8a63db97fe03d3d7803c1b13adda2ea7da042f3e78c84ab5"
+          },
+          "registry_hash": "8b5dff132e96964604065671fc012d61ab526073bb5c4c66c4867dac09d6592a",
+          "replacement_limit": 1,
+          "request_hash": "b9082b372cf50ad7e77dcc86e32e1dbfbd02eff2e3e1e87bd43e0e439f711188",
+          "source_preimage": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+          "task_hash": "1608e23eb42b62cc14104799a0590fd6c2324ddf0ac0f5655ae5a31b4c7d9498",
+          "task_id": "csp-css-trial-20261007",
+          "v4_candidate": "ed8dbf24c09a4c1d41319f9e2fb906feb1abd0ca07143e97841189d13e5bf2dc",
+          "v4_evidence": "660ef4e07ce1a9492f938f69f930ca02c41cff2267687b629db9a8794617f3d8",
+          "version": 1
+        },
+        "prior_thread": {
+          "intent_hash": "bcef1ef45fee92309f469d2a5b3eed76df2f7cc2496cff0b4cc2ce37f676d699",
+          "provider_status": null,
+          "result": {
+            "details": {},
+            "effects_rolled_back": false,
+            "error_class": "CSS_ISOLATION_UNVERIFIED",
+            "request_denials": [],
+            "stream_observation": {
+              "count": 0,
+              "methods": {},
+              "sha256_chain": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            }
+          },
+          "thread_id": "01a11536-4647-7030-a9aa-8e397078d146",
+          "turn_id": null
+        },
+        "version": 1
+      },
+      "key": "css-recovery-authority-v5",
+      "received": 1791359694.5435212,
+      "sequence": 13
+    },
+    {
+      "data": {
+        "at": 1791359721.1094208,
+        "grant_hash": "d116bbbc46ad678876f77e2e2a6437923d2efa5722fb58aa154f7673626ab21c",
+        "transport": "app_server_stdio",
+        "worker": {
+          "owner": "worker-8e6921361995f71d0b4a7685ba72f3bd",
+          "pid": 1070389,
+          "start_ticks": "2896692"
+        }
+      },
+      "key": "dispatch-intent-worker-8e6921361995f71d0b4a7685ba72f3bd",
+      "received": 1791359721.1109118,
+      "sequence": 14
+    },
+    {
+      "data": {
+        "features": {
+          "apps": false,
+          "browser_use": false,
+          "browser_use_external": false,
+          "browser_use_full_cdp_access": false,
+          "computer_use": false,
+          "goals": false,
+          "hooks": false,
+          "image_generation": false,
+          "in_app_browser": false,
+          "memories": false,
+          "multi_agent": false,
+          "multi_agent_v2": false,
+          "plugins": false,
+          "remote_plugin": false
+        },
+        "launch_argv": [
+          "codex",
+          "app-server",
+          "--stdio",
+          "-c",
+          "mcp_servers.chrome-devtools.enabled=false",
+          "-c",
+          "mcp_servers.context7.enabled=false",
+          "-c",
+          "mcp_servers.github.enabled=false",
+          "-c",
+          "mcp_servers.node_repl.enabled=false",
+          "-c",
+          "mcp_servers.openaiDeveloperDocs.enabled=false",
+          "-c",
+          "mcp_servers.playwright.enabled=false",
+          "--disable",
+          "apps",
+          "--disable",
+          "plugins",
+          "--disable",
+          "remote_plugin",
+          "--disable",
+          "browser_use",
+          "--disable",
+          "browser_use_external",
+          "--disable",
+          "browser_use_full_cdp_access",
+          "--disable",
+          "computer_use",
+          "--disable",
+          "in_app_browser",
+          "--disable",
+          "hooks",
+          "--disable",
+          "image_generation",
+          "--disable",
+          "multi_agent",
+          "--disable",
+          "multi_agent_v2",
+          "--disable",
+          "goals",
+          "--disable",
+          "memories",
+          "-c",
+          "web_search=\"disabled\"",
+          "-c",
+          "default_permissions=\"hub_lwb_fixture_v1\"",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.network.enabled=false"
+        ],
+        "limitation": "unscoped null runtime metadata; no loaded thread; future model must verify disabled",
+        "mcp_names": [
+          "chrome-devtools",
+          "context7",
+          "github",
+          "node_repl",
+          "openaiDeveloperDocs",
+          "playwright"
+        ],
+        "mcp_runtime_disabled_verified": false,
+        "mcp_runtime_status": null,
+        "mcp_tools_resources_capabilities": 0,
+        "remote": "disabled",
+        "scope": "process; schema threadId omitted",
+        "web_search_launch": "disabled"
+      },
+      "key": "css-process-capabilities-v5",
+      "received": 1791359721.612138,
+      "sequence": 15
+    },
+    {
+      "data": {
+        "denials": {
+          "canonical_read": 2,
+          "canonical_write": 2,
+          "credential_read": 2,
+          "credential_write": 2,
+          "parent_canary_read": 2,
+          "parent_canary_write": 2,
+          "parent_read": 13,
+          "sibling_read": 2,
+          "sibling_write": 2,
+          "tmp_read": 13,
+          "tmp_write": 13
+        },
+        "network_errno": 1,
+        "parent_create_errno": 30,
+        "parent_enumeration_errno": 13,
+        "profile": "hub_lwb_fixture_v1",
+        "read_bytes": 0,
+        "source": "process_fixed_command_exec",
+        "trial_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+      },
+      "key": "css-process-preflight-v5",
+      "received": 1791359721.652388,
+      "sequence": 16
+    },
+    {
+      "data": {
+        "pid": 1071290,
+        "schema_hash": "65c6f1ec6c60c8a7ed4919e37530afadd7d7cb7bc519c48fc08ff1009f00c4de",
+        "start_ticks": "2896810",
+        "transport": "app_server_stdio"
+      },
+      "key": "stdio-child-worker-8e6921361995f71d0b4a7685ba72f3bd",
+      "received": 1791359721.701077,
+      "sequence": 17
+    },
+    {
+      "data": {
+        "before": {
+          "directories": {},
+          "fingerprint": [
+            [
+              "progress_ui.css",
+              "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+            ]
+          ],
+          "host_mounts": false
+        },
+        "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v5-REPLACEMENT",
+        "model_turns": 0
+      },
+      "key": "css-replacement-thread-start-intent",
+      "received": 1791359721.9747977,
+      "sequence": 18
+    },
+    {
+      "data": {
+        "after_start": {
+          "directories": {
+            ".agents": [
+              66306,
+              45772554,
+              1000,
+              493
+            ],
+            ".aws": [
+              66306,
+              45772555,
+              1000,
+              493
+            ],
+            ".codex": [
+              66306,
+              45772401,
+              1000,
+              493
+            ],
+            ".git": [
+              66306,
+              45772425,
+              1000,
+              493
+            ]
+          },
+          "fingerprint": [
+            [
+              ".agents",
+              "directory"
+            ],
+            [
+              ".aws",
+              "directory"
+            ],
+            [
+              ".codex",
+              "directory"
+            ],
+            [
+              ".git",
+              "directory"
+            ],
+            [
+              "progress_ui.css",
+              "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+            ]
+          ],
+          "host_mounts": false
+        },
+        "before": {
+          "directories": {},
+          "fingerprint": [
+            [
+              "progress_ui.css",
+              "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+            ]
+          ],
+          "host_mounts": false
+        },
+        "profile": "hub_lwb_fixture_v1",
+        "source": "exact owned native thread/start before and after",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+      },
+      "key": "css-placeholder-thread-start-v5",
+      "received": 1791359724.6084251,
+      "sequence": 19
+    },
+    {
+      "data": {
+        "directories": {
+          ".agents": [
+            66306,
+            45772554,
+            1000,
+            493
+          ],
+          ".aws": [
+            66306,
+            45772555,
+            1000,
+            493
+          ],
+          ".codex": [
+            66306,
+            45772401,
+            1000,
+            493
+          ],
+          ".git": [
+            66306,
+            45772425,
+            1000,
+            493
+          ]
+        },
+        "fingerprint": [
+          [
+            ".agents",
+            "directory"
+          ],
+          [
+            ".aws",
+            "directory"
+          ],
+          [
+            ".codex",
+            "directory"
+          ],
+          [
+            ".git",
+            "directory"
+          ],
+          [
+            "progress_ui.css",
+            "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+          ]
+        ],
+        "host_mounts": false
+      },
+      "key": "css-placeholder-loaded-v5",
+      "received": 1791359724.6572547,
+      "sequence": 20
+    },
+    {
+      "data": {
+        "argv": [
+          "codex",
+          "app-server",
+          "--stdio",
+          "-c",
+          "mcp_servers.chrome-devtools.enabled=false",
+          "-c",
+          "mcp_servers.context7.enabled=false",
+          "-c",
+          "mcp_servers.github.enabled=false",
+          "-c",
+          "mcp_servers.node_repl.enabled=false",
+          "-c",
+          "mcp_servers.openaiDeveloperDocs.enabled=false",
+          "-c",
+          "mcp_servers.playwright.enabled=false",
+          "--disable",
+          "apps",
+          "--disable",
+          "plugins",
+          "--disable",
+          "remote_plugin",
+          "--disable",
+          "browser_use",
+          "--disable",
+          "browser_use_external",
+          "--disable",
+          "browser_use_full_cdp_access",
+          "--disable",
+          "computer_use",
+          "--disable",
+          "in_app_browser",
+          "--disable",
+          "hooks",
+          "--disable",
+          "image_generation",
+          "--disable",
+          "multi_agent",
+          "--disable",
+          "multi_agent_v2",
+          "--disable",
+          "goals",
+          "--disable",
+          "memories",
+          "-c",
+          "web_search=\"disabled\"",
+          "-c",
+          "default_permissions=\"hub_lwb_fixture_v1\"",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.network.enabled=false"
+        ],
+        "disabled_configured_servers": [
+          "chrome-devtools",
+          "context7",
+          "github",
+          "node_repl",
+          "openaiDeveloperDocs",
+          "playwright"
+        ],
+        "disabled_features": {
+          "apps": false,
+          "browser_use": false,
+          "browser_use_external": false,
+          "browser_use_full_cdp_access": false,
+          "computer_use": false,
+          "goals": false,
+          "hooks": false,
+          "image_generation": false,
+          "in_app_browser": false,
+          "memories": false,
+          "multi_agent": false,
+          "multi_agent_v2": false,
+          "plugins": false,
+          "remote_plugin": false
+        },
+        "loaded_mcp": [
+          {
+            "name": "chrome-devtools",
+            "runtime_status": "disabled"
+          },
+          {
+            "name": "context7",
+            "runtime_status": "disabled"
+          },
+          {
+            "name": "github",
+            "runtime_status": "disabled"
+          },
+          {
+            "name": "node_repl",
+            "runtime_status": "disabled"
+          },
+          {
+            "name": "openaiDeveloperDocs",
+            "runtime_status": "disabled"
+          },
+          {
+            "name": "playwright",
+            "runtime_status": "disabled"
+          }
+        ],
+        "local_native_tool_host": true,
+        "mcp_servers": 0,
+        "permission_profile": "hub_lwb_fixture_v1",
+        "profile_argv": [
+          "-c",
+          "default_permissions=\"hub_lwb_fixture_v1\"",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.network.enabled=false"
+        ],
+        "remote_control_status": "disabled",
+        "source": "native loaded-thread feature and MCP status APIs",
+        "web_search_launch": "disabled"
+      },
+      "key": "capability-proof-worker-8e6921361995f71d0b4a7685ba72f3bd",
+      "received": 1791359724.6615381,
+      "sequence": 21
+    },
+    {
+      "data": {
+        "digest": "10487ac7d5c678ee05b2b90baff439241346a916d9ef63802eadfe6fb2bae5a8",
+        "method": "remoteControl/status/changed",
+        "phase": "before_turn_dispatch",
+        "source_emitted_ms": 1791359721543,
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "baseline-10487ac7d5c678ee05b2b90baff439241346a916d9ef63802eadfe6fb2bae5a8",
+      "received": 1791359724.6657379,
+      "sequence": 22
+    },
+    {
+      "data": {
+        "digest": "10234f522313f80149894ee080ee20cfdbc07e691da3f63cbb75f5339b05739d",
+        "method": "account/updated",
+        "phase": "before_turn_dispatch",
+        "source_emitted_ms": 1791359722890,
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "baseline-10234f522313f80149894ee080ee20cfdbc07e691da3f63cbb75f5339b05739d",
+      "received": 1791359724.6695197,
+      "sequence": 23
+    },
+    {
+      "data": {
+        "digest": "77387d0c07199706ce7dc55ec6b89816f6c24b8d8e72f5390d9c783a6ebedee7",
+        "method": "thread/started",
+        "phase": "before_turn_dispatch",
+        "source_emitted_ms": 1791359724589,
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "baseline-77387d0c07199706ce7dc55ec6b89816f6c24b8d8e72f5390d9c783a6ebedee7",
+      "received": 1791359724.6730533,
+      "sequence": 24
+    },
+    {
+      "data": {
+        "denials": {
+          "canonical_read": 2,
+          "canonical_write": 2,
+          "credential_read": 2,
+          "credential_write": 2,
+          "parent_canary_read": 2,
+          "parent_canary_write": 2,
+          "parent_read": 13,
+          "sibling_read": 2,
+          "sibling_write": 2,
+          "tmp_read": 13,
+          "tmp_write": 13
+        },
+        "network_errno": 1,
+        "parent_create_errno": 30,
+        "parent_enumeration_errno": 13,
+        "profile": "hub_lwb_fixture_v1",
+        "read_bytes": 0,
+        "source": "same_thread_native_command_exec",
+        "trial_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+      },
+      "key": "css-isolation-proof",
+      "received": 1791359724.9733696,
+      "sequence": 25
+    },
+    {
+      "data": {
+        "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v5-RUNTIME-PIN-2",
+        "original_authority_hash": "22de2b92f72eded23b86efce2d7ff5ce0fb1bb77ab046198e36261b4214dd9fe",
+        "original_authority_unchanged": true,
+        "pin": {
+          "auth": {
+            "credential_bytes_read": 0,
+            "exit": 0,
+            "mode": "ChatGPT",
+            "source": "supported codex login status"
+          },
+          "identity": [
+            66306,
+            12092677,
+            4122,
+            1791359976648157153,
+            1791359976648157153
+          ],
+          "projection": {
+            "approval_policy": "never",
+            "body_retained": false,
+            "credential_bytes_read": 0,
+            "features": {
+              "memories": true
+            },
+            "mcp_key_types": {
+              "chrome-devtools": {
+                "args": "list",
+                "command": "str"
+              },
+              "context7": {
+                "args": "list",
+                "command": "str"
+              },
+              "github": {
+                "args": "list",
+                "command": "str"
+              },
+              "node_repl": {
+                "args": "list",
+                "command": "str",
+                "env": "dict",
+                "startup_timeout_sec": "int"
+              },
+              "openaiDeveloperDocs": {
+                "url": "str"
+              },
+              "playwright": {
+                "args": "list",
+                "command": "str"
+              }
+            },
+            "mcp_names": [
+              "chrome-devtools",
+              "context7",
+              "github",
+              "node_repl",
+              "openaiDeveloperDocs",
+              "playwright"
+            ],
+            "model": "gpt-6.1-sol",
+            "permission_profile_names": [],
+            "reasoning_effort": "ultra",
+            "sandbox_mode": "danger-full-access",
+            "top_key_types": {
+              "agents": "dict",
+              "approval_policy": "str",
+              "approvals_reviewer": "str",
+              "desktop": "dict",
+              "features": "dict",
+              "marketplaces": "dict",
+              "mcp_servers": "dict",
+              "memories": "dict",
+              "model": "str",
+              "model_reasoning_effort": "str",
+              "plugins": "dict",
+              "projects": "dict",
+              "sandbox_mode": "str",
+              "service_tier": "str",
+              "skills": "dict"
+            }
+          },
+          "sha256": "5c6675dfb1465a13212cf99e878a6476659f854b9325b70a3f3d96ee13401538"
+        },
+        "scope": "one R2 metadataread only; no model/resume/CAS/source effects"
+      },
+      "key": "css-read-diagnostic-pin-v5-r2",
+      "received": 1791360160.9003081,
+      "sequence": 26
+    },
+    {
+      "data": {
+        "method": "exact proc PID/start ticks absent or reused; expired terminal lease; semantic row CAS",
+        "old_lease_until": 1791359740.0663843,
+        "old_owner": "worker-8e6921361995f71d0b4a7685ba72f3bd",
+        "old_result_hash": "f6630ac9bd0570fed19b004ffb86d4859436b99ffe7e938bd691874192abd8a6",
+        "old_thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "proof": {
+          "actor": "trusted_local_owner",
+          "child": {
+            "pid": 1071290,
+            "start_ticks": "2896810"
+          },
+          "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v6-OWNED-RESUME",
+          "observed_at": 1791360563.4264607,
+          "task_hash": "33dc4f668e1f5edff4b1d6cb2ab577d0c6cef6b40bd9bc9bba9ac6bffe346145",
+          "worker": {
+            "pid": 1070389,
+            "start_ticks": "2896692"
+          }
+        },
+        "version": 1
+      },
+      "key": "closed-terminal-owner-v6",
+      "received": 1791360563.4284568,
+      "sequence": 27
+    },
+    {
+      "data": {
+        "authority": {
+          "actor": "trusted_local_owner",
+          "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v6-OWNED-RESUME",
+          "expires_at": 1791362363.438937,
+          "intent_hash": "bcef1ef45fee92309f469d2a5b3eed76df2f7cc2496cff0b4cc2ce37f676d699",
+          "lineage": {
+            "closed_owner_fence": "b95f398ebe8e335fa0d6e0a8e63e8c9901a041a3d2a51824bd8a78fe773eb465",
+            "method_audit_basis": "immutable original f141... code permits turn/start only after css-unique-model-turn-v5 event, absent; native stream events before dispatch only; not inferred from omittedturns",
+            "provider_calls": 0,
+            "sole_owned_native_start": true,
+            "turn_id": null,
+            "turn_intents": 0
+          },
+          "model_turn_limit": 1,
+          "original_authority_hash": "22de2b92f72eded23b86efce2d7ff5ce0fb1bb77ab046198e36261b4214dd9fe",
+          "recovery_config_pin": {
+            "auth": {
+              "credential_bytes_read": 0,
+              "exit": 0,
+              "mode": "ChatGPT",
+              "source": "supported codex login status"
+            },
+            "identity": [
+              66306,
+              12092677,
+              4122,
+              1791359976648157153,
+              1791359976648157153
+            ],
+            "projection": {
+              "approval_policy": "never",
+              "body_retained": false,
+              "credential_bytes_read": 0,
+              "features": {
+                "memories": true
+              },
+              "mcp_key_types": {
+                "chrome-devtools": {
+                  "args": "list",
+                  "command": "str"
+                },
+                "context7": {
+                  "args": "list",
+                  "command": "str"
+                },
+                "github": {
+                  "args": "list",
+                  "command": "str"
+                },
+                "node_repl": {
+                  "args": "list",
+                  "command": "str",
+                  "env": "dict",
+                  "startup_timeout_sec": "int"
+                },
+                "openaiDeveloperDocs": {
+                  "url": "str"
+                },
+                "playwright": {
+                  "args": "list",
+                  "command": "str"
+                }
+              },
+              "mcp_names": [
+                "chrome-devtools",
+                "context7",
+                "github",
+                "node_repl",
+                "openaiDeveloperDocs",
+                "playwright"
+              ],
+              "model": "gpt-6.1-sol",
+              "permission_profile_names": [],
+              "reasoning_effort": "ultra",
+              "sandbox_mode": "danger-full-access",
+              "top_key_types": {
+                "agents": "dict",
+                "approval_policy": "str",
+                "approvals_reviewer": "str",
+                "desktop": "dict",
+                "features": "dict",
+                "marketplaces": "dict",
+                "mcp_servers": "dict",
+                "memories": "dict",
+                "model": "str",
+                "model_reasoning_effort": "str",
+                "plugins": "dict",
+                "projects": "dict",
+                "sandbox_mode": "str",
+                "service_tier": "str",
+                "skills": "dict"
+              }
+            },
+            "sha256": "5c6675dfb1465a13212cf99e878a6476659f854b9325b70a3f3d96ee13401538"
+          },
+          "resume_limit": 1,
+          "source_audit": {
+            "cli": "0.159.3",
+            "history_path": "load_latest_model_context for paginated stored thread; no list_turns; response pending.include_turns=false",
+            "implicit_turn": "none; resume constructs InitialHistory and pending response; goals disabled",
+            "include_turns": false,
+            "initialTurnsPage": "omitted",
+            "lines": [
+              3725,
+              4575,
+              4389
+            ],
+            "response_source": "thread_lifecycle.rs:566-618",
+            "resume_parameter": "excludeTurns=true",
+            "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server/src/request_processors/thread_processor.rs"
+          },
+          "task_hash": "e8781982cf27b4b6b3d72a63eb4102a9f98e4c9e25dcdf59c7ff91ab3ae74e86",
+          "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+          "thread_limit": 2
+        },
+        "prior_result": {
+          "details": {
+            "error_categories": [],
+            "message_bytes": 31,
+            "message_sha256": "c82d1cc7cb99800445758cc2a93c5fbcc676b14afac6373faaa32040cf2d3493",
+            "raw_message_retained": false,
+            "rpc_code": -32601
+          },
+          "effects_rolled_back": false,
+          "error_class": "CODEX_RPC_REJECTED",
+          "request_denials": [],
+          "stream_observation": {
+            "count": 0,
+            "methods": {},
+            "sha256_chain": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "version": 1
+      },
+      "key": "css-owned-resume-authority-v6",
+      "received": 1791360563.4406016,
+      "sequence": 28
+    },
+    {
+      "data": {
+        "at": 1791360607.3564415,
+        "grant_hash": "d116bbbc46ad678876f77e2e2a6437923d2efa5722fb58aa154f7673626ab21c",
+        "transport": "app_server_stdio",
+        "worker": {
+          "owner": "worker-7af0ec0f3a77974f6937b14127f50dbf",
+          "pid": 1133748,
+          "start_ticks": "2985310"
+        }
+      },
+      "key": "dispatch-intent-worker-7af0ec0f3a77974f6937b14127f50dbf",
+      "received": 1791360607.3583188,
+      "sequence": 29
+    },
+    {
+      "data": {
+        "method": "initialize",
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "css-rpc-v6-worker-7af0ec0f3a77974f6937b14127f50dbf-1",
+      "received": 1791360607.7082956,
+      "sequence": 30
+    },
+    {
+      "data": {
+        "method": "mcpServerStatus/list",
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "css-rpc-v6-worker-7af0ec0f3a77974f6937b14127f50dbf-2",
+      "received": 1791360607.8470366,
+      "sequence": 31
+    },
+    {
+      "data": {
+        "method": "experimentalFeature/list",
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "css-rpc-v6-worker-7af0ec0f3a77974f6937b14127f50dbf-3",
+      "received": 1791360607.889924,
+      "sequence": 32
+    },
+    {
+      "data": {
+        "method": "experimentalFeature/list",
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "css-rpc-v6-worker-7af0ec0f3a77974f6937b14127f50dbf-4",
+      "received": 1791360607.9073472,
+      "sequence": 33
+    },
+    {
+      "data": {
+        "features": {
+          "apps": false,
+          "browser_use": false,
+          "browser_use_external": false,
+          "browser_use_full_cdp_access": false,
+          "computer_use": false,
+          "goals": false,
+          "hooks": false,
+          "image_generation": false,
+          "in_app_browser": false,
+          "memories": false,
+          "multi_agent": false,
+          "multi_agent_v2": false,
+          "plugins": false,
+          "remote_plugin": false
+        },
+        "launch_argv": [
+          "codex",
+          "app-server",
+          "--stdio",
+          "-c",
+          "mcp_servers.chrome-devtools.enabled=false",
+          "-c",
+          "mcp_servers.context7.enabled=false",
+          "-c",
+          "mcp_servers.github.enabled=false",
+          "-c",
+          "mcp_servers.node_repl.enabled=false",
+          "-c",
+          "mcp_servers.openaiDeveloperDocs.enabled=false",
+          "-c",
+          "mcp_servers.playwright.enabled=false",
+          "--disable",
+          "apps",
+          "--disable",
+          "plugins",
+          "--disable",
+          "remote_plugin",
+          "--disable",
+          "browser_use",
+          "--disable",
+          "browser_use_external",
+          "--disable",
+          "browser_use_full_cdp_access",
+          "--disable",
+          "computer_use",
+          "--disable",
+          "in_app_browser",
+          "--disable",
+          "hooks",
+          "--disable",
+          "image_generation",
+          "--disable",
+          "multi_agent",
+          "--disable",
+          "multi_agent_v2",
+          "--disable",
+          "goals",
+          "--disable",
+          "memories",
+          "-c",
+          "web_search=\"disabled\"",
+          "-c",
+          "default_permissions=\"hub_lwb_fixture_v1\"",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.network.enabled=false"
+        ],
+        "limitation": "unscoped null runtime metadata; no loaded thread; future model must verify disabled",
+        "mcp_names": [
+          "chrome-devtools",
+          "context7",
+          "github",
+          "node_repl",
+          "openaiDeveloperDocs",
+          "playwright"
+        ],
+        "mcp_runtime_disabled_verified": false,
+        "mcp_runtime_status": null,
+        "mcp_tools_resources_capabilities": 0,
+        "remote": "disabled",
+        "scope": "process; schema threadId omitted",
+        "web_search_launch": "disabled"
+      },
+      "key": "css-process-capabilities-v6",
+      "received": 1791360607.9217868,
+      "sequence": 34
+    },
+    {
+      "data": {
+        "method": "command/exec",
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "css-rpc-v6-worker-7af0ec0f3a77974f6937b14127f50dbf-5",
+      "received": 1791360607.9317763,
+      "sequence": 35
+    },
+    {
+      "data": {
+        "denials": {
+          "canonical_read": 2,
+          "canonical_write": 2,
+          "credential_read": 2,
+          "credential_write": 2,
+          "parent_canary_read": 2,
+          "parent_canary_write": 2,
+          "parent_read": 13,
+          "sibling_read": 2,
+          "sibling_write": 2,
+          "tmp_read": 13,
+          "tmp_write": 13
+        },
+        "network_errno": 1,
+        "parent_create_errno": 30,
+        "parent_enumeration_errno": 13,
+        "profile": "hub_lwb_fixture_v1",
+        "read_bytes": 0,
+        "source": "process_fixed_command_exec",
+        "trial_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+      },
+      "key": "css-process-preflight-v6",
+      "received": 1791360607.9811864,
+      "sequence": 36
+    },
+    {
+      "data": {
+        "pid": 1134679,
+        "schema_hash": "65c6f1ec6c60c8a7ed4919e37530afadd7d7cb7bc519c48fc08ff1009f00c4de",
+        "start_ticks": "2985435",
+        "transport": "app_server_stdio"
+      },
+      "key": "stdio-child-worker-7af0ec0f3a77974f6937b14127f50dbf",
+      "received": 1791360607.9912317,
+      "sequence": 37
+    },
+    {
+      "data": {
+        "excludeTurns": true,
+        "model_turns": 0,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+      },
+      "key": "css-owned-load-resume-v6",
+      "received": 1791360608.027154,
+      "sequence": 38
+    },
+    {
+      "data": {
+        "method": "thread/resume",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": null
+      },
+      "key": "css-rpc-v6-worker-7af0ec0f3a77974f6937b14127f50dbf-6",
+      "received": 1791360608.0368197,
+      "sequence": 39
+    },
+    {
+      "data": {
+        "method": "thread/read",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": null
+      },
+      "key": "css-rpc-v6-worker-7af0ec0f3a77974f6937b14127f50dbf-7",
+      "received": 1791360610.5833578,
+      "sequence": 40
+    },
+    {
+      "data": {
+        "cwd_verified": true,
+        "profile_evidence": "thread/start echo, explicit command/turn parameters and native denial probes; thread/read has no profile field",
+        "status": "idle",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_evidence": "sole fenced turn intent plus exact native terminal event; history hydration unsupported",
+        "turns": []
+      },
+      "key": "css-owned-load-idle-v6",
+      "received": 1791360610.606596,
+      "sequence": 41
+    },
+    {
+      "data": {
+        "method": "exact proc PID/start ticks absent or reused; expired terminal lease; semantic row CAS",
+        "old_lease_until": 1791360625.6317148,
+        "old_owner": "worker-7af0ec0f3a77974f6937b14127f50dbf",
+        "old_result_hash": "a17124a569ae4facd1f4a5256fa15aa869308965b7888707c9e6fa90e4d92066",
+        "old_thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "proof": {
+          "actor": "trusted_local_owner",
+          "child": {
+            "pid": 1134679,
+            "start_ticks": "2985435"
+          },
+          "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v7-PROCESS-CONFIG",
+          "observed_at": 1791361802.3914578,
+          "task_hash": "feb270b513d92f5112a323b41c0c96d2f044855282fe0a2778cb9edd7da3e5e9",
+          "worker": {
+            "pid": 1133748,
+            "start_ticks": "2985310"
+          }
+        },
+        "version": 1
+      },
+      "key": "closed-terminal-owner-v7",
+      "received": 1791361802.3939917,
+      "sequence": 42
+    },
+    {
+      "data": {
+        "authority": {
+          "actor": "trusted_local_owner",
+          "approved_candidate": "74789f58d8cefe329f71decfdf77a21475d2dffc98488d6a2a669b175cbf9d77",
+          "approved_evidence": "84f3d4efa605e35664b0e64178bc2eb07e4fe2fdfb47b064e868ff373e2ca90b",
+          "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v7-PROCESS-CONFIG",
+          "effort": "xhigh",
+          "expires_at": 1791362363.438937,
+          "intent_hash": "bcef1ef45fee92309f469d2a5b3eed76df2f7cc2496cff0b4cc2ce37f676d699",
+          "model": "gpt-6.1-sol",
+          "model_turn_limit": 1,
+          "prior_authority_hash": "7c3a68ee126ff716c98fd9e1f40b6f41cfd59dd29e076f7e32e1153d9e9f6c88",
+          "protected_config_pin": {
+            "excluded_default_fields": [
+              "model",
+              "model_reasoning_effort"
+            ],
+            "mcp_names": [
+              "chrome-devtools",
+              "context7",
+              "github",
+              "node_repl",
+              "openaiDeveloperDocs",
+              "playwright"
+            ],
+            "protected_sha256": "2f3221497d84381ad9b9e52c58516e8be69f47b00677be04c433f3ff92de633d",
+            "secret_values_or_hashes_retained": false,
+            "sensitive_structure": {
+              "chrome-devtools": {
+                "args": {
+                  "item_types": [
+                    "str"
+                  ],
+                  "type": "list"
+                },
+                "command": {
+                  "type": "str"
+                }
+              },
+              "context7": {
+                "args": {
+                  "item_types": [
+                    "str"
+                  ],
+                  "type": "list"
+                },
+                "command": {
+                  "type": "str"
+                }
+              },
+              "github": {
+                "args": {
+                  "item_types": [
+                    "str"
+                  ],
+                  "type": "list"
+                },
+                "command": {
+                  "type": "str"
+                }
+              },
+              "node_repl": {
+                "args": {
+                  "item_types": [],
+                  "type": "list"
+                },
+                "command": {
+                  "type": "str"
+                },
+                "env": {
+                  "BROWSER_USE_AVAILABLE_BACKENDS": {
+                    "type": "str"
+                  },
+                  "BROWSER_USE_CODEX_APP_BUILD_FLAVOR": {
+                    "type": "str"
+                  },
+                  "BROWSER_USE_CODEX_APP_VERSION": {
+                    "type": "str"
+                  },
+                  "BROWSER_USE_TINYSKY_ENABLED": {
+                    "type": "str"
+                  },
+                  "CODEX_CLI_PATH": {
+                    "type": "str"
+                  },
+                  "CODEX_HOME": {
+                    "type": "str"
+                  },
+                  "NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER": {
+                    "type": "str"
+                  },
+                  "NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME": {
+                    "type": "str"
+                  },
+                  "NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS": {
+                    "type": "str"
+                  },
+                  "NODE_REPL_NODE_MODULE_DIRS": {
+                    "type": "str"
+                  },
+                  "NODE_REPL_NODE_PATH": {
+                    "type": "str"
+                  },
+                  "NODE_REPL_TRUSTED_CODE_PATHS": {
+                    "type": "str"
+                  },
+                  "NODE_REPL_TRUSTED_SERVICES": {
+                    "type": "str"
+                  }
+                },
+                "startup_timeout_sec": {
+                  "type": "int"
+                }
+              },
+              "openaiDeveloperDocs": {
+                "url": {
+                  "type": "str"
+                }
+              },
+              "playwright": {
+                "args": {
+                  "item_types": [
+                    "str"
+                  ],
+                  "type": "list"
+                },
+                "command": {
+                  "type": "str"
+                }
+              }
+            },
+            "top_key_types": {
+              "agents": "dict",
+              "approval_policy": "str",
+              "approvals_reviewer": "str",
+              "desktop": "dict",
+              "features": "dict",
+              "marketplaces": "dict",
+              "mcp_servers": "dict",
+              "memories": "dict",
+              "model": "str",
+              "model_reasoning_effort": "str",
+              "plugins": "dict",
+              "projects": "dict",
+              "sandbox_mode": "str",
+              "service_tier": "str",
+              "skills": "dict"
+            }
+          },
+          "resume_limit": 2,
+          "task_hash": "5cb5ceed0a652980014eeb6e6a6eb2dda33d471ddda7aba00347570ac97a54c4",
+          "task_id": "csp-css-trial-20261007",
+          "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+          "thread_limit": 2
+        },
+        "prior_result": {
+          "details": {},
+          "effects_rolled_back": false,
+          "error_class": "CSS_CONFIG_STRUCTURE_REJECTED",
+          "request_denials": [],
+          "stream_observation": {
+            "count": 0,
+            "methods": {},
+            "sha256_chain": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        "total_resume_limit": 2,
+        "version": 1
+      },
+      "key": "css-process-resume-authority-v7",
+      "received": 1791361802.4198823,
+      "sequence": 43
+    },
+    {
+      "data": {
+        "at": 1791361803.5530286,
+        "grant_hash": "d116bbbc46ad678876f77e2e2a6437923d2efa5722fb58aa154f7673626ab21c",
+        "transport": "app_server_stdio",
+        "worker": {
+          "owner": "worker-df4cdcfd2d501a40b1cbad51daac3017",
+          "pid": 1207736,
+          "start_ticks": "3104935"
+        }
+      },
+      "key": "dispatch-intent-worker-df4cdcfd2d501a40b1cbad51daac3017",
+      "received": 1791361803.5548503,
+      "sequence": 44
+    },
+    {
+      "data": {
+        "method": "initialize",
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-1",
+      "received": 1791361803.938911,
+      "sequence": 45
+    },
+    {
+      "data": {
+        "method": "config/read",
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-2",
+      "received": 1791361804.0662258,
+      "sequence": 46
+    },
+    {
+      "data": {
+        "body_retained": false,
+        "model": "gpt-6.1-sol",
+        "reasoning_effort": "xhigh",
+        "source": "native config/read effective process snapshot"
+      },
+      "key": "css-effective-process-before-resume-v7",
+      "received": 1791361804.1155865,
+      "sequence": 47
+    },
+    {
+      "data": {
+        "method": "mcpServerStatus/list",
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-3",
+      "received": 1791361804.1194365,
+      "sequence": 48
+    },
+    {
+      "data": {
+        "method": "experimentalFeature/list",
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-4",
+      "received": 1791361804.1278045,
+      "sequence": 49
+    },
+    {
+      "data": {
+        "method": "experimentalFeature/list",
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-5",
+      "received": 1791361804.1377313,
+      "sequence": 50
+    },
+    {
+      "data": {
+        "features": {
+          "apps": false,
+          "browser_use": false,
+          "browser_use_external": false,
+          "browser_use_full_cdp_access": false,
+          "computer_use": false,
+          "goals": false,
+          "hooks": false,
+          "image_generation": false,
+          "in_app_browser": false,
+          "memories": false,
+          "multi_agent": false,
+          "multi_agent_v2": false,
+          "plugins": false,
+          "remote_plugin": false
+        },
+        "launch_argv": [
+          "codex",
+          "app-server",
+          "--stdio",
+          "-c",
+          "model=\"gpt-6.1-sol\"",
+          "-c",
+          "model_reasoning_effort=\"xhigh\"",
+          "-c",
+          "mcp_servers.chrome-devtools.enabled=false",
+          "-c",
+          "mcp_servers.context7.enabled=false",
+          "-c",
+          "mcp_servers.github.enabled=false",
+          "-c",
+          "mcp_servers.node_repl.enabled=false",
+          "-c",
+          "mcp_servers.openaiDeveloperDocs.enabled=false",
+          "-c",
+          "mcp_servers.playwright.enabled=false",
+          "--disable",
+          "apps",
+          "--disable",
+          "plugins",
+          "--disable",
+          "remote_plugin",
+          "--disable",
+          "browser_use",
+          "--disable",
+          "browser_use_external",
+          "--disable",
+          "browser_use_full_cdp_access",
+          "--disable",
+          "computer_use",
+          "--disable",
+          "in_app_browser",
+          "--disable",
+          "hooks",
+          "--disable",
+          "image_generation",
+          "--disable",
+          "multi_agent",
+          "--disable",
+          "multi_agent_v2",
+          "--disable",
+          "goals",
+          "--disable",
+          "memories",
+          "-c",
+          "web_search=\"disabled\"",
+          "-c",
+          "default_permissions=\"hub_lwb_fixture_v1\"",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.network.enabled=false"
+        ],
+        "limitation": "unscoped null runtime metadata; no loaded thread; future model must verify disabled",
+        "mcp_names": [
+          "chrome-devtools",
+          "context7",
+          "github",
+          "node_repl",
+          "openaiDeveloperDocs",
+          "playwright"
+        ],
+        "mcp_runtime_disabled_verified": false,
+        "mcp_runtime_status": null,
+        "mcp_tools_resources_capabilities": 0,
+        "remote": "disabled",
+        "scope": "process; schema threadId omitted",
+        "web_search_launch": "disabled"
+      },
+      "key": "css-process-capabilities-v7",
+      "received": 1791361804.1453993,
+      "sequence": 51
+    },
+    {
+      "data": {
+        "method": "command/exec",
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-6",
+      "received": 1791361804.1496847,
+      "sequence": 52
+    },
+    {
+      "data": {
+        "denials": {
+          "canonical_read": 2,
+          "canonical_write": 2,
+          "credential_read": 2,
+          "credential_write": 2,
+          "parent_canary_read": 2,
+          "parent_canary_write": 2,
+          "parent_read": 13,
+          "sibling_read": 2,
+          "sibling_write": 2,
+          "tmp_read": 13,
+          "tmp_write": 13
+        },
+        "network_errno": 1,
+        "parent_create_errno": 30,
+        "parent_enumeration_errno": 13,
+        "profile": "hub_lwb_fixture_v1",
+        "read_bytes": 0,
+        "source": "process_fixed_command_exec",
+        "trial_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+      },
+      "key": "css-process-preflight-v7",
+      "received": 1791361804.1888747,
+      "sequence": 53
+    },
+    {
+      "data": {
+        "pid": 1208792,
+        "schema_hash": "a4198de495e928b63af7e437e90c727b9d9cf4e4dd15a1267a9b87ce3502826f",
+        "start_ticks": "3105058",
+        "transport": "app_server_stdio"
+      },
+      "key": "stdio-child-worker-df4cdcfd2d501a40b1cbad51daac3017",
+      "received": 1791361804.1929579,
+      "sequence": 54
+    },
+    {
+      "data": {
+        "excludeTurns": true,
+        "model_turns": 0,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+      },
+      "key": "css-owned-load-resume-v7",
+      "received": 1791361804.2245805,
+      "sequence": 55
+    },
+    {
+      "data": {
+        "method": "thread/resume",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-7",
+      "received": 1791361804.228562,
+      "sequence": 56
+    },
+    {
+      "data": {
+        "model": "gpt-6.1-sol",
+        "reasoning_effort": "xhigh",
+        "source": "native thread/resume response"
+      },
+      "key": "css-effective-process-after-resume-v7",
+      "received": 1791361806.916069,
+      "sequence": 57
+    },
+    {
+      "data": {
+        "method": "thread/read",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-8",
+      "received": 1791361806.9235632,
+      "sequence": 58
+    },
+    {
+      "data": {
+        "cwd_verified": true,
+        "profile_evidence": "thread/start echo, explicit command/turn parameters and native denial probes; thread/read has no profile field",
+        "status": "idle",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_evidence": "sole fenced turn intent plus exact native terminal event; history hydration unsupported",
+        "turns": []
+      },
+      "key": "css-owned-load-idle-v7",
+      "received": 1791361806.9419334,
+      "sequence": 59
+    },
+    {
+      "data": {
+        "method": "mcpServerStatus/list",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-9",
+      "received": 1791361807.001236,
+      "sequence": 60
+    },
+    {
+      "data": {
+        "method": "experimentalFeature/list",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-10",
+      "received": 1791361807.0112193,
+      "sequence": 61
+    },
+    {
+      "data": {
+        "method": "experimentalFeature/list",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-11",
+      "received": 1791361807.0221338,
+      "sequence": 62
+    },
+    {
+      "data": {
+        "method": "mcpServerStatus/list",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-12",
+      "received": 1791361807.0308905,
+      "sequence": 63
+    },
+    {
+      "data": {
+        "directories": {
+          ".agents": [
+            66306,
+            45772554,
+            1000,
+            493
+          ],
+          ".aws": [
+            66306,
+            45772555,
+            1000,
+            493
+          ],
+          ".codex": [
+            66306,
+            45772401,
+            1000,
+            493
+          ],
+          ".git": [
+            66306,
+            45772425,
+            1000,
+            493
+          ]
+        },
+        "fingerprint": [
+          [
+            ".agents",
+            "directory"
+          ],
+          [
+            ".aws",
+            "directory"
+          ],
+          [
+            ".codex",
+            "directory"
+          ],
+          [
+            ".git",
+            "directory"
+          ],
+          [
+            "progress_ui.css",
+            "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+          ]
+        ],
+        "host_mounts": false
+      },
+      "key": "css-placeholder-loaded-v7",
+      "received": 1791361807.0379455,
+      "sequence": 64
+    },
+    {
+      "data": {
+        "argv": [
+          "codex",
+          "app-server",
+          "--stdio",
+          "-c",
+          "model=\"gpt-6.1-sol\"",
+          "-c",
+          "model_reasoning_effort=\"xhigh\"",
+          "-c",
+          "mcp_servers.chrome-devtools.enabled=false",
+          "-c",
+          "mcp_servers.context7.enabled=false",
+          "-c",
+          "mcp_servers.github.enabled=false",
+          "-c",
+          "mcp_servers.node_repl.enabled=false",
+          "-c",
+          "mcp_servers.openaiDeveloperDocs.enabled=false",
+          "-c",
+          "mcp_servers.playwright.enabled=false",
+          "--disable",
+          "apps",
+          "--disable",
+          "plugins",
+          "--disable",
+          "remote_plugin",
+          "--disable",
+          "browser_use",
+          "--disable",
+          "browser_use_external",
+          "--disable",
+          "browser_use_full_cdp_access",
+          "--disable",
+          "computer_use",
+          "--disable",
+          "in_app_browser",
+          "--disable",
+          "hooks",
+          "--disable",
+          "image_generation",
+          "--disable",
+          "multi_agent",
+          "--disable",
+          "multi_agent_v2",
+          "--disable",
+          "goals",
+          "--disable",
+          "memories",
+          "-c",
+          "web_search=\"disabled\"",
+          "-c",
+          "default_permissions=\"hub_lwb_fixture_v1\"",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.network.enabled=false"
+        ],
+        "disabled_configured_servers": [
+          "chrome-devtools",
+          "context7",
+          "github",
+          "node_repl",
+          "openaiDeveloperDocs",
+          "playwright"
+        ],
+        "disabled_features": {
+          "apps": false,
+          "browser_use": false,
+          "browser_use_external": false,
+          "browser_use_full_cdp_access": false,
+          "computer_use": false,
+          "goals": false,
+          "hooks": false,
+          "image_generation": false,
+          "in_app_browser": false,
+          "memories": false,
+          "multi_agent": false,
+          "multi_agent_v2": false,
+          "plugins": false,
+          "remote_plugin": false
+        },
+        "loaded_mcp": [
+          {
+            "name": "chrome-devtools",
+            "runtime_status": "disabled"
+          },
+          {
+            "name": "context7",
+            "runtime_status": "disabled"
+          },
+          {
+            "name": "github",
+            "runtime_status": "disabled"
+          },
+          {
+            "name": "node_repl",
+            "runtime_status": "disabled"
+          },
+          {
+            "name": "openaiDeveloperDocs",
+            "runtime_status": "disabled"
+          },
+          {
+            "name": "playwright",
+            "runtime_status": "disabled"
+          }
+        ],
+        "local_native_tool_host": true,
+        "mcp_servers": 0,
+        "permission_profile": "hub_lwb_fixture_v1",
+        "profile_argv": [
+          "-c",
+          "default_permissions=\"hub_lwb_fixture_v1\"",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.network.enabled=false"
+        ],
+        "remote_control_status": "disabled",
+        "source": "native loaded-thread feature and MCP status APIs",
+        "web_search_launch": "disabled"
+      },
+      "key": "capability-proof-worker-df4cdcfd2d501a40b1cbad51daac3017",
+      "received": 1791361807.041783,
+      "sequence": 65
+    },
+    {
+      "data": {
+        "digest": "bbf0bf4672e8ffe7841b3ccf342a154fbdff4ae3a6b8a205b819d55caa9bbe0f",
+        "method": "configWarning",
+        "phase": "before_turn_dispatch",
+        "source_emitted_ms": 1791361804019,
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "baseline-bbf0bf4672e8ffe7841b3ccf342a154fbdff4ae3a6b8a205b819d55caa9bbe0f",
+      "received": 1791361807.0458853,
+      "sequence": 66
+    },
+    {
+      "data": {
+        "digest": "450485cfdc998e00b204cf3df0bc977bd3bd3237d2bf668b95c1c2e1d1c2845c",
+        "method": "remoteControl/status/changed",
+        "phase": "before_turn_dispatch",
+        "source_emitted_ms": 1791361804019,
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "baseline-450485cfdc998e00b204cf3df0bc977bd3bd3237d2bf668b95c1c2e1d1c2845c",
+      "received": 1791361807.0495107,
+      "sequence": 67
+    },
+    {
+      "data": {
+        "digest": "1cd4bfb16c65a8a37b8a50f3a1a9258039f4c48bd4fb940c3a3c84530060e3ec",
+        "method": "account/updated",
+        "phase": "before_turn_dispatch",
+        "source_emitted_ms": 1791361805648,
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "baseline-1cd4bfb16c65a8a37b8a50f3a1a9258039f4c48bd4fb940c3a3c84530060e3ec",
+      "received": 1791361807.0533822,
+      "sequence": 68
+    },
+    {
+      "data": {
+        "digest": "25e80180272cb1650c6f64177db6990c9b7ef22cf384b05605edde3df6416c0d",
+        "method": "thread/status/changed",
+        "phase": "before_turn_dispatch",
+        "source_emitted_ms": 1791361806898,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": null
+      },
+      "key": "baseline-25e80180272cb1650c6f64177db6990c9b7ef22cf384b05605edde3df6416c0d",
+      "received": 1791361807.0568855,
+      "sequence": 69
+    },
+    {
+      "data": {
+        "method": "command/exec",
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-13",
+      "received": 1791361807.338024,
+      "sequence": 70
+    },
+    {
+      "data": {
+        "denials": {
+          "canonical_read": 2,
+          "canonical_write": 2,
+          "credential_read": 2,
+          "credential_write": 2,
+          "parent_canary_read": 2,
+          "parent_canary_write": 2,
+          "parent_read": 13,
+          "sibling_read": 2,
+          "sibling_write": 2,
+          "tmp_read": 13,
+          "tmp_write": 13
+        },
+        "network_errno": 1,
+        "parent_create_errno": 30,
+        "parent_enumeration_errno": 13,
+        "profile": "hub_lwb_fixture_v1",
+        "read_bytes": 0,
+        "source": "same_thread_native_command_exec",
+        "trial_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+      },
+      "key": "css-isolation-proof-v7",
+      "received": 1791361807.3742113,
+      "sequence": 71
+    },
+    {
+      "data": {
+        "method": "thread/read",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-14",
+      "received": 1791361807.3785534,
+      "sequence": 72
+    },
+    {
+      "data": {
+        "cwd_verified": true,
+        "profile_evidence": "thread/start echo, explicit command/turn parameters and native denial probes; thread/read has no profile field",
+        "status": "idle",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_evidence": "sole fenced turn intent plus exact native terminal event; history hydration unsupported",
+        "turns": []
+      },
+      "key": "css-thread-before",
+      "received": 1791361807.3838458,
+      "sequence": 73
+    },
+    {
+      "data": {
+        "credential_bytes_read": 0,
+        "exit": 0,
+        "mode": "ChatGPT",
+        "source": "supported codex login status"
+      },
+      "key": "css-auth-before",
+      "received": 1791361807.636585,
+      "sequence": 74
+    },
+    {
+      "data": {
+        "at": 1791361807.6391885,
+        "input_digest": "d6af0d7aec7f4aba91809791c65ffbba1d7cd80916f785635675df18b79fb1f3",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+      },
+      "key": "turn-intent-worker-df4cdcfd2d501a40b1cbad51daac3017",
+      "received": 1791361807.6406407,
+      "sequence": 75
+    },
+    {
+      "data": {
+        "directories": {
+          ".agents": [
+            66306,
+            45772554,
+            1000,
+            493
+          ],
+          ".aws": [
+            66306,
+            45772555,
+            1000,
+            493
+          ],
+          ".codex": [
+            66306,
+            45772401,
+            1000,
+            493
+          ],
+          ".git": [
+            66306,
+            45772425,
+            1000,
+            493
+          ]
+        },
+        "fingerprint": [
+          [
+            ".agents",
+            "directory"
+          ],
+          [
+            ".aws",
+            "directory"
+          ],
+          [
+            ".codex",
+            "directory"
+          ],
+          [
+            ".git",
+            "directory"
+          ],
+          [
+            "progress_ui.css",
+            "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+          ]
+        ],
+        "host_mounts": false
+      },
+      "key": "css-placeholder-before-turn-v5",
+      "received": 1791361807.6709602,
+      "sequence": 76
+    },
+    {
+      "data": {
+        "input_sha256": "d6af0d7aec7f4aba91809791c65ffbba1d7cd80916f785635675df18b79fb1f3",
+        "model_turn_limit": 1,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+      },
+      "key": "css-unique-model-turn-v5",
+      "received": 1791361807.6745973,
+      "sequence": 77
+    },
+    {
+      "data": {
+        "method": "turn/start",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-15",
+      "received": 1791361807.7197561,
+      "sequence": 78
+    },
+    {
+      "data": {
+        "digest": "911fcabe314476d747b902a3143a5e9644c006a1117e2ee10d18b332fecebb4b",
+        "method": "thread/status/changed",
+        "source_emitted_ms": 1791361807735,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": null
+      },
+      "key": "event-911fcabe314476d747b902a3143a5e9644c006a1117e2ee10d18b332fecebb4b",
+      "received": 1791361807.7480934,
+      "sequence": 79
+    },
+    {
+      "data": {
+        "digest": "acae7017e20c55ce743b725f6dfa6541f39184f865a2ff45d1d62f4451958649",
+        "method": "turn/started",
+        "source_emitted_ms": 1791361807735,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-acae7017e20c55ce743b725f6dfa6541f39184f865a2ff45d1d62f4451958649",
+      "received": 1791361807.761268,
+      "sequence": 80
+    },
+    {
+      "data": {
+        "digest": "2e0a4e68e0db214493576f6f82606d65d6dc76499103d1a794f1310477146696",
+        "method": "item/started",
+        "source_emitted_ms": 1791361811398,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-2e0a4e68e0db214493576f6f82606d65d6dc76499103d1a794f1310477146696",
+      "received": 1791361811.4025419,
+      "sequence": 81
+    },
+    {
+      "data": {
+        "digest": "c8b841c1970c334c3089c264529c91c759a179dea4b44238f8d826c6872999e5",
+        "method": "item/completed",
+        "source_emitted_ms": 1791361811400,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-c8b841c1970c334c3089c264529c91c759a179dea4b44238f8d826c6872999e5",
+      "received": 1791361811.4182773,
+      "sequence": 82
+    },
+    {
+      "data": {
+        "digest": "9f28cd611121e50c2774bec5e355c90c42ffa36ea08cc0b335de0b62c4707f55",
+        "method": "item/started",
+        "source_emitted_ms": 1791361814208,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-9f28cd611121e50c2774bec5e355c90c42ffa36ea08cc0b335de0b62c4707f55",
+      "received": 1791361814.2128222,
+      "sequence": 83
+    },
+    {
+      "data": {
+        "digest": "a6c9bb5acd2dd626e89b7f940ecbf6f96bb6519685ceade62361656c733e715b",
+        "method": "item/completed",
+        "source_emitted_ms": 1791361815340,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-a6c9bb5acd2dd626e89b7f940ecbf6f96bb6519685ceade62361656c733e715b",
+      "received": 1791361815.344552,
+      "sequence": 84
+    },
+    {
+      "data": {
+        "digest": "1042a38ae977f817dd68a12d7436c7beee4b8cbde2f98069fcb27373740cc247",
+        "method": "item/started",
+        "source_emitted_ms": 1791361823385,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-1042a38ae977f817dd68a12d7436c7beee4b8cbde2f98069fcb27373740cc247",
+      "received": 1791361823.3910744,
+      "sequence": 85
+    },
+    {
+      "data": {
+        "digest": "9e3f863d41416399f5812cbea8536302d7202d96057813540466a0db7e5f8263",
+        "method": "item/completed",
+        "source_emitted_ms": 1791361823386,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-9e3f863d41416399f5812cbea8536302d7202d96057813540466a0db7e5f8263",
+      "received": 1791361823.4003394,
+      "sequence": 86
+    },
+    {
+      "data": {
+        "digest": "71c74b53887c4af3466256535ffedec12f528c657cef990b2c361616bbc0b918",
+        "method": "thread/tokenUsage/updated",
+        "source_emitted_ms": 1791361823390,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-71c74b53887c4af3466256535ffedec12f528c657cef990b2c361616bbc0b918",
+      "received": 1791361823.4081206,
+      "sequence": 87
+    },
+    {
+      "data": {
+        "digest": "16ab96ffc9cc59eb4a222b27526e9e73bb3bc9e39df1c324a83de1d95e4314eb",
+        "method": "item/started",
+        "source_emitted_ms": 1791361825628,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-16ab96ffc9cc59eb4a222b27526e9e73bb3bc9e39df1c324a83de1d95e4314eb",
+      "received": 1791361825.6335576,
+      "sequence": 88
+    },
+    {
+      "data": {
+        "digest": "71044bf448b8299be910b438da7bcc263a54778b646c95092d8f68407c10e5d4",
+        "method": "item/completed",
+        "source_emitted_ms": 1791361828281,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-71044bf448b8299be910b438da7bcc263a54778b646c95092d8f68407c10e5d4",
+      "received": 1791361828.2863805,
+      "sequence": 89
+    },
+    {
+      "data": {
+        "digest": "81f07314e4210ee0342c536173130e2b1d1d4d43a5de0da86242d7b9284d2d04",
+        "method": "item/started",
+        "source_emitted_ms": 1791361830311,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-81f07314e4210ee0342c536173130e2b1d1d4d43a5de0da86242d7b9284d2d04",
+      "received": 1791361830.3166282,
+      "sequence": 90
+    },
+    {
+      "data": {
+        "digest": "303f5af19c465e2201d496d0ea4bc3885cc53724cc5cfd0739bef8966e466803",
+        "method": "item/completed",
+        "source_emitted_ms": 1791361830312,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-303f5af19c465e2201d496d0ea4bc3885cc53724cc5cfd0739bef8966e466803",
+      "received": 1791361830.3262339,
+      "sequence": 91
+    },
+    {
+      "data": {
+        "digest": "f59a5760a3a2562c9adb83b36c41e019aefca1ee2d694ac3dbeeca571b6b9858",
+        "method": "thread/tokenUsage/updated",
+        "source_emitted_ms": 1791361830315,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-f59a5760a3a2562c9adb83b36c41e019aefca1ee2d694ac3dbeeca571b6b9858",
+      "received": 1791361830.3340206,
+      "sequence": 92
+    },
+    {
+      "data": {
+        "digest": "cf1dca7540f1475428c3f2f33ae7ab2217c7ecd70b0fded56205c12eef3391cc",
+        "method": "item/started",
+        "source_emitted_ms": 1791361832267,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-cf1dca7540f1475428c3f2f33ae7ab2217c7ecd70b0fded56205c12eef3391cc",
+      "received": 1791361832.272412,
+      "sequence": 93
+    },
+    {
+      "data": {
+        "digest": "aedcd84bd59d2d5ed2c67700e2efbb610ed0d66fd5f9c6d4c6c12c8174c8eed5",
+        "method": "item/completed",
+        "source_emitted_ms": 1791361833593,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-aedcd84bd59d2d5ed2c67700e2efbb610ed0d66fd5f9c6d4c6c12c8174c8eed5",
+      "received": 1791361833.598264,
+      "sequence": 94
+    },
+    {
+      "data": {
+        "digest": "5bb7bc2165530904d057f287c3e2670d746919bd8a958b50514551f1dfbf1ec6",
+        "method": "item/started",
+        "source_emitted_ms": 1791361841307,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-5bb7bc2165530904d057f287c3e2670d746919bd8a958b50514551f1dfbf1ec6",
+      "received": 1791361841.3112187,
+      "sequence": 95
+    },
+    {
+      "data": {
+        "digest": "fce57d7b2e2d01efc8bbaa33a083c0be872db8c5ee298b918fb76849006534bc",
+        "method": "item/completed",
+        "source_emitted_ms": 1791361841308,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-fce57d7b2e2d01efc8bbaa33a083c0be872db8c5ee298b918fb76849006534bc",
+      "received": 1791361841.3191342,
+      "sequence": 96
+    },
+    {
+      "data": {
+        "digest": "e9458d88e9d79fe1f86321d891fb57767b2a63d7bc46c8e7bde55807641798c4",
+        "method": "thread/tokenUsage/updated",
+        "source_emitted_ms": 1791361841310,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-e9458d88e9d79fe1f86321d891fb57767b2a63d7bc46c8e7bde55807641798c4",
+      "received": 1791361841.3254817,
+      "sequence": 97
+    },
+    {
+      "data": {
+        "digest": "21b2665dd12675a4156eab7c386ffb434608ae17bd87e2137323aec8b5e459b2",
+        "method": "item/started",
+        "source_emitted_ms": 1791361843029,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-21b2665dd12675a4156eab7c386ffb434608ae17bd87e2137323aec8b5e459b2",
+      "received": 1791361843.0331013,
+      "sequence": 98
+    },
+    {
+      "data": {
+        "digest": "bde7a2aa354654d898f7414f8ce940d4da3bc987faa71311612c13f96d56e7b1",
+        "method": "item/completed",
+        "source_emitted_ms": 1791361848127,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-bde7a2aa354654d898f7414f8ce940d4da3bc987faa71311612c13f96d56e7b1",
+      "received": 1791361848.1312244,
+      "sequence": 99
+    },
+    {
+      "data": {
+        "digest": "8f587f5f143b6fd00468d46883ef97c470b929d51a383e55e3bd3cf1d3fe8bb1",
+        "method": "item/started",
+        "source_emitted_ms": 1791361848127,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-8f587f5f143b6fd00468d46883ef97c470b929d51a383e55e3bd3cf1d3fe8bb1",
+      "received": 1791361848.1431093,
+      "sequence": 100
+    },
+    {
+      "data": {
+        "digest": "0a9ed41d79cd3cd49ff55cce7041bd9a1366b0a41a2810ec1f8a44ffece51773",
+        "method": "item/completed",
+        "source_emitted_ms": 1791361849866,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-0a9ed41d79cd3cd49ff55cce7041bd9a1366b0a41a2810ec1f8a44ffece51773",
+      "received": 1791361849.8698375,
+      "sequence": 101
+    },
+    {
+      "data": {
+        "digest": "3fe30d2d3eacb36ecbb6cdee347e358ff86f52b368d1dbce53bbb772cc79713a",
+        "method": "thread/tokenUsage/updated",
+        "source_emitted_ms": 1791361849881,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-3fe30d2d3eacb36ecbb6cdee347e358ff86f52b368d1dbce53bbb772cc79713a",
+      "received": 1791361849.884787,
+      "sequence": 102
+    },
+    {
+      "data": {
+        "digest": "6b58eb892620e192d0825793fb3c119cea73f49053e716021feaed8ea672b459",
+        "method": "thread/status/changed",
+        "source_emitted_ms": 1791361849883,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": null
+      },
+      "key": "event-6b58eb892620e192d0825793fb3c119cea73f49053e716021feaed8ea672b459",
+      "received": 1791361849.8963103,
+      "sequence": 103
+    },
+    {
+      "data": {
+        "digest": "eb02547aa6fc97dbee8e9ee407813254843da19985316ecb89d5d00bfba6afd4",
+        "method": "turn/completed",
+        "source_emitted_ms": 1791361849883,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "event-eb02547aa6fc97dbee8e9ee407813254843da19985316ecb89d5d00bfba6afd4",
+      "received": 1791361849.9149957,
+      "sequence": 104
+    },
+    {
+      "data": {
+        "method": "thread/read",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-16",
+      "received": 1791361849.9374118,
+      "sequence": 105
+    },
+    {
+      "data": {
+        "cwd_verified": true,
+        "profile_evidence": "thread/start echo, explicit command/turn parameters and native denial probes; thread/read has no profile field",
+        "status": "idle",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_evidence": "sole fenced turn intent plus exact native terminal event; history hydration unsupported",
+        "turns": []
+      },
+      "key": "css-thread-after",
+      "received": 1791361849.9434314,
+      "sequence": 106
+    },
+    {
+      "data": {
+        "method": "command/exec",
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-17",
+      "received": 1791361850.0021362,
+      "sequence": 107
+    },
+    {
+      "data": {
+        "denials": {
+          "canonical_read": 2,
+          "canonical_write": 2,
+          "credential_read": 2,
+          "credential_write": 2,
+          "parent_canary_read": 2,
+          "parent_canary_write": 2,
+          "parent_read": 13,
+          "sibling_read": 2,
+          "sibling_write": 2,
+          "tmp_read": 13,
+          "tmp_write": 13
+        },
+        "network_errno": 1,
+        "parent_create_errno": 30,
+        "parent_enumeration_errno": 13,
+        "profile": "hub_lwb_fixture_v1",
+        "read_bytes": 0,
+        "source": "same_thread_native_command_exec",
+        "trial_sha256": "babb5bc2f53a92017df6042f4246e8b3c41ec803d4ba3b34bde188f70c286ac1"
+      },
+      "key": "css-isolation-after",
+      "received": 1791361850.043912,
+      "sequence": 108
+    },
+    {
+      "data": {
+        "method": "mcpServerStatus/list",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-18",
+      "received": 1791361850.0944278,
+      "sequence": 109
+    },
+    {
+      "data": {
+        "method": "experimentalFeature/list",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-19",
+      "received": 1791361850.1021633,
+      "sequence": 110
+    },
+    {
+      "data": {
+        "method": "experimentalFeature/list",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": null
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-20",
+      "received": 1791361850.1123466,
+      "sequence": 111
+    },
+    {
+      "data": {
+        "method": "turn/interrupt",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+      },
+      "key": "css-rpc-v7-worker-df4cdcfd2d501a40b1cbad51daac3017-21",
+      "received": 1791361850.1204894,
+      "sequence": 112
+    }
+  ],
+  "native_helper_closed": true,
+  "native_helper_worker_exit": 1,
+  "next_action": "diagnose post-capability observation retention offline; no resume/turn/thread or source promotion authorized after failed gate",
+  "source_files": {
+    "docs/NEXT_ACTIONS.md": "4a5cea91842a95695f1ed9a8752edd7e2cdd683a8190a13349121d7e36fdf5e8",
+    "docs/PROJECT_STATE.md": "afcd3027fcace6120c4c436af804fcc3594f6ed889f5364386bacd676c1c2b7e",
+    "progress_ui.css": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+  },
+  "status": "PARTIAL_BLOCKED_POST_CAPABILITY",
+  "task": {
+    "cancel": 0,
+    "created": 1791357203.3328447,
+    "human_acceptance": "pending",
+    "id": "csp-css-trial-20261007",
+    "intent": {
+      "annotation": {
+        "binding": {
+          "artifact_id": "csp-readonly-home-desktop",
+          "artifact_sha256": "a6e4bc8695436117a63ee0ba121cf537e68ca808896bc60a8b04848de6c7583a",
+          "candidate_hash": "211a9a0651e3042f1aaeec9cbc82a38093563d2efa970c2861d5b137ab032d70",
+          "candidate_id": "csp-home-readonly-code",
+          "candidate_revision": 2,
+          "classification": "real",
+          "pages": [
+            "home-readonly-preview"
+          ],
+          "preview_id": "preview-4e023ba2945a276a8b759ebf6455e7a6",
+          "project_id": "computer-study-plan",
+          "registry_hash": "8b5dff132e96964604065671fc012d61ab526073bb5c4c66c4867dac09d6592a",
+          "type": "screenshot"
+        },
+        "expected_revision": 0,
+        "kind": "whole",
+        "preserve_scope": "保留喜爱的整体风格；其余 CSS 字节、布局、字体、尺寸、动画、配色、HTML、JS、API、课程、学习数据、练习、配置均不改。",
+        "region": null,
+        "request_id": "csp-css-trial-annotation-v1",
+        "requested_change": "功能试验：仅将首页 .home-task-card 边框 rgba(248, 238, 229, 0.15) 的 alpha 改为 0.24，使边框略清晰；保留旧版和新版。",
+        "view": {
+          "dpr": 1,
+          "fit": "image-content-box",
+          "image_height": 742,
+          "image_left": 0,
+          "image_top": 0,
+          "image_width": 1265,
+          "natural_height": 742,
+          "natural_width": 1265,
+          "scroll_x": 0,
+          "scroll_y": 0,
+          "viewport_height": 742,
+          "viewport_width": 1265,
+          "zoom": 1
+        }
+      },
+      "before_sample": "",
+      "checks": [
+        "csp_css_trial"
+      ],
+      "grant": {
+        "annotation_hash": "4adcb994411f85f3130ff5b450c9492cb11dd2396b5e4a1a57c4f12bba829e64",
+        "auth": "ChatGPT",
+        "checks": [
+          "csp_css_trial"
+        ],
+        "css_trial": {
+          "before_ref": "data/workbench/csp-css-trial/before.css",
+          "canonical_root": "/home/alalapi/Projects/computer-study-plan",
+          "config_identity": [
+            66306,
+            12073401,
+            4117,
+            1791356257936833499,
+            1791356257936833499
+          ],
+          "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v1",
+          "docs_sha256": {
+            "docs/NEXT_ACTIONS.md": "4a5cea91842a95695f1ed9a8752edd7e2cdd683a8190a13349121d7e36fdf5e8",
+            "docs/PROJECT_STATE.md": "afcd3027fcace6120c4c436af804fcc3594f6ed889f5364386bacd676c1c2b7e"
+          },
+          "expected_sha256": "babb5bc2f53a92017df6042f4246e8b3c41ec803d4ba3b34bde188f70c286ac1",
+          "head": "f5570473cf213f42b52b597e3e46e368dc53932e",
+          "image_ref": "docs/reports/linux-workbench/csp-preview-desktop.jpg",
+          "outside_probe": "/tmp/hub-lwb-css-outside-csp-css-trial-20261007",
+          "registry_hash": "8b5dff132e96964604065671fc012d61ab526073bb5c4c66c4867dac09d6592a",
+          "source_identity": [
+            66306,
+            12341728,
+            143428,
+            1789185130000000000,
+            1790856611900440364
+          ],
+          "source_mode": 420,
+          "source_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+        },
+        "expires_at": 1791364398.0819154,
+        "fingerprint": [
+          [
+            "progress_ui.css",
+            "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+          ]
+        ],
+        "grant_id": "csp-css-trial-grant-v1",
+        "image": "registered_preview",
+        "image_sha256": "a6e4bc8695436117a63ee0ba121cf537e68ca808896bc60a8b04848de6c7583a",
+        "isolated_root": true,
+        "max_turn_seconds": 120,
+        "mode": "new",
+        "parent_task_id": null,
+        "prohibited": [],
+        "project_id": "computer-study-plan",
+        "root": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+        "root_identity": "14c6cd4127cff1da9ebd53651f4fa330f0af8f0cb1b4357a9de30bf57a7dc514",
+        "source": "verified_owner_decision",
+        "task_id": "csp-css-trial-20261007",
+        "version": 1,
+        "writable_scope": [
+          "."
+        ]
+      },
+      "grant_hash": "d116bbbc46ad678876f77e2e2a6437923d2efa5722fb58aa154f7673626ab21c",
+      "owner_context": "direct_human_authorization_to_trusted_local_owner",
+      "preimage": [
+        [
+          "progress_ui.css",
+          "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+        ]
+      ],
+      "previous_thread": null,
+      "prompt_sha256": "d6af0d7aec7f4aba91809791c65ffbba1d7cd80916f785635675df18b79fb1f3",
+      "registry_hash": "8b5dff132e96964604065671fc012d61ab526073bb5c4c66c4867dac09d6592a",
+      "thread_source": "hub_owned_app_server",
+      "writer_status": "verified"
+    },
+    "lease_until": 1791361865.1249716,
+    "owner": "worker-df4cdcfd2d501a40b1cbad51daac3017",
+    "parent": null,
+    "payload": {
+      "annotation_id": "csp-css-trial-annotation-v1",
+      "annotation_revision": 1,
+      "grant_id": "csp-css-trial-grant-v1",
+      "grant_version": 1,
+      "mode": "new",
+      "parent_task_id": null,
+      "project_id": "computer-study-plan",
+      "request_id": "csp-css-trial-20261007"
+    },
+    "project": "computer-study-plan",
+    "provider_status": "completed",
+    "result": {
+      "details": {},
+      "effects_rolled_back": false,
+      "error_class": "CODEX_CAPABILITY_UNVERIFIED",
+      "request_denials": [],
+      "stream_observation": {
+        "count": 188,
+        "methods": {
+          "account/rateLimits/updated": 4,
+          "item/agentMessage/delta": 184
+        },
+        "sha256_chain": "34008aa675e33e9c63e607af5702ad8253193b4b7145cb7690b392a3f6cb3cca"
+      }
+    },
+    "sequence": 1,
+    "status": "requires_reconcile",
+    "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+    "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+  },
+  "trial": {
+    "directories": {
+      ".agents": [
+        66306,
+        45772554,
+        1000,
+        493
+      ],
+      ".aws": [
+        66306,
+        45772555,
+        1000,
+        493
+      ],
+      ".codex": [
+        66306,
+        45772401,
+        1000,
+        493
+      ],
+      ".git": [
+        66306,
+        45772425,
+        1000,
+        493
+      ]
+    },
+    "fingerprint": [
+      [
+        ".agents",
+        "directory"
+      ],
+      [
+        ".aws",
+        "directory"
+      ],
+      [
+        ".codex",
+        "directory"
+      ],
+      [
+        ".git",
+        "directory"
+      ],
+      [
+        "progress_ui.css",
+        "babb5bc2f53a92017df6042f4246e8b3c41ec803d4ba3b34bde188f70c286ac1"
+      ]
+    ],
+    "host_mounts": false
+  },
+  "trial_exact_delta": {
+    "after_sha256": "babb5bc2f53a92017df6042f4246e8b3c41ec803d4ba3b34bde188f70c286ac1",
+    "before_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+    "canonical_head": "f5570473cf213f42b52b597e3e46e368dc53932e",
+    "changed_paths": [
+      "progress_ui.css"
+    ],
+    "checks": [
+      {
+        "exit": 0,
+        "id": "isolated_css_exact_delta",
+        "stdout": "Only .home-task-card border alpha0.15→0.24; all other bytes/mode unchanged"
+      }
+    ],
+    "diff": "--- before/progress_ui.css\n+++ after/progress_ui.css\n@@ -851,7 +851,7 @@\n   min-height: 285px;\n   overflow: hidden;\n   padding: 25px;\n-  border: 1px solid rgba(248, 238, 229, 0.15);\n+  border: 1px solid rgba(248, 238, 229, 0.24);\n   border-radius: inherit;\n   background:\n     radial-gradient(circle at 0% 0%, rgba(212, 154, 112, 0.13), transparent 46%),\n",
+    "human_acceptance": "pending",
+    "native_placeholder_proof": {
+      "after_start": {
+        "directories": {
+          ".agents": [
+            66306,
+            45772554,
+            1000,
+            493
+          ],
+          ".aws": [
+            66306,
+            45772555,
+            1000,
+            493
+          ],
+          ".codex": [
+            66306,
+            45772401,
+            1000,
+            493
+          ],
+          ".git": [
+            66306,
+            45772425,
+            1000,
+            493
+          ]
+        },
+        "fingerprint": [
+          [
+            ".agents",
+            "directory"
+          ],
+          [
+            ".aws",
+            "directory"
+          ],
+          [
+            ".codex",
+            "directory"
+          ],
+          [
+            ".git",
+            "directory"
+          ],
+          [
+            "progress_ui.css",
+            "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+          ]
+        ],
+        "host_mounts": false
+      },
+      "before": {
+        "directories": {},
+        "fingerprint": [
+          [
+            "progress_ui.css",
+            "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+          ]
+        ],
+        "host_mounts": false
+      },
+      "profile": "hub_lwb_fixture_v1",
+      "source": "exact owned native thread/start before and after",
+      "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+    },
+    "project": "computer-study-plan",
+    "source_promoted": false,
+    "trial_ready": true,
+    "validation_scope": "isolated_css_only"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "admission": "notLoaded/busy/active/unknown does not meet explicit idle prerequisite",
+  "bound_cwd_match": true,
+  "closed": true,
+  "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v6-OWNED-RESUME",
+  "helper_exit": 0,
+  "method": "thread/read",
+  "model_turns": 0,
+  "native_metadata_status": "notLoaded",
+  "new_threads": 0,
+  "preimages_unchanged": true,
+  "resume_calls": 0,
+  "status": "PARTIAL_BLOCKED",
+  "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+}

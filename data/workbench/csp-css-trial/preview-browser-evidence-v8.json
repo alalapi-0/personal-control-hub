@@ -1,0 +1,236 @@
+{
+  "captured_at": "2026-10-07T08:38:25.804Z",
+  "views": {
+    "before_desktop": {
+      "border": "rgba(248, 238, 229, 0.15)",
+      "marker": "旧版 · 未写入原项目 · unpromoted trial — post-capability blocked",
+      "viewport": {
+        "height": 742,
+        "width": 1265
+      }
+    },
+    "after_desktop": {
+      "border": "rgba(248, 238, 229, 0.24)",
+      "marker": "Codex 试验新版 · 未写入原项目 · unpromoted trial — post-capability blocked",
+      "viewport": {
+        "height": 742,
+        "width": 1265
+      }
+    },
+    "before_narrow": {
+      "border": "rgba(248, 238, 229, 0.15)",
+      "marker": "旧版 · 未写入原项目 · unpromoted trial — post-capability blocked",
+      "viewport": {
+        "height": 911,
+        "width": 375
+      }
+    },
+    "after_narrow": {
+      "border": "rgba(248, 238, 229, 0.24)",
+      "marker": "Codex 试验新版 · 未写入原项目 · unpromoted trial — post-capability blocked",
+      "viewport": {
+        "height": 911,
+        "width": 375
+      }
+    }
+  },
+  "console": {
+    "before": [],
+    "after": []
+  },
+  "network": {
+    "before": {
+      "truncated": false,
+      "hasMore": false,
+      "events": [
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34341/progress.html",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34341/progress_ui.css?v=20260814t",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34341/progress_data.js?v=20260814a",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34341/rounds_data.js?v=20260811a",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34341/progress_ui.js?v=20260814aa",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34341/rounds/round_01/final/command_cheatsheet.md?_=1791362305704",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34341/rounds/round_06/final/linux_automation_cheatsheet.md?_=1791362305704",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34341/rounds/round_02/final/command_cheatsheet.md?_=1791362305704",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34341/plans/linux/README.md?_=1791362305704",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34341/rounds/round_00/final/command_cheatsheet.md?_=1791362305704",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34341/api/health?_=1791362305705",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34341/rounds/round_00/week1/notes.md?_=1791362305715",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34341/progress.json?_=1791362305714",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34341/api/feedback?_=1791362305714",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34341/api/events?_=1791362305714",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34341/api/saves?_=1791362305728",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34341/api/terminal?cwd=&_=1791362305728",
+          "status": 200
+        }
+      ]
+    },
+    "after": {
+      "truncated": false,
+      "hasMore": false,
+      "events": [
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34067/progress.html",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34067/progress_ui.css?v=20260814t",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34067/progress_data.js?v=20260814a",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34067/rounds_data.js?v=20260811a",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34067/progress_ui.js?v=20260814aa",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34067/rounds/round_02/final/command_cheatsheet.md?_=1791362233082",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34067/rounds/round_01/final/command_cheatsheet.md?_=1791362233082",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34067/rounds/round_00/final/command_cheatsheet.md?_=1791362233082",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34067/rounds/round_06/final/linux_automation_cheatsheet.md?_=1791362233082",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34067/plans/linux/README.md?_=1791362233082",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34067/api/health?_=1791362233082",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34067/rounds/round_00/week1/notes.md?_=1791362233092",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34067/api/feedback?_=1791362233091",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34067/api/events?_=1791362233091",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34067/progress.json?_=1791362233091",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34067/api/terminal?cwd=&_=1791362233105",
+          "status": 200
+        },
+        {
+          "method": "Network.responseReceived",
+          "url": "http://127.0.0.1:34067/api/saves?_=1791362233105",
+          "status": 200
+        }
+      ]
+    }
+  },
+  "retained_non_comparable_capture": "csp-css-trial-after-desktop.jpg first1280x720; correctcomparable1265x742 isafter-desktop-v2"
+}

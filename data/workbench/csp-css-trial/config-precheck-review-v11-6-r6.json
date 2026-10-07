@@ -1,0 +1,33 @@
+{
+  "M2_complete": false,
+  "boundary": "MCP RPC rejected before base adapter; configured6false only; actualMCP NOT_RUN; fullmetadata BLOCKED",
+  "candidate_decision": "PASS_OFFLINE_ONLY",
+  "candidate_sha256": "b755f80276ae8a0b559add575057bb856f98617f38cf4ee4d7ad8f911065e7a3",
+  "checks": {
+    "AST4_whitespace": "PASS",
+    "collection_failure_retained": "initial sibling-test import error; corrected module-qualified invocation passed",
+    "full_hub": "Root442 exit0 retained; Judge did not repeat broad suite",
+    "pins": "all exact independently; Root rechecked all267",
+    "targeted": "53 tests exit0; PYTHONPATH=tests:src python3 -m unittest test_hub_css_config_precheck test_hub_css_full_metadata"
+  },
+  "contract": "HUB-LWB-2.3-CSP-SAFE-CONFIG-FEATURE-PRECHECK-GOV-v11.6-r6",
+  "contract_decision": "PASS",
+  "contract_sha256": "8c857bfa28eaa56a5627a1cbd8c4a31fe64aa661923994d0299ba0b07252573b",
+  "created_at": 1791382157.2101572,
+  "decision": "PASS",
+  "evidence_files": 232,
+  "evidence_sha256": "c8e8c2275762146e224037a22ddab7c96e0ac28444d44da2a922d102c580d840",
+  "fifth_resume_allowed": false,
+  "files": 35,
+  "judge": "/root/safe_metadata_v11_6_r6_judge",
+  "native_effects": 0,
+  "native_helpers_allowed": 0,
+  "no_authority_intent_result": "verified absent r6 runtime artifacts",
+  "ordered_feature_templates": 152,
+  "prior_failures_retained": "r4actualFAIL/r5candidateFAIL immutable; five metadata helpers/two threads/four resumes/one model/16closed unchanged",
+  "promotion_allowed": false,
+  "public_source_pins": 56,
+  "revision": "v11.6-r6",
+  "schema_exports": 440,
+  "source_effect": "unscoped MCP invokes AuthManager.auth before disabled auth branch; may proactive OAuth refresh and token persistence"
+}

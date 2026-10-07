@@ -1,0 +1,298 @@
+{
+  "auth_identity": [
+    66306,
+    12072652,
+    3948,
+    1791122729296344124,
+    1791122729296344124,
+    33152,
+    1000
+  ],
+  "candidate_sha256": "9a075b908f5bd1ffe6af3d6e75da63e2eff9fdc05c9eb4b8dc928cb90ee12efc",
+  "checks": [
+    {
+      "count": 27,
+      "exit": 0,
+      "id": "scoped baseline/pending/recovery"
+    },
+    {
+      "count": 374,
+      "exit": 0,
+      "id": "final all Hub"
+    },
+    {
+      "exit": 0,
+      "id": "syntax/diff"
+    }
+  ],
+  "contract": "HUB-LWB-2.3-COMPLETED-USAGE-BASELINE-OFFLINE-v10",
+  "created_at": "2026-10-07T09:45:53.132906+00:00",
+  "diagnosis": "first26fixturetest run had2missing schemas dict errors; temp fixtures corrected; final27 and374PASS. No native run/retry.",
+  "evidence_files": {
+    "data/workbench/csp-css-trial/baseline-contract-v10.json": "db7953908a532ba5ef31b8024c99303fdb853d4a453d43f2cb880f73d03f135d",
+    "data/workbench/csp-css-trial/baseline-preimage-css_capability_recovery-v10.py": "ece3e19b9ea6061262524ab2ad82ac24d8e19e7f6c97cee66ee89f8879d7ae46",
+    "data/workbench/csp-css-trial/baseline-preimage-test_css_capability_recovery-v10.py": "bd35734a0d7aece9ca9914e288e8d49d85d53fc566a063274d6e9502f439f4e0",
+    "data/workbench/csp-css-trial/baseline-preimages-v10.json": "0dbfc48d8ca52db3fcfff97cd218babce590650c3fb120bab86c238039320677",
+    "data/workbench/csp-css-trial/capability-recovery-authority-v10.json": "89d43e4aa399fc02a5e9207fee247ead7485f638970d383a18ebe7992b876496",
+    "data/workbench/csp-css-trial/capability-recovery-intent-v10.json": "35c375caa13a04f818186fda8e575e9eee797dcfa160306f694109f584cf8bb1",
+    "data/workbench/csp-css-trial/capability-recovery-registration-v10.json": "8b068ec97a09d2c4114cd451b554782fa0e7ec764f4431f0e22a03706f41716e",
+    "data/workbench/csp-css-trial/capability-recovery-result-v10.json": "70e0b713c906bd4755b58f9a93905867ce97596ef6ded3a6b72b0ae97ff22e74",
+    "data/workbench/csp-css-trial/capability-recovery-runtime-registration-v10.json": "76c9a8cbb5226523f9af5a3909efa21a53c1a228cb9c80a6373a89ca1f41d8a1",
+    "data/workbench/csp-css-trial/evidence-resume-intent-v10.json": "569e07a097b9197bb797ead5f07d9aa90fcd86ed8f3b424da8e17ffb646b2faa",
+    "data/workbench/csp-css-trial/notification-metadata-v10-5.json": "2bea1dac511086668e3b3140712fd441a9d75fb1ce8a40cf603ff4a2b13b71ef"
+  },
+  "evidence_sha256": "16910b074c76636daa244db147bd187eb36d2ee20660d781b2678644f72bd6b7",
+  "files": {
+    "scripts/recover_css_capability_evidence.py": "d1fa0178cd02940b01c932675392d805b841a5ab436f9bffb2c7f1af8cce51b1",
+    "src/hub/__init__.py": "0c487b25bcc2442a0cb2d480bf0cc95213b6b2820db780b3daf6cf7593fb6fb4",
+    "src/hub/codex_adapter.py": "17f980811707babcc79522ddec951d4e6e8f23dae9b097769f1a6a0b688a9df1",
+    "src/hub/connection_records.py": "ea64d77714700e1d4179b06150e1a97317a0a65f1c3c581ac3a1e68f98639745",
+    "src/hub/connection_refresh.py": "21c4d1f0c7cb495c7e939afba85c8052bd715b15a57a04abc32100d904d69188",
+    "src/hub/connection_sources.py": "0648baa808ac566ff8c1e1a6f1e6c5a6b826b230787e32665424060776014435",
+    "src/hub/connections.py": "b9fa95e08272b8747dc0326ac149ba6c384993a9e1bc131125929ec617619033",
+    "src/hub/css_capability_recovery.py": "b76d08200d1628f42678b27cec1c09adcb1e2d877884c0331a4d1162c67a220b",
+    "src/hub/css_process_config.py": "f8a9e4f633e42d5515f5df83f9241a4f9077dbf1ef9fffafebc85986233d1551",
+    "src/hub/css_read_diagnostic.py": "836919f79fd7ee8460e88a794cae36a70b7f781da95518f9226ce0d71def6242",
+    "src/hub/css_trial.py": "d4b8454dc033ed710f5f909de064f0925e120cecf65ebeee06095644527d868e",
+    "src/hub/design_export.py": "21d85349384a3744a33c56e0d86ae544413fb74ea0225e36c4271f5832521145",
+    "src/hub/design_records.py": "c735b628ffc89b2831b0224b1b69d5b25e11c90122209b2ac77c6d727dcb7735",
+    "src/hub/design_service.py": "94335830c9dc9610aee9f8da0a8959cf5c758bf19c99d2c65d557835ba6089ed",
+    "src/hub/design_store.py": "323277a889f21e6aba88e89da538fc27573a437e4e2eeae48f29e4675ed1afc6",
+    "src/hub/notification_metadata.py": "1e82df6d413e364fd15093f144e6095270cc7e85141b1d9c50441c8f94cc6001",
+    "src/hub/preview_bridge.py": "c7bcf5620a4260802a7e31266753d2cc86660cd9fef76b113aac78a2e06b2fd4",
+    "src/hub/preview_service.py": "315bf14b092427ccf77c8497728ccd7ef701a4116290d9aa6cc99c6bf41274c0",
+    "src/hub/project_service.py": "34a2dc0d9cfdfb49ee12b545ad9e85f603f3749aa952ec1c1bcf1de476709f5a",
+    "src/hub/readonly_preview.py": "60df34ae65224f2827ec7d70da57a72669205739e89f18d971dd8a333159b6df",
+    "src/hub/service_contract.py": "f06b00793aad42d07f2ba708a97090645412688dc72bbaece08bf33df5a43f52",
+    "src/hub/task_service.py": "0523575f9d9d349ce32a0bc5f59e6ae9788c5ee1861b1ff83b4da7c34edaf4bb",
+    "src/hub/task_storage.py": "f3b6528ce995f37b48395ca520b63e50a6b168e891f9646dfa2ec183c61e1649",
+    "src/hub/task_store.py": "150c617696f0ce13dde3b2d55b12637275d0562260ccb1f78fd310d77a2cccb6",
+    "src/hub/workbench_store.py": "41363bbab18d64d04e7d7e3ac48148506f45bfc001711f4acba5a79e3153b7a7",
+    "tests/test_hub_css_capability_recovery.py": "7cf6b7c8f0818d61a651b3888045832515e5f77dff56c233ac1def7dfff280d6",
+    "tests/test_hub_notification_metadata.py": "5f6928db81ff5bafbe250327e13e7914dca2012cc65e29b2d47368816cbcda89"
+  },
+  "frozen": "known usage zero-or-once only after successful exactresume in dedicated baseline before postread/cap queries; exactthread+solecompletedturn+unique terminal event+modeltotal1; no values/body/account/valuehash. Unknown/wrong/new/duplicate/outsidephase/remote/MCP/schema/persistence reject. RPC fixedmethod/ownedID/phase/send/schema-validresponse metadata, terminalpending alwaysnotaccepted. No native/fifth/model/TaskStore/source/Git/global/auth effect; v10fail/counters4/expiry immutable; later v11 separatecontract not granted.",
+  "preserved_failed_candidate": "f884e13beed27d1ca8671b4f766a41bf7afe90e184e7b45d5b42cef1a1c2442d",
+  "preserved_runtime_evidence": "8091494f8ca5c7958cb36a63469846070850014221058a13919126fa6eb3c104",
+  "protected_pin": {
+    "excluded_default_fields": [
+      "model",
+      "model_reasoning_effort"
+    ],
+    "mcp_names": [
+      "chrome-devtools",
+      "context7",
+      "github",
+      "node_repl",
+      "openaiDeveloperDocs",
+      "playwright"
+    ],
+    "protected_sha256": "2f3221497d84381ad9b9e52c58516e8be69f47b00677be04c433f3ff92de633d",
+    "secret_values_or_hashes_retained": false,
+    "sensitive_structure": {
+      "chrome-devtools": {
+        "args": {
+          "item_types": [
+            "str"
+          ],
+          "type": "list"
+        },
+        "command": {
+          "type": "str"
+        }
+      },
+      "context7": {
+        "args": {
+          "item_types": [
+            "str"
+          ],
+          "type": "list"
+        },
+        "command": {
+          "type": "str"
+        }
+      },
+      "github": {
+        "args": {
+          "item_types": [
+            "str"
+          ],
+          "type": "list"
+        },
+        "command": {
+          "type": "str"
+        }
+      },
+      "node_repl": {
+        "args": {
+          "item_types": [],
+          "type": "list"
+        },
+        "command": {
+          "type": "str"
+        },
+        "env": {
+          "BROWSER_USE_AVAILABLE_BACKENDS": {
+            "type": "str"
+          },
+          "BROWSER_USE_CODEX_APP_BUILD_FLAVOR": {
+            "type": "str"
+          },
+          "BROWSER_USE_CODEX_APP_VERSION": {
+            "type": "str"
+          },
+          "BROWSER_USE_TINYSKY_ENABLED": {
+            "type": "str"
+          },
+          "CODEX_CLI_PATH": {
+            "type": "str"
+          },
+          "CODEX_HOME": {
+            "type": "str"
+          },
+          "NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER": {
+            "type": "str"
+          },
+          "NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME": {
+            "type": "str"
+          },
+          "NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS": {
+            "type": "str"
+          },
+          "NODE_REPL_NODE_MODULE_DIRS": {
+            "type": "str"
+          },
+          "NODE_REPL_NODE_PATH": {
+            "type": "str"
+          },
+          "NODE_REPL_TRUSTED_CODE_PATHS": {
+            "type": "str"
+          },
+          "NODE_REPL_TRUSTED_SERVICES": {
+            "type": "str"
+          }
+        },
+        "startup_timeout_sec": {
+          "type": "int"
+        }
+      },
+      "openaiDeveloperDocs": {
+        "url": {
+          "type": "str"
+        }
+      },
+      "playwright": {
+        "args": {
+          "item_types": [
+            "str"
+          ],
+          "type": "list"
+        },
+        "command": {
+          "type": "str"
+        }
+      }
+    },
+    "top_key_types": {
+      "agents": "dict",
+      "approval_policy": "str",
+      "approvals_reviewer": "str",
+      "desktop": "dict",
+      "features": "dict",
+      "marketplaces": "dict",
+      "mcp_servers": "dict",
+      "memories": "dict",
+      "model": "str",
+      "model_reasoning_effort": "str",
+      "plugins": "dict",
+      "projects": "dict",
+      "sandbox_mode": "str",
+      "service_tier": "str",
+      "skills": "dict"
+    }
+  },
+  "source": {
+    "docs/NEXT_ACTIONS.md": {
+      "identity": [
+        66306,
+        12345196,
+        10294,
+        1790982755806475132,
+        1790982755806475132
+      ],
+      "sha256": "4a5cea91842a95695f1ed9a8752edd7e2cdd683a8190a13349121d7e36fdf5e8"
+    },
+    "docs/PROJECT_STATE.md": {
+      "identity": [
+        66306,
+        12345199,
+        13646,
+        1790982755806475132,
+        1790982755806475132
+      ],
+      "sha256": "afcd3027fcace6120c4c436af804fcc3594f6ed889f5364386bacd676c1c2b7e"
+    },
+    "progress_ui.css": {
+      "identity": [
+        66306,
+        12341728,
+        143428,
+        1789185130000000000,
+        1790856611900440364
+      ],
+      "sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+    }
+  },
+  "task_hash": "8350c389a14a60f2c13c36b66efc78e34cfc56682dc87d2733aed00ad91ea6de",
+  "trial": {
+    "directories": {
+      ".agents": [
+        66306,
+        45772554,
+        1000,
+        493
+      ],
+      ".aws": [
+        66306,
+        45772555,
+        1000,
+        493
+      ],
+      ".codex": [
+        66306,
+        45772401,
+        1000,
+        493
+      ],
+      ".git": [
+        66306,
+        45772425,
+        1000,
+        493
+      ]
+    },
+    "fingerprint": [
+      [
+        ".agents",
+        "directory"
+      ],
+      [
+        ".aws",
+        "directory"
+      ],
+      [
+        ".codex",
+        "directory"
+      ],
+      [
+        ".git",
+        "directory"
+      ],
+      [
+        "progress_ui.css",
+        "babb5bc2f53a92017df6042f4246e8b3c41ec803d4ba3b34bde188f70c286ac1"
+      ]
+    ],
+    "host_mounts": false
+  }
+}

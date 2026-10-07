@@ -1,0 +1,653 @@
+{
+  "auth_identity": [
+    66306,
+    12072652,
+    3948,
+    1791122729296344124,
+    1791122729296344124,
+    33152,
+    1000
+  ],
+  "budget": "no reset; each freshJudge6000reservation plusGovernor/runtimeclosure; separateactual/remaining/cost unknown",
+  "candidate_sha256": "ac8afd4f648f9ce99cc47ef400dcb8e309c07248bda8e0bd16812ff90d56884f",
+  "checks": {
+    "AST3": "PASS",
+    "diff_check": "PASS",
+    "full_hub": "409passed",
+    "observed_repairs": [
+      "fixture expected old configuration result; repaired diagnostic assertion/mock",
+      "sourcegroup skills duplicate field match; narrowed exact ConfigToml block"
+    ],
+    "prior_pins": "all prior unchanged except3owned",
+    "scoped": "20passed",
+    "source3_trial_auth_task_semantic": "PASS"
+  },
+  "contract": "HUB-LWB-2.3-CSP-CONFIG-DIAGNOSTIC-GOV-v11.4",
+  "created_at": 1791373730.8368955,
+  "cumulative": {
+    "closed_rounds": 16,
+    "model_turns": 1,
+    "native_threads": 2,
+    "resumes": 4,
+    "round": "HUB-LWB-2.3"
+  },
+  "evidence_files": {
+    "data/workbench/csp-css-trial/baseline-contract-v10.json": "db7953908a532ba5ef31b8024c99303fdb853d4a453d43f2cb880f73d03f135d",
+    "data/workbench/csp-css-trial/baseline-preimage-css_capability_recovery-v10.py": "ece3e19b9ea6061262524ab2ad82ac24d8e19e7f6c97cee66ee89f8879d7ae46",
+    "data/workbench/csp-css-trial/baseline-preimage-test_css_capability_recovery-v10.py": "bd35734a0d7aece9ca9914e288e8d49d85d53fc566a063274d6e9502f439f4e0",
+    "data/workbench/csp-css-trial/baseline-preimages-v10.json": "0dbfc48d8ca52db3fcfff97cd218babce590650c3fb120bab86c238039320677",
+    "data/workbench/csp-css-trial/baseline-registration-v10.json": "a160b49333ea2ab808c19d82a3905a97137d5dab044960f4b04e28008a846161",
+    "data/workbench/csp-css-trial/capability-recovery-authority-v10.json": "89d43e4aa399fc02a5e9207fee247ead7485f638970d383a18ebe7992b876496",
+    "data/workbench/csp-css-trial/capability-recovery-config-drift-v11.json": "8110b815d5ba96ed1b010349a748929174008dee4c11450689cc473c8b7cec8a",
+    "data/workbench/csp-css-trial/capability-recovery-intent-v10.json": "35c375caa13a04f818186fda8e575e9eee797dcfa160306f694109f584cf8bb1",
+    "data/workbench/csp-css-trial/capability-recovery-registration-v10.json": "8b068ec97a09d2c4114cd451b554782fa0e7ec764f4431f0e22a03706f41716e",
+    "data/workbench/csp-css-trial/capability-recovery-result-v10.json": "70e0b713c906bd4755b58f9a93905867ce97596ef6ded3a6b72b0ae97ff22e74",
+    "data/workbench/csp-css-trial/capability-recovery-runtime-registration-v10.json": "76c9a8cbb5226523f9af5a3909efa21a53c1a228cb9c80a6373a89ca1f41d8a1",
+    "data/workbench/csp-css-trial/config-precheck-api-dto-v11-2.json": "f853d906fb317a87bddfb930653764f186f6ae2a54e28cb05ee60df4ea854f37",
+    "data/workbench/csp-css-trial/config-precheck-authority-v11-3.json": "7ce28498501e9ee853e8b5bf3786e1bc6f41addd71d2d1892bfa23397a68a6d1",
+    "data/workbench/csp-css-trial/config-precheck-contract-v11-1.json": "68e90a823cbcdbb55778792d719f218eeb8446d1a0eaa7a4668cbcec194db053",
+    "data/workbench/csp-css-trial/config-precheck-contract-v11-2.json": "c6c036082e94ec79b8d99acb7179a00662088eeadf7eed36c2c2b84bbc902612",
+    "data/workbench/csp-css-trial/config-precheck-contract-v11-3.json": "f21d50cbef05f851f655e646f4b85a33279d45f8a85b1fdded13de3182abcfd3",
+    "data/workbench/csp-css-trial/config-precheck-contract-v11-4.json": "afeb2ce301d5a70bda1b06a489c24acc6617943b4e8b38c5b1015495184c3b69",
+    "data/workbench/csp-css-trial/config-precheck-intent-v11-3.json": "a6af9f3d491e9a84d83f020746590e089ab99e0198afb11615797ed458a32596",
+    "data/workbench/csp-css-trial/config-precheck-notification-v11-3-1.json": "c5c31461bd01cf9d2b24675e91c97f9c4c6fab63f56b65815e1e7595124f5ecb",
+    "data/workbench/csp-css-trial/config-precheck-notification-v11-3-2.json": "6c0d30307225b95617500e86c3517ecc61bc8fc44e5d31593d527560be626b34",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-2-css_config_precheck.py": "e5b62084b32b53b808682ff585c95a2ec00f77e0e365f0805af26d82375e5170",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-2-precheck_css_config.py": "e08e65605ebf9fc5582538de616dff909ad05945afacaea0774ea96e545a2326",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-2-test_hub_css_config_precheck.py": "3717bcd6753fb26f6ede45cecb627b680bcdbbc7ebab65faf7cf44b6042cd6be",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-3-css_config_precheck.py": "8347f90f0dd10166f4cbd714ae63c22a4b7e63bc64f2112e949dbc99952ff9b7",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-3-precheck_css_config.py": "e08e65605ebf9fc5582538de616dff909ad05945afacaea0774ea96e545a2326",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-3-test_hub_css_config_precheck.py": "dfff0286ec37c459900b687f0ce63751a5449d244f77e77294b3ad8d56c4e831",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-css_config_precheck.py": "8d04ad568f95f3ee52a13d900894a64caf346a117a20e2ad932df6c3976fdaa9",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-precheck_css_config.py": "e08e65605ebf9fc5582538de616dff909ad05945afacaea0774ea96e545a2326",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-test_hub_css_config_precheck.py": "430794073b19e414a8388fa5e1f106f15f8778ec87243af9d6718aaef5df14bd",
+    "data/workbench/csp-css-trial/config-precheck-registration-v11-3.json": "3722d12562dd676c9872f1d47afe84a02bce83677becdbe5f9128f5cfd6f68e9",
+    "data/workbench/csp-css-trial/config-precheck-result-v11-3.json": "5c0ff37e55b68fdd3068388cec434d1752254bcd240ed30478ffc27ec6f0996b",
+    "data/workbench/csp-css-trial/config-precheck-review-v11-1.json": "2abe4759181de58af6025dc5862f2a768f3c8962a27fcb2208675ff2c1659434",
+    "data/workbench/csp-css-trial/config-precheck-review-v11-2.json": "997c11a13838bd23b815ee644fb270de697b36d60f27d3ea2c9c3f33075527df",
+    "data/workbench/csp-css-trial/config-precheck-review-v11-3.json": "42da2803220818cd87891c961606e2a47be8b4bebee341ff146960d78527441c",
+    "data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-1.json": "65b59e42bd702edd3a1fe37def578be4888261538058c6d5a0f4a2bab128ecbd",
+    "data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-2.json": "0790d20e6dc57ef527f21b378ab19c86ee95f68c20ec2bdd98011d67893394ba",
+    "data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-3.json": "f82e29f80094d42ee71afaad9441f913a2c7d8c702c85c786420406845ca5866",
+    "data/workbench/csp-css-trial/config-precheck-runtime-review-v11-1.json": "3a9b7af62ec75b2e2b08645d808a1420e0fec4f350fc0ae60112e5c8905497bb",
+    "data/workbench/csp-css-trial/config-precheck-runtime-review-v11-2.json": "624337c16ce59ee127657e976fab2b600a72928884f0fd51272dc51b7a3e652c",
+    "data/workbench/csp-css-trial/config-precheck-runtime-review-v11-3.json": "d4d6f23769385754105faca33e8b58aa002651ebd1c37fc2d08d61bd161d678b",
+    "data/workbench/csp-css-trial/config-precheck-sources-v11-1.json": "750dcad50977ac1747f3acb840822f3b4a4369b8c61a0801a9badae693e6c046",
+    "data/workbench/csp-css-trial/config-precheck-sources-v11-4.json": "b6974ef9974eab422ac83c630ff325627a67d25a2309134701bdc45a9f1ecad0",
+    "data/workbench/csp-css-trial/evidence-resume-intent-v10.json": "569e07a097b9197bb797ead5f07d9aa90fcd86ed8f3b424da8e17ffb646b2faa",
+    "data/workbench/csp-css-trial/notification-metadata-v10-5.json": "2bea1dac511086668e3b3140712fd441a9d75fb1ce8a40cf603ff4a2b13b71ef",
+    "data/workbench/csp-css-trial/public-source-v11-2/app-server-protocol__src__protocol__v2__config.rs": "8187edb07de0259f5a96927ca69b749a7ba9049062bf2ef2eb1ff9c7d8696447",
+    "data/workbench/csp-css-trial/public-source-v11-2/app-server__src__config_manager_service.rs": "cb5e0862e3402aed6349d870f4a8b38472ad1835edd906f797ea1e3aeeac8209",
+    "data/workbench/csp-css-trial/public-source-v11-2/app-server__src__request_processors__config_processor.rs": "66d0f303742fc268f9f4557cc01418c89c85854ff58f3feb7321e19a891b1db2",
+    "data/workbench/csp-css-trial/public-source-v11-2/config__src__config_toml.rs": "05b6d259c8882322d33a997d69c0898f7ca3693552bf9ec5f4a8f1c60457bb1e",
+    "data/workbench/csp-css-trial/public-source-v11-2/config__src__mcp_types.rs": "08bdfe6bcc0ca607b1ead8b373029f895528604290f94bf1ba18c2dc83db8fd8",
+    "data/workbench/csp-css-trial/public-source-v11-2/config__src__permissions_toml.rs": "f410e2da8b23102c3236ea47d37637666b2e07ea37d4dbb8be5ad0566b632810",
+    "data/workbench/csp-css-trial/public-source-v11-2/config__src__shell_environment_policy.rs": "93a3c447504f940a266a50ecbb0467dcf08fd7e920f5434455c6e09fad2b25c5",
+    "data/workbench/csp-css-trial/public-source-v11-2/config__src__skills_config.rs": "bc2eb9fcb92c2c99fedaa25d1ca4bbff6d69a009499ba34762249bdc3b05cc8c",
+    "data/workbench/csp-css-trial/public-source-v11-2/config__src__state.rs": "b9a64a791a8b7884626890f06b13fb4630c5160f75ead198635e0111ecdd46ed",
+    "data/workbench/csp-css-trial/public-source-v11-2/config__src__types.rs": "951d5b6a7ff5c7dd667039f1f0c44fe1028a2d8ab372d45632b60d325464631d",
+    "data/workbench/csp-css-trial/public-source-v11-2/core__config.schema.json": "eda7251b7e46e0b9d0f3d8eef5dab451e11a55d723e2b802e152b7208045836a",
+    "data/workbench/csp-css-trial/public-source-v11-2/features__src__lib.rs": "4c702a9479fdbf955b0640f8d52e327dff5cc273c0e9587f29f62e5cbbcd59aa",
+    "data/workbench/csp-css-trial/public-source-v11-3-loader.rs": "0e3131c8186b391ecb425620bee2a8649d10364d062eee21a15d1cbe48dbbb0d",
+    "data/workbench/csp-css-trial/semantic-config-contract-v11.json": "43c96bdc8efe0036e5c981acb1b385eb97f6b9f131dbe54187e89f97969447fe",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-codex_adapter.py": "17f980811707babcc79522ddec951d4e6e8f23dae9b097769f1a6a0b688a9df1",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-css_capability_recovery.py": "0c3d2485c09c5ac033408a276820d3100ce26cfaf6b62e4a8e490a46debfe650",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-css_process_config.py": "f8a9e4f633e42d5515f5df83f9241a4f9077dbf1ef9fffafebc85986233d1551",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-r2-codex_adapter.py": "e57cd96ce5328d492cfb17fda5fa7eb9d4d6dd589c44ac401b1c2c1f82376f69",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-r2-css_capability_recovery.py": "1ebd6bc2ad07a64385f7124bff10a2ebbd28383c730da802dc721c1a163d46a8",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-r2-css_process_config.py": "2852c5d20e0d8ba73ed6a347e3eed178052f725b3ba02af86a71c6ea65756d7c",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-r2-test_hub_css_capability_recovery.py": "b6c693f475b5931d9aa0e9e497763da88093aec6e6fe02bde5ff040810a40279",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-r2-test_hub_css_process_config.py": "53f4d0c3f86be5370de9c394e9287209176ea4f75bad338b97af64c872023d45",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-test_hub_css_process_config.py": "aabce071983e50a591e9d0a452827376bdb1a9ef15b07a773aee0d63312dbf28",
+    "data/workbench/csp-css-trial/semantic-config-preimages-v11-r2.json": "215c2e1b026a27a092224472616b855b0e559dd9e0a6e6f4749ff8042e5c27c8",
+    "data/workbench/csp-css-trial/semantic-config-preimages-v11.json": "3a8624f5f085e3d228a071a1a081e8f878bf72530623d263c1aa42971710ace5",
+    "data/workbench/csp-css-trial/semantic-config-registration-v11-r2.json": "56bb2650a47772a8d2ba351e485652a5f8864d5c9d919a71542e0d86a6378e9d",
+    "data/workbench/csp-css-trial/semantic-config-registration-v11.json": "ddfa1874438891cab71f5bb11b32d1b581d98b2540504b80cebf2a32dcf73c71",
+    "data/workbench/csp-css-trial/semantic-config-sources-v11-r2.json": "3d03e2c042030b559e0d1bd4fb47178b1ef612b91c317a72129ef373bd851fe6",
+    "data/workbench/csp-css-trial/semantic-config-sources-v11.json": "3657a077daf673b0d46fb45fdac424ecc6a98b806dcc738e911d5e2eefceb426"
+  },
+  "evidence_sha256": "7300fbc5d835b5f98f74b7ee6908fd91d3172b866a8ad2525d279cf87518d7dd",
+  "files": {
+    "data/workbench/csp-css-trial/config-precheck-sources-v11-2.json": "aa19536c4970351339916663ceacd82067edf8e31bb56aa428a81b9bf61c9a7f",
+    "data/workbench/csp-css-trial/config-precheck-sources-v11-3.json": "f519eb7aca991a7e2f963b7c17651ab44973838f565e9aab371ae38aa749d116",
+    "scripts/precheck_css_config.py": "f2043d5e3dd91eba7b860b0b8400135b29bdf1d402eea36bb4147481bb313ee1",
+    "scripts/recover_css_capability_evidence.py": "d1fa0178cd02940b01c932675392d805b841a5ab436f9bffb2c7f1af8cce51b1",
+    "src/hub/__init__.py": "0c487b25bcc2442a0cb2d480bf0cc95213b6b2820db780b3daf6cf7593fb6fb4",
+    "src/hub/codex_adapter.py": "087685ce22f5772c5cd87584ea0f289de3e78b5f03947b8b13b4dff09081501c",
+    "src/hub/connection_records.py": "ea64d77714700e1d4179b06150e1a97317a0a65f1c3c581ac3a1e68f98639745",
+    "src/hub/connection_refresh.py": "21c4d1f0c7cb495c7e939afba85c8052bd715b15a57a04abc32100d904d69188",
+    "src/hub/connection_sources.py": "0648baa808ac566ff8c1e1a6f1e6c5a6b826b230787e32665424060776014435",
+    "src/hub/connections.py": "b9fa95e08272b8747dc0326ac149ba6c384993a9e1bc131125929ec617619033",
+    "src/hub/css_capability_recovery.py": "f75b1f13bc130df7399ea6e02f51b824c2d7bc6038b7abad97deb38dcad85135",
+    "src/hub/css_config_precheck.py": "42ca2d6354a8a5c9395f3364711f68728466dfe52b0fe7e1ee3d114743307f63",
+    "src/hub/css_process_config.py": "b9c1575adad4cc6bac6b8d60c28a54e3a8e235440a14e22541fa37662f18a575",
+    "src/hub/css_read_diagnostic.py": "836919f79fd7ee8460e88a794cae36a70b7f781da95518f9226ce0d71def6242",
+    "src/hub/css_trial.py": "d4b8454dc033ed710f5f909de064f0925e120cecf65ebeee06095644527d868e",
+    "src/hub/design_export.py": "21d85349384a3744a33c56e0d86ae544413fb74ea0225e36c4271f5832521145",
+    "src/hub/design_records.py": "c735b628ffc89b2831b0224b1b69d5b25e11c90122209b2ac77c6d727dcb7735",
+    "src/hub/design_service.py": "94335830c9dc9610aee9f8da0a8959cf5c758bf19c99d2c65d557835ba6089ed",
+    "src/hub/design_store.py": "323277a889f21e6aba88e89da538fc27573a437e4e2eeae48f29e4675ed1afc6",
+    "src/hub/notification_metadata.py": "1e82df6d413e364fd15093f144e6095270cc7e85141b1d9c50441c8f94cc6001",
+    "src/hub/preview_bridge.py": "c7bcf5620a4260802a7e31266753d2cc86660cd9fef76b113aac78a2e06b2fd4",
+    "src/hub/preview_service.py": "315bf14b092427ccf77c8497728ccd7ef701a4116290d9aa6cc99c6bf41274c0",
+    "src/hub/project_service.py": "34a2dc0d9cfdfb49ee12b545ad9e85f603f3749aa952ec1c1bcf1de476709f5a",
+    "src/hub/readonly_preview.py": "60df34ae65224f2827ec7d70da57a72669205739e89f18d971dd8a333159b6df",
+    "src/hub/service_contract.py": "f06b00793aad42d07f2ba708a97090645412688dc72bbaece08bf33df5a43f52",
+    "src/hub/task_service.py": "0523575f9d9d349ce32a0bc5f59e6ae9788c5ee1861b1ff83b4da7c34edaf4bb",
+    "src/hub/task_storage.py": "f3b6528ce995f37b48395ca520b63e50a6b168e891f9646dfa2ec183c61e1649",
+    "src/hub/task_store.py": "150c617696f0ce13dde3b2d55b12637275d0562260ccb1f78fd310d77a2cccb6",
+    "src/hub/workbench_store.py": "41363bbab18d64d04e7d7e3ac48148506f45bfc001711f4acba5a79e3153b7a7",
+    "tests/test_hub_css_capability_recovery.py": "6f9c8e416375fb12b57287b0b1b483d66b38873b54c3b57131f64afe86e16cfa",
+    "tests/test_hub_css_config_precheck.py": "e79d8a4e4be0fd448231c9a9489ea2a71a5f3b1f7a10b2142c6353025472642a",
+    "tests/test_hub_css_process_config.py": "647cd51cd2aabd064b4e37a15ebf49aff28c11b6460d8418beda3c4f454b91c3",
+    "tests/test_hub_notification_metadata.py": "5f6928db81ff5bafbe250327e13e7914dca2012cc65e29b2d47368816cbcda89"
+  },
+  "native_now": 0,
+  "preimages": {
+    "scripts/precheck_css_config.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-precheck_css_config.py",
+      "sha256": "e08e65605ebf9fc5582538de616dff909ad05945afacaea0774ea96e545a2326"
+    },
+    "src/hub/css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-css_config_precheck.py",
+      "sha256": "8d04ad568f95f3ee52a13d900894a64caf346a117a20e2ad932df6c3976fdaa9"
+    },
+    "tests/test_hub_css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-test_hub_css_config_precheck.py",
+      "sha256": "430794073b19e414a8388fa5e1f106f15f8778ec87243af9d6718aaef5df14bd"
+    }
+  },
+  "privacy": "fixed15groups plus effective; enums/histogram saturation/equality only; no privatevalue/key/selector/origin/version/hash; unknownsubtree nofingerprint; boundedcapacity; diagnostic NOT metadataacceptance",
+  "prospective_params": {
+    "auth_mode": "ChatGPT",
+    "config_read_params": {
+      "cwd": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+      "includeLayers": true
+    },
+    "expiry_max_seconds": 900,
+    "helper_wall_seconds": 120,
+    "helpers_allowed": 1,
+    "methods": [
+      "initialize",
+      "config/read"
+    ],
+    "model_turns_allowed": 0,
+    "renewal_allowed": false,
+    "resumes_allowed": 0,
+    "threads_allowed": 0
+  },
+  "semantic_pin": {
+    "active_project_selectors_bound": true,
+    "contract": "HUB-LWB-2.3-CSP-CONFIG-REBASELINE-GOV-v11",
+    "coverage": {
+      "agents": {
+        "anchor": "pub struct AgentsToml",
+        "classification": "multi_agent_off",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/config_toml.rs"
+      },
+      "approval_policy": {
+        "anchor": "approval_policy",
+        "classification": "invariant",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core/src/config/mod.rs"
+      },
+      "approvals_reviewer": {
+        "anchor": "constrained_approvals_reviewer",
+        "classification": "invariant",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core/src/config/mod.rs"
+      },
+      "desktop": {
+        "anchor": "pub desktop: Option<HashMap<String, JsonValue>>",
+        "classification": "opaque_frontend",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/config_toml.rs"
+      },
+      "features": {
+        "anchor": "overrides.apply(&mut features)",
+        "classification": "fixed_disabled",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/features/src/lib.rs"
+      },
+      "marketplaces": {
+        "anchor": "if config.plugins_enabled",
+        "classification": "plugins_off",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core-plugins/src/manager.rs"
+      },
+      "mcp_servers": {
+        "anchor": "pub enabled: bool",
+        "classification": "six_disabled",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/mcp_types.rs"
+      },
+      "memories": {
+        "anchor": "key: \"memories\"",
+        "classification": "memory_off",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/features/src/lib.rs"
+      },
+      "model": {
+        "anchor": "model.or(cfg.model)",
+        "classification": "override",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core/src/config/mod.rs"
+      },
+      "model_reasoning_effort": {
+        "anchor": "model_reasoning_effort",
+        "classification": "override",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core/src/config/mod.rs"
+      },
+      "plugins": {
+        "anchor": "if !config.plugins_enabled",
+        "classification": "plugins_off",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core-plugins/src/manager.rs"
+      },
+      "projects": {
+        "anchor": "fn decision_for_dir",
+        "classification": "bound_trust_and_layers",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/loader/mod.rs"
+      },
+      "sandbox_mode": {
+        "anchor": "else if profiles_are_active",
+        "classification": "profile_override",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core/src/config/mod.rs"
+      },
+      "service_tier": {
+        "anchor": "let service_tier = match service_tier_override",
+        "classification": "no_model_request",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core/src/config/mod.rs"
+      },
+      "skills": {
+        "anchor": "pub struct SkillConfig",
+        "classification": "disabled_selector_only",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/skills_config.rs"
+      }
+    },
+    "excluded_default_fields": [
+      "model",
+      "model_reasoning_effort"
+    ],
+    "launch": {
+      "can_write_cwd": false,
+      "cold_resume_only": true,
+      "disabled_features": [
+        "apps",
+        "plugins",
+        "remote_plugin",
+        "browser_use",
+        "browser_use_external",
+        "browser_use_full_cdp_access",
+        "computer_use",
+        "in_app_browser",
+        "hooks",
+        "image_generation",
+        "multi_agent",
+        "multi_agent_v2",
+        "goals",
+        "memories"
+      ],
+      "disabled_mcp": [
+        "chrome-devtools",
+        "context7",
+        "github",
+        "node_repl",
+        "openaiDeveloperDocs",
+        "playwright"
+      ],
+      "effort": "xhigh",
+      "model": "gpt-6.1-sol",
+      "new_model_turns": 0,
+      "profile": "hub_lwb_evidence_v11",
+      "profile_arguments": [
+        "-c",
+        "default_permissions=\"hub_lwb_evidence_v11\"",
+        "-c",
+        "permissions.hub_lwb_evidence_v11.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"read\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+        "-c",
+        "permissions.hub_lwb_evidence_v11.network.enabled=false"
+      ],
+      "provider_requests": "deny",
+      "remote_env_key": "CODEX_INTERNAL_APP_SERVER_REMOTE_CONTROL_DISABLED",
+      "remote_start": "DisabledEphemeral",
+      "source_version": "rust-v0.159.3",
+      "web_search": "disabled"
+    },
+    "mcp_names": [
+      "chrome-devtools",
+      "context7",
+      "github",
+      "node_repl",
+      "openaiDeveloperDocs",
+      "playwright"
+    ],
+    "protected_sha256": "e1596f20f668c6878c60b522c8504da8157382d6d3ef23a1a8991810dcc78d0e",
+    "secret_values_or_hashes_retained": false,
+    "semantic_version": 11,
+    "sensitive_structure": {
+      "marketplaces": {
+        "all_sources_local_absolute": true,
+        "row_schema": {
+          "source": {
+            "type": "str"
+          },
+          "source_type": {
+            "type": "str"
+          }
+        },
+        "type": "dict"
+      },
+      "mcp_servers": {
+        "chrome-devtools": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        },
+        "context7": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        },
+        "github": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        },
+        "node_repl": {
+          "args": {
+            "item_types": [],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          },
+          "env": {
+            "key_type": "str",
+            "type": "dict",
+            "value_type": "str"
+          },
+          "startup_timeout_sec": {
+            "type": "int"
+          }
+        },
+        "openaiDeveloperDocs": {
+          "url": {
+            "type": "str"
+          }
+        },
+        "playwright": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        }
+      },
+      "projects": {
+        "bound_active_context": {
+          "active_project": {
+            "cwd": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+            "project_root": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+            "repo_root": null,
+            "trust_level": null
+          },
+          "auxiliary_layers": [
+            {
+              "path": "/home/alalapi/.codex/managed_config.toml",
+              "present": false
+            },
+            {
+              "path": "/etc/codex/config.toml",
+              "present": false
+            },
+            {
+              "path": "/etc/codex/requirements.toml",
+              "present": false
+            }
+          ],
+          "cli_layer": "frozen process arguments",
+          "closure": {
+            "checkout_root": null,
+            "cwd_canonical": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+            "cwd_keys": [
+              "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007"
+            ],
+            "cwd_original": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+            "git_candidates": [
+              {
+                "directory": true,
+                "head_present": false,
+                "identity": [
+                  66306,
+                  45772425,
+                  1000,
+                  493
+                ],
+                "parent": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+                "present": true
+              },
+              {
+                "parent": "/home/alalapi/Temp/personal-control-hub/linux-workbench",
+                "present": false
+              },
+              {
+                "parent": "/home/alalapi/Temp/personal-control-hub",
+                "present": false
+              },
+              {
+                "parent": "/home/alalapi/Temp",
+                "present": false
+              },
+              {
+                "directory": true,
+                "head_present": false,
+                "identity": [
+                  66306,
+                  12718439,
+                  1000,
+                  493
+                ],
+                "parent": "/home/alalapi",
+                "present": true
+              },
+              {
+                "parent": "/home",
+                "present": false
+              },
+              {
+                "parent": "/",
+                "present": false
+              }
+            ],
+            "marker_found": false,
+            "project_root": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+            "project_root_keys": [
+              "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007"
+            ],
+            "repo_root": null,
+            "repo_root_keys": []
+          },
+          "enabled_project_layer_count": 0,
+          "layer_candidates": [
+            "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007/.codex"
+          ],
+          "native_layer_check_required": true,
+          "project_layers": [
+            {
+              "config_present": false,
+              "disabled_reason": "missing_trust",
+              "empty_directory_verified": true,
+              "enabled": false,
+              "exec_policy_present": false,
+              "folder": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007/.codex",
+              "hooks_config_present": false,
+              "hooks_folder": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007/.codex",
+              "identity": [
+                66306,
+                45772401,
+                1000,
+                493
+              ],
+              "root_checkout_hooks_override": null
+            }
+          ],
+          "trust": {
+            "lookup_keys": [
+              "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007"
+            ],
+            "matching_rows": [],
+            "selected": {
+              "selector": null,
+              "trust_level": null
+            }
+          },
+          "user_layer": "native HOME/config.toml separately observed"
+        },
+        "row_schema": {
+          "trust_level": {
+            "type": "str"
+          }
+        },
+        "type": "dict",
+        "unrelated_selectors_absolute_trust_only": true
+      },
+      "skills": {
+        "all_selectors_disabled_absolute": true,
+        "row_schema": {
+          "enabled": {
+            "type": "bool"
+          },
+          "path": {
+            "type": "str"
+          }
+        },
+        "type": "list"
+      }
+    },
+    "top_key_types": {
+      "agents": "dict",
+      "approval_policy": "str",
+      "approvals_reviewer": "str",
+      "desktop": "dict",
+      "features": "dict",
+      "marketplaces": "dict",
+      "mcp_servers": "dict",
+      "memories": "dict",
+      "model": "str",
+      "model_reasoning_effort": "str",
+      "plugins": "dict",
+      "projects": "dict",
+      "sandbox_mode": "str",
+      "service_tier": "str",
+      "skills": "dict"
+    },
+    "unrelated_selector_values_or_hashes_retained": false
+  },
+  "source": {
+    "docs/NEXT_ACTIONS.md": {
+      "identity": [
+        66306,
+        12345196,
+        10294,
+        1790982755806475132,
+        1790982755806475132
+      ],
+      "sha256": "4a5cea91842a95695f1ed9a8752edd7e2cdd683a8190a13349121d7e36fdf5e8"
+    },
+    "docs/PROJECT_STATE.md": {
+      "identity": [
+        66306,
+        12345199,
+        13646,
+        1790982755806475132,
+        1790982755806475132
+      ],
+      "sha256": "afcd3027fcace6120c4c436af804fcc3594f6ed889f5364386bacd676c1c2b7e"
+    },
+    "progress_ui.css": {
+      "identity": [
+        66306,
+        12341728,
+        143428,
+        1789185130000000000,
+        1790856611900440364
+      ],
+      "sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+    }
+  },
+  "sources": {
+    "fixedgroupclosure": "data/workbench/csp-css-trial/config-precheck-sources-v11-4.json",
+    "inherited": {
+      "dto": "data/workbench/csp-css-trial/config-precheck-api-dto-v11-2.json",
+      "exact_loader_duration": "data/workbench/csp-css-trial/config-precheck-sources-v11-3.json",
+      "schemas": "data/workbench/csp-css-trial/config-precheck-sources-v11-1.json",
+      "wire_typed_derived": "data/workbench/csp-css-trial/config-precheck-sources-v11-2.json"
+    }
+  },
+  "task_hash": "8350c389a14a60f2c13c36b66efc78e34cfc56682dc87d2733aed00ad91ea6de",
+  "trial": {
+    "directories": {
+      ".agents": [
+        66306,
+        45772554,
+        1000,
+        493
+      ],
+      ".aws": [
+        66306,
+        45772555,
+        1000,
+        493
+      ],
+      ".codex": [
+        66306,
+        45772401,
+        1000,
+        493
+      ],
+      ".git": [
+        66306,
+        45772425,
+        1000,
+        493
+      ]
+    },
+    "fingerprint": [
+      [
+        ".agents",
+        "directory"
+      ],
+      [
+        ".aws",
+        "directory"
+      ],
+      [
+        ".codex",
+        "directory"
+      ],
+      [
+        ".git",
+        "directory"
+      ],
+      [
+        "progress_ui.css",
+        "babb5bc2f53a92017df6042f4246e8b3c41ec803d4ba3b34bde188f70c286ac1"
+      ]
+    ],
+    "host_mounts": false
+  }
+}

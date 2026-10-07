@@ -1,0 +1,47 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-CAPABILITY-RECOVERY-GOV-v10",
+  "decision": "AUTHORIZE_PREDISPATCH_IMPLEMENTATION",
+  "forbidden": [
+    "thread/list",
+    "any turn/start, steer or interrupt",
+    "new model or thread",
+    "TaskStore writes",
+    "source/document promotion",
+    "Git",
+    "configuration/authentication changes"
+  ],
+  "governor": "entry_governor",
+  "historical_v9_runtime": "PARTIAL_BLOCKED /DIAGNOSTIC_NOTIFICATION_REJECTED; original grant expired; no retroactive change",
+  "lane": "GOVERNED",
+  "limits": {
+    "authority_lifetime_seconds": 900,
+    "fifth_resume_allowed": false,
+    "helper_count": 1,
+    "helper_wall_seconds": 120,
+    "historical_model_turn_total": 1,
+    "model_turns_allowed": 0,
+    "native_thread_total": 2,
+    "prior_resumes": 3,
+    "renewal_allowed": false,
+    "resume_total_limit": 4
+  },
+  "notification_gate": "only existing fixed five allowlisted schema notifications; reject other known, unregistered, cross-binding, capability contradiction or persistence failure",
+  "objective": "One final evidence-only exact completed-thread load; identify controlled notification and collect current capabilities",
+  "offline_repair_approval": {
+    "candidate": "ac5b76271f1b95d6dfe10d35e605d6bceafbcb7031d4e01f20cd4c1650b1d728",
+    "contract": "HUB-LWB-2.3-NOTIFICATION-RETENTION-OFFLINE-v9",
+    "evidence": "feeec00ae4e1448fdf4ec69450a71d09df92cf48e939b68bd4318e6d1642b3bc",
+    "governor": "entry_governor APPROVE",
+    "judge": "notification_retention_judge PASS"
+  },
+  "postruntime": "fresh Judge and Governor required; reconcile/promotion not authorized",
+  "required": [
+    "fresh current task/thread/turn, trial CSS and four directory identities, three canonical source identities",
+    "protected configuration projection and legal ChatGPT authentication",
+    "all historical counts and failures preserved",
+    "exact method and binding gates",
+    "safe notification projection persisted before rejection",
+    "fresh Judge PASS then Governor decision before helper"
+  ],
+  "runtime_before_review": false
+}

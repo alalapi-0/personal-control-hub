@@ -1,0 +1,20 @@
+{
+  "features": [
+    {
+      "enabled": false,
+      "name": "image_generation"
+    },
+    {
+      "enabled": false,
+      "name": "goals"
+    }
+  ],
+  "has_next_page": false,
+  "kind": "rpc_result",
+  "method": "experimentalFeature/list",
+  "other_feature_count": 50,
+  "raw_body_retained": false,
+  "request_cursor_present": true,
+  "row_count": 52,
+  "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+}

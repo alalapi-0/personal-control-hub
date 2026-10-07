@@ -1,0 +1,476 @@
+{
+  "actual_effects": {
+    "helper_count": 1,
+    "model_turn_total": 1,
+    "native_resume_total": 3,
+    "native_thread_total": 2,
+    "new_model_turns": 0,
+    "source_writes": 0,
+    "taskstore_row_writes": 0
+  },
+  "approved_offline_candidate": "8e41bd10910e76c997f19eb5cd7d68d3b8bd5ce3b6a1f8298afde7e3cee0511e",
+  "approved_offline_evidence": "74d98dd8261fba3da383d690764f1f52b8ccba14604b3d380c27428d9ceb1fcf",
+  "candidate_sha256": "8e41bd10910e76c997f19eb5cd7d68d3b8bd5ce3b6a1f8298afde7e3cee0511e",
+  "classification": {
+    "fourth_resume_allowed": false,
+    "grant_expiry": 1791364398,
+    "historical_v7": "FAIL retained; no retroactive PASS",
+    "next_effects_allowed": 0,
+    "overall": "PARTIAL_BLOCKED DIAGNOSTIC_NOTIFICATION_REJECTED unchanged",
+    "positive": "actual currentexactsameID/cwd/trueidle/frozenmodel-effort/6disabledzero-capabilities+unknown0/complete14false-codehosttrue/remoteindependentdisabled/readonlyisolation/allpreserved/closed exit0 beforeexpiry",
+    "source_promotion_allowed": false,
+    "unknown": "rejected notification method/body not retained; do not infer tokenUsage or another kind"
+  },
+  "contract": "HUB-LWB-2.3-CSP-CAPABILITY-RECOVERY-GOV-v9",
+  "created_at": "2026-10-07T09:13:24.773704+00:00",
+  "evidence_files": {
+    "data/workbench/csp-css-trial/capability-current-v9-1.json": "8ec3e5ff0e7703f963b08da092ed20ea6c7ae411d36d029e58e8b255a4b639c6",
+    "data/workbench/csp-css-trial/capability-current-v9-2.json": "c245fef7d47d41d51d9a5e37be5252259f7a5eaf3173f9450c8b4ca64f906f0e",
+    "data/workbench/csp-css-trial/capability-current-v9-3.json": "67fb597f7f490772dd2332bbf4216b69c0056ccf16a515361e46cd56f568a56e",
+    "data/workbench/csp-css-trial/capability-current-v9-4.json": "e88104696f4a3bd43239f9235cc1a972834c2fb534af295f344c2f4dde6e8505",
+    "data/workbench/csp-css-trial/capability-recovery-authority-v9.json": "870a3e82ff342400d908046f35f4c5262a96b87ab03386a0e5f8f669d5effe78",
+    "data/workbench/csp-css-trial/capability-recovery-intent-v9.json": "d4ae3b6fd44b5240cdc8d6aaf44fe9797cbe43d7aa9808ad9ab9defb0152320c",
+    "data/workbench/csp-css-trial/capability-recovery-registration-v9-r5.json": "dcc5b58a52d18b7bdc8cdc40af6e371ff6e92bef3316637b716ba387325c148e",
+    "data/workbench/csp-css-trial/capability-recovery-result-v9.json": "3ac88cbc826332839bc80d145e2c37ab591818f08c4b0e0d1dbf6548a0fe9c2b",
+    "data/workbench/csp-css-trial/capability-recovery-review-v9-r5.json": "871e252f5dcb6e429f9b9fabaa178b64c37e99be571cf8fb9162c7e1b523e5e0",
+    "data/workbench/csp-css-trial/evidence-resume-intent-v9.json": "09de295330f4a3e337d86cd6d78685ed6f82d4b09a227f0a8c347ac3590dfe9a"
+  },
+  "evidence_sha256": "ec740105ebe7a9ff146572b87c5296fb923adce5897c169fddc166af6feca024",
+  "files": {
+    "scripts/recover_css_capability_evidence.py": "d1fa0178cd02940b01c932675392d805b841a5ab436f9bffb2c7f1af8cce51b1",
+    "src/hub/__init__.py": "0c487b25bcc2442a0cb2d480bf0cc95213b6b2820db780b3daf6cf7593fb6fb4",
+    "src/hub/codex_adapter.py": "782b96b1281ee70ccb9891312aebb9f2c7fb9e17e5ffd43df7c8b3396a0234ae",
+    "src/hub/connection_records.py": "ea64d77714700e1d4179b06150e1a97317a0a65f1c3c581ac3a1e68f98639745",
+    "src/hub/connection_refresh.py": "21c4d1f0c7cb495c7e939afba85c8052bd715b15a57a04abc32100d904d69188",
+    "src/hub/connection_sources.py": "0648baa808ac566ff8c1e1a6f1e6c5a6b826b230787e32665424060776014435",
+    "src/hub/connections.py": "b9fa95e08272b8747dc0326ac149ba6c384993a9e1bc131125929ec617619033",
+    "src/hub/css_capability_recovery.py": "bfc894579bd7de87b6f5126145645e0aa60f6c950218946294b4913e7b2d99dc",
+    "src/hub/css_process_config.py": "f8a9e4f633e42d5515f5df83f9241a4f9077dbf1ef9fffafebc85986233d1551",
+    "src/hub/css_read_diagnostic.py": "836919f79fd7ee8460e88a794cae36a70b7f781da95518f9226ce0d71def6242",
+    "src/hub/css_trial.py": "d4b8454dc033ed710f5f909de064f0925e120cecf65ebeee06095644527d868e",
+    "src/hub/design_export.py": "21d85349384a3744a33c56e0d86ae544413fb74ea0225e36c4271f5832521145",
+    "src/hub/design_records.py": "c735b628ffc89b2831b0224b1b69d5b25e11c90122209b2ac77c6d727dcb7735",
+    "src/hub/design_service.py": "94335830c9dc9610aee9f8da0a8959cf5c758bf19c99d2c65d557835ba6089ed",
+    "src/hub/design_store.py": "323277a889f21e6aba88e89da538fc27573a437e4e2eeae48f29e4675ed1afc6",
+    "src/hub/preview_bridge.py": "c7bcf5620a4260802a7e31266753d2cc86660cd9fef76b113aac78a2e06b2fd4",
+    "src/hub/preview_service.py": "315bf14b092427ccf77c8497728ccd7ef701a4116290d9aa6cc99c6bf41274c0",
+    "src/hub/project_service.py": "34a2dc0d9cfdfb49ee12b545ad9e85f603f3749aa952ec1c1bcf1de476709f5a",
+    "src/hub/readonly_preview.py": "60df34ae65224f2827ec7d70da57a72669205739e89f18d971dd8a333159b6df",
+    "src/hub/service_contract.py": "f06b00793aad42d07f2ba708a97090645412688dc72bbaece08bf33df5a43f52",
+    "src/hub/task_service.py": "0523575f9d9d349ce32a0bc5f59e6ae9788c5ee1861b1ff83b4da7c34edaf4bb",
+    "src/hub/task_storage.py": "f3b6528ce995f37b48395ca520b63e50a6b168e891f9646dfa2ec183c61e1649",
+    "src/hub/task_store.py": "150c617696f0ce13dde3b2d55b12637275d0562260ccb1f78fd310d77a2cccb6",
+    "src/hub/workbench_store.py": "41363bbab18d64d04e7d7e3ac48148506f45bfc001711f4acba5a79e3153b7a7",
+    "tests/test_hub_css_capability_recovery.py": "b56852c3403da279165c960a7be99566cc9f16abb3d69f46b2a94d08c88e3525"
+  },
+  "phase": "REAL_CURRENT_EVIDENCE_PARTIAL",
+  "result": {
+    "auth_metadata_unchanged": true,
+    "before_load_status": "notLoaded",
+    "capability_facts": [
+      {
+        "kind": "notification",
+        "method": "remoteControl/status/changed",
+        "status": "disabled"
+      },
+      {
+        "has_next_page": false,
+        "kind": "rpc_result",
+        "method": "mcpServerStatus/list",
+        "raw_body_retained": false,
+        "request_cursor_present": false,
+        "row_count": 6,
+        "servers": [
+          {
+            "capabilities_present": false,
+            "name": "chrome-devtools",
+            "resources_count": 0,
+            "runtime_status": "disabled",
+            "templates_count": 0,
+            "tools_count": 0
+          },
+          {
+            "capabilities_present": false,
+            "name": "context7",
+            "resources_count": 0,
+            "runtime_status": "disabled",
+            "templates_count": 0,
+            "tools_count": 0
+          },
+          {
+            "capabilities_present": false,
+            "name": "github",
+            "resources_count": 0,
+            "runtime_status": "disabled",
+            "templates_count": 0,
+            "tools_count": 0
+          },
+          {
+            "capabilities_present": false,
+            "name": "node_repl",
+            "resources_count": 0,
+            "runtime_status": "disabled",
+            "templates_count": 0,
+            "tools_count": 0
+          },
+          {
+            "capabilities_present": false,
+            "name": "openaiDeveloperDocs",
+            "resources_count": 0,
+            "runtime_status": "disabled",
+            "templates_count": 0,
+            "tools_count": 0
+          },
+          {
+            "capabilities_present": false,
+            "name": "playwright",
+            "resources_count": 0,
+            "runtime_status": "disabled",
+            "templates_count": 0,
+            "tools_count": 0
+          }
+        ],
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+        "unknown_server_count": 0
+      },
+      {
+        "features": [
+          {
+            "enabled": true,
+            "name": "code_mode_host"
+          },
+          {
+            "enabled": false,
+            "name": "memories"
+          },
+          {
+            "enabled": false,
+            "name": "hooks"
+          },
+          {
+            "enabled": false,
+            "name": "multi_agent"
+          },
+          {
+            "enabled": false,
+            "name": "multi_agent_v2"
+          },
+          {
+            "enabled": false,
+            "name": "apps"
+          },
+          {
+            "enabled": false,
+            "name": "plugins"
+          },
+          {
+            "enabled": false,
+            "name": "in_app_browser"
+          },
+          {
+            "enabled": false,
+            "name": "browser_use"
+          },
+          {
+            "enabled": false,
+            "name": "browser_use_full_cdp_access"
+          },
+          {
+            "enabled": false,
+            "name": "browser_use_external"
+          },
+          {
+            "enabled": false,
+            "name": "computer_use"
+          },
+          {
+            "enabled": false,
+            "name": "remote_plugin"
+          }
+        ],
+        "has_next_page": true,
+        "kind": "rpc_result",
+        "method": "experimentalFeature/list",
+        "other_feature_count": 87,
+        "raw_body_retained": false,
+        "request_cursor_present": false,
+        "row_count": 100,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+      },
+      {
+        "features": [
+          {
+            "enabled": false,
+            "name": "image_generation"
+          },
+          {
+            "enabled": false,
+            "name": "goals"
+          }
+        ],
+        "has_next_page": false,
+        "kind": "rpc_result",
+        "method": "experimentalFeature/list",
+        "other_feature_count": 50,
+        "raw_body_retained": false,
+        "request_cursor_present": true,
+        "row_count": 52,
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+      }
+    ],
+    "closed": true,
+    "config_contents_changed": false,
+    "config_identity_changed": false,
+    "contract": "HUB-LWB-2.3-CSP-CAPABILITY-RECOVERY-GOV-v9",
+    "current_capabilities": {
+      "argv": [
+        "codex",
+        "app-server",
+        "--stdio",
+        "-c",
+        "model=\"gpt-6.1-sol\"",
+        "-c",
+        "model_reasoning_effort=\"xhigh\"",
+        "-c",
+        "mcp_servers.chrome-devtools.enabled=false",
+        "-c",
+        "mcp_servers.context7.enabled=false",
+        "-c",
+        "mcp_servers.github.enabled=false",
+        "-c",
+        "mcp_servers.node_repl.enabled=false",
+        "-c",
+        "mcp_servers.openaiDeveloperDocs.enabled=false",
+        "-c",
+        "mcp_servers.playwright.enabled=false",
+        "--disable",
+        "apps",
+        "--disable",
+        "plugins",
+        "--disable",
+        "remote_plugin",
+        "--disable",
+        "browser_use",
+        "--disable",
+        "browser_use_external",
+        "--disable",
+        "browser_use_full_cdp_access",
+        "--disable",
+        "computer_use",
+        "--disable",
+        "in_app_browser",
+        "--disable",
+        "hooks",
+        "--disable",
+        "image_generation",
+        "--disable",
+        "multi_agent",
+        "--disable",
+        "multi_agent_v2",
+        "--disable",
+        "goals",
+        "--disable",
+        "memories",
+        "-c",
+        "web_search=\"disabled\"",
+        "-c",
+        "default_permissions=\"hub_lwb_fixture_v1\"",
+        "-c",
+        "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+        "-c",
+        "permissions.hub_lwb_fixture_v1.network.enabled=false"
+      ],
+      "disabled_configured_servers": [
+        "chrome-devtools",
+        "context7",
+        "github",
+        "node_repl",
+        "openaiDeveloperDocs",
+        "playwright"
+      ],
+      "disabled_features": {
+        "apps": false,
+        "browser_use": false,
+        "browser_use_external": false,
+        "browser_use_full_cdp_access": false,
+        "computer_use": false,
+        "goals": false,
+        "hooks": false,
+        "image_generation": false,
+        "in_app_browser": false,
+        "memories": false,
+        "multi_agent": false,
+        "multi_agent_v2": false,
+        "plugins": false,
+        "remote_plugin": false
+      },
+      "local_native_tool_host": true,
+      "mcp_servers": 0,
+      "permission_profile": "hub_lwb_fixture_v1",
+      "profile_argv": [
+        "-c",
+        "default_permissions=\"hub_lwb_fixture_v1\"",
+        "-c",
+        "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+        "-c",
+        "permissions.hub_lwb_fixture_v1.network.enabled=false"
+      ],
+      "remote_control_status": "disabled",
+      "remote_state_source": "last schema-validated notification, retained independently of polling",
+      "source": "native loaded-thread feature and MCP status APIs",
+      "web_search_launch": "disabled"
+    },
+    "current_idle": {
+      "completed_turn_binding": "existing immutable exactTaskStore terminal event; no hydrated history inference",
+      "exact_cwd": true,
+      "status": "idle",
+      "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+    },
+    "effective_process": {
+      "body_retained": false,
+      "model": "gpt-6.1-sol",
+      "reasoning_effort": "xhigh",
+      "source": "native config/read effective process snapshot"
+    },
+    "error": "DIAGNOSTIC_NOTIFICATION_REJECTED",
+    "exit": 0,
+    "expiry_valid_at_close": true,
+    "final_capabilities_consistent": true,
+    "final_mcp_startup_seen": false,
+    "final_remote_control_status": "disabled",
+    "historical_v7_postcheck": "PARTIAL_BLOCKED unchanged; this is fresh current loaded evidence after completed turn",
+    "loaded_six_mcp": [
+      {
+        "capabilities_present": false,
+        "name": "chrome-devtools",
+        "resources_count": 0,
+        "runtime_status": "disabled",
+        "templates_count": 0,
+        "tools_count": 0
+      },
+      {
+        "capabilities_present": false,
+        "name": "context7",
+        "resources_count": 0,
+        "runtime_status": "disabled",
+        "templates_count": 0,
+        "tools_count": 0
+      },
+      {
+        "capabilities_present": false,
+        "name": "github",
+        "resources_count": 0,
+        "runtime_status": "disabled",
+        "templates_count": 0,
+        "tools_count": 0
+      },
+      {
+        "capabilities_present": false,
+        "name": "node_repl",
+        "resources_count": 0,
+        "runtime_status": "disabled",
+        "templates_count": 0,
+        "tools_count": 0
+      },
+      {
+        "capabilities_present": false,
+        "name": "openaiDeveloperDocs",
+        "resources_count": 0,
+        "runtime_status": "disabled",
+        "templates_count": 0,
+        "tools_count": 0
+      },
+      {
+        "capabilities_present": false,
+        "name": "playwright",
+        "resources_count": 0,
+        "runtime_status": "disabled",
+        "templates_count": 0,
+        "tools_count": 0
+      }
+    ],
+    "methods": [
+      {
+        "cursor_present": false,
+        "method": "initialize",
+        "thread_id": null
+      },
+      {
+        "cursor_present": false,
+        "method": "config/read",
+        "thread_id": null
+      },
+      {
+        "cursor_present": false,
+        "method": "thread/read",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+      },
+      {
+        "cursor_present": false,
+        "method": "thread/resume",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+      },
+      {
+        "cursor_present": false,
+        "method": "thread/read",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+      },
+      {
+        "cursor_present": false,
+        "method": "mcpServerStatus/list",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+      },
+      {
+        "cursor_present": false,
+        "method": "experimentalFeature/list",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+      },
+      {
+        "cursor_present": true,
+        "method": "experimentalFeature/list",
+        "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+      },
+      {
+        "cursor_present": false,
+        "method": "command/exec",
+        "thread_id": null
+      }
+    ],
+    "model_turns": 0,
+    "new_threads": 0,
+    "notifications": [],
+    "pid": 1404205,
+    "protected_config_unchanged": true,
+    "read_only_isolation": {
+      "css_sha256": "babb5bc2f53a92017df6042f4246e8b3c41ec803d4ba3b34bde188f70c286ac1",
+      "denials": {
+        "canonical_read": 2,
+        "canonical_write": 2,
+        "credential_read": 2,
+        "credential_write": 2,
+        "parent_canary_read": 2,
+        "parent_canary_write": 2,
+        "sibling_read": 2,
+        "sibling_write": 2,
+        "symlink_read": 2,
+        "symlink_write": 2,
+        "tmp_read": 13,
+        "tmp_write": 13
+      },
+      "network_errno": 1,
+      "parent_list_errno": 13,
+      "parent_open_errno": 13,
+      "protected_bytes_read": 0,
+      "trial_bytes_read": 143428
+    },
+    "readonly_preview14_unchanged": true,
+    "resume_calls_consumed": 1,
+    "source_unchanged": true,
+    "source_writes": 0,
+    "status": "PARTIAL_BLOCKED",
+    "task_row_unchanged": true,
+    "taskstore_row_writes": 0,
+    "trial_unchanged": true
+  },
+  "task_hash": "8350c389a14a60f2c13c36b66efc78e34cfc56682dc87d2733aed00ad91ea6de"
+}

@@ -24,7 +24,7 @@ class RegistryStorageTests(unittest.TestCase):
             result = validate_registry(self.registry, check_paths=False)
         self.assertTrue(result['valid'], result['hard_blockers'])
         self.assertFalse(result['path_availability_checked'])
-        self.assertEqual(result['project_count'], 26)
+        self.assertEqual(result['project_count'], len(self.registry['projects']))
 
     def local_fixture(self, directory):
         registry = deepcopy(self.registry)

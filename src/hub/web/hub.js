@@ -1,8 +1,53 @@
-import {el, button, api, notify, navigate, validRefreshCommand} from './common.js';
+import {el, button, api, notify, navigate, validRefreshCommand, connectionState, ownerLogin, ownerLogout} from './common.js';
 import {renderDesigns} from './designs.js';
-import {attention, freshness, refreshable} from './connection_view.mjs';
+import {attention, freshness, refreshable, projectFacts, projectTasks} from './connection_view.mjs';
 
 const main = document.querySelector('#main');
+const connection = document.querySelector('#connection');
+let wasOwner = false, connectionGeneration = 0;
+
+function loginDialog() {
+  const proof = el('input', {type:'password', id:'owner-proof', minLength:32, maxLength:512,
+    required:true, autocomplete:'off', spellcheck:false});
+  const message = el('p', {role:'status','aria-live':'polite'});
+  const dialog = el('dialog', {'aria-labelledby':'owner-title', className:'owner-dialog stack'});
+  const submit = button('认证', async () => {
+    if (!proof.reportValidity()) return;
+    const transientProof = proof.value; proof.value = ''; submit.disabled = true;
+    message.textContent = '正在认证…';
+    try { await ownerLogin(transientProof); dialog.close(); await updateConnection(); }
+    catch(error) { message.textContent = ({OWNER_AUTH_FAILED:'身份未通过，请重新输入。',
+      OWNER_AUTH_UNAVAILABLE:'所有者身份尚未配置，请在受保护的后台入口完成配置。',
+      OWNER_AUTH_RATE_LIMITED:'认证尝试过多，请稍后再试。',SESSION_REQUIRED:'本次认证会话已失效，请重新打开认证。'})[error.code] || '后端暂时无法连接，请稍后重试。';
+      if(error.code==='NETWORK_UNAVAILABLE') await updateConnection(); }
+    finally { submit.disabled = false; if(dialog.open) proof.focus(); }
+  }, {className:'primary'});
+  proof.addEventListener('keydown',e=>{if(e.key==='Enter'&&!submit.disabled){e.preventDefault();submit.click();}});
+  dialog.append(el('h2', {id:'owner-title'}, '连接所有者'),
+    el('p', {className:'caption'}, '输入后台已配置的所有者凭据。此页面不保存凭据；项目执行还需要独立授权。'),
+    el('label', {className:'field',htmlFor:'owner-proof'}, '所有者凭据', proof), message,
+    el('div', {className:'row'}, submit, button('取消',()=>dialog.close())));
+  dialog.addEventListener('close',()=>{proof.value='';dialog.remove();connection.querySelector('button:not(:disabled)')?.focus();});
+  document.body.append(dialog); dialog.showModal(); proof.focus();
+}
+
+async function updateConnection() {
+  const token = ++connectionGeneration; let identity, error;
+  try { identity = await api('/api/identity'); } catch(e) { error = e; }
+  if (token !== connectionGeneration) return;
+  const state = connectionState(identity, error, wasOwner); wasOwner = state.owner;
+  window.dispatchEvent(new CustomEvent('hub:identity',{detail:identity||{owner_authenticated:false}}));
+  const control = state.owner ? button('断开所有者', async()=>{try{await ownerLogout();wasOwner=false;await updateConnection();}catch{notify('无法确认断开结果，请重新读取连接状态。','warning');}})
+    : button('连接所有者', loginDialog, {disabled: !identity?.owner_configured});
+  if (!identity?.owner_configured) control.title = '后台需要先配置受保护的所有者身份。';
+  connection.replaceChildren(...[el('span', {className: state.kind==='offline'||state.kind==='expired'?'warning':'caption'}, state.label),
+    identity?.data_classification==='synthetic_fixture'?el('span',{className:'warning'},'隔离测试数据'):null,
+    el('span', {className:'caption'}, '执行入口尚未开放'), control,
+    error ? button('重新核对',updateConnection) : el('details', {className:'connection-details'},
+      el('summary', {}, '连接信息'), el('p', {}, '后台实例：'+identity.backend_instance),
+      el('p', {}, '来源账本：'+(identity.ledger_head?.sequence ?? '暂不可用')),
+      el('p', {}, '设计记录版本：'+(identity.design_revision ?? '暂不可用')))].filter(Boolean));
+}
 const statuses = {active:'进行中',paused:'已暂停',blocked:'受阻',complete:'已完成',unknown:'来源未提供状态'};
 const types = {internal_control_plane:'管理',governance_program:'治理',code:'开发',creative:'创作',document:'文档'};
 let generation=0, lastProjects=[], pendingRefresh=null, projectDirectoryLoaded=false;
@@ -63,6 +108,40 @@ async function refreshProjects(ids,control){
 }
 function refreshButton(projects){let b=button(pendingRefresh?'重试原刷新':projects.length===1?'刷新此项目':'刷新全部',()=>refreshProjects(projects.filter(refreshable).map(p=>p.project_id),b));b.disabled=!pendingRefresh&&!projects.some(refreshable);return b;}
 function projectRow(p){const full=p.business.next_action||'下一步：来源未提供';const summary=full.length>140?full.slice(0,140)+'…（详情中查看完整下一步）':full;return el('a',{href:`#projects/${encodeURIComponent(p.project_id)}`,className:'project-row'},el('h2',{},p.name),el('p',{},statuses[p.business.normalized_status]||'状态未知'),el('p',{className:'next'},summary),el('p',{className:`caption ${attention(p)?'warning':''}`},sourceLine(p)));}
+function factsView(project,history=false){
+  return el('div',{className:'stack'},...projectFacts(project,{history}).map((group,index)=>el(index<2?'section':'details',{className:'stack'},
+    el(index<2?'h3':'summary',{},group.title),el('dl',{},...group.fields.map(f=>el('div',{},el('dt',{},f.label),
+      el('dd',{className:f.known?'':'muted'},f.text),
+      f.provenance?el('details',{},el('summary',{},f.label+'的来源'),
+        el('p',{},f.provenance.path),el('p',{className:'caption'},'来源选择器：'+JSON.stringify(f.provenance.selector)),
+        el('p',{className:'caption'},'观察时间：'+time(f.provenance.observed_at)),
+        el('p',{className:'caption'},'来源指纹：'+f.provenance.sha256)):null))),
+    group.fields.some(f=>f.reason)?el('details',{},el('summary',{},group.title+'的缺失原因'),
+      el('dl',{},...group.fields.filter(f=>f.reason).map(f=>el('div',{},el('dt',{},f.label),el('dd',{},f.reason))))):null)));
+}
+async function projectTaskPanel(project,token){
+  const panel=el('section',{className:'panel stack'},el('h2',{},'Hub 执行任务'),
+    el('p',{className:'caption'},'任务执行和检查结果独立记录；不会自动更新项目完成、用户接受或交付。'));
+  const reload=button('核对执行任务',async()=>{reload.disabled=true;try{const next=await projectTaskPanel(project,token);if(token===generation&&panel.isConnected){panel.replaceWith(next);next.querySelector('button')?.focus();}}catch{reload.disabled=false;panel.append(el('p',{role:'status'},'暂时无法核对，保留当前任务记录。'));}});
+  panel.append(reload);
+  if(project.declared.connection_read_allowed!==true || project.freshness.local_presence==='removed_local'){
+    reload.disabled=true;panel.append(el('p',{className:'muted'},'此项目当前未开放读取。'));return panel;
+  }
+  try{
+    const identity=await api('/api/identity');
+    if(!identity.owner_authenticated){panel.append(el('p',{className:'muted'},'连接所有者后可核对该项目的执行任务。'));return panel;}
+    const data=await api('/api/tasks');const tasks=projectTasks(data.tasks,project.project_id);
+    panel.append(el('p',{className:'muted'},data.test_gate?'隔离测试记录；真实项目执行仍需独立授权。':'执行入口尚未开放。'));
+    if(!tasks.length)panel.append(el('p',{className:'muted'},'尚无这个项目的已接收任务。'));
+    else{
+      const {taskLabels}=await import('./tasks.js');
+      for(const task of tasks)panel.append(el('a',{className:'project-row',href:'#tasks/'+encodeURIComponent(task.id)},
+        el('h3',{},taskLabels[task.status]||'任务状态未知'),el('p',{className:'caption'},task.id),
+        el('p',{},'用户验收：待决定')));
+    }
+  }catch(error){panel.append(el('p',{role:'status',className:'warning'},error.code==='TASK_STORE_MISSING'?'尚无任务记录。':'执行任务暂不可读取；项目来源信息仍可查看。'));}
+  return panel;
+}
 async function projectsPage(token){
   const data=await api('/api/projects');if(token!==generation)return;lastProjects=data.projects;
   for(const project of lastProjects)projectNames.set(project.project_id,project.name);
@@ -84,9 +163,10 @@ async function projectDetail(id,token){
   }
   // Single detail supplies the exact ledger head used by its refresh command.
   lastProjects=[p];
-  const fields=el('dl',{},...['raw_status','normalized_status','next_action','blockers'].map(key=>el('div',{},el('dt',{},({raw_status:'来源原始状态',normalized_status:'统一状态',next_action:'完整下一步',blockers:'阻塞'}[key])),el('dd',{},key==='normalized_status'?statuses[p.business[key]]:human(p.business[key])))));
+  const fields=factsView(p),taskPanel=await projectTaskPanel(p,token);if(token!==generation)return;
   const sources=el('section',{className:'panel stack'},el('h2',{},'状态来源'),el('p',{className:'caption'},`最近观察：${time(p.source.observed_at)}`),el('p',{className:attention(p)?'warning':'success'},freshness(p)));
   const operationalNotice=operationalSourceNotice(p);if(operationalNotice)sources.append(operationalNotice);
+  if(p.operational?.last_success && p.freshness.state!=='fresh' && p.declared.connection_read_allowed===true && p.freshness.local_presence!=='removed_local')sources.append(el('details',{},el('summary',{},'历史成功快照 · '+time(p.operational.last_success.observed_at)),el('p',{className:'warning'},'这是过去的项目记录，不能替代当前失败或未知。'),factsView(p,true)));
   for(const path of p.source.entrypoints||[]){const copy=button('复制来源位置',async()=>{try{await navigator.clipboard.writeText(path);notify('来源位置已复制。','success');}catch{notify('无法访问剪贴板，可选中来源位置复制。','warning');}});sources.append(el('p',{},path),copy);}
   if(!p.source.entrypoints?.length)sources.append(el('p',{className:'muted'},p.declared.hub_connection_exception?'此项目已登记管理读取例外。':'来源未提供可打开的位置。'));
   const relations=el('section',{className:'panel stack'},el('h2',{},'项目关联'));
@@ -95,14 +175,30 @@ async function projectDetail(id,token){
   const designCount=p.design.references.filter(x=>x.kind==='candidate').length;
   const design=el('section',{className:'panel stack'},el('h2',{},'界面设计'),el('p',{className:'muted'},designCount?`${designCount} 个设计版本可查看`:'尚未登记设计候选'),el('a',{className:'button',href:`#designs/${encodeURIComponent(id)}`},designCount?'进入设计审核':'查看设计入口'));
   const exception=p.declared.hub_connection_exception;
-  main.replaceChildren(el('section',{className:'stack'},el('a',{href:'#projects'},'← 所有项目'),el('h1',{},p.name),el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},refreshButton([p]),!refreshable(p)?el('p',{className:'caption'},'按当前读取范围停用刷新。'):null),exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,el('section',{className:'panel stack'},el('h2',{},'当前工作'),fields),el('div',{className:'details-grid'},el('div',{className:'stack'},sources,relations),design),diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields})));
+  main.replaceChildren(el('section',{className:'stack'},el('a',{href:'#projects'},'← 所有项目'),el('h1',{},p.name),el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},refreshButton([p]),!refreshable(p)?el('p',{className:'caption'},'按当前读取范围停用刷新。'):null),exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,el('section',{className:'panel stack'},el('h2',{},'项目权威状态'),el('p',{className:'caption'},'仅显示项目登记来源明确提供的事实。缺值和过期记录保留为未知。'),fields),taskPanel,el('a',{className:'button',href:'#host'},'查看 Linux 主机观测'),el('div',{className:'details-grid'},el('div',{className:'stack'},sources,relations),design),diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields})));
 }
 async function route(focus=true){
   const token=++generation;const parts=location.hash.slice(1).split('/').map(p=>{try{return decodeURIComponent(p);}catch{return '';}});const kind=parts[0]||'projects';
-  for(const name of ['projects','designs']){const nav=document.querySelector(`#nav-${name}`);if(name===kind)nav.setAttribute('aria-current','page');else nav.removeAttribute('aria-current');}
+  for(const name of ['projects','designs','workbench','materials','host']){const nav=document.querySelector(`#nav-${name}`);if(name===(['tasks','sessions'].includes(kind)?'workbench':kind))nav.setAttribute('aria-current','page');else nav.removeAttribute('aria-current');}
   main.setAttribute('aria-busy','true');main.replaceChildren(el('p',{role:'status'},'正在读取…'));
   try{
-    if(kind==='designs'){
+    if(kind==='workbench'){
+      const {renderWorkbench}=await import('./workbench.js');
+      await renderWorkbench(main,{previewId:parts[1]||null,isCurrent:()=>token===generation});
+    }else if(kind==='tasks'){
+      const {renderTasks}=await import('./tasks.js');
+      await renderTasks(main,{taskId:parts[1]||null,isCurrent:()=>token===generation});
+    }else if(kind==='sessions'){
+      const {renderSessions}=await import('./sessions.js');
+      await renderSessions(main,{isCurrent:()=>token===generation});
+    }else if(kind==='materials'){
+      const {renderMaterials}=await import('./materials.js');
+      await renderMaterials(main,{materialId:parts[1]||null,isCurrent:()=>token===generation});
+    }else if(kind==='host'){
+      const {renderHost}=await import('./host.js');
+      const data=await api('/api/host');if(token!==generation)return;
+      renderHost(main,data);
+    }else if(kind==='designs'){
       if(!projectDirectoryLoaded){
         const directory=await api('/api/projects');if(token!==generation)return;
         for(const project of directory.projects)projectNames.set(project.project_id,project.name);
@@ -117,8 +213,10 @@ async function route(focus=true){
     if(focus&&token===generation)main.focus();
   }
   catch(error){if(token!==generation)return;main.replaceChildren(el('section',{className:'empty'},el('h1',{},'暂时无法读取'),el('p',{},failure(error)),button('重新读取',()=>route(false)),diagnostic({code:error.code||'NETWORK_UNAVAILABLE',outcome:error.outcome})));}
-  finally{if(token===generation)main.removeAttribute('aria-busy');}
+  finally{if(token===generation){main.removeAttribute('aria-busy');updateConnection();}}
 }
 window.addEventListener('hashchange',()=>route());
+window.addEventListener('online',updateConnection);
+window.addEventListener('offline',()=>{connectionGeneration++;connection.replaceChildren(el('span',{className:'warning'},'浏览器离线 · 已接收的后台任务需要重连后对账'),button('重新核对',updateConnection));});
 document.querySelector('.skip').addEventListener('click',e=>{e.preventDefault();main.focus();});
 route(false);

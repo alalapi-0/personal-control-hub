@@ -1,0 +1,11 @@
+{
+  "agent": "/root/desktop_opaque_v11_5_r1_judge",
+  "candidate_sha256": "86940504919d799bd2b9904d5ee13d10cba47f0dc4abc2055242024250061550",
+  "decision": "FAIL",
+  "native_effects": false,
+  "reason": "candidate_sha256 wrongly included in evidence digest",
+  "recomputed_evidence_sha256": "1080fcd0133bef3a17a5c007e5700294076d343227009ae5e627c7dc44c4f536",
+  "recorded_evidence_sha256": "744be3ce900b3b8063ee702194479036f2b955d05743b7204f24c82f1aa84a61",
+  "subjective_review_run": false,
+  "tests_run": false
+}

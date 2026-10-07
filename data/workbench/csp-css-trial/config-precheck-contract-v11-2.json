@@ -1,0 +1,43 @@
+{
+  "acceptance": "exact current4 wire layers sessionFlags/project/user/system high-to-low; packaged defaults proved public but filtered on wire; separate raw merge/typedConfigToml/derivedFeature proof; only source-proven fixed type/value serialization defaults; exactcwd untrusted disabledemptyProject readonlyprofile model/effort sixdisabledMCP fourteenfalseFeatures remote/startupdisabled; allbeforeafterpreservation; no privatebodies/origin/version/hash persisted; unknown/extra/duplicate/reordered/contradictory rejected",
+  "authorized_now": "offline three owned implementation/script/test files, public source proof, exact registration, sole STATE.linux_visual_workbench and INDEX",
+  "budget": "unchanged nativeGoal cumulative; remaining/cost/reviewer actual unknown; reservefreshJudge/Gov/closure; no reset",
+  "config_read_params": {
+    "cwd": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+    "includeLayers": true
+  },
+  "created_at": 1791371914.9296324,
+  "cumulative": {
+    "closed_rounds": 16,
+    "model_turns": 1,
+    "resumes": 4,
+    "threads": 2
+  },
+  "future": "separate freshJudge/Governor required before one more no-model metadata helper; no fifthresume/model/command/task/source/global/auth/Git effects",
+  "governor": "/root/entry_governor",
+  "historical_runtime": "data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-1.json",
+  "id": "HUB-LWB-2.3-CSP-CONFIG-PRECHECK-REPAIR-GOV-v11.2",
+  "lane": "GOVERNED",
+  "methods": [
+    "initialize",
+    "config/read",
+    "mcpServerStatus/list",
+    "experimentalFeature/list"
+  ],
+  "native_now": 0,
+  "objective": "repair exact0.159.3 API layer wire projection and typed/effective derived config without weakening security or privacy",
+  "preimages": {
+    "scripts/precheck_css_config.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-2-precheck_css_config.py",
+      "sha256": "e08e65605ebf9fc5582538de616dff909ad05945afacaea0774ea96e545a2326"
+    },
+    "src/hub/css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-2-css_config_precheck.py",
+      "sha256": "e5b62084b32b53b808682ff585c95a2ec00f77e0e365f0805af26d82375e5170"
+    },
+    "tests/test_hub_css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-2-test_hub_css_config_precheck.py",
+      "sha256": "3717bcd6753fb26f6ede45cecb627b680bcdbbc7ebab65faf7cf44b6042cd6be"
+    }
+  }
+}

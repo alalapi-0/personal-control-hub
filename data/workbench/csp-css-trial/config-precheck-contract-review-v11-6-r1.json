@@ -1,0 +1,16 @@
+{
+  "candidate_kind": "contract revision only",
+  "contract": "HUB-LWB-2.3-CSP-FULL-METADATA-PRECHECK-GOV-v11.6",
+  "contract_sha256": "7761c1d2c3be5cdce675f65d0be1a12a78a36e249494a4c6d4e3cc7339431123",
+  "created_at": 1791377912.6552136,
+  "findings": [
+    "152 public templates independently match; source/hash checks pass",
+    "Missing protocol DTO/serde wire schema closure",
+    "Missing explicit per-method once counts for initialize/config/read/mcpServerStatus/list"
+  ],
+  "governor": "/root/entry_governor",
+  "governor_decision": "REVISE_TASK",
+  "judge": "/root/metadata_contract_v11_6_judge",
+  "judge_verdict": "REVISION_FAIL",
+  "runtime_effects": 0
+}

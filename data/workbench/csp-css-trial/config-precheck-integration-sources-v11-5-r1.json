@@ -1,0 +1,19 @@
+{
+  "decision": "REVISE_TASK evidence semantics corrected, offline implementation allowed",
+  "desktop_evidence": "fixed booleans/reason enums only; no shape in effective histogram",
+  "extra_native_typed_field": "DOES_NOT_EXIST",
+  "final_desktop_and_final_config_share_same_response": true,
+  "governor": "/root/entry_governor",
+  "native_authority": false,
+  "native_observations": [
+    "raw layers user desktop == forward(original)",
+    "final config.desktop == original"
+  ],
+  "observation_count": 2,
+  "offline_checks": [
+    "typed expected builder preserves original desktop",
+    "effective expected builder preserves original desktop",
+    "final config == complete expected config"
+  ],
+  "scope": "v11.5-r1 unchanged frozen objective/boundaries"
+}

@@ -1,0 +1,11 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-CONFIG-DIAGNOSTIC-GOV-v11.4",
+  "created_at": 1791374995.104879,
+  "decision": "REVISE_TASK",
+  "fact_validity": "all127pins exact/8guards/source3trialauthtask currentstable;16matrixsafe; closedexit0 initconfigonly",
+  "governor": "/root/entry_governor",
+  "judge": "/root/config_diagnostic_runtime_v11_4_judge",
+  "missing": "desktopunknown2; specificleaf/rootcause UNPROVEN; fullmetadataNOT_RUN",
+  "result": "FAIL",
+  "runtime_digest": "7a303d908de466239114c370e2032f3b9788ce365c3ed6bf9f92bf3df546306d"
+}

@@ -1,0 +1,16 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-CONFIG-PRECHECK-GOV-v11.1",
+  "counts_unchanged": true,
+  "governor": {
+    "decision": "REQUEST_REPAIR",
+    "identity": "/root/entry_governor",
+    "reason": "actual v11.1 stays FAIL; wire is high-to-low without packagedDefaults; typed serialization and resolved feature overrides need distinct proof"
+  },
+  "judge": {
+    "decision": "FAIL",
+    "identity": "/root/config_precheck_runtime_v11_1_judge",
+    "reason": "layer validation fails; MCP/features not queried; preservation PASS cannot satisfy config/capability acceptance"
+  },
+  "native_authority_consumed": true,
+  "runtime_evidence_sha256": "9bf6b48d9d70a8fb20b709d11c09b8156a02f55788cdb6bd6bf719074d50acf1"
+}

@@ -1,0 +1,11 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-SAFE-CONFIG-FEATURE-PRECHECK-GOV-v11.6-r6",
+  "decision": "REVISE_TASK_OFFLINE_ONLY",
+  "direction": "removeMCPRPC0; onlysafeconfig/features; exactsixconfiguredfalse; actualMCP fieldsNOT_RUN/BLOCKED; notfullmetadata/resume/M2/promotion",
+  "forbidden": "helper6/resume5/model/provider/authrefresh/credentialvalues-copy/TaskStore/sourcepromotion/Git/globalconfig/production",
+  "governor": "/root/entry_governor",
+  "native_helpers_allowed": 0,
+  "owner_new_external_effect_authorization_required": true,
+  "permitted": "publicsource/evidence/offlineharness/tests/exactregistration",
+  "source_effect_failure": "MCP_METADATA_EFFECT_UNPROVEN upstreamAuthManager.auth mayrefresh/provider/tokenwrite"
+}

@@ -23,6 +23,8 @@ from hub.design_cli import _artifact, _baseline, _candidate, FIXTURE_TIME
 from hub.design_service import DesignService
 from hub.design_store import DesignStore
 from hub.local_service import HubHTTPServer
+from hub.owner_auth import OwnerAuth
+import secrets
 from hub.project_service import ProjectService
 
 
@@ -65,7 +67,9 @@ class LocalServiceIntegrationTests(unittest.TestCase):
     def start(self):
         self.projects = ProjectService(self.root)
         self.designs = DesignService(DesignStore(self.root, self.store.path, fixture=True))
-        self.server = HubHTTPServer(self.projects, self.designs)
+        self.owner_proof = secrets.token_urlsafe(40)
+        self.server = HubHTTPServer(self.projects, self.designs,
+                                    owner_auth=OwnerAuth(provider=lambda: self.owner_proof))
         self.thread = threading.Thread(target=self.server.serve_forever, kwargs={"poll_interval": 0.01})
         self.thread.start()
         self.cookie, self.csrf = None, None

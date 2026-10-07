@@ -1,0 +1,10 @@
+{
+  "src/hub/css_capability_recovery.py": {
+    "preimage_ref": "data/workbench/csp-css-trial/baseline-preimage-css_capability_recovery-v10.py",
+    "sha256": "ece3e19b9ea6061262524ab2ad82ac24d8e19e7f6c97cee66ee89f8879d7ae46"
+  },
+  "tests/test_hub_css_capability_recovery.py": {
+    "preimage_ref": "data/workbench/csp-css-trial/baseline-preimage-test_css_capability_recovery-v10.py",
+    "sha256": "bd35734a0d7aece9ca9914e288e8d49d85d53fc566a063274d6e9502f439f4e0"
+  }
+}

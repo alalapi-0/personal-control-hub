@@ -12,6 +12,14 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 TASK = 'ALL-PROJECTS-CODEX-GOVERNANCE-V1'
+
+
+def scoped_state(body=''):
+    return (
+        'metadata:\n  authority: canonical\nall_projects_governance:\n  task_id: ' + TASK
+        + '\n  status: ACTIVE\n  next_action: fixture\n  unit: fixture\n'
+        + '  execution_document: docs/fixture.md\n  delivery: {status: fixture}\n' + body
+    )
 GUARD = r'''
 import builtins, io, os, subprocess, json
 from pathlib import Path
@@ -119,7 +127,7 @@ class BootstrapTests(unittest.TestCase):
         runner = module("auto_advance_runner")
         with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, HUB_GOVERNANCE_TASK=TASK):
             tmp = Path(directory)
-            (tmp / "STATE.yaml").write_text("all_projects_governance:\n  task_id: " + TASK + "\n  candidate_paths: [task.txt]\n")
+            (tmp / "STATE.yaml").write_text(scoped_state("  candidate_paths: [task.txt]\n"))
             (tmp / "task.txt").write_text("owned fixture")
             unrelated = tmp / "unrelated.txt"
             unrelated.write_text(runner.SENSITIVE_CONTENT_MARKERS[0])
@@ -173,11 +181,10 @@ class BootstrapTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, HUB_GOVERNANCE_TASK=TASK):
             tmp = Path(directory)
             state = tmp / "STATE.yaml"
-            state.write_text("all_projects_governance:\n  task_id: " + TASK +
-                             "\n  candidate_paths: [new.txt, docs/cursor-project.md]\n")
+            state.write_text(scoped_state("  candidate_paths: [new.txt, docs/cursor-project.md]\n"))
             with patch.object(runner, "ROOT", tmp):
                 self.assertEqual(runner._candidate_paths(), ["STATE.yaml", "docs/cursor-project.md", "new.txt"])
-                state.write_text("all_projects_governance:\n  task_id: " + TASK + "\n")
+                state.write_text(scoped_state())
                 with self.assertRaises(ValueError):
                     runner._candidate_paths()
 
@@ -190,8 +197,12 @@ class BootstrapTests(unittest.TestCase):
             (tmp / "alias.txt").symlink_to(outside)
             for paths in [[], ["../outside.txt"], ["/absolute"], [".git/config"], ["alias.txt"], ["a//b"]]:
                 import yaml
-                (tmp / "STATE.yaml").write_text(yaml.safe_dump({"all_projects_governance": {
-                    "task_id": TASK, "candidate_paths": paths}}))
+                (tmp / "STATE.yaml").write_text(yaml.safe_dump({
+                    "metadata": {"authority": "canonical"},
+                    "all_projects_governance": {
+                        "task_id": TASK, "status": "ACTIVE", "next_action": "fixture",
+                        "unit": "fixture", "execution_document": "docs/fixture.md",
+                        "delivery": {"status": "fixture"}, "candidate_paths": paths}}))
                 original = Path.read_text
                 def guarded(path, *args, **kwargs):
                     self.assertNotEqual(path, outside)
@@ -282,7 +293,10 @@ class BootstrapTests(unittest.TestCase):
         state = yaml.safe_load((ROOT / 'STATE.yaml').read_text())
         self.assertEqual(state['metadata']['authority'], 'canonical')
         self.assertEqual(state['all_projects_governance']['task_id'], TASK)
-        self.assertLessEqual(sum((ROOT / p).stat().st_size for p in ('AGENTS.md', 'STATE.yaml')), 8192)
+        sys.path.insert(0, str(ROOT / 'scripts'))
+        import governance_scope as scope
+        for task_id in scope.TASK_KEYS:
+            self.assertLessEqual(len(scope.boot_packet(ROOT, task_id)), 8192)
 
 if __name__ == '__main__':
     unittest.main()

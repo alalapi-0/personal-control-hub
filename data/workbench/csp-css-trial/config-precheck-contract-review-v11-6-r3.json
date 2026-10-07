@@ -1,0 +1,12 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-FULL-METADATA-PRECHECK-GOV-v11.6",
+  "contract_sha256": "c0832182f43108596f069cc2da93858c7e94244a942f43ef31d6be63c04ea3ed",
+  "created_at": 1791378573.398822,
+  "findings": [
+    "all exact sources/publicschema/wireDTO/featuretemplates/controlled effects/env boundaries PASS"
+  ],
+  "governor_decision": "APPROVE_OFFLINE_CONTRACT_ONLY",
+  "judge": "/root/metadata_contract_v11_6_r3_judge",
+  "runtime_effects": 0,
+  "verdict": "PASS"
+}

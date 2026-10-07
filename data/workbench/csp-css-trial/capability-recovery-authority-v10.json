@@ -1,0 +1,303 @@
+{
+  "approved_candidate": "f884e13beed27d1ca8671b4f766a41bf7afe90e184e7b45d5b42cef1a1c2442d",
+  "approved_evidence": "1dd739dea98e096502abd0a0cd928d7d08dcea341f378841141c78b5867a49f0",
+  "auth_identity": [
+    66306,
+    12072652,
+    3948,
+    1791122729296344124,
+    1791122729296344124,
+    33152,
+    1000
+  ],
+  "auth_mode": "ChatGPT",
+  "contract": "HUB-LWB-2.3-CSP-CAPABILITY-RECOVERY-GOV-v10",
+  "created_at": 1791365781.8198423,
+  "expires_at": 1791366681.8198423,
+  "files": {
+    "scripts/recover_css_capability_evidence.py": "d1fa0178cd02940b01c932675392d805b841a5ab436f9bffb2c7f1af8cce51b1",
+    "src/hub/__init__.py": "0c487b25bcc2442a0cb2d480bf0cc95213b6b2820db780b3daf6cf7593fb6fb4",
+    "src/hub/codex_adapter.py": "17f980811707babcc79522ddec951d4e6e8f23dae9b097769f1a6a0b688a9df1",
+    "src/hub/connection_records.py": "ea64d77714700e1d4179b06150e1a97317a0a65f1c3c581ac3a1e68f98639745",
+    "src/hub/connection_refresh.py": "21c4d1f0c7cb495c7e939afba85c8052bd715b15a57a04abc32100d904d69188",
+    "src/hub/connection_sources.py": "0648baa808ac566ff8c1e1a6f1e6c5a6b826b230787e32665424060776014435",
+    "src/hub/connections.py": "b9fa95e08272b8747dc0326ac149ba6c384993a9e1bc131125929ec617619033",
+    "src/hub/css_capability_recovery.py": "ece3e19b9ea6061262524ab2ad82ac24d8e19e7f6c97cee66ee89f8879d7ae46",
+    "src/hub/css_process_config.py": "f8a9e4f633e42d5515f5df83f9241a4f9077dbf1ef9fffafebc85986233d1551",
+    "src/hub/css_read_diagnostic.py": "836919f79fd7ee8460e88a794cae36a70b7f781da95518f9226ce0d71def6242",
+    "src/hub/css_trial.py": "d4b8454dc033ed710f5f909de064f0925e120cecf65ebeee06095644527d868e",
+    "src/hub/design_export.py": "21d85349384a3744a33c56e0d86ae544413fb74ea0225e36c4271f5832521145",
+    "src/hub/design_records.py": "c735b628ffc89b2831b0224b1b69d5b25e11c90122209b2ac77c6d727dcb7735",
+    "src/hub/design_service.py": "94335830c9dc9610aee9f8da0a8959cf5c758bf19c99d2c65d557835ba6089ed",
+    "src/hub/design_store.py": "323277a889f21e6aba88e89da538fc27573a437e4e2eeae48f29e4675ed1afc6",
+    "src/hub/notification_metadata.py": "1e82df6d413e364fd15093f144e6095270cc7e85141b1d9c50441c8f94cc6001",
+    "src/hub/preview_bridge.py": "c7bcf5620a4260802a7e31266753d2cc86660cd9fef76b113aac78a2e06b2fd4",
+    "src/hub/preview_service.py": "315bf14b092427ccf77c8497728ccd7ef701a4116290d9aa6cc99c6bf41274c0",
+    "src/hub/project_service.py": "34a2dc0d9cfdfb49ee12b545ad9e85f603f3749aa952ec1c1bcf1de476709f5a",
+    "src/hub/readonly_preview.py": "60df34ae65224f2827ec7d70da57a72669205739e89f18d971dd8a333159b6df",
+    "src/hub/service_contract.py": "f06b00793aad42d07f2ba708a97090645412688dc72bbaece08bf33df5a43f52",
+    "src/hub/task_service.py": "0523575f9d9d349ce32a0bc5f59e6ae9788c5ee1861b1ff83b4da7c34edaf4bb",
+    "src/hub/task_storage.py": "f3b6528ce995f37b48395ca520b63e50a6b168e891f9646dfa2ec183c61e1649",
+    "src/hub/task_store.py": "150c617696f0ce13dde3b2d55b12637275d0562260ccb1f78fd310d77a2cccb6",
+    "src/hub/workbench_store.py": "41363bbab18d64d04e7d7e3ac48148506f45bfc001711f4acba5a79e3153b7a7",
+    "tests/test_hub_css_capability_recovery.py": "bd35734a0d7aece9ca9914e288e8d49d85d53fc566a063274d6e9502f439f4e0",
+    "tests/test_hub_notification_metadata.py": "5f6928db81ff5bafbe250327e13e7914dca2012cc65e29b2d47368816cbcda89"
+  },
+  "grant_hash": "d116bbbc46ad678876f77e2e2a6437923d2efa5722fb58aa154f7673626ab21c",
+  "helper_wall_seconds": 120,
+  "history_files": {
+    "data/workbench/csp-css-trial/capability-recovery-authority-v9.json": "870a3e82ff342400d908046f35f4c5262a96b87ab03386a0e5f8f669d5effe78",
+    "data/workbench/csp-css-trial/capability-recovery-contract-v10.json": "f311dce50e82edb6cf88cfbcd6e02d0a7171e1fc5c863df212d486a569376521",
+    "data/workbench/csp-css-trial/capability-recovery-intent-v9.json": "d4ae3b6fd44b5240cdc8d6aaf44fe9797cbe43d7aa9808ad9ab9defb0152320c",
+    "data/workbench/csp-css-trial/capability-recovery-preimage-v10.py": "119ed181d62cf85275c8cecad40b3b8618eb051f122b77caf61028fdf7488fae",
+    "data/workbench/csp-css-trial/capability-recovery-result-v9.json": "3ac88cbc826332839bc80d145e2c37ab591818f08c4b0e0d1dbf6548a0fe9c2b",
+    "data/workbench/csp-css-trial/capability-recovery-runtime-registration-v9.json": "7b66a09712c1ce06e61a0422b5eebd32a392626aad4db886faeb1a17c76a7f89",
+    "data/workbench/csp-css-trial/capability-recovery-test-preimage-v10.py": "b56852c3403da279165c960a7be99566cc9f16abb3d69f46b2a94d08c88e3525",
+    "data/workbench/csp-css-trial/evidence-resume-intent-v9.json": "09de295330f4a3e337d86cd6d78685ed6f82d4b09a227f0a8c347ac3590dfe9a",
+    "data/workbench/csp-css-trial/notification-metadata-preimage-v10.py": "644bba3028cec019a75c8f27b7ad420a74b1a8f64d7e8630bec4057afca5313d",
+    "data/workbench/csp-css-trial/notification-retention-preimages-v9.json": "81688db6ebadba8af067bc14ef41b4e5c2acd8628b7e02efa8697b8a1a48110e",
+    "data/workbench/csp-css-trial/notification-retention-registration-v9.json": "8be81fb248e934cfa140733a0415849ba378e4dfe4a9835b166821908381cf4d",
+    "data/workbench/csp-css-trial/owned-resume-failure-v6.json": "6e7d7b1f738e6d1374850215fb10e616614557b5bb3cff9264747c4b644dd50a",
+    "data/workbench/csp-css-trial/preview-trial-manifest-v8.json": "183225434ca35ff195d514efa2ed2d5195387cce96823e3ca623b16419a58555",
+    "data/workbench/csp-css-trial/process-resume-partial-v7.json": "73fe28149240bf622e19c51e6e1b4885a8c4827c13b1b44e7cea2a4c4df53510"
+  },
+  "intent_hash": "bcef1ef45fee92309f469d2a5b3eed76df2f7cc2496cff0b4cc2ce37f676d699",
+  "model_turns_allowed": 0,
+  "prior_resumes": 3,
+  "profile_arguments": [
+    "-c",
+    "default_permissions=\"hub_lwb_fixture_v1\"",
+    "-c",
+    "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+    "-c",
+    "permissions.hub_lwb_fixture_v1.network.enabled=false"
+  ],
+  "protected_pin": {
+    "excluded_default_fields": [
+      "model",
+      "model_reasoning_effort"
+    ],
+    "mcp_names": [
+      "chrome-devtools",
+      "context7",
+      "github",
+      "node_repl",
+      "openaiDeveloperDocs",
+      "playwright"
+    ],
+    "protected_sha256": "2f3221497d84381ad9b9e52c58516e8be69f47b00677be04c433f3ff92de633d",
+    "secret_values_or_hashes_retained": false,
+    "sensitive_structure": {
+      "chrome-devtools": {
+        "args": {
+          "item_types": [
+            "str"
+          ],
+          "type": "list"
+        },
+        "command": {
+          "type": "str"
+        }
+      },
+      "context7": {
+        "args": {
+          "item_types": [
+            "str"
+          ],
+          "type": "list"
+        },
+        "command": {
+          "type": "str"
+        }
+      },
+      "github": {
+        "args": {
+          "item_types": [
+            "str"
+          ],
+          "type": "list"
+        },
+        "command": {
+          "type": "str"
+        }
+      },
+      "node_repl": {
+        "args": {
+          "item_types": [],
+          "type": "list"
+        },
+        "command": {
+          "type": "str"
+        },
+        "env": {
+          "BROWSER_USE_AVAILABLE_BACKENDS": {
+            "type": "str"
+          },
+          "BROWSER_USE_CODEX_APP_BUILD_FLAVOR": {
+            "type": "str"
+          },
+          "BROWSER_USE_CODEX_APP_VERSION": {
+            "type": "str"
+          },
+          "BROWSER_USE_TINYSKY_ENABLED": {
+            "type": "str"
+          },
+          "CODEX_CLI_PATH": {
+            "type": "str"
+          },
+          "CODEX_HOME": {
+            "type": "str"
+          },
+          "NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER": {
+            "type": "str"
+          },
+          "NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME": {
+            "type": "str"
+          },
+          "NODE_REPL_NATIVE_PIPE_CONNECT_TIMEOUT_MS": {
+            "type": "str"
+          },
+          "NODE_REPL_NODE_MODULE_DIRS": {
+            "type": "str"
+          },
+          "NODE_REPL_NODE_PATH": {
+            "type": "str"
+          },
+          "NODE_REPL_TRUSTED_CODE_PATHS": {
+            "type": "str"
+          },
+          "NODE_REPL_TRUSTED_SERVICES": {
+            "type": "str"
+          }
+        },
+        "startup_timeout_sec": {
+          "type": "int"
+        }
+      },
+      "openaiDeveloperDocs": {
+        "url": {
+          "type": "str"
+        }
+      },
+      "playwright": {
+        "args": {
+          "item_types": [
+            "str"
+          ],
+          "type": "list"
+        },
+        "command": {
+          "type": "str"
+        }
+      }
+    },
+    "top_key_types": {
+      "agents": "dict",
+      "approval_policy": "str",
+      "approvals_reviewer": "str",
+      "desktop": "dict",
+      "features": "dict",
+      "marketplaces": "dict",
+      "mcp_servers": "dict",
+      "memories": "dict",
+      "model": "str",
+      "model_reasoning_effort": "str",
+      "plugins": "dict",
+      "projects": "dict",
+      "sandbox_mode": "str",
+      "service_tier": "str",
+      "skills": "dict"
+    }
+  },
+  "renewal_allowed": false,
+  "source": {
+    "docs/NEXT_ACTIONS.md": {
+      "identity": [
+        66306,
+        12345196,
+        10294,
+        1790982755806475132,
+        1790982755806475132
+      ],
+      "sha256": "4a5cea91842a95695f1ed9a8752edd7e2cdd683a8190a13349121d7e36fdf5e8"
+    },
+    "docs/PROJECT_STATE.md": {
+      "identity": [
+        66306,
+        12345199,
+        13646,
+        1790982755806475132,
+        1790982755806475132
+      ],
+      "sha256": "afcd3027fcace6120c4c436af804fcc3594f6ed889f5364386bacd676c1c2b7e"
+    },
+    "progress_ui.css": {
+      "identity": [
+        66306,
+        12341728,
+        143428,
+        1789185130000000000,
+        1790856611900440364
+      ],
+      "sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+    }
+  },
+  "task_hash": "8350c389a14a60f2c13c36b66efc78e34cfc56682dc87d2733aed00ad91ea6de",
+  "task_id": "csp-css-trial-20261007",
+  "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5",
+  "total_model_turn_limit": 1,
+  "total_resume_limit": 4,
+  "total_thread_limit": 2,
+  "trial": {
+    "directories": {
+      ".agents": [
+        66306,
+        45772554,
+        1000,
+        493
+      ],
+      ".aws": [
+        66306,
+        45772555,
+        1000,
+        493
+      ],
+      ".codex": [
+        66306,
+        45772401,
+        1000,
+        493
+      ],
+      ".git": [
+        66306,
+        45772425,
+        1000,
+        493
+      ]
+    },
+    "fingerprint": [
+      [
+        ".agents",
+        "directory"
+      ],
+      [
+        ".aws",
+        "directory"
+      ],
+      [
+        ".codex",
+        "directory"
+      ],
+      [
+        ".git",
+        "directory"
+      ],
+      [
+        "progress_ui.css",
+        "babb5bc2f53a92017df6042f4246e8b3c41ec803d4ba3b34bde188f70c286ac1"
+      ]
+    ],
+    "host_mounts": false
+  },
+  "turn_id": "01a1157b-f571-7c91-a799-6a3a56a20a19"
+}

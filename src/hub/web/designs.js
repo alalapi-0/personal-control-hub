@@ -371,7 +371,7 @@ function renderCompare(container, snapshot, candidate, projectId, names, conflic
   const history = (snapshot.history || []).filter((item) => item.event?.candidate?.id === candidate.id);
   const stale = staleReasons(facts, candidate);
   const storedPending = validPending(parseStored(PENDING_KEY));
-  const actionBlocked = Boolean(storedPending) || stale.length > 0;
+  const actionBlocked = Boolean(storedPending) || stale.length > 0 || candidate.decision_eligible===false;
   let saving = false;
   const setSaving = (value) => {
     saving = value;
@@ -496,8 +496,18 @@ function renderCompare(container, snapshot, candidate, projectId, names, conflic
       ),
       el("section", { className: "panel stack", "aria-labelledby": "decision-title" },
         el("h2", { id: "decision-title" }, "记录设计决定"),
+        candidate.decision_eligible===false&&el('p',{className:'warning'},'这是只读代码截图登记；不能作为设计选择。请在可视化工作台记录具体修改要求与不改范围。'),
         current && el("p", { id: "decision-status", tabIndex: -1, className: current.stale ? "warning" : "success" },
           `当前：${STATUS_LABELS[current.event.action]}${current.stale ? "（绑定已过期）" : ""} · ${formatTime(current.event.created_at)}`),
+        button('继续记录修改与不改范围', async () => {
+          try {
+            const catalog = await api('/api/previews');
+            const matches = catalog.previews.filter(p => p.binding.project_id === projectId &&
+              p.binding.candidate_id === candidate.id && p.binding.candidate_revision === candidate.revision && p.binding.candidate_hash === candidate.content_hash);
+            if (matches.length !== 1) { notify('需要唯一的当前注册图片，才能继续记录精确意见。', 'warning'); return; }
+            navigate('#workbench/' + encodeURIComponent(matches[0].binding.preview_id));
+          } catch (_) { notify('无法读取当前预览；整版决定仍保留。', 'warning'); }
+        }, { disabled: actionBlocked }),
         scopeCurrent && !current && el("p", { className: "warning" }, "当前范围已有另一候选的决定。选择或暂缓此候选会明确取代该范围的现有决定。"),
         el("label", { className: "field", htmlFor: "design-feedback" }, el("span", {}, "反馈与理由"), feedback,
           el("span", { className: "caption" }, "草稿仅保存在此浏览器，用于恢复输入；它不是设计决定。")),

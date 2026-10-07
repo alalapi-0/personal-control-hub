@@ -1,0 +1,16 @@
+{
+  "candidate_sha256": "42b86244080dda798befb215169d7d23e667083d82107902c355d05f469a7ebb",
+  "contract": "HUB-LWB-2.3-CSP-CONFIG-PRECHECK-REPAIR-GOV-v11.2",
+  "created_at": 1791372485.6728256,
+  "evidence_sha256": "0d46361796ac7b3c2126331a602b2bb6d1cd5c656a9750b293ce22eb0f279e9e",
+  "governor": {
+    "decision": "APPROVE",
+    "identity": "/root/entry_governor",
+    "scope": "offline repair and one fresh120sec metadata-only helper,900sec authority no renewal; fifthresume closed"
+  },
+  "judge": {
+    "decision": "PASS",
+    "identity": "/root/config_precheck_v11_2_judge",
+    "scope": "32code52evidence/sourceclosed4wire104typed11derived/privacy/security/12tests29subtests/401Hub360subtests"
+  }
+}

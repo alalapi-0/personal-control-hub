@@ -1,0 +1,17 @@
+{
+  "candidate_sha256": "8b2c5901a78fe83e9cc2832c0529b167493557035ee0925c2fb1275adc8e92da",
+  "contract": "HUB-LWB-2.3-CSP-CONFIG-PRECHECK-GOV-v11.1",
+  "created_at": 1791371662.195928,
+  "evidence_sha256": "3e745772b8682e7afb52c4bb3b58c67fbf9d42e2855341c1c59dfac641a6f707",
+  "governor": {
+    "decision": "APPROVE",
+    "identity": "/root/entry_governor",
+    "scope": "one native metadata-only precheck, authority<=900sec, helper<=120sec; no thread/resume/command/turn/model/task/source/global/auth/Git writes"
+  },
+  "judge": {
+    "cache_cleanup": "Root removed only three regular uid1000 nlink1 review-created pyc files; all62pins unchanged",
+    "decision": "PASS",
+    "identity": "/root/config_precheck_v11_1_judge",
+    "scope": "exact31code31evidencepins/10scoped20subtests/399Hub351subtests/public4sources/boundaries/privateprojection/closure"
+  }
+}

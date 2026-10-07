@@ -1,0 +1,14 @@
+{
+  "contract_sha256": "9cee13efb802d2cfb52b41d23defcd798a9cffb6fc875c7bb1e64e55b44787ee",
+  "governor": {
+    "agent": "/root/entry_governor",
+    "decision": "APPROVE",
+    "source_admission": "CREATE_TASK after release/source closure; failclosed reserved keys and floats; offlineonly"
+  },
+  "judge": {
+    "agent": "/root/desktop_contract_v11_5_r1_judge",
+    "decision": "PASS",
+    "scope": "fresh frozen v11.5-r1 contract revision only"
+  },
+  "native_authority": false
+}

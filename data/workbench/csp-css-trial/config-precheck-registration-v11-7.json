@@ -1,0 +1,946 @@
+{
+  "budget": "same nativeGoal cumulative; remaining/costunknown; freshjointJudge6000 reservedconservativelycharged +closure; no reset",
+  "candidate_sha256": "c48e2df330e10860d627097a5067e0d9f97ed3915d571b470b4f92d3f4112efb",
+  "checks": {
+    "AST5_whitespace": "PASS",
+    "failure_retained": "firstnewtest usedrejectedunknownconfigfield:58error1 thenfixed62; firstsourcecheck publiccatalogmode0664 rejected; fixedowned0644 thenPASS; failedapplypatchscriptcontext nofileschanged",
+    "full_hub": "451passed exit0",
+    "native_effects": 0,
+    "prior232evidence": "allpriorpins retained",
+    "prior35code": "5owned changed/30exact",
+    "runtime_owner_permission": "ABSENT; noauthority/intent/result/helper",
+    "scoped": "62passed exit0",
+    "source_binary_catalog": "PASS;68publicsources/440schemas/152templates; no native"
+  },
+  "contract": "HUB-LWB-2.3-CSP-FULL-METADATA-AUTH-REFRESH-GOV-v11.7",
+  "created_at": 1791383365.7352197,
+  "credential_storage_safe": true,
+  "cumulative": {
+    "closed_rounds": 16,
+    "metadata_helpers": 5,
+    "model_turns": 1,
+    "native_threads": 2,
+    "resumes": 4,
+    "round": "HUB-LWB-2.3"
+  },
+  "evidence_files": {
+    "data/workbench/csp-css-trial/baseline-contract-v10.json": "db7953908a532ba5ef31b8024c99303fdb853d4a453d43f2cb880f73d03f135d",
+    "data/workbench/csp-css-trial/baseline-preimage-css_capability_recovery-v10.py": "ece3e19b9ea6061262524ab2ad82ac24d8e19e7f6c97cee66ee89f8879d7ae46",
+    "data/workbench/csp-css-trial/baseline-preimage-test_css_capability_recovery-v10.py": "bd35734a0d7aece9ca9914e288e8d49d85d53fc566a063274d6e9502f439f4e0",
+    "data/workbench/csp-css-trial/baseline-preimages-v10.json": "0dbfc48d8ca52db3fcfff97cd218babce590650c3fb120bab86c238039320677",
+    "data/workbench/csp-css-trial/baseline-registration-v10.json": "a160b49333ea2ab808c19d82a3905a97137d5dab044960f4b04e28008a846161",
+    "data/workbench/csp-css-trial/capability-recovery-authority-v10.json": "89d43e4aa399fc02a5e9207fee247ead7485f638970d383a18ebe7992b876496",
+    "data/workbench/csp-css-trial/capability-recovery-config-drift-v11.json": "8110b815d5ba96ed1b010349a748929174008dee4c11450689cc473c8b7cec8a",
+    "data/workbench/csp-css-trial/capability-recovery-intent-v10.json": "35c375caa13a04f818186fda8e575e9eee797dcfa160306f694109f584cf8bb1",
+    "data/workbench/csp-css-trial/capability-recovery-registration-v10.json": "8b068ec97a09d2c4114cd451b554782fa0e7ec764f4431f0e22a03706f41716e",
+    "data/workbench/csp-css-trial/capability-recovery-result-v10.json": "70e0b713c906bd4755b58f9a93905867ce97596ef6ded3a6b72b0ae97ff22e74",
+    "data/workbench/csp-css-trial/capability-recovery-runtime-registration-v10.json": "76c9a8cbb5226523f9af5a3909efa21a53c1a228cb9c80a6373a89ca1f41d8a1",
+    "data/workbench/csp-css-trial/config-precheck-admission-repair-v11-5-r3.json": "f901f3306685efa7adb16633245cf44112b8a7fd526c815336090f304ad07506",
+    "data/workbench/csp-css-trial/config-precheck-api-dto-v11-2.json": "f853d906fb317a87bddfb930653764f186f6ae2a54e28cb05ee60df4ea854f37",
+    "data/workbench/csp-css-trial/config-precheck-authority-v11-3.json": "7ce28498501e9ee853e8b5bf3786e1bc6f41addd71d2d1892bfa23397a68a6d1",
+    "data/workbench/csp-css-trial/config-precheck-authority-v11-4.json": "a915573f6bf3577dcbaf978ba0b1fd81f8b08049761d6f0ced505b607731f249",
+    "data/workbench/csp-css-trial/config-precheck-authority-v11-6-r4.json": "4301e4e6cb8afcfcd78c80d1ef37497a55fd81c52c4e361d6dc4d6ddcf5f497f",
+    "data/workbench/csp-css-trial/config-precheck-candidate-diff-v11-6-r4.diff": "83142a5da0a966e3551a7e438590698cbedaa1013a60eaff6fd65391ea8d3e89",
+    "data/workbench/csp-css-trial/config-precheck-candidate-diff-v11-6-r5.diff": "6fc05ad7649d987c87cbe40bf940b79381954a9db7af6e5d6ac0de628e677e8e",
+    "data/workbench/csp-css-trial/config-precheck-candidate-diff-v11-6-r6.diff": "b83e861dc1de9b40e9c74a285798179f2aecd4c458686c2e27836e5120e4d7fa",
+    "data/workbench/csp-css-trial/config-precheck-candidate-diff-v11-7.diff": "67064cbfaddbbb454d2da6dd3db4935c16caa8bf54b954caaa6d78154249bfdf",
+    "data/workbench/csp-css-trial/config-precheck-contract-review-v11-5-r1.json": "b3f551b2ed98c593b31adf9c9446743f70ba8f90d09623934a003c9648e52bc9",
+    "data/workbench/csp-css-trial/config-precheck-contract-review-v11-6-r1.json": "28b2a9577c8da0399e784b34c5f2d62e2faff2d6427133fec1e89a0a6e916727",
+    "data/workbench/csp-css-trial/config-precheck-contract-review-v11-6-r2.json": "484f3d5ae69ebbec6c3202f8e6515806972caf42c1866c49d77cabe36cefca06",
+    "data/workbench/csp-css-trial/config-precheck-contract-review-v11-6-r3.json": "151bd8663537dbe5cc2417d99abfbd58d0081c2ef1bdbac6d3741c5b53c67e27",
+    "data/workbench/csp-css-trial/config-precheck-contract-v11-1.json": "68e90a823cbcdbb55778792d719f218eeb8446d1a0eaa7a4668cbcec194db053",
+    "data/workbench/csp-css-trial/config-precheck-contract-v11-2.json": "c6c036082e94ec79b8d99acb7179a00662088eeadf7eed36c2c2b84bbc902612",
+    "data/workbench/csp-css-trial/config-precheck-contract-v11-3.json": "f21d50cbef05f851f655e646f4b85a33279d45f8a85b1fdded13de3182abcfd3",
+    "data/workbench/csp-css-trial/config-precheck-contract-v11-4.json": "afeb2ce301d5a70bda1b06a489c24acc6617943b4e8b38c5b1015495184c3b69",
+    "data/workbench/csp-css-trial/config-precheck-contract-v11-5-r1.json": "9cee13efb802d2cfb52b41d23defcd798a9cffb6fc875c7bb1e64e55b44787ee",
+    "data/workbench/csp-css-trial/config-precheck-contract-v11-6-r2.json": "cfdc848b5a6a4fc94ff7467bb1b40d7d6dd4200f9b54cfbb1486832e7faaec4e",
+    "data/workbench/csp-css-trial/config-precheck-contract-v11-6-r3.json": "c0832182f43108596f069cc2da93858c7e94244a942f43ef31d6be63c04ea3ed",
+    "data/workbench/csp-css-trial/config-precheck-contract-v11-6-r4-final.json": "45119b30715357810ea150852a945941bd638ab60b8fa3980e18604aba8fe087",
+    "data/workbench/csp-css-trial/config-precheck-contract-v11-6-r4.json": "ce9affe160e81ed017bb314c87e4a156afd918530ec7a6b0f7bbd63b7685c4ce",
+    "data/workbench/csp-css-trial/config-precheck-contract-v11-6-r6.json": "8c857bfa28eaa56a5627a1cbd8c4a31fe64aa661923994d0299ba0b07252573b",
+    "data/workbench/csp-css-trial/config-precheck-contract-v11-6.json": "7761c1d2c3be5cdce675f65d0be1a12a78a36e249494a4c6d4e3cc7339431123",
+    "data/workbench/csp-css-trial/config-precheck-contract-v11-7.json": "7991b8eaf1cb50e6250938e62b56d3f1bc74d22364ec9d8cdfc3a2343741809e",
+    "data/workbench/csp-css-trial/config-precheck-governor-decision-v11-6-r6.json": "372894055f7f596dbf6f22c3ca1635709f911eef6de24b3b201af785720c9d5c",
+    "data/workbench/csp-css-trial/config-precheck-governor-v11-6-r4.json": "40c0851f5b934859e47439efb8f4a60c29ea5a403f543b25349668ce05742da8",
+    "data/workbench/csp-css-trial/config-precheck-governor-v11-6-r6.json": "3dd0e6161c9bf0e7c2d3003e2cb3b632cfb2c8e7d89f6a47de71d42b027dd000",
+    "data/workbench/csp-css-trial/config-precheck-integration-sources-v11-5-r1.json": "41431c373e9cb513d0722624e4b50a96828df541ff886f4bc55c382895298fe6",
+    "data/workbench/csp-css-trial/config-precheck-intent-v11-3.json": "a6af9f3d491e9a84d83f020746590e089ab99e0198afb11615797ed458a32596",
+    "data/workbench/csp-css-trial/config-precheck-intent-v11-4.json": "fb77c456c52b24ce32a83cd8933eb8f4343effaceedb871738cf8231bff14753",
+    "data/workbench/csp-css-trial/config-precheck-intent-v11-6-r4.json": "76292959b04b24d8e206fb3d5fa8ad5e66d522ca00eacba36bc96fc319475a6c",
+    "data/workbench/csp-css-trial/config-precheck-layer-serialization-source-v11-6-r5.json": "ea1c00361fd9913681638a51663d4188c7beadb5c50bce5460467b20d5ed5cbe",
+    "data/workbench/csp-css-trial/config-precheck-notification-v11-3-1.json": "c5c31461bd01cf9d2b24675e91c97f9c4c6fab63f56b65815e1e7595124f5ecb",
+    "data/workbench/csp-css-trial/config-precheck-notification-v11-3-2.json": "6c0d30307225b95617500e86c3517ecc61bc8fc44e5d31593d527560be626b34",
+    "data/workbench/csp-css-trial/config-precheck-notification-v11-4-1.json": "c5c31461bd01cf9d2b24675e91c97f9c4c6fab63f56b65815e1e7595124f5ecb",
+    "data/workbench/csp-css-trial/config-precheck-notification-v11-4-2.json": "6c0d30307225b95617500e86c3517ecc61bc8fc44e5d31593d527560be626b34",
+    "data/workbench/csp-css-trial/config-precheck-notification-v11-6-r4-1.json": "c5c31461bd01cf9d2b24675e91c97f9c4c6fab63f56b65815e1e7595124f5ecb",
+    "data/workbench/csp-css-trial/config-precheck-notification-v11-6-r4-2.json": "6c0d30307225b95617500e86c3517ecc61bc8fc44e5d31593d527560be626b34",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-2-css_config_precheck.py": "e5b62084b32b53b808682ff585c95a2ec00f77e0e365f0805af26d82375e5170",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-2-precheck_css_config.py": "e08e65605ebf9fc5582538de616dff909ad05945afacaea0774ea96e545a2326",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-2-test_hub_css_config_precheck.py": "3717bcd6753fb26f6ede45cecb627b680bcdbbc7ebab65faf7cf44b6042cd6be",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-3-css_config_precheck.py": "8347f90f0dd10166f4cbd714ae63c22a4b7e63bc64f2112e949dbc99952ff9b7",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-3-precheck_css_config.py": "e08e65605ebf9fc5582538de616dff909ad05945afacaea0774ea96e545a2326",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-3-test_hub_css_config_precheck.py": "dfff0286ec37c459900b687f0ce63751a5449d244f77e77294b3ad8d56c4e831",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-css_config_precheck.py": "8d04ad568f95f3ee52a13d900894a64caf346a117a20e2ad932df6c3976fdaa9",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-precheck_css_config.py": "e08e65605ebf9fc5582538de616dff909ad05945afacaea0774ea96e545a2326",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r2-css_config_precheck.py": "42ca2d6354a8a5c9395f3364711f68728466dfe52b0fe7e1ee3d114743307f63",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r2-precheck_css_config.py": "f2043d5e3dd91eba7b860b0b8400135b29bdf1d402eea36bb4147481bb313ee1",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r2-test_hub_css_config_precheck.py": "e79d8a4e4be0fd448231c9a9489ea2a71a5f3b1f7a10b2142c6353025472642a",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r3-css_config_precheck.py": "c017009b69cfe8239964672cf4f1d6d614fae78d89ad60a87c8e04ed8bbbf759",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r3-precheck_css_config.py": "f2043d5e3dd91eba7b860b0b8400135b29bdf1d402eea36bb4147481bb313ee1",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r3-test_hub_css_config_precheck.py": "af9d6e120c1afaa63abb347d837b6c0b0aee0824b84872d0f8f64ce3381581e0",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-test_hub_css_config_precheck.py": "430794073b19e414a8388fa5e1f106f15f8778ec87243af9d6718aaef5df14bd",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-5-r1-css_config_precheck.py": "1478d8a8b2db26b0087542d33d2f4680d2d9ee4776916a364da937d94ac8cae0",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-5-r1-precheck_css_config.py": "f2043d5e3dd91eba7b860b0b8400135b29bdf1d402eea36bb4147481bb313ee1",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-5-r1-test_hub_css_config_precheck.py": "52f0ad35345754237d94e67ae0d11f019f8db8c0e4b1ef7e8706500772920e2f",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-5-r3-css_config_precheck.py": "d87729f57746cebd863d0b9523d990d30b8b17891bd85affe8948bd60149bdb1",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-5-r3-test_hub_css_config_precheck.py": "90ae38f765143971b305633c86b929361dbbb0b005cc17002e4e1d0d934e25d5",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r2-css_config_precheck.py": "4ebf5240e3aa2f3a729513aac5c6fd60266895b03cb7bb2ce32729b1d09f403b",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r2-precheck_css_config.py": "f2043d5e3dd91eba7b860b0b8400135b29bdf1d402eea36bb4147481bb313ee1",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r2-test_hub_css_config_precheck.py": "ae5043eb31cfe2fed5a51a44d827dbd03e06a95d0a399a8594bcd70958f9948e",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r5-css_config_precheck.py": "c10d668638af01e298d54822a1888cb4df9e3e110de4d7394c246cf6a0690831",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r5-test_hub_css_config_precheck.py": "58d9229eb31d0da06be2a8a710d94c80ab75b683ec8e4cb2e41c20d051f6dc61",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r6-css_config_precheck.py": "8895f6f29735404cc70063f0cea58cc7342420a5ebfbce8d5d32e612d33ceb1a",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r6-precheck_css_config.py": "21bb437a0f080a51aa1aefa039b485280f234e741d0b89ed706825830383b904",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r6-test_hub_css_config_precheck.py": "24dc24bd556b24720428ea909e830161c5d5546ccd8c2b1f805e9ee07b2a900f",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r6-test_hub_css_full_metadata.py": "a07b52d1051d8abc6c09edfa73ba10145bdcb5d540c515af51797e89990e7f29",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-7-css_config_precheck.py": "43b568e27fe32a801b4f1c1fdd190c52263cf1d3c451e3351c0a356ebf8c8cbe",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-7-css_metadata_effects.py": "7652528cd74372f40970e0bf37d20b31cc5a2668268e9b5066069d7ddae260ef",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-7-precheck_css_config.py": "1d582aff1d504f9c8e4149cd4ba01baaf16ba2c7a7e2a880b900c0440ddd161e",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-7-test_hub_css_config_precheck.py": "e8332c7d2d5f7bcf7350348047f9809a7fc5de4db9c22de5da106f1e34920e4a",
+    "data/workbench/csp-css-trial/config-precheck-preimage-v11-7-test_hub_css_full_metadata.py": "6cc0fb7809a550de3cf83c115e67f82c0487c1ad032caefb7efe992345d3f0a9",
+    "data/workbench/csp-css-trial/config-precheck-preimages-v11-4-r2.json": "64186c8282c48bf105b89f817c66fff9cfe8cf5d27a34daf8deb57d761ae713b",
+    "data/workbench/csp-css-trial/config-precheck-preimages-v11-4-r3.json": "d34a24ca0b32bec5425092525cc535ff40e2251e157cd938aa19f302b86b6f75",
+    "data/workbench/csp-css-trial/config-precheck-registration-error-v11-5-r1.json": "45c807c0cc58e8956184fa6335e5be146ecaa0b16340be408aaaf845b49c3409",
+    "data/workbench/csp-css-trial/config-precheck-registration-v11-3.json": "3722d12562dd676c9872f1d47afe84a02bce83677becdbe5f9128f5cfd6f68e9",
+    "data/workbench/csp-css-trial/config-precheck-registration-v11-4-r2.json": "63a305704948e2a1b77e37c6c336b94af1c044b4d91a48311529ddcf730a1a2e",
+    "data/workbench/csp-css-trial/config-precheck-registration-v11-4.json": "006c0c98001c4d4a7bef78c489cb606a8851004eb4e744317908c53b1361492d",
+    "data/workbench/csp-css-trial/config-precheck-registration-v11-5-r1.json": "767fb2bd67126d377c24e5e8dd0d04409ee75e87b1817e9942f37639b44a394a",
+    "data/workbench/csp-css-trial/config-precheck-registration-v11-5-r2.json": "87e2a59a71987f2319cc13084e67e56af9cd4b936c11b96f8d570ecdb3fb6ffe",
+    "data/workbench/csp-css-trial/config-precheck-registration-v11-5-r3.json": "661961654d077cf942f5b2c671895a1e840d64bfeb8bdde34571c36efbb1c7b4",
+    "data/workbench/csp-css-trial/config-precheck-registration-v11-6-r4.json": "3ceb60fd3b8ffc59a9601fa576b8572ac33ee5f2ce80757425e76643b2b1ef20",
+    "data/workbench/csp-css-trial/config-precheck-registration-v11-6-r5.json": "959674c578b8f5dc54bdde10ea6aa312be9b5d2a8c028da0c87444496d199d89",
+    "data/workbench/csp-css-trial/config-precheck-result-v11-3.json": "5c0ff37e55b68fdd3068388cec434d1752254bcd240ed30478ffc27ec6f0996b",
+    "data/workbench/csp-css-trial/config-precheck-result-v11-4.json": "6164c07dde9f413a1eccb680a29bd02176cebc4f42664d6b2f256a1c04ae59c0",
+    "data/workbench/csp-css-trial/config-precheck-result-v11-6-r4.json": "7b0231387a6157ba5dc1f619af511c1c23c0f28ccb8836e6dd3fc664299aa915",
+    "data/workbench/csp-css-trial/config-precheck-review-v11-1.json": "2abe4759181de58af6025dc5862f2a768f3c8962a27fcb2208675ff2c1659434",
+    "data/workbench/csp-css-trial/config-precheck-review-v11-2.json": "997c11a13838bd23b815ee644fb270de697b36d60f27d3ea2c9c3f33075527df",
+    "data/workbench/csp-css-trial/config-precheck-review-v11-3.json": "42da2803220818cd87891c961606e2a47be8b4bebee341ff146960d78527441c",
+    "data/workbench/csp-css-trial/config-precheck-review-v11-4-r2.json": "a19cd53425c9e95dc8f3e756c84be48df46295f074db8fb34513965f7604f7ea",
+    "data/workbench/csp-css-trial/config-precheck-review-v11-4-r3.json": "61b9b4e642f5779531f2bf3c63871035159275b1736ab669f1dd091ccc024eae",
+    "data/workbench/csp-css-trial/config-precheck-review-v11-4.json": "65d7f697664272f2dc303ce52304e7fc1827fe0b2853ca527b18da1b07e1b52e",
+    "data/workbench/csp-css-trial/config-precheck-review-v11-5-r2.json": "90106b6da18319a042defdcfdf60f0f23f4360efed4458e532ae68c998e2823a",
+    "data/workbench/csp-css-trial/config-precheck-review-v11-6-r4.json": "a3a41490fcc9346a3871b6251d98041e5910c9a318f768b110d4bbd2b6f4ef8b",
+    "data/workbench/csp-css-trial/config-precheck-review-v11-6-r5.json": "fb05716cdbeeeae3484c1108f143acba3cea1c185897df45c97805eb4e24a320",
+    "data/workbench/csp-css-trial/config-precheck-review-v11-6-r6.json": "3d69648abf1941e59ef549dfdaac879f75a924cc3a7c411cec4829be9be7bc6f",
+    "data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-1.json": "65b59e42bd702edd3a1fe37def578be4888261538058c6d5a0f4a2bab128ecbd",
+    "data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-2.json": "0790d20e6dc57ef527f21b378ab19c86ee95f68c20ec2bdd98011d67893394ba",
+    "data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-3.json": "f82e29f80094d42ee71afaad9441f913a2c7d8c702c85c786420406845ca5866",
+    "data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-4.json": "e6d767d9ecc8b9094f65543503466ba1b8c08623d67672403d38d8af859d8c49",
+    "data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-6-r4.json": "fc1a0eb17d1853ad67551d7051f186d8284412cf7b6754a0c99e04e8747efcd3",
+    "data/workbench/csp-css-trial/config-precheck-runtime-review-v11-1.json": "3a9b7af62ec75b2e2b08645d808a1420e0fec4f350fc0ae60112e5c8905497bb",
+    "data/workbench/csp-css-trial/config-precheck-runtime-review-v11-2.json": "624337c16ce59ee127657e976fab2b600a72928884f0fd51272dc51b7a3e652c",
+    "data/workbench/csp-css-trial/config-precheck-runtime-review-v11-3.json": "d4d6f23769385754105faca33e8b58aa002651ebd1c37fc2d08d61bd161d678b",
+    "data/workbench/csp-css-trial/config-precheck-runtime-review-v11-4.json": "793822301be8e0593d85aa511142170a11d8ee83b4f2392a28bc3024eb5231d4",
+    "data/workbench/csp-css-trial/config-precheck-runtime-review-v11-6-r4.json": "c0d061e985612aaf645fcc71059c413e4c69a02ec056a0aa0eca0ae7c2c40091",
+    "data/workbench/csp-css-trial/config-precheck-sources-v11-1.json": "750dcad50977ac1747f3acb840822f3b4a4369b8c61a0801a9badae693e6c046",
+    "data/workbench/csp-css-trial/config-precheck-sources-v11-4-r2.json": "1e655fbd9ea40ff91d34ccae8de3823795d04feff66bed764c0e2c568d53be76",
+    "data/workbench/csp-css-trial/config-precheck-sources-v11-4-r3.json": "e37bbbaa5157f1682281ce9deb777e8f7cb3fa5c44657d6b7dc7b8408519934d",
+    "data/workbench/csp-css-trial/config-precheck-sources-v11-4.json": "b6974ef9974eab422ac83c630ff325627a67d25a2309134701bdc45a9f1ecad0",
+    "data/workbench/csp-css-trial/desktop-roundtrip-binary-provenance-v11-5-r1.json": "78ac230e48c5c52c2af356b6800d71bcecaa370c34b5e2c60d7ba5983c2f12ad",
+    "data/workbench/csp-css-trial/desktop-roundtrip-source-admission-v11-5-r1.json": "c9679197736b41dbe3c21647735c53fb2d480b7e67273737594abe0313a73ed6",
+    "data/workbench/csp-css-trial/desktop-roundtrip-source-closure-v11-5-r1.json": "d7e40c9226ccfe7049bffa388673d0223e5dbf0c5f87053b487a7bab9681fcd0",
+    "data/workbench/csp-css-trial/evidence-resume-intent-v10.json": "569e07a097b9197bb797ead5f07d9aa90fcd86ed8f3b424da8e17ffb646b2faa",
+    "data/workbench/csp-css-trial/feature-catalog-source-closure-v11-6-r2.json": "f2410fceb603951c4e8dcf948435ad23ab9b7ae0c34b4d6ff36266d02d34cd4b",
+    "data/workbench/csp-css-trial/feature-catalog-source-closure-v11-6-r6.json": "f3995f31fdd23205ebc2c6ee71a3a2fc80d593464f6edf53f5767e5050507619",
+    "data/workbench/csp-css-trial/feature-catalog-source-closure-v11-6.json": "b24366ad5a759e89013a91174093476860cde00a691d7d6f9628e420827724ab",
+    "data/workbench/csp-css-trial/feature-catalog-source-closure-v11-7.json": "95872e17955ce713e29eb0b610048f96b2921f79a5dfc7f12b272ae8670ec38f",
+    "data/workbench/csp-css-trial/full-metadata-callgraph-v11-6-r4-final.json": "39125fd258c469feafc5fdc27c3ec92aaff13cab05a3667ea03c8a897e786dc5",
+    "data/workbench/csp-css-trial/full-metadata-callgraph-v11-6-r4.json": "6453b62c5d26cbaeab59bb63aa2f02f95a7df145a25eec890e9d405f58315d99",
+    "data/workbench/csp-css-trial/full-metadata-callgraph-v11-6-r5.json": "438a0fee7ee2805fe46f79770ea6dc921118cd3c78a623deac92725e5b38e3fe",
+    "data/workbench/csp-css-trial/full-metadata-callgraph-v11-6-r6.json": "ee36e39c5f67f7fbff83a45cef37601fbad48c95582403a255eb6c464a4133b2",
+    "data/workbench/csp-css-trial/full-metadata-callgraph-v11-7.json": "cccb98eb764724453fda98bb4385aa0366a36294ec129902241493bd74ad636a",
+    "data/workbench/csp-css-trial/mcp-consumer-source-closure-v11-6-r6.json": "830feac2f82137f865fa238ddfabc0fa0377f2bb172b85db4132a6f4acae8498",
+    "data/workbench/csp-css-trial/metadata-auth-refresh-source-v11-7.json": "8664e599522b6355db84d943284d12b90cc20285a74b7299b0b75162356c55c8",
+    "data/workbench/csp-css-trial/notification-metadata-v10-5.json": "2bea1dac511086668e3b3140712fd441a9d75fb1ce8a40cf603ff4a2b13b71ef",
+    "data/workbench/csp-css-trial/public-source-v11-2/app-server-protocol__src__protocol__v2__config.rs": "8187edb07de0259f5a96927ca69b749a7ba9049062bf2ef2eb1ff9c7d8696447",
+    "data/workbench/csp-css-trial/public-source-v11-2/app-server__src__config_manager_service.rs": "cb5e0862e3402aed6349d870f4a8b38472ad1835edd906f797ea1e3aeeac8209",
+    "data/workbench/csp-css-trial/public-source-v11-2/app-server__src__request_processors__config_processor.rs": "66d0f303742fc268f9f4557cc01418c89c85854ff58f3feb7321e19a891b1db2",
+    "data/workbench/csp-css-trial/public-source-v11-2/config__src__config_toml.rs": "05b6d259c8882322d33a997d69c0898f7ca3693552bf9ec5f4a8f1c60457bb1e",
+    "data/workbench/csp-css-trial/public-source-v11-2/config__src__mcp_types.rs": "08bdfe6bcc0ca607b1ead8b373029f895528604290f94bf1ba18c2dc83db8fd8",
+    "data/workbench/csp-css-trial/public-source-v11-2/config__src__permissions_toml.rs": "f410e2da8b23102c3236ea47d37637666b2e07ea37d4dbb8be5ad0566b632810",
+    "data/workbench/csp-css-trial/public-source-v11-2/config__src__shell_environment_policy.rs": "93a3c447504f940a266a50ecbb0467dcf08fd7e920f5434455c6e09fad2b25c5",
+    "data/workbench/csp-css-trial/public-source-v11-2/config__src__skills_config.rs": "bc2eb9fcb92c2c99fedaa25d1ca4bbff6d69a009499ba34762249bdc3b05cc8c",
+    "data/workbench/csp-css-trial/public-source-v11-2/config__src__state.rs": "b9a64a791a8b7884626890f06b13fb4630c5160f75ead198635e0111ecdd46ed",
+    "data/workbench/csp-css-trial/public-source-v11-2/config__src__types.rs": "951d5b6a7ff5c7dd667039f1f0c44fe1028a2d8ab372d45632b60d325464631d",
+    "data/workbench/csp-css-trial/public-source-v11-2/core__config.schema.json": "eda7251b7e46e0b9d0f3d8eef5dab451e11a55d723e2b802e152b7208045836a",
+    "data/workbench/csp-css-trial/public-source-v11-2/features__src__lib.rs": "4c702a9479fdbf955b0640f8d52e327dff5cc273c0e9587f29f62e5cbbcd59aa",
+    "data/workbench/csp-css-trial/public-source-v11-3-loader.rs": "0e3131c8186b391ecb425620bee2a8649d10364d062eee21a15d1cbe48dbbb0d",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/Cargo.lock": "4fab6fe99180e2b8f305bd4b33c1b4bd825e3fa4cdef1045be750843bd3d431e",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/Cargo.toml": "0577253499088b28e63beef6e202652bca46860eaa75ea128591d5ac920b7ec2",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/cli__Cargo.toml": "e1205c8fbd3e5e8357c40587ff939dba8e458016e3d6c04c5b2547f943d01d09",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/codex-release.sigstore": "db0b167444d067a6e277f71cc05820ac14fca40669bd3aa988aadedfb28cff97",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/config__Cargo.toml": "9f1aebe46b78cf1fb2c47b9a9c61bbccd2b8076ce9274fc81d8ae17e7c8dc232",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/execpolicy__Cargo.toml": "a30850d1134be2b9a37a15d383d1cf7a3df72c81c3a4b970bcfac8bf15528e94",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/release-tag-ref.json": "e6f3154eaaafafc7278c566307ba768de21621431ff620bb1dfd10e573510bf4",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/rust-release.yml": "150b407712ea66d4310d0286ca4054323586ef578c898092032ca205b4c55059",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/serde-json-src__number.rs": "327e30a5542e169df2bbea59e4a7a4861c5a6994876f74cadab49f8133cbae34",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/serde-json-src__raw.rs": "bc15c4d82d07c2c8b5d3f598915e917f2177de6573f327717da33658d2528922",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/serde-json-src__value__de.rs": "ceda1bf415aafde89caa83bf275811b70d393717d4e1038e0c61822d2da02993",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/serde-json-src__value__ser.rs": "11f2b7daa1eba826d4086d5497f73729478dd7647bff77deccde5e47b0f126f2",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/starlark-Cargo.toml": "da0a213bcc2d3e26994aef3a952f5dc6bb044771341ba88de90f42134f8b1901",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/toml-Cargo.toml": "e1186deb6220106088b211b5b14f72e1b5d6df26604c2b8e4e473569e9489c7e",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/toml-src__de__deserializer__value.rs": "b40887b2ff53e5418589f089eb1718707ea459936b1686be8e34b280febd5a8a",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/toml-src__de__parser__devalue.rs": "4d0fca1bdb99279032163baab25e64f8c0340fd713c237d2f860ecc4db01d247",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/toml-src__de__parser__value.rs": "d615fb9f09333567ed6c41293be559bff843b180903fddc368e891e8d646b1ae",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/toml-src__ser__value__array.rs": "343a0d4bc2f02701189c37567aa690307157612c8c204eebfe3974031af5e08c",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/toml-src__ser__value__key.rs": "6f730c3123424c90cb1cf5e5f109ae5dfd570e173f52401c291f972a29b6e40a",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/toml-src__ser__value__map.rs": "198afdc2145983888d684db61c01fd26dfbdc1e27cf2669233bf9ec9da57875f",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/toml-src__ser__value__mod.rs": "979db3bc891e15ab668eaf9add336b0510ce9823b436be4042d2a329fe888612",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/toml-src__table.rs": "7aa1cead31721c4d0bc2f606ba67a463dbfc095a83490d01f08699369716d65d",
+    "data/workbench/csp-css-trial/public-source-v11-5-r1/toml-src__value.rs": "fce12d46485c895b06442c536f3297894474605a1889150e4cfa4c459be28d78",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/app-server-extensions.rs": "e097740f3c33cf84456283ea59a4409e48e10c00d61937604e9fe6474e3ef518",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/app-server-lib.rs": "720bec82a5f8eaf1580a0b56bc52852cc39c3f1406406cb8d06de44a32e401da",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/auth.rs": "911b2ad4c66c765c73fdafec5f4198c1cbddaf1790477e438f190dd34c24382d",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/bundled-models.json": "fd219bd9f061278275f528939f82f54d2eb97df4b25c23b022adbe48813d920b",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/catalog.rs": "989b8dd1d7bc89786dee7273e9ae10599a4c54ef90b431058a74ff63dd2a6283",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/config_manager.rs": "9aab02f8480f984ed1421293cd6294d86b044b9f3cc01dc424ac5a92d33c084c",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/connection_manager.rs": "88ffc14d95837a4f905b6e47721121a3d47246f4ca95fecb9142035687c40dfe",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/core-config-mod.rs": "df6d6871a35a9e365e36beb3d388c2c39cae59d95bd84834321c8501390ec397",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/core-lib.rs": "77123e59406093fcaa2f10e549458c228e55d53c84fef06728a73933cc9f096b",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/core-mcp.rs": "07cca9bffde5ded960a0cc625265d58ac5e79626dedaf579ecec4e38023656f5",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/core-plugins-lib.rs": "d1d325a67cc9d9eaf7e7e8ea166d1572f0ae1edd2f5c41cf98cd5470dc274681",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/core-plugins-manager.rs": "381ce90509b4f40341669fa01a637451716993cd05fcf7b719e1898743700d9c",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/elicitation.rs": "fba98e941cd330ac0de663cbc52f5d12b02e320330284667382eca12f31074f6",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/ext-mcp-lib.rs": "090e5e13a2c06a4b001a69e5444fd8b676ddcd608a5d40fe7e0937498482d6d2",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/ext-plugin-contributor.rs": "de01561998da9d28a2b8ce3e9b06db706bac9402d2d0a6e01c9a1fab5ac015f5",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/ext-plugin.rs": "8ccd3fe8455987b7fda641f7a82c9d86005c98b055e935d212cd6154ac5e2371",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/extension-api-contributors.rs": "03216597134ac2e725d8ccb535447c27c9ebe2ac3a879a4eabd103c3c92cc8eb",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/extension-api-lib.rs": "62d040d1f8e428dd93e65d614d4655d9fdaa545354cc78f63b5a30347aa967e3",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/extension-api-mcp.rs": "9798401ada6bd1a5402e96f3ce3c0d13e095f50f0a1d8e86ddd3b9fa0fd30815",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/initialize_processor.rs": "4535560b07ab10d1538acd461560a55c1bdf0c9b4049e72775d6b770421f117f",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/login-auth-manager.rs": "01cb49b1cca566dddc47def60b52848da0717c7de6a33d8b7160b6fc4cafd881",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/login-auth-mod.rs": "5d72ae39f74e2ed944b13bab4dbaab03d5e0ae1a5ec908d14cf4513606fe7b83",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/login-auth-storage.rs": "2e95a8998687e926675d41b5d941c3c3546a652c03d9680e6c7385e59bf459af",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/login-oauth-client.rs": "dd68af96c58415d85521debb6136ebf1ed1f86658a903af4144a3dda6d71ccdd",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/mcp-lib.rs": "5a6b8da293471bf824625b8d85db70a991dab77468c0ad42f9028e8873354f6f",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/mcp-mod.rs": "3ad76e5dff1a60e597ea5a35270c2301d68654ec9d28ce07bcceb4fbd118ad1b",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/mcp_processor.rs": "79823ea342ceb18927f4046920c8f647cea33f8cf3ae9b3621f1ad0f1062cff5",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/model-provider-auth.rs": "1c1042b33df733ffb583d19bd3102c8511ab37b9e5e8cd91a673103321f249d8",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/model-provider-lib.rs": "0ec8bc9a91e752099602042e33152e3a6c1477d2ca757ab54cb1489a5a94d1f2",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/model-provider-provider.rs": "d9a5a99cf67bad1a3f53ea398ed70b1aa5809fc60ce500ba972dfc9345590e13",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/model_catalog.rs": "2a40095f47b432ca1d6dc5fb4f0c6b6e4199d03a289475e0a25e74a1d7d05299",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/models-manager-lib.rs": "b31b6e8fdaebedbbf07999b27c02201020e8d876ae293ac05a8fe4bf051244d3",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/models-manager.rs": "7cce0601fcb3abdf1d944412356ae541d0a1c30014a911ddda61a879b89e8358",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/models_refresh_worker.rs": "645ed9c9915eb74dfa33434f55d686489a3cd6b6f9cb303f9944cdf80e8f1da3",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/protocol-openai-models.rs": "4c8b5cafd8c55db269f669e352321f787fcaf83785bce4476cb887abfce75dc6",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/runtime.rs": "2511fdad728c211a6b10fb76a32f6c27cd1f4c4989d0b82f6046b8e4d65b97ff",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/server.rs": "d2f9d884db8e1e8639a719b0fe1029b7bb877cb59b716e8bc8e0b19de267d47b",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/status.rs": "3d689f4cdb1f45a83cab0e23073fbd96d4a6253a091ee132bf1fa82d10a33c4a",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/thread_manager.rs": "4199282a0a7a566b4f6cce8a65be0563539f6ac15ae1ead515a371c7a7f21685",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/tool_catalog.rs": "749ba9975ba5c3821d003df1c20d17042f386cdfbd2c66a72c9de15e6652dd9c",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/trusted_access.rs": "9349f480faa0f3594b03bad68da6f2eb6582a1122c134a0983b548eff03a3463",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/turn_cost_worker.rs": "880e8442a155112e6f7383418879cda6896cbc3a6bc931480b236972757e8e92",
+    "data/workbench/csp-css-trial/public-source-v11-6/app-server-exports-experimental.json": "0027faf829943491752479bd96c88071d5f2552af71d3564acd72d3b082474b6",
+    "data/workbench/csp-css-trial/public-source-v11-6/app-server-exports-experimental.json.zst": "63028565f715c584c2dad98163de85dcb03801f9a7c096f5ef07d4769a900984",
+    "data/workbench/csp-css-trial/public-source-v11-6/catalog_processor.rs": "70ea2f46a69337c7b3e5ad2b461e5fdb4fffd83458e8387cc8ae8dccdca1efe6",
+    "data/workbench/csp-css-trial/public-source-v11-6/experimental/ConfigReadParams.json": "257c54a423b47c1d209ff1076765a1564d82322fd5161670fd489a2874de1bac",
+    "data/workbench/csp-css-trial/public-source-v11-6/experimental/ConfigReadResponse.json": "4ec77e1a3eed746037149799c3b6bb8fe7b4b593e5930fc9f410e6282de9df50",
+    "data/workbench/csp-css-trial/public-source-v11-6/experimental/ExperimentalFeatureListParams.json": "4db92977e59fea4125710babb4cd2128dc2cebef8292e3619d0844089e7fc1f5",
+    "data/workbench/csp-css-trial/public-source-v11-6/experimental/ExperimentalFeatureListResponse.json": "4084a25f32333b3f58eb5e9803a5983739b57f945c4e7e4002e85851622ce597",
+    "data/workbench/csp-css-trial/public-source-v11-6/experimental/InitializeParams.json": "b55124e7c0f36a1789396daa5578217a92be67f053903696236686e59f6f212e",
+    "data/workbench/csp-css-trial/public-source-v11-6/experimental/InitializeResponse.json": "62ad689c2cb6379913c1d72749cfd8de5089d35760214123518eb92eef11acc9",
+    "data/workbench/csp-css-trial/public-source-v11-6/experimental/ListMcpServerStatusParams.json": "30b978c6502b37c9f0002aeba241f41c91d4c6adf0f92d89242b62ffde415a2d",
+    "data/workbench/csp-css-trial/public-source-v11-6/experimental/ListMcpServerStatusResponse.json": "00c56c0faacbd4950b7f446f20b11b8a95456c5108de2f1e7366a1b2e60db8c6",
+    "data/workbench/csp-css-trial/public-source-v11-6/experimental/ServerNotification.json": "28a42039eee1c3f45c92b6cf07111bacf6de2716f4d3365ff53ad65507fef00c",
+    "data/workbench/csp-css-trial/public-source-v11-6/experimental/ServerRequest.json": "3d7bc481f84dc042984a74420e65c5a8d3c423f37a91b7d5df2365c903a12ac6",
+    "data/workbench/csp-css-trial/public-source-v11-6/export.rs": "6ce42bcf551f038cbbce753b2921f0bacab1fd2285133bc71e2f8da3dfdc19f4",
+    "data/workbench/csp-css-trial/public-source-v11-6/message_processor.rs": "f1a1bb0029e7c2f46de3048cbbc52b55ccca413dacb8ce67c63796372468318f",
+    "data/workbench/csp-css-trial/public-source-v11-6/precomputed_exports.rs": "661397f6329f7fac05e9d7ccfc7bceead266389d0975da7d1ef57544ee5aaa0c",
+    "data/workbench/csp-css-trial/public-source-v11-6/protocol-v1.rs": "e0642bd1bc7dbe5e24d508420471d705d5688efe8df3a8b40e3af22be55d7754",
+    "data/workbench/csp-css-trial/public-source-v11-6/protocol-v2__config.rs": "8187edb07de0259f5a96927ca69b749a7ba9049062bf2ef2eb1ff9c7d8696447",
+    "data/workbench/csp-css-trial/public-source-v11-6/protocol-v2__experimental_feature.rs": "b9c2ae2c29b8c3681ac4c72253134cfae542865c25cde93c17020e72d218ad0e",
+    "data/workbench/csp-css-trial/public-source-v11-6/protocol-v2__mcp.rs": "591ee11cc30e8d21a03317df2ed1742af19c1a91c066ecb0f7a186cc813f5739",
+    "data/workbench/csp-css-trial/public-source-v11-6/protocol-v2__mod.rs": "5f35011edb645ffac64553b170ed9f0ab0f4a5f04675a0d7e4b30ba5174ebe84",
+    "data/workbench/csp-css-trial/public-source-v11-6/request_processors.rs": "cf69dd90de963bc3e7206af7975d88a8572c5c03061461a357544cf5931412a0",
+    "data/workbench/csp-css-trial/public-source-v11-6/schema_fixtures.rs": "f3b449aac70fbb77158b74f09cf79924046b400c9d4299e909748b01a1e739bd",
+    "data/workbench/csp-css-trial/semantic-config-contract-v11.json": "43c96bdc8efe0036e5c981acb1b385eb97f6b9f131dbe54187e89f97969447fe",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-codex_adapter.py": "17f980811707babcc79522ddec951d4e6e8f23dae9b097769f1a6a0b688a9df1",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-css_capability_recovery.py": "0c3d2485c09c5ac033408a276820d3100ce26cfaf6b62e4a8e490a46debfe650",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-css_process_config.py": "f8a9e4f633e42d5515f5df83f9241a4f9077dbf1ef9fffafebc85986233d1551",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-r2-codex_adapter.py": "e57cd96ce5328d492cfb17fda5fa7eb9d4d6dd589c44ac401b1c2c1f82376f69",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-r2-css_capability_recovery.py": "1ebd6bc2ad07a64385f7124bff10a2ebbd28383c730da802dc721c1a163d46a8",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-r2-css_process_config.py": "2852c5d20e0d8ba73ed6a347e3eed178052f725b3ba02af86a71c6ea65756d7c",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-r2-test_hub_css_capability_recovery.py": "b6c693f475b5931d9aa0e9e497763da88093aec6e6fe02bde5ff040810a40279",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-r2-test_hub_css_process_config.py": "53f4d0c3f86be5370de9c394e9287209176ea4f75bad338b97af64c872023d45",
+    "data/workbench/csp-css-trial/semantic-config-preimage-v11-test_hub_css_process_config.py": "aabce071983e50a591e9d0a452827376bdb1a9ef15b07a773aee0d63312dbf28",
+    "data/workbench/csp-css-trial/semantic-config-preimages-v11-r2.json": "215c2e1b026a27a092224472616b855b0e559dd9e0a6e6f4749ff8042e5c27c8",
+    "data/workbench/csp-css-trial/semantic-config-preimages-v11.json": "3a8624f5f085e3d228a071a1a081e8f878bf72530623d263c1aa42971710ace5",
+    "data/workbench/csp-css-trial/semantic-config-registration-v11-r2.json": "56bb2650a47772a8d2ba351e485652a5f8864d5c9d919a71542e0d86a6378e9d",
+    "data/workbench/csp-css-trial/semantic-config-registration-v11.json": "ddfa1874438891cab71f5bb11b32d1b581d98b2540504b80cebf2a32dcf73c71",
+    "data/workbench/csp-css-trial/semantic-config-sources-v11-r2.json": "3d03e2c042030b559e0d1bd4fb47178b1ef612b91c317a72129ef373bd851fe6",
+    "data/workbench/csp-css-trial/semantic-config-sources-v11.json": "3657a077daf673b0d46fb45fdac424ecc6a98b806dcc738e911d5e2eefceb426"
+  },
+  "evidence_sha256": "413f9dd8cc5890be5bd4768cba29bf9d1b459c0492300445aae9af69fe14b445",
+  "files": {
+    "data/workbench/csp-css-trial/config-precheck-sources-v11-2.json": "aa19536c4970351339916663ceacd82067edf8e31bb56aa428a81b9bf61c9a7f",
+    "data/workbench/csp-css-trial/config-precheck-sources-v11-3.json": "f519eb7aca991a7e2f963b7c17651ab44973838f565e9aab371ae38aa749d116",
+    "scripts/precheck_css_config.py": "f803ef5df074e3e16928cd9dc9573d3d7fd721eb89a44050dc3e85f8c8173ef1",
+    "scripts/recover_css_capability_evidence.py": "d1fa0178cd02940b01c932675392d805b841a5ab436f9bffb2c7f1af8cce51b1",
+    "src/hub/__init__.py": "0c487b25bcc2442a0cb2d480bf0cc95213b6b2820db780b3daf6cf7593fb6fb4",
+    "src/hub/codex_adapter.py": "087685ce22f5772c5cd87584ea0f289de3e78b5f03947b8b13b4dff09081501c",
+    "src/hub/connection_records.py": "ea64d77714700e1d4179b06150e1a97317a0a65f1c3c581ac3a1e68f98639745",
+    "src/hub/connection_refresh.py": "21c4d1f0c7cb495c7e939afba85c8052bd715b15a57a04abc32100d904d69188",
+    "src/hub/connection_sources.py": "0648baa808ac566ff8c1e1a6f1e6c5a6b826b230787e32665424060776014435",
+    "src/hub/connections.py": "b9fa95e08272b8747dc0326ac149ba6c384993a9e1bc131125929ec617619033",
+    "src/hub/css_capability_recovery.py": "f75b1f13bc130df7399ea6e02f51b824c2d7bc6038b7abad97deb38dcad85135",
+    "src/hub/css_config_precheck.py": "2f38ec2c8c67f494d79750be60460cc28b6ee9e2604423179e467538e8c04b5b",
+    "src/hub/css_metadata_effects.py": "f7b106fac544f204b2888f136f1a7b02533d357a32714ddd59b56aa3eb3c91ef",
+    "src/hub/css_process_config.py": "b9c1575adad4cc6bac6b8d60c28a54e3a8e235440a14e22541fa37662f18a575",
+    "src/hub/css_read_diagnostic.py": "836919f79fd7ee8460e88a794cae36a70b7f781da95518f9226ce0d71def6242",
+    "src/hub/css_trial.py": "d4b8454dc033ed710f5f909de064f0925e120cecf65ebeee06095644527d868e",
+    "src/hub/design_export.py": "21d85349384a3744a33c56e0d86ae544413fb74ea0225e36c4271f5832521145",
+    "src/hub/design_records.py": "c735b628ffc89b2831b0224b1b69d5b25e11c90122209b2ac77c6d727dcb7735",
+    "src/hub/design_service.py": "94335830c9dc9610aee9f8da0a8959cf5c758bf19c99d2c65d557835ba6089ed",
+    "src/hub/design_store.py": "323277a889f21e6aba88e89da538fc27573a437e4e2eeae48f29e4675ed1afc6",
+    "src/hub/notification_metadata.py": "1e82df6d413e364fd15093f144e6095270cc7e85141b1d9c50441c8f94cc6001",
+    "src/hub/preview_bridge.py": "c7bcf5620a4260802a7e31266753d2cc86660cd9fef76b113aac78a2e06b2fd4",
+    "src/hub/preview_service.py": "315bf14b092427ccf77c8497728ccd7ef701a4116290d9aa6cc99c6bf41274c0",
+    "src/hub/project_service.py": "34a2dc0d9cfdfb49ee12b545ad9e85f603f3749aa952ec1c1bcf1de476709f5a",
+    "src/hub/readonly_preview.py": "60df34ae65224f2827ec7d70da57a72669205739e89f18d971dd8a333159b6df",
+    "src/hub/service_contract.py": "f06b00793aad42d07f2ba708a97090645412688dc72bbaece08bf33df5a43f52",
+    "src/hub/task_service.py": "0523575f9d9d349ce32a0bc5f59e6ae9788c5ee1861b1ff83b4da7c34edaf4bb",
+    "src/hub/task_storage.py": "f3b6528ce995f37b48395ca520b63e50a6b168e891f9646dfa2ec183c61e1649",
+    "src/hub/task_store.py": "150c617696f0ce13dde3b2d55b12637275d0562260ccb1f78fd310d77a2cccb6",
+    "src/hub/workbench_store.py": "41363bbab18d64d04e7d7e3ac48148506f45bfc001711f4acba5a79e3153b7a7",
+    "tests/test_hub_css_capability_recovery.py": "6f9c8e416375fb12b57287b0b1b483d66b38873b54c3b57131f64afe86e16cfa",
+    "tests/test_hub_css_config_precheck.py": "cfa3eff5344432eba9bc3923455485037745af669636a3363f6a84d8f283fd0f",
+    "tests/test_hub_css_full_metadata.py": "a07b52d1051d8abc6c09edfa73ba10145bdcb5d540c515af51797e89990e7f29",
+    "tests/test_hub_css_process_config.py": "647cd51cd2aabd064b4e37a15ebf49aff28c11b6460d8418beda3c4f454b91c3",
+    "tests/test_hub_notification_metadata.py": "5f6928db81ff5bafbe250327e13e7914dca2012cc65e29b2d47368816cbcda89"
+  },
+  "native_now": 0,
+  "new_paths": [
+    "src/hub/css_metadata_effects.py",
+    "tests/test_hub_css_full_metadata.py"
+  ],
+  "preimages": {
+    "scripts/precheck_css_config.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-precheck_css_config.py",
+      "sha256": "e08e65605ebf9fc5582538de616dff909ad05945afacaea0774ea96e545a2326"
+    },
+    "src/hub/css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-css_config_precheck.py",
+      "sha256": "8d04ad568f95f3ee52a13d900894a64caf346a117a20e2ad932df6c3976fdaa9"
+    },
+    "tests/test_hub_css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-test_hub_css_config_precheck.py",
+      "sha256": "430794073b19e414a8388fa5e1f106f15f8778ec87243af9d6718aaef5df14bd"
+    }
+  },
+  "preimages_r2": {
+    "scripts/precheck_css_config.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r2-precheck_css_config.py",
+      "sha256": "f2043d5e3dd91eba7b860b0b8400135b29bdf1d402eea36bb4147481bb313ee1"
+    },
+    "src/hub/css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r2-css_config_precheck.py",
+      "sha256": "42ca2d6354a8a5c9395f3364711f68728466dfe52b0fe7e1ee3d114743307f63"
+    },
+    "tests/test_hub_css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r2-test_hub_css_config_precheck.py",
+      "sha256": "e79d8a4e4be0fd448231c9a9489ea2a71a5f3b1f7a10b2142c6353025472642a"
+    }
+  },
+  "preimages_r3": {
+    "scripts/precheck_css_config.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r3-precheck_css_config.py",
+      "sha256": "f2043d5e3dd91eba7b860b0b8400135b29bdf1d402eea36bb4147481bb313ee1"
+    },
+    "src/hub/css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r3-css_config_precheck.py",
+      "sha256": "c017009b69cfe8239964672cf4f1d6d614fae78d89ad60a87c8e04ed8bbbf759"
+    },
+    "tests/test_hub_css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r3-test_hub_css_config_precheck.py",
+      "sha256": "af9d6e120c1afaa63abb347d837b6c0b0aee0824b84872d0f8f64ce3381581e0"
+    }
+  },
+  "preimages_r5": {
+    "src/hub/css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r5-css_config_precheck.py",
+      "sha256": "c10d668638af01e298d54822a1888cb4df9e3e110de4d7394c246cf6a0690831"
+    },
+    "tests/test_hub_css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r5-test_hub_css_config_precheck.py",
+      "sha256": "58d9229eb31d0da06be2a8a710d94c80ab75b683ec8e4cb2e41c20d051f6dc61"
+    }
+  },
+  "preimages_r6": {
+    "scripts/precheck_css_config.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r6-precheck_css_config.py",
+      "sha256": "21bb437a0f080a51aa1aefa039b485280f234e741d0b89ed706825830383b904"
+    },
+    "src/hub/css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r6-css_config_precheck.py",
+      "sha256": "8895f6f29735404cc70063f0cea58cc7342420a5ebfbce8d5d32e612d33ceb1a"
+    },
+    "tests/test_hub_css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r6-test_hub_css_config_precheck.py",
+      "sha256": "24dc24bd556b24720428ea909e830161c5d5546ccd8c2b1f805e9ee07b2a900f"
+    },
+    "tests/test_hub_css_full_metadata.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r6-test_hub_css_full_metadata.py",
+      "sha256": "a07b52d1051d8abc6c09edfa73ba10145bdcb5d540c515af51797e89990e7f29"
+    }
+  },
+  "preimages_v11_6": {
+    "scripts/precheck_css_config.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r2-precheck_css_config.py",
+      "sha256": "f2043d5e3dd91eba7b860b0b8400135b29bdf1d402eea36bb4147481bb313ee1"
+    },
+    "src/hub/css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r2-css_config_precheck.py",
+      "sha256": "4ebf5240e3aa2f3a729513aac5c6fd60266895b03cb7bb2ce32729b1d09f403b"
+    },
+    "tests/test_hub_css_config_precheck.py": {
+      "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-6-r2-test_hub_css_config_precheck.py",
+      "sha256": "ae5043eb31cfe2fed5a51a44d827dbd03e06a95d0a399a8594bcd70958f9948e"
+    }
+  },
+  "preimages_v11_7": {
+    "scripts/precheck_css_config.py": "data/workbench/csp-css-trial/config-precheck-preimage-v11-7-precheck_css_config.py",
+    "src/hub/css_config_precheck.py": "data/workbench/csp-css-trial/config-precheck-preimage-v11-7-css_config_precheck.py",
+    "src/hub/css_metadata_effects.py": "data/workbench/csp-css-trial/config-precheck-preimage-v11-7-css_metadata_effects.py",
+    "tests/test_hub_css_config_precheck.py": "data/workbench/csp-css-trial/config-precheck-preimage-v11-7-test_hub_css_config_precheck.py",
+    "tests/test_hub_css_full_metadata.py": "data/workbench/csp-css-trial/config-precheck-preimage-v11-7-test_hub_css_full_metadata.py"
+  },
+  "privacy": "no newrawcredentialstat/content/hash/errorbody; only safe/changebool+fixedSDKenum; private identity in memory; childnetwork NOT_RUN",
+  "prospective_params": {
+    "auth_mode": "ChatGPT",
+    "config_read_params": {
+      "cwd": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+      "includeLayers": true
+    },
+    "credential_storage_safe": true,
+    "effect_grant_id": "csp-metadata-sdk-refresh-v11-7",
+    "expiry_max_seconds": 900,
+    "feature_count": 152,
+    "feature_snapshots": 2,
+    "full_metadata_acceptance": "BLOCKED",
+    "helper_wall_seconds": 120,
+    "helpers_allowed": 1,
+    "max_total_feature_pages": 8,
+    "mcp_status_params": {
+      "detail": "toolsAndAuthOnly",
+      "limit": 100,
+      "threadId": null
+    },
+    "mcp_status_rpc_count": 0,
+    "metadata_overrides": [
+      "-c",
+      "model=\"gpt-6.1-sol\"",
+      "-c",
+      "model_reasoning_effort=\"xhigh\"",
+      "-c",
+      "model_catalog_json=\"/home/alalapi/Projects/personal-control-hub/data/workbench/csp-css-trial/public-source-v11-6-mcp/bundled-models.json\""
+    ],
+    "methods": [
+      "initialize",
+      "config/read",
+      "mcpServerStatus/list",
+      "experimentalFeature/list"
+    ],
+    "model_turns_allowed": 0,
+    "native_helpers_allowed_now": 0,
+    "official_sdk_refresh_allowed": true,
+    "renewal_allowed": false,
+    "resumes_allowed": 0,
+    "threads_allowed": 0
+  },
+  "repair": "sourcecorrectMCPnull/unsupported; stagedSDKeffectownergrant; metadata stderrfixedenum/nohash; staticofficialcatalogprocess-only; credentialstatbool/closure; allhistoricalfailsretained",
+  "revision": "v11.7",
+  "semantic_pin": {
+    "active_project_selectors_bound": true,
+    "contract": "HUB-LWB-2.3-CSP-CONFIG-REBASELINE-GOV-v11",
+    "coverage": {
+      "agents": {
+        "anchor": "pub struct AgentsToml",
+        "classification": "multi_agent_off",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/config_toml.rs"
+      },
+      "approval_policy": {
+        "anchor": "approval_policy",
+        "classification": "invariant",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core/src/config/mod.rs"
+      },
+      "approvals_reviewer": {
+        "anchor": "constrained_approvals_reviewer",
+        "classification": "invariant",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core/src/config/mod.rs"
+      },
+      "desktop": {
+        "anchor": "pub desktop: Option<HashMap<String, JsonValue>>",
+        "classification": "opaque_frontend",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/config_toml.rs"
+      },
+      "features": {
+        "anchor": "overrides.apply(&mut features)",
+        "classification": "fixed_disabled",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/features/src/lib.rs"
+      },
+      "marketplaces": {
+        "anchor": "if config.plugins_enabled",
+        "classification": "plugins_off",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core-plugins/src/manager.rs"
+      },
+      "mcp_servers": {
+        "anchor": "pub enabled: bool",
+        "classification": "six_disabled",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/mcp_types.rs"
+      },
+      "memories": {
+        "anchor": "key: \"memories\"",
+        "classification": "memory_off",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/features/src/lib.rs"
+      },
+      "model": {
+        "anchor": "model.or(cfg.model)",
+        "classification": "override",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core/src/config/mod.rs"
+      },
+      "model_reasoning_effort": {
+        "anchor": "model_reasoning_effort",
+        "classification": "override",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core/src/config/mod.rs"
+      },
+      "plugins": {
+        "anchor": "if !config.plugins_enabled",
+        "classification": "plugins_off",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core-plugins/src/manager.rs"
+      },
+      "projects": {
+        "anchor": "fn decision_for_dir",
+        "classification": "bound_trust_and_layers",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/loader/mod.rs"
+      },
+      "sandbox_mode": {
+        "anchor": "else if profiles_are_active",
+        "classification": "profile_override",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core/src/config/mod.rs"
+      },
+      "service_tier": {
+        "anchor": "let service_tier = match service_tier_override",
+        "classification": "no_model_request",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core/src/config/mod.rs"
+      },
+      "skills": {
+        "anchor": "pub struct SkillConfig",
+        "classification": "disabled_selector_only",
+        "source": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/config/src/skills_config.rs"
+      }
+    },
+    "excluded_default_fields": [
+      "model",
+      "model_reasoning_effort"
+    ],
+    "launch": {
+      "can_write_cwd": false,
+      "cold_resume_only": true,
+      "disabled_features": [
+        "apps",
+        "plugins",
+        "remote_plugin",
+        "browser_use",
+        "browser_use_external",
+        "browser_use_full_cdp_access",
+        "computer_use",
+        "in_app_browser",
+        "hooks",
+        "image_generation",
+        "multi_agent",
+        "multi_agent_v2",
+        "goals",
+        "memories"
+      ],
+      "disabled_mcp": [
+        "chrome-devtools",
+        "context7",
+        "github",
+        "node_repl",
+        "openaiDeveloperDocs",
+        "playwright"
+      ],
+      "effort": "xhigh",
+      "model": "gpt-6.1-sol",
+      "new_model_turns": 0,
+      "profile": "hub_lwb_evidence_v11",
+      "profile_arguments": [
+        "-c",
+        "default_permissions=\"hub_lwb_evidence_v11\"",
+        "-c",
+        "permissions.hub_lwb_evidence_v11.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"read\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+        "-c",
+        "permissions.hub_lwb_evidence_v11.network.enabled=false"
+      ],
+      "provider_requests": "deny",
+      "remote_env_key": "CODEX_INTERNAL_APP_SERVER_REMOTE_CONTROL_DISABLED",
+      "remote_start": "DisabledEphemeral",
+      "source_version": "rust-v0.159.3",
+      "web_search": "disabled"
+    },
+    "mcp_names": [
+      "chrome-devtools",
+      "context7",
+      "github",
+      "node_repl",
+      "openaiDeveloperDocs",
+      "playwright"
+    ],
+    "protected_sha256": "e1596f20f668c6878c60b522c8504da8157382d6d3ef23a1a8991810dcc78d0e",
+    "secret_values_or_hashes_retained": false,
+    "semantic_version": 11,
+    "sensitive_structure": {
+      "marketplaces": {
+        "all_sources_local_absolute": true,
+        "row_schema": {
+          "source": {
+            "type": "str"
+          },
+          "source_type": {
+            "type": "str"
+          }
+        },
+        "type": "dict"
+      },
+      "mcp_servers": {
+        "chrome-devtools": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        },
+        "context7": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        },
+        "github": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        },
+        "node_repl": {
+          "args": {
+            "item_types": [],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          },
+          "env": {
+            "key_type": "str",
+            "type": "dict",
+            "value_type": "str"
+          },
+          "startup_timeout_sec": {
+            "type": "int"
+          }
+        },
+        "openaiDeveloperDocs": {
+          "url": {
+            "type": "str"
+          }
+        },
+        "playwright": {
+          "args": {
+            "item_types": [
+              "str"
+            ],
+            "type": "list"
+          },
+          "command": {
+            "type": "str"
+          }
+        }
+      },
+      "projects": {
+        "bound_active_context": {
+          "active_project": {
+            "cwd": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+            "project_root": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+            "repo_root": null,
+            "trust_level": null
+          },
+          "auxiliary_layers": [
+            {
+              "path": "/home/alalapi/.codex/managed_config.toml",
+              "present": false
+            },
+            {
+              "path": "/etc/codex/config.toml",
+              "present": false
+            },
+            {
+              "path": "/etc/codex/requirements.toml",
+              "present": false
+            }
+          ],
+          "cli_layer": "frozen process arguments",
+          "closure": {
+            "checkout_root": null,
+            "cwd_canonical": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+            "cwd_keys": [
+              "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007"
+            ],
+            "cwd_original": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+            "git_candidates": [
+              {
+                "directory": true,
+                "head_present": false,
+                "identity": [
+                  66306,
+                  45772425,
+                  1000,
+                  493
+                ],
+                "parent": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+                "present": true
+              },
+              {
+                "parent": "/home/alalapi/Temp/personal-control-hub/linux-workbench",
+                "present": false
+              },
+              {
+                "parent": "/home/alalapi/Temp/personal-control-hub",
+                "present": false
+              },
+              {
+                "parent": "/home/alalapi/Temp",
+                "present": false
+              },
+              {
+                "directory": true,
+                "head_present": false,
+                "identity": [
+                  66306,
+                  12718439,
+                  1000,
+                  493
+                ],
+                "parent": "/home/alalapi",
+                "present": true
+              },
+              {
+                "parent": "/home",
+                "present": false
+              },
+              {
+                "parent": "/",
+                "present": false
+              }
+            ],
+            "marker_found": false,
+            "project_root": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+            "project_root_keys": [
+              "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007"
+            ],
+            "repo_root": null,
+            "repo_root_keys": []
+          },
+          "enabled_project_layer_count": 0,
+          "layer_candidates": [
+            "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007/.codex"
+          ],
+          "native_layer_check_required": true,
+          "project_layers": [
+            {
+              "config_present": false,
+              "disabled_reason": "missing_trust",
+              "empty_directory_verified": true,
+              "enabled": false,
+              "exec_policy_present": false,
+              "folder": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007/.codex",
+              "hooks_config_present": false,
+              "hooks_folder": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007/.codex",
+              "identity": [
+                66306,
+                45772401,
+                1000,
+                493
+              ],
+              "root_checkout_hooks_override": null
+            }
+          ],
+          "trust": {
+            "lookup_keys": [
+              "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007"
+            ],
+            "matching_rows": [],
+            "selected": {
+              "selector": null,
+              "trust_level": null
+            }
+          },
+          "user_layer": "native HOME/config.toml separately observed"
+        },
+        "row_schema": {
+          "trust_level": {
+            "type": "str"
+          }
+        },
+        "type": "dict",
+        "unrelated_selectors_absolute_trust_only": true
+      },
+      "skills": {
+        "all_selectors_disabled_absolute": true,
+        "row_schema": {
+          "enabled": {
+            "type": "bool"
+          },
+          "path": {
+            "type": "str"
+          }
+        },
+        "type": "list"
+      }
+    },
+    "top_key_types": {
+      "agents": "dict",
+      "approval_policy": "str",
+      "approvals_reviewer": "str",
+      "desktop": "dict",
+      "features": "dict",
+      "marketplaces": "dict",
+      "mcp_servers": "dict",
+      "memories": "dict",
+      "model": "str",
+      "model_reasoning_effort": "str",
+      "plugins": "dict",
+      "projects": "dict",
+      "sandbox_mode": "str",
+      "service_tier": "str",
+      "skills": "dict"
+    },
+    "unrelated_selector_values_or_hashes_retained": false
+  },
+  "source": {
+    "docs/NEXT_ACTIONS.md": {
+      "identity": [
+        66306,
+        12345196,
+        10294,
+        1790982755806475132,
+        1790982755806475132
+      ],
+      "sha256": "4a5cea91842a95695f1ed9a8752edd7e2cdd683a8190a13349121d7e36fdf5e8"
+    },
+    "docs/PROJECT_STATE.md": {
+      "identity": [
+        66306,
+        12345199,
+        13646,
+        1790982755806475132,
+        1790982755806475132
+      ],
+      "sha256": "afcd3027fcace6120c4c436af804fcc3594f6ed889f5364386bacd676c1c2b7e"
+    },
+    "progress_ui.css": {
+      "identity": [
+        66306,
+        12341728,
+        143428,
+        1789185130000000000,
+        1790856611900440364
+      ],
+      "sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+    }
+  },
+  "sources": {
+    "callgraph": "data/workbench/csp-css-trial/full-metadata-callgraph-v11-7.json",
+    "callgraph_sha256": "cccb98eb764724453fda98bb4385aa0366a36294ec129902241493bd74ad636a",
+    "contract": "data/workbench/csp-css-trial/config-precheck-contract-v11-7.json",
+    "contract_sha256": "7991b8eaf1cb50e6250938e62b56d3f1bc74d22364ec9d8cdfc3a2343741809e",
+    "fixedgroupclosure": "data/workbench/csp-css-trial/config-precheck-sources-v11-4.json",
+    "inherited": {
+      "dto": "data/workbench/csp-css-trial/config-precheck-api-dto-v11-2.json",
+      "exact_loader_duration": "data/workbench/csp-css-trial/config-precheck-sources-v11-3.json",
+      "schemas": "data/workbench/csp-css-trial/config-precheck-sources-v11-1.json",
+      "wire_typed_derived": "data/workbench/csp-css-trial/config-precheck-sources-v11-2.json"
+    },
+    "layer_serializer": "data/workbench/csp-css-trial/config-precheck-layer-serialization-source-v11-6-r5.json",
+    "mcp_consumer_closure": "data/workbench/csp-css-trial/mcp-consumer-source-closure-v11-6-r6.json",
+    "protocol": "data/workbench/csp-css-trial/feature-catalog-source-closure-v11-7.json",
+    "protocol_sha256": "95872e17955ce713e29eb0b610048f96b2921f79a5dfc7f12b272ae8670ec38f",
+    "r2": "data/workbench/csp-css-trial/config-precheck-sources-v11-4-r2.json",
+    "r3": "data/workbench/csp-css-trial/config-precheck-sources-v11-4-r3.json"
+  },
+  "task_hash": "8350c389a14a60f2c13c36b66efc78e34cfc56682dc87d2733aed00ad91ea6de",
+  "trial": {
+    "directories": {
+      ".agents": [
+        66306,
+        45772554,
+        1000,
+        493
+      ],
+      ".aws": [
+        66306,
+        45772555,
+        1000,
+        493
+      ],
+      ".codex": [
+        66306,
+        45772401,
+        1000,
+        493
+      ],
+      ".git": [
+        66306,
+        45772425,
+        1000,
+        493
+      ]
+    },
+    "fingerprint": [
+      [
+        ".agents",
+        "directory"
+      ],
+      [
+        ".aws",
+        "directory"
+      ],
+      [
+        ".codex",
+        "directory"
+      ],
+      [
+        ".git",
+        "directory"
+      ],
+      [
+        "progress_ui.css",
+        "babb5bc2f53a92017df6042f4246e8b3c41ec803d4ba3b34bde188f70c286ac1"
+      ]
+    ],
+    "host_mounts": false
+  }
+}

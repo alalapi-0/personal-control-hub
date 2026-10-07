@@ -1,0 +1,39 @@
+{
+  "sha256": "12d3f7fb223f801b8a63db97fe03d3d7803c1b13adda2ea7da042f3e78c84ab5",
+  "identity": [
+    66306,
+    12090357,
+    4122,
+    1791359347398206632,
+    1791359347398206632
+  ],
+  "model": "gpt-6.1-sol",
+  "reasoning_effort": "xhigh",
+  "approval_policy": "never",
+  "sandbox_mode": "danger-full-access",
+  "mcp_names": [
+    "chrome-devtools",
+    "context7",
+    "github",
+    "node_repl",
+    "openaiDeveloperDocs",
+    "playwright"
+  ],
+  "features_selected": {
+    "memories": true,
+    "apps": null,
+    "plugins": null,
+    "remote_plugin": null,
+    "browser_use": null,
+    "multi_agent": null,
+    "goals": null
+  },
+  "permission_profile_names": [],
+  "secrets_read": false,
+  "root_changed_global_config": false,
+  "codex_version": "codex-cli 0.159.3",
+  "auth_status": {
+    "exit": 0,
+    "ChatGPT": true
+  }
+}

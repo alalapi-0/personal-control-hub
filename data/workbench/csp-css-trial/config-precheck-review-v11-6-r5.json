@@ -1,0 +1,11 @@
+{
+  "blocking": "unscopedMCPconsumer runtimeStatusnull contradictsdisabled fixture/contract; no nativeforr5",
+  "candidate_sha256": "89454f7a3d124f9455dd89dc644fdc79ac587301e5f688f2ef84e9ef76287e23",
+  "created_at": 1791381660.857981,
+  "decision": "FAIL",
+  "effect_diagnosis": "upstreamauth_manager.auth mayrefresh; frozencredential/statonlyscope insufficient",
+  "evidence_sha256": "552213cd59ab0cb17dc3aa36289e8dbc205487d6c80580f8b0d69bcbd399b559",
+  "judge": "/root/metadata_v11_6_r5_judge",
+  "layer_repair": "PASS sourcecanonical3/4keys+11negatives;38tests exit0",
+  "native_effects": 0
+}

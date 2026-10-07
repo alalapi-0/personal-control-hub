@@ -1,0 +1,110 @@
+{
+  "acceptance": [
+    "strict public layers/origins/DTO, 4layerprecedence and actualtyped finalconfig",
+    "opaque desktop exactrawforward +finaloriginal +expectedbuilderpreserves +fullfinalconfig equality; no ignore/reverse/shape leaks",
+    "other14groups+preciseMCPDuration+trust/layer+semantic exact",
+    "6MCP exactdisabled; no unknown/tools/resources/templates/capabilities/startup/authtrigger",
+    "2 feature snapshots exact152sourceorderedtemplates/schema; missing/duplicate/extra/unknown/invalidcursor/pagingFAIL; frozen14false/hosttrue both; otherenabled exactbeforeafter",
+    "remote/startupoff; unknown/contradictorynotice rejected",
+    "8 pre/postguards +closedexit0/notwall/expiry; all mandatory"
+  ],
+  "authentication_billing": "existing legal ChatGPT auth, no API billing switch or provider/model request",
+  "budget": "same native cumulative; reserve contract/candidate/runtimeJudge6000each +closure; remaining/costunknown; no reset",
+  "cumulative": {
+    "closed_rounds": 16,
+    "metadata_helpers": 4,
+    "model_turns": 1,
+    "resumes": 4,
+    "threads": 2
+  },
+  "effects_now": "OFFLINE ONLY NO AUTHORITY; conditional effects require exact freshJudge +Gov execution decision",
+  "failure": "any gate PARTIAL_BLOCKED/FAIL; retainpartialfacts/denominator; no autoretry/resume/model/diagnosticPASS",
+  "feature_source": "data/workbench/csp-css-trial/feature-catalog-source-closure-v11-6.json",
+  "feature_source_sha256": "b24366ad5a759e89013a91174093476860cde00a691d7d6f9628e420827724ab",
+  "frozen_disables": [
+    "apps",
+    "plugins",
+    "remote_plugin",
+    "browser_use",
+    "browser_use_external",
+    "browser_use_full_cdp_access",
+    "computer_use",
+    "in_app_browser",
+    "hooks",
+    "image_generation",
+    "multi_agent",
+    "multi_agent_v2",
+    "goals",
+    "memories"
+  ],
+  "frozen_model": {
+    "effort": "xhigh",
+    "model": "gpt-6.1-sol"
+  },
+  "governor": "/root/entry_governor",
+  "id": "HUB-LWB-2.3-CSP-FULL-METADATA-PRECHECK-GOV-v11.6",
+  "lane": "GOVERNED",
+  "objective": "single bounded full raw/typed/effective/capability metadata precheck; all gates samehelper; no diagnostic partial PASS",
+  "prerequisites": [
+    "v11.5-r3 exactfreshJudgePASS+GovAPPROVE (saved)",
+    "v11.6 contract and exact harness registration freshJudgePASS+Gov explicitonehelper authority",
+    "current source/trial/task/configsafeprojection/authmode/protection exact; previous4helperfail retained"
+  ],
+  "privacy": "no raworiginaldesktop/dynamic keys/responsebody/origins/privatehash or secret evidence; fixed facts and public feature names/nonsecretbooleans only; all privatecomparison memory",
+  "profile_arguments": [
+    "-c",
+    "default_permissions=\"hub_lwb_evidence_v11\"",
+    "-c",
+    "permissions.hub_lwb_evidence_v11.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"read\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+    "-c",
+    "permissions.hub_lwb_evidence_v11.network.enabled=false"
+  ],
+  "registered_servers": [
+    "chrome-devtools",
+    "context7",
+    "github",
+    "node_repl",
+    "openaiDeveloperDocs",
+    "playwright"
+  ],
+  "runtime_conditional": {
+    "authority_max_seconds": 900,
+    "config_read": {
+      "cwd": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+      "includeLayers": true
+    },
+    "feature_params": "threadIdNone/limit100/canonical numeric cursor, 2fullsnapshots combined<=8pages; A afterinitialize/drain; B afterconfig/MCP/drain/beforeclose",
+    "forbidden": [
+      "otherRPC",
+      "thread/start/read/resume",
+      "turn",
+      "command",
+      "provider",
+      "tool",
+      "TaskStorewrite",
+      "projectsource",
+      "Git",
+      "globalconfig",
+      "auth/credential",
+      "productionservice",
+      "Mac/otherproject"
+    ],
+    "helpers": 1,
+    "mcp_params": {
+      "detail": "toolsAndAuthOnly",
+      "limit": 100,
+      "threadId": null
+    },
+    "methods": [
+      "initialize",
+      "config/read",
+      "mcpServerStatus/list",
+      "experimentalFeature/list"
+    ],
+    "renewal": false,
+    "start_headroom_seconds": 150,
+    "wall_seconds": 120
+  },
+  "scope": "Hub owned offline harness/fixtures/tests/canonicalSTATEINDEX/source evidence; no other writers",
+  "status": "FROZEN_OFFLINE_ONLY_PENDING_FRESH_REVIEW"
+}

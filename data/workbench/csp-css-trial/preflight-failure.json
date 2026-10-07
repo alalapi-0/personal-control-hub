@@ -1,0 +1,196 @@
+{
+  "events": [
+    {
+      "data": {
+        "at": 1791357240.773332,
+        "grant_hash": "d116bbbc46ad678876f77e2e2a6437923d2efa5722fb58aa154f7673626ab21c",
+        "transport": "app_server_stdio",
+        "worker": {
+          "owner": "worker-d391c498315f0aae234795e95c1630b3",
+          "pid": 865650,
+          "start_ticks": "2648671"
+        }
+      },
+      "key": "dispatch-intent-worker-d391c498315f0aae234795e95c1630b3",
+      "received": 1791357240.774694,
+      "sequence": 1
+    },
+    {
+      "data": {
+        "pid": 866293,
+        "schema_hash": "65c6f1ec6c60c8a7ed4919e37530afadd7d7cb7bc519c48fc08ff1009f00c4de",
+        "start_ticks": "2648746",
+        "transport": "app_server_stdio"
+      },
+      "key": "stdio-child-worker-d391c498315f0aae234795e95c1630b3",
+      "received": 1791357240.8958344,
+      "sequence": 2
+    },
+    {
+      "data": {
+        "argv": [
+          "codex",
+          "app-server",
+          "--stdio",
+          "-c",
+          "mcp_servers.chrome-devtools.enabled=false",
+          "-c",
+          "mcp_servers.context7.enabled=false",
+          "-c",
+          "mcp_servers.github.enabled=false",
+          "-c",
+          "mcp_servers.node_repl.enabled=false",
+          "-c",
+          "mcp_servers.openaiDeveloperDocs.enabled=false",
+          "-c",
+          "mcp_servers.playwright.enabled=false",
+          "--disable",
+          "apps",
+          "--disable",
+          "plugins",
+          "--disable",
+          "remote_plugin",
+          "--disable",
+          "browser_use",
+          "--disable",
+          "browser_use_external",
+          "--disable",
+          "browser_use_full_cdp_access",
+          "--disable",
+          "computer_use",
+          "--disable",
+          "in_app_browser",
+          "--disable",
+          "hooks",
+          "--disable",
+          "image_generation",
+          "--disable",
+          "multi_agent",
+          "--disable",
+          "multi_agent_v2",
+          "--disable",
+          "goals",
+          "--disable",
+          "memories",
+          "-c",
+          "web_search=\"disabled\"",
+          "-c",
+          "default_permissions=\"hub_lwb_fixture_v1\"",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\"}",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.network.enabled=false"
+        ],
+        "disabled_configured_servers": [
+          "chrome-devtools",
+          "context7",
+          "github",
+          "node_repl",
+          "openaiDeveloperDocs",
+          "playwright"
+        ],
+        "disabled_features": {
+          "apps": false,
+          "browser_use": false,
+          "browser_use_external": false,
+          "browser_use_full_cdp_access": false,
+          "computer_use": false,
+          "goals": false,
+          "hooks": false,
+          "image_generation": false,
+          "in_app_browser": false,
+          "memories": false,
+          "multi_agent": false,
+          "multi_agent_v2": false,
+          "plugins": false,
+          "remote_plugin": false
+        },
+        "local_native_tool_host": true,
+        "mcp_servers": 0,
+        "permission_profile": "hub_lwb_fixture_v1",
+        "profile_argv": [
+          "-c",
+          "default_permissions=\"hub_lwb_fixture_v1\"",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\"}",
+          "-c",
+          "permissions.hub_lwb_fixture_v1.network.enabled=false"
+        ],
+        "remote_control_status": "disabled",
+        "source": "native loaded-thread feature and MCP status APIs",
+        "web_search_launch": "disabled"
+      },
+      "key": "capability-proof-worker-d391c498315f0aae234795e95c1630b3",
+      "received": 1791357243.5692172,
+      "sequence": 3
+    },
+    {
+      "data": {
+        "digest": "4a4337fb51352e8691d31feb092a9bcdb039f8bcbfcd081c7314642934530be9",
+        "method": "remoteControl/status/changed",
+        "phase": "before_turn_dispatch",
+        "source_emitted_ms": 1791357240893,
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "baseline-4a4337fb51352e8691d31feb092a9bcdb039f8bcbfcd081c7314642934530be9",
+      "received": 1791357243.572888,
+      "sequence": 4
+    },
+    {
+      "data": {
+        "digest": "58da37cb66da19d1067691c9cee8744e439614eda3ee45e2556bf3dba7458ac8",
+        "method": "thread/started",
+        "phase": "before_turn_dispatch",
+        "source_emitted_ms": 1791357243535,
+        "thread_id": null,
+        "turn_id": null
+      },
+      "key": "baseline-58da37cb66da19d1067691c9cee8744e439614eda3ee45e2556bf3dba7458ac8",
+      "received": 1791357243.5761487,
+      "sequence": 5
+    }
+  ],
+  "model_turns": 0,
+  "owned_adapter_closed": true,
+  "provider_status": null,
+  "result": {
+    "details": {},
+    "effects_rolled_back": false,
+    "error_class": "CSS_ISOLATION_UNVERIFIED",
+    "request_denials": [],
+    "stream_observation": {
+      "count": 0,
+      "methods": {},
+      "sha256_chain": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "source_css_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+  "source_effects": 0,
+  "status": "requires_reconcile",
+  "task_id": "csp-css-trial-20261007",
+  "thread_id": "01a11536-4647-7030-a9aa-8e397078d146",
+  "trial_fingerprint": [
+    [
+      ".agents",
+      "directory"
+    ],
+    [
+      ".aws",
+      "directory"
+    ],
+    [
+      ".codex",
+      "directory"
+    ],
+    [
+      ".git",
+      "directory"
+    ],
+    [
+      "progress_ui.css",
+      "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+    ]
+  ],
+  "turn_id": null
+}

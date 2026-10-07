@@ -1,0 +1,35 @@
+{
+  "binary_sha256": "8bf204b36a2f6dd0dab73aa2f639892e67ef9ac8befccb4a05b1496ebf25c479",
+  "binary_signature_verified": true,
+  "certificate_chain_rekor_signature_checked": false,
+  "public_signer_extensions": {
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.1, name=Unknown OID)>": "https://token.actions.githubusercontent.com",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.10, name=Unknown OID)>": "\f(01fc69f4026735edfdf6789820549727a4867b11",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.11, name=Unknown OID)>": "\f\rgithub-hosted",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.12, name=Unknown OID)>": "\f\u001fhttps://github.com/openai/codex",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.13, name=Unknown OID)>": "\f(01fc69f4026735edfdf6789820549727a4867b11",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.14, name=Unknown OID)>": "\f\u0017refs/tags/rust-v0.159.3",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.15, name=Unknown OID)>": "\f\t965415649",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.16, name=Unknown OID)>": "\f\u0019https://github.com/openai",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.17, name=Unknown OID)>": "\f\b14957082",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.18, name=Unknown OID)>": "\fZhttps://github.com/openai/codex/.github/workflows/rust-release.yml@refs/tags/rust-v0.159.3",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.19, name=Unknown OID)>": "\f(01fc69f4026735edfdf6789820549727a4867b11",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.2, name=Unknown OID)>": "push",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.20, name=Unknown OID)>": "\f\u0004push",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.21, name=Unknown OID)>": "\fChttps://github.com/openai/codex/actions/runs/36781548151/attempts/1",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.22, name=Unknown OID)>": "\f\u0006public",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.24, name=Unknown OID)>": "\f-repo:openai/codex:ref:refs/tags/rust-v0.159.3",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.3, name=Unknown OID)>": "01fc69f4026735edfdf6789820549727a4867b11",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.4, name=Unknown OID)>": "rust-release",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.5, name=Unknown OID)>": "openai/codex",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.6, name=Unknown OID)>": "refs/tags/rust-v0.159.3",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.8, name=Unknown OID)>": "\f+https://token.actions.githubusercontent.com",
+    "<ObjectIdentifier(oid=1.3.6.1.4.1.57264.1.9, name=Unknown OID)>": "\fZhttps://github.com/openai/codex/.github/workflows/rust-release.yml@refs/tags/rust-v0.159.3"
+  },
+  "public_signer_uris": [
+    "https://github.com/openai/codex/.github/workflows/rust-release.yml@refs/tags/rust-v0.159.3"
+  ],
+  "published_digest_matches_current_binary": true,
+  "publisher_binding": "HTTPS official OpenAI release asset and its signing certificate; no independentFulcio/Rekor chain verification claim",
+  "release_sigstore_sha256": "db0b167444d067a6e277f71cc05820ac14fca40669bd3aa988aadedfb28cff97"
+}

@@ -1,0 +1,9 @@
+{
+  "anchor": "Config281-315 Serialize/Deserialize, Option fields no skip_none, additional flatten;ConfigReadResponse402-407 camelCase/layers conditional",
+  "file": "data/workbench/csp-css-trial/public-source-v11-2/app-server-protocol__src__protocol__v2__config.rs",
+  "schema": "config-precheck-sources-v11-1.json exact ConfigReadParams/Response pins",
+  "sha256": "8187edb07de0259f5a96927ca69b749a7ba9049062bf2ef2eb1ff9c7d8696447",
+  "source_count": 12,
+  "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/src/protocol/v2/config.rs",
+  "version": "rust-v0.159.3"
+}

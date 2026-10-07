@@ -1,0 +1,31 @@
+{
+  "actual_status": "PARTIAL_BLOCKED",
+  "approved_candidate": "5749e7fa33c13f082d30fdf53d80b979aae6ca4031a9d547e09df0cf2e7ae791",
+  "approved_evidence": "e0d5f8cb624ecdab4726404b1d796da2c63f053b993c185b65f734e114ab8b0a",
+  "catalog": "A152orderedcomplete2pages; BNOT_RUN; MCPNOT_RUN; fullconfigurationNOT_RUN",
+  "contract": "HUB-LWB-2.3-CSP-FULL-METADATA-PRECHECK-GOV-v11.6-r4",
+  "cumulative": {
+    "closed_rounds": 16,
+    "metadata_helpers": 5,
+    "model_turns": 1,
+    "resumes": 4,
+    "threads": 2
+  },
+  "diagnosis": "publicConfigLayer config.rs329-334 skips disabledReason whenNone; candidateincorrectly requires4keys forallenabledlayers; fixturemirrorsincorrectnull shape; sourceboundrepairneeded; rawbodyunretained",
+  "failure": "CSS_PRECHECK_LAYER_STRUCTURE_REJECTED",
+  "guard_result": "all8preservation plusauthmode/schemaCleanup true; effect limits true; no violation;wallfalse",
+  "helper_exit": 0,
+  "helper_pid": 2158680,
+  "runtime_evidence_sha256": "6913e4a26059a834f2c886eace33d0371369d8a4e590d7bbe9893e345353d8d6",
+  "runtime_files": {
+    "data/workbench/csp-css-trial/config-precheck-authority-v11-6-r4.json": "4301e4e6cb8afcfcd78c80d1ef37497a55fd81c52c4e361d6dc4d6ddcf5f497f",
+    "data/workbench/csp-css-trial/config-precheck-governor-v11-6-r4.json": "40c0851f5b934859e47439efb8f4a60c29ea5a403f543b25349668ce05742da8",
+    "data/workbench/csp-css-trial/config-precheck-intent-v11-6-r4.json": "76292959b04b24d8e206fb3d5fa8ad5e66d522ca00eacba36bc96fc319475a6c",
+    "data/workbench/csp-css-trial/config-precheck-notification-v11-6-r4-1.json": "c5c31461bd01cf9d2b24675e91c97f9c4c6fab63f56b65815e1e7595124f5ecb",
+    "data/workbench/csp-css-trial/config-precheck-notification-v11-6-r4-2.json": "6c0d30307225b95617500e86c3517ecc61bc8fc44e5d31593d527560be626b34",
+    "data/workbench/csp-css-trial/config-precheck-registration-v11-6-r4.json": "3ceb60fd3b8ffc59a9601fa576b8572ac33ee5f2ce80757425e76643b2b1ef20",
+    "data/workbench/csp-css-trial/config-precheck-result-v11-6-r4.json": "7b0231387a6157ba5dc1f619af511c1c23c0f28ccb8836e6dd3fc664299aa915",
+    "data/workbench/csp-css-trial/config-precheck-review-v11-6-r4.json": "a3a41490fcc9346a3871b6251d98041e5910c9a318f768b110d4bbd2b6f4ef8b"
+  },
+  "source_pin": "protocol-v2__config.rs alreadyinpublicproof24pins"
+}

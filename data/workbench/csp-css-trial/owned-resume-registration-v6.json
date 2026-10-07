@@ -1,0 +1,50 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v6-OWNED-RESUME",
+  "candidate_sha256": "f96d3d423bbc9f943839e11548e6457d946d5ab9fa8e30dbdc5a5c31fab35ba4",
+  "files": [
+    [
+      "src/hub/css_trial.py",
+      "526fbde8ac5044ae3ed064d12ba17dcce490152448601588b4bf4f28c5212813"
+    ],
+    [
+      "src/hub/codex_adapter.py",
+      "ece156b3a292f3311459de9256393ff1ae0c8cfb9c059e6bd6c85885f398b9bb"
+    ],
+    [
+      "src/hub/task_store.py",
+      "7321adcf768cde5d0023b6cb908b1ca0e23c794c73f932a886ee47ed6df88ec6"
+    ],
+    [
+      "src/hub/task_worker.py",
+      "73b512806a2a32ac9c4ae44a7253e749c5056a58572a53945ed49ddb7c6d778b"
+    ],
+    [
+      "src/hub/css_read_diagnostic.py",
+      "836919f79fd7ee8460e88a794cae36a70b7f781da95518f9226ce0d71def6242"
+    ],
+    [
+      "scripts/hub_worker.py",
+      "dd4c3713dbe2c36f3e62cebc0d4fe7bc919588813ff7a9df8fb6bfa40054a1cc"
+    ],
+    [
+      "scripts/diagnose_css_trial_read.py",
+      "82b215c7e8b040f006b48779cdbb4bb074bc5f9553e66bb0a0447d2db6332387"
+    ],
+    [
+      "tests/test_hub_css_trial.py",
+      "1b963e807b7d73a3088056cf085fe79813fd0b78db1e9077d45b79b451d2dd99"
+    ],
+    [
+      "tests/test_hub_css_read_diagnostic.py",
+      "803f5a22f498ef5f3dfbb2c5c3af0d001879a018b88ac964f6fd3ac24a7a4e33"
+    ]
+  ],
+  "authority_sha256": "7c3a68ee126ff716c98fd9e1f40b6f41cfd59dd29e076f7e32e1153d9e9f6c88",
+  "checks": "20CSS+diagnostic exit0; source/writer checks actualPASS",
+  "phase": "before oneowned-load resume and sole model",
+  "native_threads": 2,
+  "resume_count": 0,
+  "model_turns": 0,
+  "source_effects": 0,
+  "protected_external_change": "38/39 unchanged; metric_sources.yaml registered to separate media_apps_storage_goal currentwriter; preserved, no restore"
+}

@@ -1,0 +1,370 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v4-DIAGNOSTIC",
+  "source_sha256": "826061d2374ab8faf74ad11a3e48170f5a00cf29a93119b560da198803dbe746",
+  "old_task": {
+    "id": "csp-css-trial-20261007",
+    "thread_id": "01a11536-4647-7030-a9aa-8e397078d146",
+    "turn_id": null
+  },
+  "auth_before": {
+    "source": "supported codex login status",
+    "mode": "ChatGPT",
+    "exit": 0,
+    "credential_bytes_read": 0
+  },
+  "config_identity_before": [
+    66306,
+    12073401,
+    4117,
+    1791356257936833499,
+    1791356257936833499
+  ],
+  "model_turns": 0,
+  "new_threads": 0,
+  "stages": {
+    "closed_before": {
+      "fingerprint": [
+        [
+          "progress_ui.css",
+          "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+        ]
+      ],
+      "empty_directories": []
+    },
+    "payload_before": {
+      "fingerprint": [
+        [
+          "progress_ui.css",
+          "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+        ]
+      ],
+      "empty_directories": []
+    },
+    "initialized": {
+      "fingerprint": [
+        [
+          "progress_ui.css",
+          "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+        ]
+      ],
+      "empty_directories": []
+    },
+    "before_command": {
+      "fingerprint": [
+        [
+          "progress_ui.css",
+          "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+        ]
+      ],
+      "empty_directories": []
+    },
+    "after_command": {
+      "fingerprint": [
+        [
+          "progress_ui.css",
+          "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+        ]
+      ],
+      "empty_directories": []
+    },
+    "closed_after": {
+      "fingerprint": [
+        [
+          "progress_ui.css",
+          "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+        ]
+      ],
+      "empty_directories": []
+    }
+  },
+  "canary_before": {
+    "sha256": "311ebbd772612a9d858318adbeeb8e9046e8ba4c36f48ea149eca6821fdd2b68",
+    "identity": [
+      66306,
+      45762316,
+      61,
+      1791358249062066676,
+      1791358249062066676
+    ]
+  },
+  "child": {
+    "pid": 923975,
+    "start_ticks": "2749574"
+  },
+  "capabilities_before": {
+    "scope": "process; schema threadId omitted",
+    "mcp_names": [
+      "chrome-devtools",
+      "context7",
+      "github",
+      "node_repl",
+      "openaiDeveloperDocs",
+      "playwright"
+    ],
+    "mcp_tools_resources_capabilities": 0,
+    "mcp_runtime_status": null,
+    "mcp_runtime_disabled_verified": false,
+    "limitation": "unscoped null runtime metadata; no loaded thread; future model must verify disabled",
+    "features": {
+      "apps": false,
+      "plugins": false,
+      "remote_plugin": false,
+      "browser_use": false,
+      "browser_use_external": false,
+      "browser_use_full_cdp_access": false,
+      "computer_use": false,
+      "in_app_browser": false,
+      "hooks": false,
+      "image_generation": false,
+      "multi_agent": false,
+      "multi_agent_v2": false,
+      "goals": false,
+      "memories": false
+    },
+    "remote": "disabled",
+    "web_search_launch": "disabled",
+    "launch_argv": [
+      "codex",
+      "app-server",
+      "--stdio",
+      "-c",
+      "mcp_servers.chrome-devtools.enabled=false",
+      "-c",
+      "mcp_servers.context7.enabled=false",
+      "-c",
+      "mcp_servers.github.enabled=false",
+      "-c",
+      "mcp_servers.node_repl.enabled=false",
+      "-c",
+      "mcp_servers.openaiDeveloperDocs.enabled=false",
+      "-c",
+      "mcp_servers.playwright.enabled=false",
+      "--disable",
+      "apps",
+      "--disable",
+      "plugins",
+      "--disable",
+      "remote_plugin",
+      "--disable",
+      "browser_use",
+      "--disable",
+      "browser_use_external",
+      "--disable",
+      "browser_use_full_cdp_access",
+      "--disable",
+      "computer_use",
+      "--disable",
+      "in_app_browser",
+      "--disable",
+      "hooks",
+      "--disable",
+      "image_generation",
+      "--disable",
+      "multi_agent",
+      "--disable",
+      "multi_agent_v2",
+      "--disable",
+      "goals",
+      "--disable",
+      "memories",
+      "-c",
+      "web_search=\"disabled\"",
+      "-c",
+      "default_permissions=\"hub_lwb_fixture_v1\"",
+      "-c",
+      "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+      "-c",
+      "permissions.hub_lwb_fixture_v1.network.enabled=false"
+    ]
+  },
+  "schemas": {
+    "ListMcpServerStatusResponse": "00c56c0faacbd4950b7f446f20b11b8a95456c5108de2f1e7366a1b2e60db8c6",
+    "ThreadTokenUsageUpdatedNotification": "aba4f6c7e4a19b2b842c08ee793b57000c07dafd57b922ad0d8e7c76609108c2",
+    "TurnStartResponse": "12c5151421bb061297c9790ff795a44aa4b9bdb91fbb68012dcf0a08cf4198b1",
+    "ThreadListResponse": "70d0fb1a5d747515459317281d9aa654e930122a174e8535c56de83b9f3b5dcf",
+    "ItemCompletedNotification": "d04b9153de38cd8302a2a418a44a65e8265d4c7586d46ea2cc801b594c6acf5b",
+    "ThreadResumeResponse": "d841a3fc57d72033f21bad4816a1a1fbf52c912d23d0881f5de7fcf86c1f9a6e",
+    "TurnInterruptResponse": "531de6be06fe979b5963f249bab82498a175e614bf65ac12fb2e849dfe60bcf1",
+    "ThreadReadResponse": "2af6b987644cfb23e6f408f3cfb29e73ad6255ba2294366d36d56aeabe3854da",
+    "ThreadListParams": "5daf371b2852c409d4405c95f79cddb2d92a1ee89da808b2c5112ef16a57432c",
+    "ThreadReadParams": "dfe040c6ac71d30795b8be3f3ff232e66f362a37f883b491e5d1ea367f470db4",
+    "ExperimentalFeatureListResponse": "4084a25f32333b3f58eb5e9803a5983739b57f945c4e7e4002e85851622ce597",
+    "InitializeParams": "b55124e7c0f36a1789396daa5578217a92be67f053903696236686e59f6f212e",
+    "ThreadResumeParams": "cc5bb3b25f82073d24af5b6c09e4804ac307467f8400ba5f263fa86f9f0349e6",
+    "CommandExecResponse": "dec52d187121e8dd48124b47a4a8d8428ef3717b98b9200345bb404f73b62c9d",
+    "InitializeResponse": "62ad689c2cb6379913c1d72749cfd8de5089d35760214123518eb92eef11acc9",
+    "TurnCompletedNotification": "016870158603b0f84bd9f8f65f927161c9fd5128e5ec632087616462dc44e085",
+    "ServerRequest": "3d7bc481f84dc042984a74420e65c5a8d3c423f37a91b7d5df2365c903a12ac6",
+    "TurnInterruptParams": "6dff382dae73d1dbc58406ed045605f647e7a49660e2540fbd2c6c24d60c5f2b",
+    "ExperimentalFeatureListParams": "4db92977e59fea4125710babb4cd2128dc2cebef8292e3619d0844089e7fc1f5",
+    "ThreadStartResponse": "92f5ddc37717b922de1dc0b0405e9a6d463f370554e2091610c6e595bc2616d4",
+    "ThreadStatusChangedNotification": "26f3c60c1b73f7fa2d31c74429cdc36f8746c76c33e3d314b3fb61d3661f05f6",
+    "TurnStartParams": "07771223642e1b61bd9aac0069fc0f98143a1c047724ca02c7ceb13653442738",
+    "ThreadStartParams": "80a40a7fac15b4bf70efb7f893fb353acc0a0d30c68f54aee4f01923deca85de",
+    "CommandExecParams": "fd034b4c85d7b6f466e30a3cbb73db86be1263aca3f81b89b547f14817dfb62e",
+    "TurnStartedNotification": "2e9a109ee549c1e266223304c9e0580075cda03feb65473363b124f18e9a3769",
+    "ListMcpServerStatusParams": "30b978c6502b37c9f0002aeba241f41c91d4c6adf0f92d89242b62ffde415a2d",
+    "ServerNotification": "28a42039eee1c3f45c92b6cf07111bacf6de2716f4d3365ff53ad65507fef00c"
+  },
+  "request": {
+    "command": [
+      "/usr/bin/python3",
+      "-c",
+      "import os,json,socket,hashlib\nfd=os.open('progress_ui.css',os.O_RDWR|os.O_NOFOLLOW)\nraw=os.read(fd,1048576);os.lseek(fd,0,0);assert os.write(fd,raw)==len(raw);os.fsync(fd);os.close(fd)\np={'trial_sha256':hashlib.sha256(raw).hexdigest(),'read_bytes':0,'denials':{}}\nfor category,path in {'canonical': '/home/alalapi/Projects/computer-study-plan/progress_ui.css', 'sibling': '/home/alalapi/Projects/personal-control-hub/data/workbench/csp-css-trial/before.css', 'tmp': '/tmp/hub-lwb-css-outside-csp-css-trial-20261007', 'credential': '/home/alalapi/.codex/auth.json', 'parent_canary': '/home/alalapi/Temp/personal-control-hub/linux-workbench/parent-canary-csp-css-trial-20261007'}.items():\n for mode,flags in [('read',os.O_RDONLY),('write',os.O_WRONLY)]:\n  try:\n   fd=os.open(path,flags|os.O_NOFOLLOW);os.close(fd);p['denials'][category+'_'+mode]=0\n  except OSError as e:p['denials'][category+'_'+mode]=e.errno\ntry:\n fd=os.open('/home/alalapi/Temp/personal-control-hub/linux-workbench',os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW);os.close(fd);p['parent_open_errno']=0\nexcept OSError as e:p['parent_open_errno']=e.errno\np['parent_file_write_errno']=p['denials']['parent_canary_write']\ntry:\n names=os.listdir('/home/alalapi/Temp/personal-control-hub/linux-workbench');p['parent_enumeration']={'errno':0,'unexpected_count':len([n for n in names if n!='csp-css-trial-20261007']),'names_sha256':hashlib.sha256(json.dumps(sorted(names)).encode()).hexdigest()}\nexcept OSError as e:p['parent_enumeration']={'errno':e.errno,'unexpected_count':0,'names_sha256':None}\ntry:\n os.mkdir('/home/alalapi/Temp/personal-control-hub/linux-workbench/deny-parent-write-csp-css-trial-20261007');p['parent_write_errno']=0\nexcept OSError as e:p['parent_write_errno']=e.errno\ntry:\n s=socket.socket();s.close();p['network_errno']=0\nexcept OSError as e:p['network_errno']=e.errno\nprint(json.dumps(p,sort_keys=True))\n"
+    ],
+    "cwd": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+    "permissionProfile": "hub_lwb_fixture_v1",
+    "timeoutMs": 5000,
+    "outputBytesCap": 4096
+  },
+  "result": {
+    "exit_code": 0,
+    "stdout_sha256": "7fe3579fd51a425f783ae55b213acdab45a6754940d0630668b6fb8b72e7ec59",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_bytes": 509,
+    "stderr_bytes": 0,
+    "proof": {
+      "denials": {
+        "canonical_read": 2,
+        "canonical_write": 2,
+        "credential_read": 2,
+        "credential_write": 2,
+        "parent_canary_read": 2,
+        "parent_canary_write": 2,
+        "sibling_read": 2,
+        "sibling_write": 2,
+        "tmp_read": 13,
+        "tmp_write": 13
+      },
+      "network_errno": 1,
+      "parent_enumeration": {
+        "errno": 13,
+        "names_sha256": null,
+        "unexpected_count": 0
+      },
+      "parent_file_write_errno": 2,
+      "parent_open_errno": 13,
+      "parent_write_errno": 30,
+      "read_bytes": 0,
+      "trial_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+    },
+    "stderr_classes": []
+  },
+  "capabilities_after": {
+    "scope": "process; schema threadId omitted",
+    "mcp_names": [
+      "chrome-devtools",
+      "context7",
+      "github",
+      "node_repl",
+      "openaiDeveloperDocs",
+      "playwright"
+    ],
+    "mcp_tools_resources_capabilities": 0,
+    "mcp_runtime_status": null,
+    "mcp_runtime_disabled_verified": false,
+    "limitation": "unscoped null runtime metadata; no loaded thread; future model must verify disabled",
+    "features": {
+      "apps": false,
+      "plugins": false,
+      "remote_plugin": false,
+      "browser_use": false,
+      "browser_use_external": false,
+      "browser_use_full_cdp_access": false,
+      "computer_use": false,
+      "in_app_browser": false,
+      "hooks": false,
+      "image_generation": false,
+      "multi_agent": false,
+      "multi_agent_v2": false,
+      "goals": false,
+      "memories": false
+    },
+    "remote": "disabled",
+    "web_search_launch": "disabled",
+    "launch_argv": [
+      "codex",
+      "app-server",
+      "--stdio",
+      "-c",
+      "mcp_servers.chrome-devtools.enabled=false",
+      "-c",
+      "mcp_servers.context7.enabled=false",
+      "-c",
+      "mcp_servers.github.enabled=false",
+      "-c",
+      "mcp_servers.node_repl.enabled=false",
+      "-c",
+      "mcp_servers.openaiDeveloperDocs.enabled=false",
+      "-c",
+      "mcp_servers.playwright.enabled=false",
+      "--disable",
+      "apps",
+      "--disable",
+      "plugins",
+      "--disable",
+      "remote_plugin",
+      "--disable",
+      "browser_use",
+      "--disable",
+      "browser_use_external",
+      "--disable",
+      "browser_use_full_cdp_access",
+      "--disable",
+      "computer_use",
+      "--disable",
+      "in_app_browser",
+      "--disable",
+      "hooks",
+      "--disable",
+      "image_generation",
+      "--disable",
+      "multi_agent",
+      "--disable",
+      "multi_agent_v2",
+      "--disable",
+      "goals",
+      "--disable",
+      "memories",
+      "-c",
+      "web_search=\"disabled\"",
+      "-c",
+      "default_permissions=\"hub_lwb_fixture_v1\"",
+      "-c",
+      "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+      "-c",
+      "permissions.hub_lwb_fixture_v1.network.enabled=false"
+    ]
+  },
+  "adapter_closed": true,
+  "canary_after": {
+    "sha256": "311ebbd772612a9d858318adbeeb8e9046e8ba4c36f48ea149eca6821fdd2b68",
+    "identity": [
+      66306,
+      45762316,
+      61,
+      1791358249062066676,
+      1791358249062066676
+    ]
+  },
+  "canary_unchanged": true,
+  "auth_after": {
+    "source": "supported codex login status",
+    "mode": "ChatGPT",
+    "exit": 0,
+    "credential_bytes_read": 0
+  },
+  "config_identity_after": [
+    66306,
+    12073401,
+    4117,
+    1791356257936833499,
+    1791356257936833499
+  ],
+  "source_check_after": "verified14source_3preimages_and_pins",
+  "source_css_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+  "trial_css_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+  "command_dispatched": true,
+  "parent_write_effect": false,
+  "owned_canary_cleanup": true
+}

@@ -1,0 +1,15 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-CONFIG-PRECHECK-REPAIR-GOV-v11.2",
+  "governor": {
+    "decision": "REQUEST_REPAIR",
+    "identity": "/root/entry_governor",
+    "scope": "exactnode_repl startup_timeout_sec float represented integer1..120 equal privateoriginalint+semanticpin; offlineonly"
+  },
+  "judge": {
+    "decision": "FAIL",
+    "identity": "/root/config_precheck_runtime_v11_2_judge",
+    "scope": "runtime7/candidate84pins exact; wire4and8preservation valid; no fullmetadataPASS; sourcecoercion not yet provedactual"
+  },
+  "native_authority_consumed": true,
+  "runtime_evidence_sha256": "24b1fdbae4ed055784111f52033d7faac16844d525c6f7240bfcafdb3f5be1c2"
+}

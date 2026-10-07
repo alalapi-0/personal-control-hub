@@ -1,0 +1,55 @@
+{
+  "auth_metadata_unchanged": true,
+  "closed": true,
+  "contract": "HUB-LWB-2.3-CSP-CONFIG-PRECHECK-REPAIR-GOV-v11.3",
+  "error": "CSS_PROCESS_SEMANTIC_STRUCTURE_REJECTED",
+  "exit": 0,
+  "expiry_at_close": true,
+  "final_mcp_startup_seen": false,
+  "final_notice_state": true,
+  "final_remote_control_status": "disabled",
+  "global_config_preserved": true,
+  "layer_shape": {
+    "array_present": true,
+    "count": 4,
+    "names": [
+      "sessionFlags",
+      "project",
+      "user",
+      "system"
+    ]
+  },
+  "methods": [
+    {
+      "method": "initialize",
+      "unscoped": true
+    },
+    {
+      "method": "config/read",
+      "unscoped": true
+    }
+  ],
+  "model_turns": 0,
+  "notifications": [
+    {
+      "body_retained": false,
+      "category": "schema_startup_metadata",
+      "method": "configWarning",
+      "thread_id": null
+    },
+    {
+      "body_retained": false,
+      "category": "schema_startup_metadata",
+      "method": "remoteControl/status/changed",
+      "thread_id": null
+    }
+  ],
+  "pid": 1936795,
+  "resumes": 0,
+  "source3_unchanged": true,
+  "status": "PARTIAL_BLOCKED",
+  "task_row_unchanged": true,
+  "threads": 0,
+  "trial_css_four_dirs_unchanged": true,
+  "wall_exceeded": false
+}

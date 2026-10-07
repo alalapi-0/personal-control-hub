@@ -1,0 +1,161 @@
+{
+  "canonical_files_unchanged": true,
+  "closed": true,
+  "inputs": {
+    "after": {
+      "business_data": "readonly fixture",
+      "css_sha256": "babb5bc2f53a92017df6042f4246e8b3c41ec803d4ba3b34bde188f70c286ac1",
+      "execution_allowed": false,
+      "files": {
+        "content/courses/linux-foundations/course.json": "8a9965e88e9054d1792e66002bfde275836b730532d7ae3c21f98cab4ca0430e",
+        "plans/linux/README.md": "540efc06da1a36eb01060c353f19ef36996739b5cc95e9ae98d78b5b6f82c846",
+        "progress.html": "ee3ce00a14d9f839f93cd2eedb1b836cc77b22e496984bf9494a312b12587ae6",
+        "progress.json": "e6fc6c4f5555f5de109f3f8ffb52b6c27edf4432ea281c8a3a4e602bdbfaddad",
+        "progress_data.js": "1c8ec9b159213dafb701147d27f15c7227893bc3e870473e76ffc8af41feea2d",
+        "progress_ui.css": "babb5bc2f53a92017df6042f4246e8b3c41ec803d4ba3b34bde188f70c286ac1",
+        "progress_ui.js": "2c4f99e0ab1cac0bedfddd6aef744bbccd2b4d98a7a4ff4c72f4738b848267cf",
+        "rounds/round_00/final/command_cheatsheet.md": "1189a24d1a88527c418792e086d15e438c0aba723eced68d9eb9ffd5d05ea6eb",
+        "rounds/round_00/week1/notes.md": "f8606c5cd3c1546a6e76c2eb028fa3c22a9c0e5b2c32f5652f7c3f9fbfe50d59",
+        "rounds/round_01/final/command_cheatsheet.md": "66fdc9e542cbca2aae3ed9a26efab5bcbe9acd6a36701cdfe585f393de8cb5ad",
+        "rounds/round_02/final/command_cheatsheet.md": "a371966d2ec0fdce037db650e8f1bf9add451b9730a069a689e77197a0097954",
+        "rounds/round_06/final/linux_automation_cheatsheet.md": "7a833ca3b1b500db8e77a3aa9f161c98d74c434150bd34ec01c1041a2d81cdbc",
+        "rounds_data.js": "be71e983d376d24b7316e4505a04463bca033532f4ea39f8acdded6db9a88aae",
+        "tests/ui/fixture_server.py": "426e9bed4e23776f7c03576ab63f72fddc24623f5ddfbb4c581950d0487bd5c8"
+      },
+      "origin": "http://127.0.0.1:40545",
+      "render_decoration": "Codex 试验新版 · 未写入原项目 · unpromoted trial — post-capability blocked"
+    },
+    "before": {
+      "business_data": "readonly fixture",
+      "css_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+      "execution_allowed": false,
+      "files": {
+        "content/courses/linux-foundations/course.json": "8a9965e88e9054d1792e66002bfde275836b730532d7ae3c21f98cab4ca0430e",
+        "plans/linux/README.md": "540efc06da1a36eb01060c353f19ef36996739b5cc95e9ae98d78b5b6f82c846",
+        "progress.html": "ee3ce00a14d9f839f93cd2eedb1b836cc77b22e496984bf9494a312b12587ae6",
+        "progress.json": "e6fc6c4f5555f5de109f3f8ffb52b6c27edf4432ea281c8a3a4e602bdbfaddad",
+        "progress_data.js": "1c8ec9b159213dafb701147d27f15c7227893bc3e870473e76ffc8af41feea2d",
+        "progress_ui.css": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+        "progress_ui.js": "2c4f99e0ab1cac0bedfddd6aef744bbccd2b4d98a7a4ff4c72f4738b848267cf",
+        "rounds/round_00/final/command_cheatsheet.md": "1189a24d1a88527c418792e086d15e438c0aba723eced68d9eb9ffd5d05ea6eb",
+        "rounds/round_00/week1/notes.md": "f8606c5cd3c1546a6e76c2eb028fa3c22a9c0e5b2c32f5652f7c3f9fbfe50d59",
+        "rounds/round_01/final/command_cheatsheet.md": "66fdc9e542cbca2aae3ed9a26efab5bcbe9acd6a36701cdfe585f393de8cb5ad",
+        "rounds/round_02/final/command_cheatsheet.md": "a371966d2ec0fdce037db650e8f1bf9add451b9730a069a689e77197a0097954",
+        "rounds/round_06/final/linux_automation_cheatsheet.md": "7a833ca3b1b500db8e77a3aa9f161c98d74c434150bd34ec01c1041a2d81cdbc",
+        "rounds_data.js": "be71e983d376d24b7316e4505a04463bca033532f4ea39f8acdded6db9a88aae",
+        "tests/ui/fixture_server.py": "426e9bed4e23776f7c03576ab63f72fddc24623f5ddfbb4c581950d0487bd5c8"
+      },
+      "origin": "http://127.0.0.1:35399",
+      "render_decoration": "旧版 · 未写入原项目 · unpromoted trial — post-capability blocked"
+    }
+  },
+  "model_turns": 0,
+  "native_effects": 0,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/progress.html",
+      "status": 200,
+      "variant": "before"
+    },
+    {
+      "method": "GET",
+      "path": "/progress_data.js",
+      "status": 200,
+      "variant": "before"
+    },
+    {
+      "method": "GET",
+      "path": "/progress_ui.css",
+      "status": 200,
+      "variant": "before"
+    },
+    {
+      "method": "GET",
+      "path": "/progress_ui.js",
+      "status": 200,
+      "variant": "before"
+    },
+    {
+      "method": "GET",
+      "path": "/rounds_data.js",
+      "status": 200,
+      "variant": "before"
+    },
+    {
+      "method": "GET",
+      "path": "/rounds/round_02/final/command_cheatsheet.md",
+      "status": 200,
+      "variant": "before"
+    },
+    {
+      "method": "GET",
+      "path": "/rounds/round_06/final/linux_automation_cheatsheet.md",
+      "status": 200,
+      "variant": "before"
+    },
+    {
+      "method": "GET",
+      "path": "/rounds/round_00/final/command_cheatsheet.md",
+      "status": 200,
+      "variant": "before"
+    },
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "status": 200,
+      "variant": "before"
+    },
+    {
+      "method": "GET",
+      "path": "/plans/linux/README.md",
+      "status": 200,
+      "variant": "before"
+    },
+    {
+      "method": "GET",
+      "path": "/rounds/round_01/final/command_cheatsheet.md",
+      "status": 200,
+      "variant": "before"
+    },
+    {
+      "method": "GET",
+      "path": "/api/events",
+      "status": 200,
+      "variant": "before"
+    },
+    {
+      "method": "GET",
+      "path": "/progress.json",
+      "status": 200,
+      "variant": "before"
+    },
+    {
+      "method": "GET",
+      "path": "/api/feedback",
+      "status": 200,
+      "variant": "before"
+    },
+    {
+      "method": "GET",
+      "path": "/rounds/round_00/week1/notes.md",
+      "status": 200,
+      "variant": "before"
+    },
+    {
+      "method": "GET",
+      "path": "/api/saves",
+      "status": 200,
+      "variant": "before"
+    },
+    {
+      "method": "GET",
+      "path": "/api/terminal",
+      "status": 200,
+      "variant": "before"
+    }
+  ],
+  "schema": 1,
+  "scope": "unpromoted old/trial readonly captures only",
+  "source_writes": 0
+}

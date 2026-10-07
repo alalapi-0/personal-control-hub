@@ -1,0 +1,112 @@
+{
+  "MCP_METADATA_EFFECT_UNPROVEN": true,
+  "anchors": {
+    "disabled_startup": [
+      "mcp-mod.rs:497–566 snapshot/config+auth+constructor",
+      "connection_manager.rs:265–317 collectsdisabled, startup looponly enabled;782–836 emptyjoin/txNone",
+      "trusted_access.rs:122–136 auth_managerNone returnsNone",
+      "elicitation.rs:235–250 pure managernew",
+      "model-provider-auth.rs:307–343 authcachedproviderobject; no invocation",
+      "login-auth-manager.rs:580–609/703–715 cachedtokenclone only forproviderfactory"
+    ],
+    "dispatch_null_runtime": [
+      "mcp_processor.rs:246–325 threadIdNone branch/no loadedthread;369–407 None runtimeStatusserialization, 6sortedrows"
+    ],
+    "empty_inventory": [
+      "connection_manager.rs:1034–1080 emptyself.servers ->no cap/info",
+      "tool_catalog.rs:186–243 emptyservers no tool calls",
+      "mcp-mod.rs:792–861 tools/infofromemptyManager/resources/templates skippedToolsAndAuthOnly",
+      "auth.rs:197–256 disabledreturnsUnsupported beforeMCPauthlookup",
+      "mcp_processor.rs:397–407 defaults maps and Unsupported"
+    ],
+    "global_plugins": [
+      "app-server-extensions.rs:67–109 installedcontributors",
+      "extension-api-mcp.rs global context/thread_storeNone",
+      "ext-plugin.rs:118–153 earlythreadstoreNone forglobal",
+      "ext-mcp-lib.rs:40–58 Appsfalse removeshostedserver",
+      "core-plugins-manager.rs:792–795 Pluginsfalse defaultempty"
+    ],
+    "six_configured": [
+      "config_manager.rs:189–199 +429–469 immutablecli+currentconfig reload",
+      "core-mcp.rs:143–155 globalHostOnly;329–371 Plugins/Appsdisabledcatalog",
+      "core-config-mod.rs:1708–1720 pluginflags;1761–1841 configuredserverregistrations+appsfeature",
+      "catalog.rs:624–629 allconfiguredservers incldisabled",
+      "server.rs:51–89 immutableconfig.clone/enabledbool"
+    ],
+    "upstream_auth_refresh": [
+      "mcp_processor.rs:299 auth_manager.auth BEFOREdisabledauthcheck",
+      "login-auth-manager.rs:2393–2406 proactive refresh;3004–3026 JWT<=5min or8days",
+      "login-auth-manager.rs:2848–2932 guardedaccountreload ->refresh_and_persist",
+      "login-auth-manager.rs:1626–1648 OAuthClient.refresh;3090–3109 persist/reload",
+      "login-oauth-client.rs:76–107 refresh grant ->HTTPPOST",
+      "login-auth-manager.rs:1598–1622 storage.save refreshedtoken"
+    ]
+  },
+  "configuration_disabled_source": "PROVEN_SOURCE_CONDITIONED sixenabledfalse/AppsPluginsfalse/globalcontext",
+  "configuration_names": [
+    "chrome-devtools",
+    "context7",
+    "github",
+    "node_repl",
+    "openaiDeveloperDocs",
+    "playwright"
+  ],
+  "disabled_MCP_startup_auth_tools_source": "PROVEN_SOURCE_CONDITIONED, excludes upstreamChatGPTauth_manager.auth()",
+  "effects_this_record": "publicHTTPsourcefetch +ownedsource/evidenceonly; no nativehelper/Codex/auth/config/source/task/Git",
+  "expected_mcp_if_later_authorized": {
+    "authStatus": "unsupported",
+    "pluginId": null,
+    "resourceTemplates": [],
+    "resources": [],
+    "rows": 6,
+    "runtimeStatus": null,
+    "serverCapabilities": null,
+    "serverInfo": null,
+    "tools": {},
+    "toolsError": null
+  },
+  "mcp_status_rpc_count": 0,
+  "runtime_mcp_fields": "NOT_RUN/BLOCKED; sourceisnotruntime",
+  "safe_successor_methods": [
+    "initialize",
+    "config/read",
+    "experimentalFeature/list"
+  ],
+  "source_commit": "01fc69f4026735edfdf6789820549727a4867b11",
+  "source_tag": "rust-v0.159.3",
+  "sources": {
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/app-server-extensions.rs": "e097740f3c33cf84456283ea59a4409e48e10c00d61937604e9fe6474e3ef518",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/app-server-lib.rs": "720bec82a5f8eaf1580a0b56bc52852cc39c3f1406406cb8d06de44a32e401da",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/auth.rs": "911b2ad4c66c765c73fdafec5f4198c1cbddaf1790477e438f190dd34c24382d",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/catalog.rs": "989b8dd1d7bc89786dee7273e9ae10599a4c54ef90b431058a74ff63dd2a6283",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/config_manager.rs": "9aab02f8480f984ed1421293cd6294d86b044b9f3cc01dc424ac5a92d33c084c",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/connection_manager.rs": "88ffc14d95837a4f905b6e47721121a3d47246f4ca95fecb9142035687c40dfe",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/core-config-mod.rs": "df6d6871a35a9e365e36beb3d388c2c39cae59d95bd84834321c8501390ec397",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/core-mcp.rs": "07cca9bffde5ded960a0cc625265d58ac5e79626dedaf579ecec4e38023656f5",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/core-plugins-lib.rs": "d1d325a67cc9d9eaf7e7e8ea166d1572f0ae1edd2f5c41cf98cd5470dc274681",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/core-plugins-manager.rs": "381ce90509b4f40341669fa01a637451716993cd05fcf7b719e1898743700d9c",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/elicitation.rs": "fba98e941cd330ac0de663cbc52f5d12b02e320330284667382eca12f31074f6",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/ext-mcp-lib.rs": "090e5e13a2c06a4b001a69e5444fd8b676ddcd608a5d40fe7e0937498482d6d2",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/ext-plugin-contributor.rs": "de01561998da9d28a2b8ce3e9b06db706bac9402d2d0a6e01c9a1fab5ac015f5",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/ext-plugin.rs": "8ccd3fe8455987b7fda641f7a82c9d86005c98b055e935d212cd6154ac5e2371",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/extension-api-contributors.rs": "03216597134ac2e725d8ccb535447c27c9ebe2ac3a879a4eabd103c3c92cc8eb",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/extension-api-lib.rs": "62d040d1f8e428dd93e65d614d4655d9fdaa545354cc78f63b5a30347aa967e3",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/extension-api-mcp.rs": "9798401ada6bd1a5402e96f3ce3c0d13e095f50f0a1d8e86ddd3b9fa0fd30815",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/login-auth-manager.rs": "01cb49b1cca566dddc47def60b52848da0717c7de6a33d8b7160b6fc4cafd881",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/login-auth-mod.rs": "5d72ae39f74e2ed944b13bab4dbaab03d5e0ae1a5ec908d14cf4513606fe7b83",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/login-oauth-client.rs": "dd68af96c58415d85521debb6136ebf1ed1f86658a903af4144a3dda6d71ccdd",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/mcp-lib.rs": "5a6b8da293471bf824625b8d85db70a991dab77468c0ad42f9028e8873354f6f",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/mcp-mod.rs": "3ad76e5dff1a60e597ea5a35270c2301d68654ec9d28ce07bcceb4fbd118ad1b",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/mcp_processor.rs": "79823ea342ceb18927f4046920c8f647cea33f8cf3ae9b3621f1ad0f1062cff5",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/model-provider-auth.rs": "1c1042b33df733ffb583d19bd3102c8511ab37b9e5e8cd91a673103321f249d8",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/model-provider-lib.rs": "0ec8bc9a91e752099602042e33152e3a6c1477d2ca757ab54cb1489a5a94d1f2",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/runtime.rs": "2511fdad728c211a6b10fb76a32f6c27cd1f4c4989d0b82f6046b8e4d65b97ff",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/server.rs": "d2f9d884db8e1e8639a719b0fe1029b7bb877cb59b716e8bc8e0b19de267d47b",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/status.rs": "3d689f4cdb1f45a83cab0e23073fbd96d4a6253a091ee132bf1fa82d10a33c4a",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/thread_manager.rs": "4199282a0a7a566b4f6cce8a65be0563539f6ac15ae1ead515a371c7a7f21685",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/tool_catalog.rs": "749ba9975ba5c3821d003df1c20d17042f386cdfbd2c66a72c9de15e6652dd9c",
+    "data/workbench/csp-css-trial/public-source-v11-6-mcp/trusted_access.rs": "9349f480faa0f3594b03bad68da6f2eb6582a1122c134a0983b548eff03a3463"
+  },
+  "target": "SAFE_CONFIG_FEATURE_ONLY; not fullmetadataacceptance",
+  "upstream_auth_refresh": "may legitproviderrequest+tokenwrite; no currentpermission; no credentials values inspected/copied; cannotproveglobalnoauth effects"
+}

@@ -86,6 +86,28 @@ class DesignServiceTests(unittest.TestCase):
         )
         self.revision = state["revision"]
 
+    def test_readonly_snapshot_rejects_design_decisions_without_store_write(self):
+        candidate = with_content_hash({**self.candidate, 'id':'fixture-readonly-snapshot',
+            'purpose':'read_only_snapshot','decision_eligible':False,'execution_allowed':False})
+        self.append(candidate,'fixture-readonly-fact')
+        command = self.decision(candidate={k:candidate[k] for k in ('id','revision','content_hash')},
+            expected_revision=self.revision)
+        before = self.store.path.read_bytes()
+        with self.assertRaises(ServiceError) as error:
+            self.service.decide(command,owner_action=OwnerAction(fixture=True))
+        self.assertEqual(error.exception.code,'SNAPSHOT_DECISION_DISABLED')
+        self.assertEqual(self.store.path.read_bytes(),before)
+
+    def test_readonly_capture_path_allowance_does_not_admit_other_workbench_files(self):
+        for name in ['csp-preview-desktop.jpg','csp-preview-mobile-v2.jpg']:
+            p = self.root/'docs/reports/linux-workbench'/name
+            p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(b'owned capture')
+            self.assertEqual(self.service._read_path(p.relative_to(self.root),limit=100)[0],b'owned capture')
+        denied=p.with_name('workbench-fixture.json');denied.write_bytes(b'protected')
+        with self.assertRaises(ServiceError):self.service._read_path(denied.relative_to(self.root),limit=100)
+        p.unlink();p.symlink_to(denied)
+        with self.assertRaises(ServiceError):self.service._read_path(p.relative_to(self.root),limit=100)
+
     def decision(self, **updates) -> dict:
         command = {
             "request_id": "fixture-service-decision",

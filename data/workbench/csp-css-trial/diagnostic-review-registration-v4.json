@@ -1,0 +1,56 @@
+{
+  "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v4-DIAGNOSTIC",
+  "candidate_files": {
+    "scripts/diagnose_css_trial.py": "826061d2374ab8faf74ad11a3e48170f5a00cf29a93119b560da198803dbe746",
+    "src/hub/css_trial.py": "e43975b37cef10f8fd07a426f16f7a83a24293cf9ba9c46fde3a3f0b4d24a666",
+    "src/hub/codex_adapter.py": "c2251b427393a59cdd5de8e4236dd7f0a7dbbd7a6405a8d99590573e2914b78e",
+    "tests/test_hub_css_trial.py": "6b1b0e7347369c188dcdad621543e577df6af255b3b17a92a8df2eea19f84801"
+  },
+  "evidence_files": {
+    "data/workbench/csp-css-trial/isolation-diagnostic-v4.json": "2b25aa51ddd3c3920265e8d229768496c4a64a6e1f404aa8d0f080a1d0f4275f",
+    "data/workbench/csp-css-trial/isolation-diagnostic-v3-r1.json": "5b15f0f28e6f84bf576815bd94e5907a72b89033366de72ae5f894d4f056493d",
+    "data/workbench/csp-css-trial/diagnostic-review-registration-v3.json": "bfbbad6e7b8a2c11813c85e2c94acec592062feb1d90310e2998d43670c923c9",
+    "data/workbench/csp-css-trial/diagnostic-judge-v3.json": "0b8e043ef464db1c0d10be9ce58154f0a8c32d0f200c3ce9562f4a458ca23f17",
+    "data/workbench/csp-css-trial/parent-deny-repair-proposal.json": "eca5241c50c69ad801962f339a1fc04a9a9228d74087d318dd291eb48c317183",
+    "data/workbench/csp-css-trial/preflight-failure.json": "07f9f30ff5b69c272eef6f3f7981c7f7b1a7b94551583926f167f516769cd184",
+    "data/workbench/csp-css-trial/thread-recovery-diagnostic.json": "37418aa83463cefcb523e22f9e06f452a19a152a54795979f0866a6ded5d991b"
+  },
+  "observed_result": "fixed_command_exit0_all_required_parent_and_core_denials_verified",
+  "source_effects": 0,
+  "model_turns": 0,
+  "new_threads_v4": 0,
+  "native_command_count_v3": 1,
+  "native_command_count_v4": 1,
+  "tests": {
+    "css_sample": "9PASS",
+    "hub_suite": "315PASS",
+    "syntax": "4files compiled in memory, no bytecode writes",
+    "diff": "exactowned tracked paths exit0"
+  },
+  "protected_objects": {
+    "count": 39,
+    "changed": []
+  },
+  "production_service": {
+    "active": "active",
+    "substate": "running",
+    "pid": 2783
+  },
+  "protected_design_sha256": "cb27ff3bd8806e87609873d452cce21710ac0112721bde960cea801fecc8ad65",
+  "source_targets": {
+    "progress_ui.css": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+    "docs/PROJECT_STATE.md": "afcd3027fcace6120c4c436af804fcc3594f6ed889f5364386bacd676c1c2b7e",
+    "docs/NEXT_ACTIONS.md": "4a5cea91842a95695f1ed9a8752edd7e2cdd683a8190a13349121d7e36fdf5e8"
+  },
+  "metadata_excluded": [
+    "STATE action/decision",
+    "INDEX decisions"
+  ],
+  "not_proven": [
+    "placeholder thread/start attribution",
+    "loaded-thread MCP disabled",
+    "replacement/model/source/promotion/Mac/human/M2"
+  ],
+  "candidate_sha256": "ed8dbf24c09a4c1d41319f9e2fb906feb1abd0ca07143e97841189d13e5bf2dc",
+  "evidence_sha256": "660ef4e07ce1a9492f938f69f930ca02c41cff2267687b629db9a8794617f3d8"
+}

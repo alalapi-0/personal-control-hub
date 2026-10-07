@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {attention, freshness, refreshable} from '../src/hub/web/connection_view.mjs';
+import {attention, freshness, refreshable, projectFacts, projectTasks} from '../src/hub/web/connection_view.mjs';
 
 function project(overrides = {}) {
   return {
@@ -111,4 +111,76 @@ test('helpers do not mutate the project DTO', () => {
   freshness(value);
   refreshable(value);
   assert.equal(JSON.stringify(value), before);
+});
+
+function authoritative() {
+  const values={'current_work.objective':'Repair preview','current_work.phase':'M2',
+    'current_work.round':'R4','current_work.status':'paused','current_work.completed':true,
+    'current_work.accepted':false,'current_work.next_action':'Owner reviews version C',
+    blockers:[{reason:'Choose version C',recovery_condition:'Owner replies',waiting_for_user:true}],
+    'verification.status':'checks_passed','delivery.status':'pending_delivery'};
+  const record={schema_version:'2.0',success:true,observed_at:'2026-10-07T00:00:00Z',
+    business:{},sources:[{id:'state',path:'STATE.yaml',sha256:'a'.repeat(64)}],field_provenance:{},unknown_fields:{}};
+  for(const [key,value] of Object.entries(values)){
+    const parts=key.split('.');let target=record.business;
+    for(const part of parts.slice(0,-1))target=target[part]??={};
+    target[parts.at(-1)]=value;
+    record.field_provenance[key]={source_ref:'state',sha256:'a'.repeat(64),selector:{path:parts}};
+  }
+  const p=project({freshness:{state:'fresh'},operational:{latest_attempt:record,last_success:record}});
+  p.business={state:'current',source_record:record,unknown_fields:{'progress.completed':'No declared count.'}};
+  return p;
+}
+const facts=(p,options)=>Object.fromEntries(projectFacts(p,options).flatMap(g=>g.fields.map(f=>[f.key,f])));
+
+test('paused, completed, unaccepted and undelivered facts stay independent with exact provenance',()=>{
+  const p=authoritative(),before=JSON.stringify(p),f=facts(p);
+  assert.equal(Object.keys(f).length,21);
+  assert.equal(f['current_work.status'].text,'已暂停');
+  assert.equal(f['current_work.completed'].text,'已完成');
+  assert.equal(f['current_work.accepted'].text,'尚未接受');
+  assert.equal(f['delivery.status'].text,'待交付');
+  assert.equal(f.blockers.text.includes('待用户决定：Choose version C'),true);
+  assert.deepEqual(f['current_work.round'].provenance,{path:'STATE.yaml',selector:{path:['current_work','round']},sha256:'a'.repeat(64),observed_at:'2026-10-07T00:00:00Z'});
+  assert.equal(f['progress.completed'].known,false);
+  assert.equal(f['progress.completed'].reason,'No declared count.');
+  assert.equal(JSON.stringify(p),before);
+});
+
+test('stale or newer failed read suppresses all current facts and labels only explicit history',()=>{
+  for(const state of ['stale','unknown']){
+    const p=authoritative();p.freshness.state=state;p.operational.latest_attempt={success:false};
+    assert.equal(Object.values(facts(p)).every(f=>!f.known),true);
+    assert.equal(facts(p,{history:true})['current_work.completed'].text,'已完成');
+  }
+});
+
+test('removed and denied projects expose no present or historical business fields',()=>{
+  for(const modify of [p=>p.freshness.local_presence='removed_local',p=>p.declared.connection_read_allowed=false]){
+    const p=authoritative();modify(p);
+    for(const history of [false,true])assert.equal(Object.values(facts(p,{history})).every(f=>!f.known),true);
+  }
+});
+
+test('missing, mismatched or unsupported field proof never becomes a displayed fact',()=>{
+  for(const modify of [p=>delete p.business.source_record.field_provenance['current_work.round'],
+    p=>p.business.source_record.field_provenance['current_work.round'].sha256='b'.repeat(64),
+    p=>p.business.source_record.schema_version='unsupported']){
+    const p=authoritative();modify(p);assert.equal(facts(p)['current_work.round'].known,false);
+  }
+});
+
+test('accepted work is distinct from publication and waiting requires source assertion',()=>{
+  const p=authoritative();p.business.source_record.business.current_work.accepted=true;
+  p.business.source_record.business.blockers[0].waiting_for_user=false;
+  const f=facts(p);
+  assert.equal(f['current_work.accepted'].text,'已接受');assert.equal(f['delivery.status'].text,'待交付');
+  assert.equal(f.blockers.text.includes('待用户决定'),false);
+});
+
+test('tasks filter exact project identity without deriving phase, progress or acceptance',()=>{
+  const p=authoritative(),before=JSON.stringify(p),running={id:'one',project:'a',status:'running'};
+  const tasks=[running,{id:'two',project:'aa',status:'checks_complete'}];
+  assert.deepEqual(projectTasks(tasks,'a'),[running]);assert.deepEqual(projectTasks(null,'a'),[]);
+  assert.equal(JSON.stringify(p),before);assert.equal(facts(p)['current_work.accepted'].text,'尚未接受');
 });

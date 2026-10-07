@@ -1,6 +1,6 @@
 # Hub 项目入口
 
-默认读AGENTS.md和STATE.yaml，合计≤8192 bytes。STATE保存当前执行事实，registry保存项目身份；不恢复无关任务。
+默认读AGENTS.md和STATE.yaml中当前任务的条目，默认上下文≤8192 bytes。STATE保存当前执行事实，registry保存项目身份；不恢复无关任务。
 
 当前版本以STATE.all_projects_governance为准。v3计划在docs/all_projects_governance_execution.md和data/roadmap/project_data_v3.yaml；只有所有者明确启动才切换，准备/阅读不启动实施。每轮只读当前阶段/项目，复用未变证据。
 

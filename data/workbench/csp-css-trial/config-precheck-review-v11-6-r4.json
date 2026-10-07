@@ -1,0 +1,31 @@
+{
+  "callgraph_sha256": "39125fd258c469feafc5fdc27c3ec92aaff13cab05a3667ea03c8a897e786dc5",
+  "candidate_decision": "PASS",
+  "candidate_sha256": "5749e7fa33c13f082d30fdf53d80b979aae6ca4031a9d547e09df0cf2e7ae791",
+  "checks": {
+    "AST5_whitespace": "PASS",
+    "files": "35code+174evidence exact",
+    "full_hub": "440passed exit0; preexistingSQLite ResourceWarnings retained",
+    "post209pins": "0mismatch",
+    "publicsource_current": "desktop+protocol snapshots PASS",
+    "scoped": "51passed87subtests exit0"
+  },
+  "contract": "HUB-LWB-2.3-CSP-FULL-METADATA-PRECHECK-GOV-v11.6-r4",
+  "contract_decision": "PASS",
+  "contract_sha256": "45119b30715357810ea150852a945941bd638ab60b8fa3980e18604aba8fe087",
+  "created_at": 1791380408.3350012,
+  "evidence_sha256": "e0d5f8cb624ecdab4726404b1d796da2c63f053b993c185b65f734e114ab8b0a",
+  "native_effects": "No Codex/auth/helper/mount or selectedHub/source/task/configGit mutation; supplemental broadpytest executed tempGitfixtures init/add underautocleanedTemporaryDirectory; not zeroGitspawns",
+  "reviewer": "/root/full_metadata_v11_6_r4_judge",
+  "source_message": "freshJudge FINAL_ANSWER PASS contract+candidate",
+  "supplemental_broad_pytest": {
+    "exit": 1,
+    "incidental_cache": "existing.pytest_cache may updated",
+    "missing_fixture_errors": 15,
+    "passed": 663,
+    "scope": "unregistered broad collection includes legacy/scripts; not candidate5files; no baseline weakening/fix claimed",
+    "status": "FAIL",
+    "temporary_effects": "ephemeral Gitfixture init/add; auto removed; unregisteredtests",
+    "unrelated_control_plane_failures": 9
+  }
+}

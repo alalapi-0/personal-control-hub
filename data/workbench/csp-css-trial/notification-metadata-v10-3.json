@@ -1,0 +1,73 @@
+{
+  "binding": {
+    "thread": {
+      "matches": false,
+      "not_applicable": true,
+      "present": false,
+      "wrong": false
+    },
+    "turn": {
+      "matches": false,
+      "not_applicable": true,
+      "present": false,
+      "wrong": false
+    }
+  },
+  "body_size_band": "1_256",
+  "digest_scope": "fixed schema-safe projection; body size excluded",
+  "method_category": "allowlisted_known",
+  "method_name": "account/updated",
+  "projection_digest": "ecb789d93166e6013abe878bfd54b802ebdedf8f10bc63c935d11b77cd670518",
+  "raw_body_or_credential_hash_retained": false,
+  "raw_body_retained": false,
+  "shape": {
+    "body_type": "object",
+    "fields": {
+      "account": {
+        "present": false,
+        "type": "absent"
+      },
+      "message": {
+        "present": false,
+        "type": "absent"
+      },
+      "rateLimits": {
+        "present": false,
+        "type": "absent"
+      },
+      "serverName": {
+        "present": false,
+        "type": "absent"
+      },
+      "status": {
+        "present": false,
+        "type": "absent"
+      },
+      "thread": {
+        "present": false,
+        "type": "absent"
+      },
+      "threadId": {
+        "present": false,
+        "type": "absent"
+      },
+      "tokenUsage": {
+        "present": false,
+        "type": "absent"
+      },
+      "turn": {
+        "present": false,
+        "type": "absent"
+      },
+      "turnId": {
+        "present": false,
+        "type": "absent"
+      },
+      "warning": {
+        "present": false,
+        "type": "absent"
+      }
+    }
+  },
+  "validation_outcome": "validated"
+}

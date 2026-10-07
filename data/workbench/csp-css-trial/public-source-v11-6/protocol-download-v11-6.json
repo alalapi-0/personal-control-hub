@@ -1,0 +1,82 @@
+[
+  {
+    "file": "data/workbench/csp-css-trial/public-source-v11-6/protocol-v2__mod.rs",
+    "sha256": "5f35011edb645ffac64553b170ed9f0ab0f4a5f04675a0d7e4b30ba5174ebe84",
+    "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/src/protocol/v2/mod.rs"
+  },
+  {
+    "file": "data/workbench/csp-css-trial/public-source-v11-6/protocol-v2__experimental_feature.rs",
+    "sha256": "b9c2ae2c29b8c3681ac4c72253134cfae542865c25cde93c17020e72d218ad0e",
+    "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/src/protocol/v2/experimental_feature.rs"
+  },
+  {
+    "file": "data/workbench/csp-css-trial/public-source-v11-6/protocol-v2__mcp.rs",
+    "sha256": "591ee11cc30e8d21a03317df2ed1742af19c1a91c066ecb0f7a186cc813f5739",
+    "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/src/protocol/v2/mcp.rs"
+  },
+  {
+    "file": "data/workbench/csp-css-trial/public-source-v11-6/protocol-v2__config.rs",
+    "sha256": "8187edb07de0259f5a96927ca69b749a7ba9049062bf2ef2eb1ff9c7d8696447",
+    "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/src/protocol/v2/config.rs"
+  },
+  {
+    "file": "data/workbench/csp-css-trial/public-source-v11-6/protocol-v1.rs",
+    "sha256": "e0642bd1bc7dbe5e24d508420471d705d5688efe8df3a8b40e3af22be55d7754",
+    "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/src/protocol/v1.rs"
+  },
+  {
+    "file": "data/workbench/csp-css-trial/public-source-v11-6/export.rs",
+    "sha256": "6ce42bcf551f038cbbce753b2921f0bacab1fd2285133bc71e2f8da3dfdc19f4",
+    "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/src/export.rs"
+  },
+  {
+    "file": "data/workbench/csp-css-trial/public-source-v11-6/precomputed_exports.rs",
+    "sha256": "661397f6329f7fac05e9d7ccfc7bceead266389d0975da7d1ef57544ee5aaa0c",
+    "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/src/precomputed_exports.rs"
+  },
+  {
+    "file": "data/workbench/csp-css-trial/public-source-v11-6/schema_fixtures.rs",
+    "sha256": "f3b449aac70fbb77158b74f09cf79924046b400c9d4299e909748b01a1e739bd",
+    "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/src/schema_fixtures.rs"
+  },
+  {
+    "file": "data/workbench/csp-css-trial/public-source-v11-6/InitializeParams.json",
+    "sha256": "b55124e7c0f36a1789396daa5578217a92be67f053903696236686e59f6f212e",
+    "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/schema/json/v1/InitializeParams.json"
+  },
+  {
+    "file": "data/workbench/csp-css-trial/public-source-v11-6/InitializeResponse.json",
+    "sha256": "62ad689c2cb6379913c1d72749cfd8de5089d35760214123518eb92eef11acc9",
+    "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/schema/json/v1/InitializeResponse.json"
+  },
+  {
+    "file": "data/workbench/csp-css-trial/public-source-v11-6/ConfigReadParams.json",
+    "sha256": "257c54a423b47c1d209ff1076765a1564d82322fd5161670fd489a2874de1bac",
+    "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/schema/json/v2/ConfigReadParams.json"
+  },
+  {
+    "file": "data/workbench/csp-css-trial/public-source-v11-6/ConfigReadResponse.json",
+    "sha256": "69a32e3d84e16045802dff8abf01770d759ebc758965c3258a30ea4a93159fce",
+    "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/schema/json/v2/ConfigReadResponse.json"
+  },
+  {
+    "file": "data/workbench/csp-css-trial/public-source-v11-6/ListMcpServerStatusParams.json",
+    "sha256": "30b978c6502b37c9f0002aeba241f41c91d4c6adf0f92d89242b62ffde415a2d",
+    "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/schema/json/v2/ListMcpServerStatusParams.json"
+  },
+  {
+    "file": "data/workbench/csp-css-trial/public-source-v11-6/ListMcpServerStatusResponse.json",
+    "sha256": "00c56c0faacbd4950b7f446f20b11b8a95456c5108de2f1e7366a1b2e60db8c6",
+    "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/schema/json/v2/ListMcpServerStatusResponse.json"
+  },
+  {
+    "file": "data/workbench/csp-css-trial/public-source-v11-6/ExperimentalFeatureListParams.json",
+    "sha256": "4db92977e59fea4125710babb4cd2128dc2cebef8292e3619d0844089e7fc1f5",
+    "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/schema/json/v2/ExperimentalFeatureListParams.json"
+  },
+  {
+    "file": "data/workbench/csp-css-trial/public-source-v11-6/ExperimentalFeatureListResponse.json",
+    "sha256": "4084a25f32333b3f58eb5e9803a5983739b57f945c4e7e4002e85851622ce597",
+    "url": "https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server-protocol/schema/json/v2/ExperimentalFeatureListResponse.json"
+  }
+]

@@ -238,6 +238,8 @@ class DesignStore:
             if event["id"] in events: raise DesignRecordError("design_store: duplicate event ID")
             self._candidate_for_ref(event["candidate"], candidates)
             candidate = candidates[(event["candidate"]["id"], event["candidate"]["revision"])]
+            if candidate.get('decision_eligible') is False:
+                raise DesignRecordError('read-only snapshot cannot receive a design decision')
             if event["scope"] != candidate["scope"]: raise DesignRecordError("decision_event: scope must exactly match candidate scope")
             scope_key = content_hash(event["scope"])
             current_id = effective_scope.get(scope_key)

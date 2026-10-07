@@ -1,0 +1,46 @@
+{
+  "source": "supported read(false)+exactcwd list diagnosis",
+  "task_id": "csp-css-trial-20261007",
+  "thread_id": "01a11536-4647-7030-a9aa-8e397078d146",
+  "observed_at": 1791357643.0563815,
+  "config_sha256": "768973adc2a0fc9683f7e12c59af7323c3c81636d25f84ce9cc0e61f865a1b04",
+  "profile": "hub_lwb_fixture_v1",
+  "profile_argv": [
+    "-c",
+    "default_permissions=\"hub_lwb_fixture_v1\"",
+    "-c",
+    "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\"}",
+    "-c",
+    "permissions.hub_lwb_fixture_v1.network.enabled=false"
+  ],
+  "auth": {
+    "source": "supported codex login status",
+    "mode": "ChatGPT",
+    "exit": 0,
+    "credential_bytes_read": 0
+  },
+  "read": {
+    "error_class": "CODEX_RPC_REJECTED",
+    "details": {
+      "rpc_code": -32600,
+      "error_categories": [
+        "thread_unavailable"
+      ],
+      "message_sha256": "a466643ea0246842177d02bfc48a4f28555f179263e768f26842d4d9988c5a1d",
+      "message_bytes": 55,
+      "raw_message_retained": false
+    }
+  },
+  "list": {
+    "rows": [],
+    "nextCursor": null,
+    "backwardsCursor": null
+  },
+  "adapter_closed": true,
+  "canonical_css_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+  "trial_css_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+  "docs_sha256": {
+    "docs/PROJECT_STATE.md": "afcd3027fcace6120c4c436af804fcc3594f6ed889f5364386bacd676c1c2b7e",
+    "docs/NEXT_ACTIONS.md": "4a5cea91842a95695f1ed9a8752edd7e2cdd683a8190a13349121d7e36fdf5e8"
+  }
+}

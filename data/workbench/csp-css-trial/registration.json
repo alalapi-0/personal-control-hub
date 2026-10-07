@@ -1,0 +1,363 @@
+{
+  "allowed_RPC": "initialize,thread/start,thread/read/list,capability discovery,command/exec fixed probes,turn/start/poll/interrupt exact only",
+  "annotation": {
+    "binding": {
+      "artifact_id": "csp-readonly-home-desktop",
+      "artifact_sha256": "a6e4bc8695436117a63ee0ba121cf537e68ca808896bc60a8b04848de6c7583a",
+      "candidate_hash": "211a9a0651e3042f1aaeec9cbc82a38093563d2efa970c2861d5b137ab032d70",
+      "candidate_id": "csp-home-readonly-code",
+      "candidate_revision": 2,
+      "classification": "real",
+      "pages": [
+        "home-readonly-preview"
+      ],
+      "preview_id": "preview-4e023ba2945a276a8b759ebf6455e7a6",
+      "project_id": "computer-study-plan",
+      "registry_hash": "8b5dff132e96964604065671fc012d61ab526073bb5c4c66c4867dac09d6592a",
+      "type": "screenshot"
+    },
+    "expected_revision": 0,
+    "kind": "whole",
+    "preserve_scope": "保留喜爱的整体风格；其余 CSS 字节、布局、字体、尺寸、动画、配色、HTML、JS、API、课程、学习数据、练习、配置均不改。",
+    "region": null,
+    "request_id": "csp-css-trial-annotation-v1",
+    "requested_change": "功能试验：仅将首页 .home-task-card 边框 rgba(248, 238, 229, 0.15) 的 alpha 改为 0.24，使边框略清晰；保留旧版和新版。",
+    "view": {
+      "dpr": 1,
+      "fit": "image-content-box",
+      "image_height": 742,
+      "image_left": 0,
+      "image_top": 0,
+      "image_width": 1265,
+      "natural_height": 742,
+      "natural_width": 1265,
+      "scroll_x": 0,
+      "scroll_y": 0,
+      "viewport_height": 742,
+      "viewport_width": 1265,
+      "zoom": 1
+    }
+  },
+  "annotation_receipt": {
+    "outcome": "COMMITTED",
+    "receipt": {
+      "command": {
+        "binding": {
+          "artifact_id": "csp-readonly-home-desktop",
+          "artifact_sha256": "a6e4bc8695436117a63ee0ba121cf537e68ca808896bc60a8b04848de6c7583a",
+          "candidate_hash": "211a9a0651e3042f1aaeec9cbc82a38093563d2efa970c2861d5b137ab032d70",
+          "candidate_id": "csp-home-readonly-code",
+          "candidate_revision": 2,
+          "classification": "real",
+          "pages": [
+            "home-readonly-preview"
+          ],
+          "preview_id": "preview-4e023ba2945a276a8b759ebf6455e7a6",
+          "project_id": "computer-study-plan",
+          "registry_hash": "8b5dff132e96964604065671fc012d61ab526073bb5c4c66c4867dac09d6592a",
+          "type": "screenshot"
+        },
+        "expected_revision": 0,
+        "kind": "whole",
+        "preserve_scope": "保留喜爱的整体风格；其余 CSS 字节、布局、字体、尺寸、动画、配色、HTML、JS、API、课程、学习数据、练习、配置均不改。",
+        "region": null,
+        "request_id": "csp-css-trial-annotation-v1",
+        "requested_change": "功能试验：仅将首页 .home-task-card 边框 rgba(248, 238, 229, 0.15) 的 alpha 改为 0.24，使边框略清晰；保留旧版和新版。",
+        "view": {
+          "dpr": 1,
+          "fit": "image-content-box",
+          "image_height": 742,
+          "image_left": 0,
+          "image_top": 0,
+          "image_width": 1265,
+          "natural_height": 742,
+          "natural_width": 1265,
+          "scroll_x": 0,
+          "scroll_y": 0,
+          "viewport_height": 742,
+          "viewport_width": 1265,
+          "zoom": 1
+        }
+      },
+      "payload_hash": "4adcb994411f85f3130ff5b450c9492cb11dd2396b5e4a1a57c4f12bba829e64",
+      "record": {
+        "actor": "trusted_local_owner",
+        "annotation": {
+          "binding": {
+            "artifact_id": "csp-readonly-home-desktop",
+            "artifact_sha256": "a6e4bc8695436117a63ee0ba121cf537e68ca808896bc60a8b04848de6c7583a",
+            "candidate_hash": "211a9a0651e3042f1aaeec9cbc82a38093563d2efa970c2861d5b137ab032d70",
+            "candidate_id": "csp-home-readonly-code",
+            "candidate_revision": 2,
+            "classification": "real",
+            "pages": [
+              "home-readonly-preview"
+            ],
+            "preview_id": "preview-4e023ba2945a276a8b759ebf6455e7a6",
+            "project_id": "computer-study-plan",
+            "registry_hash": "8b5dff132e96964604065671fc012d61ab526073bb5c4c66c4867dac09d6592a",
+            "type": "screenshot"
+          },
+          "kind": "whole",
+          "preserve_scope": "保留喜爱的整体风格；其余 CSS 字节、布局、字体、尺寸、动画、配色、HTML、JS、API、课程、学习数据、练习、配置均不改。",
+          "region": null,
+          "requested_change": "功能试验：仅将首页 .home-task-card 边框 rgba(248, 238, 229, 0.15) 的 alpha 改为 0.24，使边框略清晰；保留旧版和新版。",
+          "view": {
+            "dpr": 1,
+            "fit": "image-content-box",
+            "image_height": 742,
+            "image_left": 0,
+            "image_top": 0,
+            "image_width": 1265,
+            "natural_height": 742,
+            "natural_width": 1265,
+            "scroll_x": 0,
+            "scroll_y": 0,
+            "viewport_height": 742,
+            "viewport_width": 1265,
+            "zoom": 1
+          }
+        },
+        "annotation_id": "csp-css-trial-annotation-v1",
+        "backend_instance": "96fb3e142896cf643b3412bea0e5642c",
+        "created_at": "2026-10-07T07:13:19.945291+00:00",
+        "provenance": {
+          "capture": false,
+          "kind": "registered_artifact_view",
+          "live_page": false,
+          "source_mapping": null
+        },
+        "schema_version": 1
+      },
+      "record_hash": "cf5030eb55e64bf449d80d1a5a8be4cfb3c2044d9b081bbbda8c36f9d0b4f9c6",
+      "request_id": "csp-css-trial-annotation-v1",
+      "revision": 1
+    },
+    "replayed": false
+  },
+  "auth_status": {
+    "credential_bytes_read": 0,
+    "exit": 0,
+    "mode": "ChatGPT",
+    "source": "supported codex login status"
+  },
+  "authority": "direct human approved pilot and Root smallCSSsuggestion; preserve old/new; Root supplied exact test requirement",
+  "cleanup": "exactowned adapter/fixture/tabs/TRIAL/outsideprobe; retain Hub before/after/ledger/artifacts",
+  "codex_version": "codex-cli 0.159.3",
+  "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v1",
+  "fixed_checks": "CSS exact bytes/mode/files; Node/diff; existing isolated UI and temporary transaction suites; readonlyFixtureServer desktop/narrow/write405; no real mark_done",
+  "grant": {
+    "annotation_hash": "4adcb994411f85f3130ff5b450c9492cb11dd2396b5e4a1a57c4f12bba829e64",
+    "auth": "ChatGPT",
+    "checks": [
+      "csp_css_trial"
+    ],
+    "css_trial": {
+      "before_ref": "data/workbench/csp-css-trial/before.css",
+      "canonical_root": "/home/alalapi/Projects/computer-study-plan",
+      "config_identity": [
+        66306,
+        12073401,
+        4117,
+        1791356257936833499,
+        1791356257936833499
+      ],
+      "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v1",
+      "docs_sha256": {
+        "docs/NEXT_ACTIONS.md": "4a5cea91842a95695f1ed9a8752edd7e2cdd683a8190a13349121d7e36fdf5e8",
+        "docs/PROJECT_STATE.md": "afcd3027fcace6120c4c436af804fcc3594f6ed889f5364386bacd676c1c2b7e"
+      },
+      "expected_sha256": "babb5bc2f53a92017df6042f4246e8b3c41ec803d4ba3b34bde188f70c286ac1",
+      "head": "f5570473cf213f42b52b597e3e46e368dc53932e",
+      "image_ref": "docs/reports/linux-workbench/csp-preview-desktop.jpg",
+      "outside_probe": "/tmp/hub-lwb-css-outside-csp-css-trial-20261007",
+      "registry_hash": "8b5dff132e96964604065671fc012d61ab526073bb5c4c66c4867dac09d6592a",
+      "source_identity": [
+        66306,
+        12341728,
+        143428,
+        1789185130000000000,
+        1790856611900440364
+      ],
+      "source_mode": 420,
+      "source_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+    },
+    "expires_at": 1791364398.0819154,
+    "fingerprint": [
+      [
+        "progress_ui.css",
+        "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+      ]
+    ],
+    "grant_id": "csp-css-trial-grant-v1",
+    "image": "registered_preview",
+    "image_sha256": "a6e4bc8695436117a63ee0ba121cf537e68ca808896bc60a8b04848de6c7583a",
+    "isolated_root": true,
+    "max_turn_seconds": 120,
+    "mode": "new",
+    "parent_task_id": null,
+    "prohibited": [],
+    "project_id": "computer-study-plan",
+    "root": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+    "root_identity": "14c6cd4127cff1da9ebd53651f4fa330f0af8f0cb1b4357a9de30bf57a7dc514",
+    "source": "verified_owner_decision",
+    "task_id": "csp-css-trial-20261007",
+    "version": 1,
+    "writable_scope": [
+      "."
+    ]
+  },
+  "initial_contents": [
+    [
+      "progress_ui.css",
+      "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+    ]
+  ],
+  "intent": {
+    "annotation": {
+      "binding": {
+        "artifact_id": "csp-readonly-home-desktop",
+        "artifact_sha256": "a6e4bc8695436117a63ee0ba121cf537e68ca808896bc60a8b04848de6c7583a",
+        "candidate_hash": "211a9a0651e3042f1aaeec9cbc82a38093563d2efa970c2861d5b137ab032d70",
+        "candidate_id": "csp-home-readonly-code",
+        "candidate_revision": 2,
+        "classification": "real",
+        "pages": [
+          "home-readonly-preview"
+        ],
+        "preview_id": "preview-4e023ba2945a276a8b759ebf6455e7a6",
+        "project_id": "computer-study-plan",
+        "registry_hash": "8b5dff132e96964604065671fc012d61ab526073bb5c4c66c4867dac09d6592a",
+        "type": "screenshot"
+      },
+      "expected_revision": 0,
+      "kind": "whole",
+      "preserve_scope": "保留喜爱的整体风格；其余 CSS 字节、布局、字体、尺寸、动画、配色、HTML、JS、API、课程、学习数据、练习、配置均不改。",
+      "region": null,
+      "request_id": "csp-css-trial-annotation-v1",
+      "requested_change": "功能试验：仅将首页 .home-task-card 边框 rgba(248, 238, 229, 0.15) 的 alpha 改为 0.24，使边框略清晰；保留旧版和新版。",
+      "view": {
+        "dpr": 1,
+        "fit": "image-content-box",
+        "image_height": 742,
+        "image_left": 0,
+        "image_top": 0,
+        "image_width": 1265,
+        "natural_height": 742,
+        "natural_width": 1265,
+        "scroll_x": 0,
+        "scroll_y": 0,
+        "viewport_height": 742,
+        "viewport_width": 1265,
+        "zoom": 1
+      }
+    },
+    "before_sample": "",
+    "checks": [
+      "csp_css_trial"
+    ],
+    "grant": {
+      "annotation_hash": "4adcb994411f85f3130ff5b450c9492cb11dd2396b5e4a1a57c4f12bba829e64",
+      "auth": "ChatGPT",
+      "checks": [
+        "csp_css_trial"
+      ],
+      "css_trial": {
+        "before_ref": "data/workbench/csp-css-trial/before.css",
+        "canonical_root": "/home/alalapi/Projects/computer-study-plan",
+        "config_identity": [
+          66306,
+          12073401,
+          4117,
+          1791356257936833499,
+          1791356257936833499
+        ],
+        "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v1",
+        "docs_sha256": {
+          "docs/NEXT_ACTIONS.md": "4a5cea91842a95695f1ed9a8752edd7e2cdd683a8190a13349121d7e36fdf5e8",
+          "docs/PROJECT_STATE.md": "afcd3027fcace6120c4c436af804fcc3594f6ed889f5364386bacd676c1c2b7e"
+        },
+        "expected_sha256": "babb5bc2f53a92017df6042f4246e8b3c41ec803d4ba3b34bde188f70c286ac1",
+        "head": "f5570473cf213f42b52b597e3e46e368dc53932e",
+        "image_ref": "docs/reports/linux-workbench/csp-preview-desktop.jpg",
+        "outside_probe": "/tmp/hub-lwb-css-outside-csp-css-trial-20261007",
+        "registry_hash": "8b5dff132e96964604065671fc012d61ab526073bb5c4c66c4867dac09d6592a",
+        "source_identity": [
+          66306,
+          12341728,
+          143428,
+          1789185130000000000,
+          1790856611900440364
+        ],
+        "source_mode": 420,
+        "source_sha256": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+      },
+      "expires_at": 1791364398.0819154,
+      "fingerprint": [
+        [
+          "progress_ui.css",
+          "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+        ]
+      ],
+      "grant_id": "csp-css-trial-grant-v1",
+      "image": "registered_preview",
+      "image_sha256": "a6e4bc8695436117a63ee0ba121cf537e68ca808896bc60a8b04848de6c7583a",
+      "isolated_root": true,
+      "max_turn_seconds": 120,
+      "mode": "new",
+      "parent_task_id": null,
+      "prohibited": [],
+      "project_id": "computer-study-plan",
+      "root": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+      "root_identity": "14c6cd4127cff1da9ebd53651f4fa330f0af8f0cb1b4357a9de30bf57a7dc514",
+      "source": "verified_owner_decision",
+      "task_id": "csp-css-trial-20261007",
+      "version": 1,
+      "writable_scope": [
+        "."
+      ]
+    },
+    "grant_hash": "d116bbbc46ad678876f77e2e2a6437923d2efa5722fb58aa154f7673626ab21c",
+    "owner_context": "direct_human_authorization_to_trusted_local_owner",
+    "preimage": [
+      [
+        "progress_ui.css",
+        "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d"
+      ]
+    ],
+    "previous_thread": null,
+    "prompt_sha256": "d6af0d7aec7f4aba91809791c65ffbba1d7cd80916f785635675df18b79fb1f3",
+    "registry_hash": "8b5dff132e96964604065671fc012d61ab526073bb5c4c66c4867dac09d6592a",
+    "thread_source": "hub_owned_app_server",
+    "writer_status": "verified"
+  },
+  "max_turn_seconds": 120,
+  "model_turn_limit": 1,
+  "model_turns": 0,
+  "new_thread_limit": 1,
+  "nonsecret_config_sha256": "768973adc2a0fc9683f7e12c59af7323c3c81636d25f84ce9cc0e61f865a1b04",
+  "payload": {
+    "annotation_id": "csp-css-trial-annotation-v1",
+    "annotation_revision": 1,
+    "grant_id": "csp-css-trial-grant-v1",
+    "grant_version": 1,
+    "mode": "new",
+    "parent_task_id": null,
+    "project_id": "computer-study-plan",
+    "request_id": "csp-css-trial-20261007"
+  },
+  "profile": "hub_lwb_fixture_v1",
+  "profile_arguments": [
+    "-c",
+    "default_permissions=\"hub_lwb_fixture_v1\"",
+    "-c",
+    "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\"}",
+    "-c",
+    "permissions.hub_lwb_fixture_v1.network.enabled=false"
+  ],
+  "prompt": "Hub owner-authorized computer-study-plan CSS trial; cwd is an isolated CSS-only copy, not the canonical repository. Only progress_ui.css may be read or changed. Use the native local tool. In the sole .home-task-card block change exactly border: 1px solid rgba(248, 238, 229, 0.15); to border: 1px solid rgba(248, 238, 229, 0.24);. Preserve every other byte, file mode and final newline. Create no files, links, directories, background tasks or AGENTS file. No network, MCP, browser, credentials, config, permissions escalation, other projects or outside paths. The registered real desktop screenshot is reference only; keep its design style. Report the precise CSS change.\nOwner feedback:\n功能试验：仅将首页 .home-task-card 边框 rgba(248, 238, 229, 0.15) 的 alpha 改为 0.24，使边框略清晰；保留旧版和新版。\nPreserve:\n保留喜爱的整体风格；其余 CSS 字节、布局、字体、尺寸、动画、配色、HTML、JS、API、课程、学习数据、练习、配置均不改。",
+  "prompt_sha256": "d6af0d7aec7f4aba91809791c65ffbba1d7cd80916f785635675df18b79fb1f3",
+  "recovery": "unknown outcome exacttask/thread/turn/source reconcile, no second turn; CASdrift stop; postchecksfail exactnewhashCSSrestoreonly; docsinterruption reconcile",
+  "retained_failure": "old configpin drift stopped before annotation/store/model/source; unknown historicalconfigdiff; Root-owned partialinput verified/deleted/recreated",
+  "source_effects": 0
+}

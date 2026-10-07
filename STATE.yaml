@@ -7,3 +7,1412 @@ all_projects_governance: {budget: {cooldown: 75k tokens/30min+trigger, coverage:
 candidate_paths: [STATE.yaml, .agents/skills/linux-network-maintenance/SKILL.md, .agents/skills/linux-network-maintenance/references/incidents.md, prompts/linux_network_maintenance_goal_mode.md]
 feishu_cloud_sync: {task_id: FEISHU-PROJECT-CLOUD-SYNC-V1, status: PREPARED_NOT_ACTIVATED, plan_version: 1, prepared_at: '2026-09-14', plan: docs/feishu_project_cloud_sync_plan.md, prompt: prompts/feishu_project_cloud_sync_goal_mode.md, lane: DIRECT, baseline_main: e967d46a4357d950488e68ac2a06d08d6d4346bd, objective: 每现存登记项目独立Sheets、总Bitable；真实数据经程序与API自动同步，运行不依赖Agent。, authority: owner_20260914_plan_and_per_round_main_delivery; implementation awaits goal prompt, acceptance: docs/feishu_project_cloud_sync_plan.md#6-最终验收清单, implementation_acceptance_passed: [], owner_setup: H01-H07 not_checked; upfront checklist in plan section 1, scope_baseline: 26 registered / 24 local / 2 removed; 17 cloud excluded; new unsynced deferred, preserved_work: 原工作树registry未提交新增条目未纳入；v3证据与65轮历史原样保留。, round_accounting: {planning_units: 1, implementation_rounds: 0}, delivery: {status: verify_in_git, remote: origin, branch: main}, planning_validation: 'PASS; repository checks, new state references and prior-state preservation', blocker: null, unverified: 个人租户、应用、权限、目标、凭据入口、运行环境与所有真实云同步均未验证。, next_action: 所有者将启动prompt交给新Agent后，从最新main执行P00并集中完成H01-H07。, ci_repair: {contract: TC-CI-RESTORE-1, lane: GOVERNED, evidence: git, verdict: approved}}
 linux_network_maintenance: {status: HANDOFF_SENT, next: linux_result}
+linux_visual_workbench:
+  task_id: HUB-LINUX-VISUAL-WORKBENCH-V1
+  native_task_id: 01a113a8-9079-7d91-ac27-c2d32f860d84
+  status: IMPLEMENTING
+  implementation_status: IMPLEMENTING
+  updated_at: '2026-10-08T04:02:48+09:00'
+  lane: GOVERNED
+  owned_repository: /home/alalapi/Projects/personal-control-hub
+  scope: existing_personal_control_hub_linux_visual_workbench
+  plan: docs/linux-workbench/PLAN.md
+  round_cards: docs/linux-workbench/ROUNDS.md
+  acceptance_contract: docs/linux-workbench/ACCEPTANCE.md
+  execution_prompt: prompts/linux_workbench/CURSOR_HANDOFF_PROMPT.md
+  stage: 2
+  current_round: HUB-LWB-2.3
+  completed_rounds:
+  - HUB-LWB-0.1
+  - HUB-LWB-0.2
+  - HUB-LWB-0.3
+  - HUB-LWB-1.1
+  - HUB-LWB-4.1
+  - HUB-LWB-4.3
+  next_round: HUB-LWB-2.3
+  next_action: 初始代码交付进入 GitHub main 后，先核对远端 SHA；媒体截图组仍由媒体存储任务独占，未纳入本次提交。随后预检精确 SDK
+    授权与 20 小时窗口资格，再恢复 HUB-LWB-2.3。未获授权前不运行 metadata helper。
+  baseline:
+    host: lab-root
+    date: '2026-10-03'
+    head: 8fa0a4e53e00207823e3fb406ee04b94b77141a9
+    branch: agent/governance-closure-20260812
+    codex: 0.159.3
+    auth_method: ChatGPT
+    preexisting_files_hashed: 36
+    evidence: docs/linux-workbench/PLAN.md#7-本轮验证与保留失败
+    preexisting_state_sha256: 82ec64efcedb2932a887b51c1f877db0fe32390638e75b2e1e5a87385f17725d
+  candidate_paths:
+  - STATE.yaml
+  - scripts/governance_scope.py
+  - scripts/agent_gate.py
+  - scripts/auto_advance_runner.py
+  - scripts/round_consistency_check.py
+  - tests/test_control_plane_v2.py
+  - tests/test_hub_registry_storage.py
+  - docs/reports/linux-workbench/INDEX.md
+  - src/hub/owner_auth.py
+  - src/hub/local_service.py
+  - src/hub/web/common.js
+  - src/hub/web/hub.js
+  - src/hub/web/index.html
+  - src/hub/web/hub.css
+  - tests/test_hub_owner_auth.py
+  - tests/test_hub_local_service.py
+  - tests/test_hub_service_integration.py
+  - tests/test_hub_web_logic.mjs
+  - src/hub/host_observer.py
+  - scripts/hub_server.py
+  - src/hub/web/host.js
+  - tests/test_hub_host_observer.py
+  - src/hub/workbench_store.py
+  - src/hub/preview_service.py
+  - src/hub/web/workbench.js
+  - tests/test_hub_workbench.py
+  - docs/reports/linux-workbench/preview-annotation-browser.jpg
+  - src/hub/task_store.py
+  - src/hub/codex_adapter.py
+  - src/hub/task_service.py
+  - src/hub/task_worker.py
+  - scripts/hub_worker.py
+  - tests/test_hub_task_runtime.py
+  - src/hub/web/tasks.js
+  - docs/reports/linux-workbench/fixture-runtime-browser.jpg
+  - docs/reports/linux-workbench/fixture-read-boundary-browser.png
+  - src/hub/web/connection_view.mjs
+  - tests/test_hub_connection_view.mjs
+  - docs/reports/linux-workbench/project-facts-browser.png
+  - docs/reports/linux-workbench/host-resources-browser.png
+  - src/hub/material_service.py
+  - src/hub/web/materials.js
+  - tests/test_hub_materials.py
+  - docs/reports/linux-workbench/materials-browser.png
+  - src/hub/session_service.py
+  - src/hub/web/sessions.js
+  - tests/test_hub_sessions.py
+  - docs/reports/linux-workbench/sessions-browser.png
+  - src/hub/preview_bridge.py
+  - src/hub/web/preview_bridge.js
+  - src/hub/web/fixture_bridge.js
+  - tests/test_hub_preview_bridge.py
+  - src/hub/web/designs.js
+  - docs/reports/linux-workbench/bridge-browser.png
+  - tests/lwb_bridge_fixture.py
+  - tests/test_hub_busy_controls.py
+  - tests/lwb_busy_fixture.py
+  - docs/reports/linux-workbench/busy-browser.png
+  - tests/lwb_busy_native.py
+  - src/hub/task_storage.py
+  - tests/test_hub_task_recovery.py
+  - tests/lwb_recovery_fixture.py
+  - docs/reports/linux-workbench/recovery-browser.png
+  - docs/reports/linux-workbench/storage-registration-browser.png
+  - docs/reports/linux-workbench/storage-identity-browser.png
+  - src/hub/readonly_preview.py
+  - src/hub/web/live_preview.js
+  - tests/test_hub_readonly_preview.py
+  - tests/lwb_real_preview_fixture.py
+  - docs/reports/linux-workbench/csp-preview-desktop.png
+  - docs/reports/linux-workbench/csp-preview-mobile.png
+  - docs/reports/linux-workbench/csp-preview-manifest.json
+  - docs/reports/linux-workbench/csp-preview-browser.png
+  - src/hub/design_records.py
+  - src/hub/design_service.py
+  - data/design_governance/design-store.json
+  - docs/reports/linux-workbench/csp-preview-desktop.jpg
+  - docs/reports/linux-workbench/csp-preview-mobile.jpg
+  - docs/reports/linux-workbench/csp-preview-mobile-v2.jpg
+  - docs/reports/linux-workbench/csp-preview-mobile-v2-hub.jpg
+  - docs/reports/linux-workbench/csp-preview-mobile-v2-capture.json
+  - docs/reports/linux-workbench/csp-preview-manifest-v2.json
+  - docs/reports/linux-workbench/csp-preview-capture-repair-registration.json
+  - src/hub/css_trial.py
+  - tests/test_hub_css_trial.py
+  - data/workbench/csp-css-trial/before.css
+  - data/workbench/csp-css-trial/after.css
+  - data/workbench/csp-css-trial/registration.json
+  - data/workbench/tasks.sqlite3
+  - data/workbench/storage-registration.json
+  - data/workbench/workbench-store.json
+  - data/workbench/csp-css-trial/preflight-failure.json
+  - data/workbench/csp-css-trial/empty-thread-observation.json
+  - data/workbench/csp-css-trial/empty-thread-read-diagnostic.json
+  - scripts/diagnose_css_trial.py
+  - data/workbench/csp-css-trial/isolation-diagnostic-v3.json
+  - data/workbench/csp-css-trial/thread-recovery-diagnostic.json
+  - data/workbench/csp-css-trial/unscoped-capability-diagnostic-v3.json
+  - data/workbench/csp-css-trial/isolation-diagnostic-v3-r1.json
+  - data/workbench/csp-css-trial/diagnostic-review-registration-v3.json
+  - data/workbench/csp-css-trial/isolation-diagnostic-v4.json
+  - data/workbench/csp-css-trial/diagnostic-judge-v3.json
+  - data/workbench/csp-css-trial/parent-deny-repair-proposal.json
+  - data/workbench/csp-css-trial/diagnostic-review-registration-v4.json
+  - data/workbench/csp-css-trial/recovery-authority-v5.json
+  - data/workbench/csp-css-trial/config-drift-v5.json
+  - data/workbench/csp-css-trial/replacement-registration-v5.json
+  - data/workbench/csp-css-trial/stable-config-observation-v5.json
+  - data/workbench/csp-css-trial/config-drift-v5-second.json
+  - src/hub/css_read_diagnostic.py
+  - scripts/diagnose_css_trial_read.py
+  - tests/test_hub_css_read_diagnostic.py
+  - data/workbench/csp-css-trial/replacement-preflight-failure-v5.json
+  - data/workbench/csp-css-trial/replacement-read-diagnostic-v5.json
+  - data/workbench/csp-css-trial/active-config-churn-v5.json
+  - data/workbench/csp-css-trial/owned-resume-authority-v6.json
+  - data/workbench/csp-css-trial/v6-idle-admission.json
+  - data/workbench/csp-css-trial/replacement-read-response-v5-r2.json
+  - data/workbench/csp-css-trial/replacement-read-diagnostic-v5-r2.json
+  - data/workbench/csp-css-trial/read-diagnostic-runtime-pin-v5-r2.json
+  - data/workbench/csp-css-trial/owned-resume-failure-v6.json
+  - data/workbench/csp-css-trial/owned-resume-registration-v6.json
+  - src/hub/css_process_config.py
+  - tests/test_hub_css_process_config.py
+  - data/workbench/csp-css-trial/process-config-preflight-intent-v7.json
+  - data/workbench/csp-css-trial/process-config-preflight-v7.json
+  - data/workbench/csp-css-trial/process-resume-registration-v7.json
+  - tests/test_hub_capability_evidence.py
+  - data/workbench/csp-css-trial/capture_trial_preview.py
+  - data/workbench/csp-css-trial/process-resume-partial-v7.json
+  - data/workbench/csp-css-trial/process-resume-registration-v7-r2.json
+  - data/workbench/csp-css-trial/process-resume-review-v7.json
+  - data/workbench/csp-css-trial/preview-trial-manifest-v8.json
+  - data/workbench/csp-css-trial/preview-browser-evidence-v8.json
+  - data/workbench/csp-css-trial/preview-before-narrow-repair-v8.json
+  - data/workbench/csp-css-trial/preview-write-denial-v8.json
+  - data/workbench/csp-css-trial/preview-render-inputs-and-requests-v8.json
+  - data/workbench/csp-css-trial/preview-render-inputs-and-requests-v8-r2.json
+  - docs/reports/linux-workbench/csp-css-trial-before-desktop.jpg
+  - docs/reports/linux-workbench/csp-css-trial-after-desktop-v2.jpg
+  - docs/reports/linux-workbench/csp-css-trial-before-narrow-v2.jpg
+  - docs/reports/linux-workbench/csp-css-trial-after-narrow.jpg
+  - data/workbench/csp-css-trial/capability-evidence-registration-v8.json
+  - src/hub/css_capability_recovery.py
+  - scripts/recover_css_capability_evidence.py
+  - tests/test_hub_css_capability_recovery.py
+  - data/workbench/csp-css-trial/capability-recovery-registration-v9.json
+  - data/workbench/csp-css-trial/capability-recovery-registration-v9-r2.json
+  - data/workbench/csp-css-trial/capability-recovery-review-v9.json
+  - data/workbench/csp-css-trial/capability-recovery-registration-v9-r3.json
+  - data/workbench/csp-css-trial/capability-recovery-review-v9-r2.json
+  - data/workbench/csp-css-trial/capability-recovery-registration-v9-r4.json
+  - data/workbench/csp-css-trial/capability-recovery-registration-v9-r5.json
+  - data/workbench/csp-css-trial/capability-recovery-authority-v9.json
+  - data/workbench/csp-css-trial/capability-recovery-review-v9-r5.json
+  - data/workbench/csp-css-trial/capability-recovery-intent-v9.json
+  - data/workbench/csp-css-trial/evidence-resume-intent-v9.json
+  - data/workbench/csp-css-trial/capability-recovery-result-v9.json
+  - data/workbench/csp-css-trial/capability-current-v9-1.json
+  - data/workbench/csp-css-trial/capability-current-v9-2.json
+  - data/workbench/csp-css-trial/capability-current-v9-3.json
+  - data/workbench/csp-css-trial/capability-current-v9-4.json
+  - data/workbench/csp-css-trial/capability-recovery-runtime-registration-v9.json
+  - src/hub/notification_metadata.py
+  - tests/test_hub_notification_metadata.py
+  - data/workbench/csp-css-trial/notification-retention-preimages-v9.json
+  - data/workbench/csp-css-trial/notification-retention-preimage-codex_adapter.py
+  - data/workbench/csp-css-trial/notification-retention-preimage-css_capability_recovery.py
+  - data/workbench/csp-css-trial/notification-retention-preimage-css_read_diagnostic.py
+  - data/workbench/csp-css-trial/notification-retention-registration-v9.json
+  - data/workbench/csp-css-trial/capability-recovery-contract-v10.json
+  - data/workbench/csp-css-trial/capability-recovery-registration-v10.json
+  - data/workbench/csp-css-trial/capability-recovery-preimage-v10.py
+  - data/workbench/csp-css-trial/capability-recovery-test-preimage-v10.py
+  - data/workbench/csp-css-trial/notification-metadata-preimage-v10.py
+  - data/workbench/csp-css-trial/capability-recovery-authority-v10.json
+  - data/workbench/csp-css-trial/capability-recovery-review-v10.json
+  - data/workbench/csp-css-trial/capability-recovery-intent-v10.json
+  - data/workbench/csp-css-trial/evidence-resume-intent-v10.json
+  - data/workbench/csp-css-trial/capability-recovery-result-v10.json
+  - data/workbench/csp-css-trial/capability-current-v10-1.json
+  - data/workbench/csp-css-trial/notification-metadata-v10-1.json
+  - data/workbench/csp-css-trial/notification-metadata-v10-2.json
+  - data/workbench/csp-css-trial/notification-metadata-v10-3.json
+  - data/workbench/csp-css-trial/notification-metadata-v10-4.json
+  - data/workbench/csp-css-trial/notification-metadata-v10-5.json
+  - data/workbench/csp-css-trial/capability-recovery-runtime-registration-v10.json
+  - data/workbench/csp-css-trial/baseline-contract-v10.json
+  - data/workbench/csp-css-trial/baseline-preimages-v10.json
+  - data/workbench/csp-css-trial/baseline-preimage-css_capability_recovery-v10.py
+  - data/workbench/csp-css-trial/baseline-preimage-test_css_capability_recovery-v10.py
+  - data/workbench/csp-css-trial/baseline-registration-v10.json
+  - data/workbench/csp-css-trial/capability-recovery-contract-v11.json
+  - data/workbench/csp-css-trial/capability-recovery-preimage-v11.py
+  - data/workbench/csp-css-trial/capability-recovery-test-preimage-v11.py
+  - data/workbench/csp-css-trial/capability-recovery-config-drift-v11.json
+  - data/workbench/csp-css-trial/semantic-config-contract-v11.json
+  - data/workbench/csp-css-trial/semantic-config-sources-v11.json
+  - data/workbench/csp-css-trial/semantic-config-registration-v11.json
+  - data/workbench/csp-css-trial/semantic-config-preimages-v11.json
+  - data/workbench/csp-css-trial/semantic-config-preimage-v11-css_process_config.py
+  - data/workbench/csp-css-trial/semantic-config-preimage-v11-codex_adapter.py
+  - data/workbench/csp-css-trial/semantic-config-preimage-v11-css_capability_recovery.py
+  - data/workbench/csp-css-trial/semantic-config-preimage-v11-test_hub_css_process_config.py
+  - data/workbench/csp-css-trial/semantic-config-sources-v11-r2.json
+  - data/workbench/csp-css-trial/semantic-config-registration-v11-r2.json
+  - data/workbench/csp-css-trial/semantic-config-preimages-v11-r2.json
+  - data/workbench/csp-css-trial/semantic-config-preimage-v11-r2-css_process_config.py
+  - data/workbench/csp-css-trial/semantic-config-preimage-v11-r2-codex_adapter.py
+  - data/workbench/csp-css-trial/semantic-config-preimage-v11-r2-css_capability_recovery.py
+  - data/workbench/csp-css-trial/semantic-config-preimage-v11-r2-test_hub_css_process_config.py
+  - data/workbench/csp-css-trial/semantic-config-preimage-v11-r2-test_hub_css_capability_recovery.py
+  - src/hub/css_config_precheck.py
+  - scripts/precheck_css_config.py
+  - tests/test_hub_css_config_precheck.py
+  - data/workbench/csp-css-trial/config-precheck-contract-v11-1.json
+  - data/workbench/csp-css-trial/config-precheck-registration-v11-1.json
+  - data/workbench/csp-css-trial/config-precheck-sources-v11-1.json
+  - data/workbench/csp-css-trial/config-precheck-contract-v11-2.json
+  - data/workbench/csp-css-trial/config-precheck-sources-v11-2.json
+  - data/workbench/csp-css-trial/config-precheck-api-dto-v11-2.json
+  - data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-1.json
+  - data/workbench/csp-css-trial/config-precheck-runtime-review-v11-1.json
+  - data/workbench/csp-css-trial/config-precheck-review-v11-1.json
+  - data/workbench/csp-css-trial/public-source-v11-2/config__src__state.rs
+  - data/workbench/csp-css-trial/public-source-v11-2/config__src__shell_environment_policy.rs
+  - data/workbench/csp-css-trial/public-source-v11-2/core__config.schema.json
+  - data/workbench/csp-css-trial/public-source-v11-2/config__src__mcp_types.rs
+  - data/workbench/csp-css-trial/public-source-v11-2/config__src__types.rs
+  - data/workbench/csp-css-trial/public-source-v11-2/config__src__permissions_toml.rs
+  - data/workbench/csp-css-trial/public-source-v11-2/app-server-protocol__src__protocol__v2__config.rs
+  - data/workbench/csp-css-trial/public-source-v11-2/app-server__src__config_manager_service.rs
+  - data/workbench/csp-css-trial/public-source-v11-2/config__src__config_toml.rs
+  - data/workbench/csp-css-trial/public-source-v11-2/config__src__skills_config.rs
+  - data/workbench/csp-css-trial/public-source-v11-2/features__src__lib.rs
+  - data/workbench/csp-css-trial/public-source-v11-2/app-server__src__request_processors__config_processor.rs
+  - data/workbench/csp-css-trial/config-precheck-preimage-v11-2-precheck_css_config.py
+  - data/workbench/csp-css-trial/config-precheck-preimage-v11-2-css_config_precheck.py
+  - data/workbench/csp-css-trial/config-precheck-preimage-v11-2-test_hub_css_config_precheck.py
+  - data/workbench/csp-css-trial/config-precheck-registration-v11-2.json
+  - data/workbench/csp-css-trial/config-precheck-contract-v11-3.json
+  - data/workbench/csp-css-trial/config-precheck-sources-v11-3.json
+  - data/workbench/csp-css-trial/public-source-v11-3-loader.rs
+  - data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-2.json
+  - data/workbench/csp-css-trial/config-precheck-runtime-review-v11-2.json
+  - data/workbench/csp-css-trial/config-precheck-review-v11-2.json
+  - data/workbench/csp-css-trial/config-precheck-preimage-v11-3-css_config_precheck.py
+  - data/workbench/csp-css-trial/config-precheck-preimage-v11-3-test_hub_css_config_precheck.py
+  - data/workbench/csp-css-trial/config-precheck-preimage-v11-3-precheck_css_config.py
+  - data/workbench/csp-css-trial/config-precheck-registration-v11-3.json
+  - data/workbench/csp-css-trial/config-precheck-contract-v11-4.json
+  - data/workbench/csp-css-trial/config-precheck-preimage-v11-4-css_config_precheck.py
+  - data/workbench/csp-css-trial/config-precheck-preimage-v11-4-precheck_css_config.py
+  - data/workbench/csp-css-trial/config-precheck-preimage-v11-4-test_hub_css_config_precheck.py
+  - data/workbench/csp-css-trial/config-precheck-runtime-review-v11-3.json
+  - data/workbench/csp-css-trial/config-precheck-registration-v11-4.json
+  - data/workbench/csp-css-trial/config-precheck-sources-v11-4.json
+  - data/workbench/csp-css-trial/config-precheck-registration-v11-4-r2.json
+  - data/workbench/csp-css-trial/config-precheck-review-v11-4.json
+  - data/workbench/csp-css-trial/config-precheck-sources-v11-4-r2.json
+  - data/workbench/csp-css-trial/config-precheck-preimages-v11-4-r2.json
+  - data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r2-precheck_css_config.py
+  - data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r2-css_config_precheck.py
+  - data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r2-test_hub_css_config_precheck.py
+  - data/workbench/csp-css-trial/config-precheck-registration-v11-4-r3.json
+  - data/workbench/csp-css-trial/config-precheck-review-v11-4-r2.json
+  - data/workbench/csp-css-trial/config-precheck-sources-v11-4-r3.json
+  - data/workbench/csp-css-trial/config-precheck-preimages-v11-4-r3.json
+  - data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r3-precheck_css_config.py
+  - data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r3-css_config_precheck.py
+  - data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r3-test_hub_css_config_precheck.py
+  - data/workbench/csp-css-trial/config-precheck-review-v11-4-r3.json
+  - data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-4.json
+  - data/workbench/csp-css-trial/config-precheck-result-v11-4.json
+  - data/workbench/csp-css-trial/config-precheck-intent-v11-4.json
+  - data/workbench/csp-css-trial/config-precheck-authority-v11-4.json
+  - data/workbench/csp-css-trial/config-precheck-runtime-review-v11-4.json
+  - data/workbench/csp-css-trial/config-precheck-contract-v11-5-r1.json
+  - src/hub/css_metadata_effects.py
+  - tests/test_hub_css_full_metadata.py
+  - data/workbench/csp-css-trial/config-precheck-review-v11-7-r1.json
+  - data/workbench/csp-css-trial/config-precheck-governor-decision-v11-7-r1.json
+  - data/workbench/csp-css-trial/config-precheck-registration-v11-7-r1.json
+  - data/workbench/csp-css-trial/full-metadata-callgraph-v11-7-r1.json
+  - data/workbench/csp-css-trial/config-precheck-candidate-diff-v11-7-r1.diff
+  - data/workbench/csp-css-trial/config-precheck-preimage-v11-7-r1-css_config_precheck.py
+  - data/workbench/csp-css-trial/config-precheck-preimage-v11-7-r1-test_hub_css_config_precheck.py
+  - prompts/linux_workbench/CURSOR_HANDOFF_PROMPT.md
+  authorization:
+    current_session: execution_hub_stages_1_to_5
+    execution_activation: explicit_owner_goal_2026-10-07
+    execution_goal: M2
+    external_write_grants:
+    - project_id: computer-study-plan
+      root: /home/alalapi/Projects/computer-study-plan
+      head: f5570473cf213f42b52b597e3e46e368dc53932e
+      paths:
+      - progress_ui.css
+      - docs/PROJECT_STATE.md
+      - docs/NEXT_ACTIONS.md
+      state: active
+      grant_id: csp-css-trial-grant-v1
+      task_id: csp-css-trial-20261007
+      trial_root: /home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007
+      effect: Root singleCSSCAS+two factualdocs afterchecks; modeltrialCSSonly
+      authority: directowner pilotapproval+RootsmallCSSsuggestion oldnewpreserve
+      contract_id: HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v1
+    pilot_candidate: computer-study-plan
+    secondary_candidate: linux-video-workbench
+    pilot_selected: true
+    feishu_enabled: false
+    git_current_session: handoff only here; owner authorizes Cursor initial andeach
+      verifiedtaskowned round delivery toGitHub main
+    readonly_preview_grants:
+    - project_id: computer-study-plan
+      root: /home/alalapi/Projects/computer-study-plan
+      head: f5570473cf213f42b52b597e3e46e368dc53932e
+      server: tests/ui/fixture_server.py:FixtureServer(task_actions=False)
+      authority: owner approved INDEX.md:294 and continue 2026-10-07
+      state: active
+      network: literal127.0.0.1 ephemeral; nonproduction; all writes405
+    conditional_pilot_write_grant:
+      project_id: computer-study-plan
+      paths:
+      - progress_ui.css
+      - docs/PROJECT_STATE.md
+      - docs/NEXT_ACTIONS.md
+      condition: one small CSS-only change after explicit owner annotation and fresh
+        identity/ownership checks
+      state: active_exact_css_trial
+      inference: existing ChatGPT login/quota only; one bounded task; no API billing
+      publication: false
+      authority: owner allows Root a small CSS test suggestion and requires old/new
+        both retained 2026-10-07
+      grant_version: csp-css-owner-v1
+      trial_root: /home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007
+      grant_id: csp-css-trial-grant-v1
+      task_id: csp-css-trial-20261007
+    sdk_metadata_refresh_grant:
+      state: STAGED_INACTIVE_PENDING_OWNER_EXACT_EFFECT_GRANT
+      grant_id: csp-metadata-sdk-refresh-v11-7
+      contract: HUB-LWB-2.3-CSP-FULL-METADATA-AUTH-REFRESH-GOV-v11.7
+      candidate_sha256: 862215cc3e95df74310e2a913b233e5fd02ef63a0d77fa96a2dc255d8c63ef96
+      evidence_sha256: 23922c677f72e731cb38f16b9dc2d1594fc80370ee1524603052033615383f22
+      official_sdk_refresh_allowed: false
+      effect: one complete metadata helper; possible official OAuth/providerrefresh
+        and non-atomic officialcredentialfileupdate; no manualcredentials/model/thread/sourcepromotion/Git/config
+      owner_authorization: NOT_RECEIVED
+  milestones:
+    M1: HUB-LWB-2.4
+    M1_status: NOT_RUN
+    M2: HUB-LWB-5.4
+    M2_status: NOT_RUN
+    stage6_status: DEFERRED
+  planning_acceptance:
+    P00-1: PASS
+    P00-2: PASS
+    P00-3: PASS
+  acceptance:
+    A01: NOT_RUN
+    A02: BLOCKED
+    A03: NOT_RUN
+    A04: PASS
+    A05: BLOCKED
+    A06: NOT_RUN
+    A07: NOT_RUN
+    A08:
+      new: NOT_RUN
+      idle: BLOCKED
+      busy: NOT_RUN
+    A09: NOT_RUN
+    A10: NOT_RUN
+    A11: NOT_RUN
+    A12: NOT_RUN
+    A13: NOT_RUN
+  blockers:
+  - id: REAL_MAC_AND_HUMAN_ACCEPTANCE
+    kind: acceptance_dependency
+    evidence: no actual Mac browser record or explicit owner version acceptance; twoLinux
+      tabs are isolated evidence only
+    resume: 1.2/2.4 one concrete device action when required
+  - id: EXISTING_SESSION_RUNTIME
+    kind: bounded_probe_pending
+    evidence: owned synthetic new/idle and native named-profile proof PASS; real previous
+      Linux sessions/native busy/live secondclaim still unaccepted
+    resume: 真实grant与准确旧会话权限后进入5.1/5.2；不将synthetic新会话续接算旧会话验收。
+  - id: MCP_METADATA_AUTH_EFFECT
+    kind: credential_external_effect_boundary
+    evidence: publicMCPprocessor invokesAuthManager.auth; SDK mayOAuthPOST andtokenstoragewrite;
+      currentstatonly/noauthchanges insufficient
+    resume: new preciseowner-authorizedSDKmetadata/refreshexternalcontract andsource-correctcandidate;
+      no manualcredentials/providerbilling
+  budget:
+    owner_numeric_budget: null
+    native_goal_started_by_planner: false
+    telemetry_coverage: nativeGoal16,029,157tokens/48,710sec at actual blocked transition;
+      remaining/cost/childactualunknown; noreset
+    runtime_policy: current execution session limits; reserve verification and closure;
+      no implicit API billing or quota escalation
+    native_goal_supported: true
+    last_visible_tokens: 16029157
+    first_250k_rebaseline:
+      status: HEALTHY
+      tokens: 351414
+      basis: new candidate, two repaired baselines and first passing checks
+      next_checkpoint: next accepted round with new evidence
+    native_goal_status: BLOCKED; exact SDK credential/provider effect grant missing;
+      M2 incomplete
+    reviewer_closure_reservation: 6000
+    reviewer_actual_tokens: v11.5contract/r1/r2/r3 freshJudge6000 each reserved and
+      conservatively charged; separateactualunknown; cumulativehistoryretained; v11.6-r1/r2
+      contractJudge6000 each reserved and conservatively charged; no reset; v11.6-r3
+      contractJudge6000reserved conservativelycharged; actualchildunknown; v11.6-r6/v11.7freshjointJudge6000eachreservedconservativelycharged;
+      actualchildunknown; v11.7-r1 freshJudge6000reserved conservativelycharged; actualchildunknown;
+      noreset
+    native_goal_tokens_used: 16029157
+    native_goal_time_used_seconds: 48710
+    health_checkpoint:
+      status: REPLAN
+      trigger: same native metadata checkpoint unaccepted after three review-repair
+        candidates
+      tokens: 12276945
+      evidence: v11.1layers/v11.2MCP/v11.3semantic fail; all8preservation true; fullmetadata
+        unaccepted
+      action: register one controlled structural diagnostic candidate
+      next_checkpoint: new fixed-shape diagnostic evidence reviewed, respecting cooldown
+      cooldown: 75k tokens or30 active execution minutes; accepted milestone resets
+      not_goal_status: true
+    shared_usage_checkpoint: read-only account codex primary10080min used55percent,
+      remaining45percent; ordinaryUsageAllowed true; not taskbudget, no reset/purchase/credit
+      use initiated
+  progress:
+    planning_rounds_closed: 3
+    implementation_rounds_closed: 13
+    product_completion_percent: null
+    product_completion_basis: 16closedunits;2.3unclosed. v11.7-r1离线候选freshJudgePASS/GovernorAPPROVE_OFFLINE_PREPARATION_ONLY；无新native效果，fullmetadata/Mac/human/delivery/M2仍required，percentunknown。
+    remaining_round_estimate: unknown; confidence unknown; heterogeneous mandatory
+      results and realpilot/session/Mac/human dependencies
+    cumulative_rounds_closed: 16
+    coverage: complete_known_cards
+    last_key: HUB-LWB-1.3:computer_study_plan_real_preview_technical
+    last_round_changes:
+      execution: one scoped5.3 technical unit approved after3 candidates; tests/repairs/reviews
+        not extra rounds
+      evidence_correction: v11.7首认证基线候选FAIL保留；r1将私密stat置于首次admit/auth之前并即时括号校验，65针对性454Hub通过，freshJudgePASS/Governor离线准备批准；不是新闭合轮。
+      scope: unchanged original M2 required denominator, no realgrant/design/Mac/human/Git
+        effect added
+  last_completed_round: HUB-LWB-4.3
+  handoff_validation:
+    status: PASS
+    document_candidate_sha256: 3dc8a71808f6b19cd0bbedf436854d4fc2fed5229a6427097c9c0ce35c4c10c2
+    identity_basis: sorted compact JSON [path,SHA256] of four documents; excludes
+      mutable STATE
+    checks:
+    - unique YAML keys
+    - 23 complete task cards
+    - 13 acceptance groups with A08 subcases
+    - local links and next round
+    - full prompt reread
+    - git diff --check
+    - 36 original dirty/untracked file hashes and prior STATE subtrees preserved
+    runner_baseline: FAIL retained; no executable gate change in phase0
+  evidence_index: docs/reports/linux-workbench/INDEX.md
+  contract:
+    id: HUB-LWB-2.3-CSP-FULL-METADATA-AUTH-REFRESH-GOV-v11.7
+    lane: GOVERNED
+    governor: /root/entry_governor
+    objective: one complete metadata helper with exact config/opaque desktop/two feature
+      catalogs/sourcecorrect unscopedMCP; no execution before owner SDK effect grant
+      and Governor
+    scope: Hub owned offline harness/fixtures/tests/canonicalSTATEINDEX/source evidence;
+      no other writers
+    acceptance:
+    - strict public layers/origins/DTO, 4layerprecedence and actualtyped finalconfig
+    - opaque desktop exactrawforward +finaloriginal +expectedbuilderpreserves +fullfinalconfig
+      equality; no ignore/reverse/shape leaks
+    - other14groups+preciseMCPDuration+trust/layer+semantic exact
+    - config/read exactsixconfiguredfalse; unscoped six sourceorderedrows runtimeStatusnull/authStatusunsupported/emptytools/resources/templates/nullcapabilities/plugin/serverInfo/errors;
+      null notdisabled/idle/loadedthread
+    - 2 feature snapshots exact152sourceorderedtemplates/schema; missing/duplicate/extra/unknown/invalidcursor/pagingFAIL;
+      frozen14false/hosttrue both; otherenabled exactbeforeafter
+    - remote/startupoff; unknown/contradictorynotice rejected
+    - originalguards except unchangedcredential replaced explicit boundedSDKfileeffect;
+      officialloginmode beforeafterChatGPT; stderrsafeenum; no unexpectedcredentialchangeoutsideMCP;
+      staticcatalogidentity/hashstable; closedexit0/notwall/expiry/cleanup/effectlimits
+      mandatory
+    budget: same native cumulative; reserve contract/candidate/runtimeJudge6000each
+      +closure; remaining/costunknown; no reset
+    cumulative:
+      closed_rounds: 16
+      metadata_helpers: 5
+      model_turns: 1
+      resumes: 4
+      threads: 2
+    record: data/workbench/csp-css-trial/config-precheck-contract-v11-7.json
+    sha256: 7991b8eaf1cb50e6250938e62b56d3f1bc74d22364ec9d8cdfc3a2343741809e
+    status: STAGED_INACTIVE_FRESH_JUDGE_PASS_OFFLINE_PREPARATION_APPROVED
+    decision: NO_RUNTIME_AUTHORITY
+    evidence: data/workbench/csp-css-trial/config-precheck-registration-v11-7-r1.json
+    governor_evidence: data/workbench/csp-css-trial/config-precheck-governor-decision-v11-7-r1.json
+    frozen_contract_unchanged: true
+  technical_gates:
+    HUB-LWB-1.1:
+      status: PASS
+      code_sha256: d9037d82454975997b41771867e8233e39cf13c2cebab8d69d9fa8802d9c6f16
+      state_semantic_sha256: da8cb15b1934debd061c8c96fcc8e98f532e40bde184544eed00ab92afc6f835
+      judge: entry_judge PASS
+      governor: entry_governor APPROVED
+      boot_contract_version: 2
+    HUB-LWB-1.2:
+      status: PASS
+      scope: technical_authentication_only
+      code_sha256: 31863873a09fdf7910f03491ffba42afc5c69520ce3058ef6eb6e412f4f41519
+      state_semantic_sha256: 649c7087f5ea1de4ef45e992c77b629ff0ac40f0a6172b457a824581e4be5858
+      judge: auth_judge PASS
+      governor: entry_governor APPROVED
+      live_credential: BLOCKED
+      owner_browser_login: UNVERIFIED
+      mac_shared_record: BLOCKED
+      cross_device: BLOCKED
+    HUB-LWB-1.3:host:
+      status: PASS
+      code_sha256: 85887e1ed5eec4c1cdafcfaa2666539f8ab80818ccd0617c1920917db259e30b
+      scope: minimal_read_only_host_and_local_browser
+      tests: 5 collector,18 transport,7 owner,2 integration,20 Node; all exit0
+      real_source: 32 cores; no swap; /dev/nvme0n1p3 ext4; existing service PID2783
+      sample_ms:
+      - 7.72
+      - 7.66
+      full_round: BLOCKED pending real pilot preview
+      final_focus_delta: actual browser confirmed; offline retained value and refresh
+        focus
+    HUB-LWB-1.3-2.1:preview_annotation:
+      status: PASS
+      scope: registered_image_and_shared_annotation_technical_only
+      code_sha256: 1cd5a166332b6fa0d2b728f28ffce892e01622730acf7e349f5718cb4808a7b8
+      tests: 194 Hub; 21 combined Node; 13 scoped control; exit0
+      browser: actual synthetic region+whole, two tabs, conflict, stale/image error,
+        persisted receipt reconciliation; not Mac or owner acceptance
+      full_rounds: BLOCKED pending real project/Mac/credential/owner gates
+      state_semantic_sha256: 2fe7e9c16ed135525cfe35fe083c2f3edc5edb2928b954c051ff74aa8cccf3c5
+      judge: annotation_judge PASS
+      governor: entry_governor APPROVED
+    HUB-LWB-2.2:
+      status: PASS
+      scope: isolated_task_runtime_only
+      code_sha256: 60b27c1c61f890e2bcc8d0160964dcba31f939dc90fa7b14a2bb75dc5c558644
+      evidence_semantic_sha256: ae701cc83b61611c6d444d867b75c3e00d7f9a16fb4eb7ea4ccc8eadfaf4fa7a
+      tests:
+        hub: 226
+        runtime_included: 32
+        node: 21
+        scoped_current: 10
+      native_owned_thread: 01a113e8-fb11-7e12-81b8-625848f58c4d
+      new_turn: 01a113f1-3e9e-78f0-8bb3-80aca39e8d04
+      idle_turn: 01a113f4-755e-7280-8e3c-0e1526042a8c
+      busy_coverage: Hub running queue/cancel; native busy and real serialized claim
+        NOT_PROVEN
+      human_acceptance: pending
+      real_project: NOT_RUN
+      mac: NOT_RUN
+      review: exact profile/cancellation candidate approved; previous failures retained
+      read_boundary_turn: 01a11410-26e6-7382-a316-d319104bb349
+      judge: runtime_profile_judge PASS
+      governor: entry_governor APPROVE
+      full_round: BLOCKED real-project/Mac/human/native-busy gates
+    HUB-LWB-4.1:
+      status: PASS
+      code_sha256: d097a0e4cdd02cb354709da6709cf4888e7cb61bce9374808e02c3edc0528f18
+      tests: 226Hub/198subtests;27Node;syntax/diff/runner PASS
+      real_sources: computer-study-plan and story-faceless-utopia bounded readonly;21unmapped
+        each truthfullyunknown
+      browser: actual Linux view/source/task+375px/focus; Mac/human unverified
+      screenshot_sha256: b8ee66ab649584984609376788eb46f067ac826326beaee12ac6243f99dfad78
+    HUB-LWB-4.3:
+      status: PASS
+      code_sha256: d019fdfbb497bcc7aac5e7b325c7b449e5f398d32eec5d997b176c11f6d8cbdc
+      evidence_semantic_sha256: 19fbea16c9899e270dffb6d61ad1f233c291fa336e6b67a1c87fc50da4d0a709
+      tests: 230Hub/198subtests incl9collector;27Node;syntax/diff/runner PASS
+      native_metrics: 16; CPU/hwmon,NVIDIA GPU+encode/decode,named disk I/O,service
+        PID2783
+      sampling_ms:
+      - 36.13
+      - 35.52
+      - 32.67
+      capacity: UNKNOWN no measured task profiles
+      browser: Linux fresh/stale/disconnect+375px/focus PASS; no Mac
+      screenshot_sha256: 096fd7c7b83ff5f22a613b191197f72e81e426f3f9d84888874160e033608b5e
+    HUB-LWB-4.2:registered_artifact_media_technical:
+      status: PASS
+      code_sha256: dc33ef87e87479f855332225f74cfac1ae9149084844c4abfaa98203d85f3777
+      evidence_sha256: c772cc32d94171ebb32a68aca459c4fd0653a4b5d96d63a7521b4ccae2eca83e
+      evidence: docs/reports/linux-workbench/INDEX.md#hub-lwb-42-registered-candidate-and-primitive-evidence
+      scope: synthetic registered artifact media; real gate closed; no cache; Linux
+        only
+      judge: materials_judge PASS
+      governor: entry_governor APPROVE
+      limits: real media/production gate closed; Mac/human/full4.2/A12/A13/M1/M2 pending
+    HUB-LWB-5.1:session_discovery_technical:
+      status: PASS
+      scope: bounded_hub_session_discovery_only
+      code_sha256: c1483b8a462d5cc31d0242fe5ab2c40738dd412b26812d9a70c9bb260062048c
+      evidence_semantic_sha256: 29c16ab4dfc4a44232e0b0bb931b3440f9b92c19e4e4af5f352ca4a6ec62070f
+      judge: session_discovery_judge PASS
+      governor: entry_governor APPROVE
+      native_calls: 15
+      owned_helpers_closed: 5
+      model_turns: 0
+      native_sources:
+        cli: 0
+        appServer: 0
+        vscode: 3
+      state: all returned native rows notLoaded; not proof of idle
+      tests:
+        session: 8
+        hub: 249
+        node: 29
+        scoped: 12
+      full_round: BLOCKED exact authorized idle continuation/ownership; Mac/human
+        gates unchanged
+      execution_enabled: false
+      mac: NOT_RUN
+      human_acceptance: pending
+      git_delivery: NOT_RUN
+    HUB-LWB-3.1:fixture_whole_element_bridge_technical:
+      status: PASS
+      scope: Hub-only disposable whole/element bridge technical unit
+      code_sha256: a344d15a485d95390716e16d2a3f0c7be6071c12ad3aa0250654cb5663ad0fc2
+      evidence_semantic_sha256: e492ced177eb81c141d21262d1002088d4df3cc59a931a23c7ad7220056b94e6
+      judge: bridge_judge PASS
+      governor: entry_governor APPROVE
+      tests:
+        hub: 256
+        bridge: 7
+        node: 30
+        scoped: 13
+      actual_linux:
+        origins: 2
+        shared_views: 2
+        distinct_http_owner_sessions: 2
+        saved_annotations: 5
+        child_activations: 0
+        fallbacks:
+        - missing
+        - CSP
+        - load_error
+        - timeout
+        - navigation
+        desktop: 1280
+        narrow: 375
+      task_dispatch: 0
+      model_turns: 0
+      execution_enabled: false
+      full_round: PARTIAL; real project bridge requires exact grant, all full M2 dependencies
+        retained
+      mac: NOT_RUN
+      human_acceptance: pending
+      git_delivery: NOT_RUN
+    HUB-LWB-5.2:busy_queue_approval_technical:
+      status: PASS
+      scope: persistent_busy_queue_and_deny_only_request_controls_technical
+      code_sha256: b728c160f7be787e5ba05164ecc5fcdb9324c7db4ce031bdd257c43a6c9c9b38
+      evidence_semantic_sha256: 40567d1f14e80c816e92ae4d7e6b252252dc0d30afca0dd55f9a9ae3603575bc
+      judge: busy_repair_judge PASS
+      governor: entry_governor APPROVE
+      tests: 271Hub/15focused/32Node/11scoped12deselected/runner/diff exit0
+      browser: actual isolated MOCK provider/HTTP queue/input/approvaldenyexpiry/cancel/offline,1280+375,twoLinuxviews+twoHTTPowners
+      native_execution: FAIL requires_reconcile/TASK_EVENT_CAPACITY; repaired stream/probe
+        code only; no second inference
+      native_busy_steer_approval: UNVERIFIED/NOT_RUN
+      full_round: BLOCKED native/realproject/Mac/human gates
+      git: NOT_RUN local_unstaged
+    HUB-LWB-5.3:recovery_storageguard_technical:
+      status: PASS
+      scope: owned_recovery_storageguard_technical_only
+      code_sha256: b1c89c94b625165f8cac2305b602eed53866c52bb831c3093978cd64cd0e0e2d
+      evidence_semantic_sha256: d66c4bd87a052dc3a302b17b6b938ce70694f5b524d3abb04e80e54ee9775122
+      judge: recovery_read_judge PASS
+      governor: entry_governor APPROVE
+      tests: 294Hub/23Recovery/7bridge/33Node/11scoped12deselected/runner/syntax/diff0;Judge23Recovery/32Runtime/7bridge/diff0
+      storage: explicit nonHTTP durable registration; identity beforeSQLite on reads/writes;
+        missing/root/parent/mount/marker/ledger drift fail closed; low/unknown-space
+        verifiedoriginal reads only; no blank initialization or dispatch
+      actual: real owned child/HTTP/browser/process/file/check fixtures; providerMOCK
+        only, modelturns0; exactcleanup/protectionPASS
+      browser: Linuxdesktop+narrow wrong-root/fake-status denial; fixedactualrootrestore
+        originalIDs; offline/wait/lost/reconcile historicallimited evidence retained
+      full_round: BLOCKED native/realproject/Mac/human/production adoption
+      git: NOT_RUN local_unstaged
+    HUB-LWB-1.3:computer_study_plan_real_preview_technical:
+      status: PASS
+      candidate_sha256: 4e14b6e0e6bf7b2ba25cf0c379055eca9f87d949378f7bfa609a0315b8ef2a17
+      evidence_sha256: 7683dd7d30356993496c88b020fca18ab0dbc9cfc1ff4819ec7c727c3191b89e
+      judge: preview_metadata_judge PASS
+      governor: entry_governor APPROVE
+      scope: readonly realcode snapshot, actual Linux desktop/mobile only
+  closed_execution_units:
+  - HUB-LWB-1.1
+  - HUB-LWB-1.2:technical_authentication
+  - HUB-LWB-1.3:host
+  - HUB-LWB-1.3-2.1:preview_annotation
+  - HUB-LWB-2.2:isolated_task_runtime
+  - HUB-LWB-4.1
+  - HUB-LWB-4.3
+  - HUB-LWB-4.2:registered_artifact_media_technical
+  - HUB-LWB-5.1:session_discovery_technical
+  - HUB-LWB-3.1:fixture_whole_element_bridge_technical
+  - HUB-LWB-5.2:busy_queue_approval_technical
+  - HUB-LWB-5.3:recovery_storageguard_technical
+  - HUB-LWB-1.3:computer_study_plan_real_preview_technical
+  failure_fingerprint: v11.7/firstauth/A-to-B-before-baseline/freshJudgeFAIL; repaired
+    r1 before-any-auth bracket with65scoped454Hub/freshPASS; no runtime retry; SDK
+    effect grant absent
+  acceptance_evidence:
+    A04:
+      status: PASS
+      basis: Root audit of existing current4.3 evidence + full241Hub/28Node regression;
+        actual native CPU/memory/GPU/temp/service/mount/I-O data, TTL/stale/backendloss
+        and zero/unavailable branches
+      evidence: docs/reports/linux-workbench/INDEX.md#HUB_LWB_4_3_EVIDENCE_BEGIN
+      scope: Linux host metrics only; capacity/profile/codec claims remain unknown;
+        no Mac inference
+  dependency_checkpoint:
+    native_goal_status: blocked
+    blocked_goal_turns_observed: 3
+    consecutive_no_progress_goal_turns: 2
+    basis: Native update_goal returned blocked after third same blocker audit; objective
+      remains full M2; no runtime helper/authority/intent/result; all accepted offline
+      evidence and failures retained
+    blocking_fingerprint: MCP_METADATA_AUTH_EFFECT:v11.7-r1:owner_exact_effect_grant_absent
+    previous_goal_turn_classification: 'no_progress: same precise credential/provider
+      authorization absent'
+    current_goal_turn_classification: 'no_progress: third consecutive exact-boundary
+      confirmation; no eligible independent work'
+    independent_cards: 2.4 requires2.3+Mac;3.2 requires reliable2.3 result and mapping;3.3
+      requires firstpilot+second exactgrant;4.1/4.2/4.3 and5technical closed;5.4 requires
+      M1/M2 matrix
+    revalidation: STATE exactgrant NOT_RECEIVED/allowedfalse; authority/intent/result
+      absent; applicable current cards read; Hub service guardPID2783 alive
+    resume_action: 所有者明确批准一次120秒内官方SDK完整metadata样本可能OAuth/provider刷新及非原子官方凭据更新；收到后以精确r1候选和当前保护项请求Governor一次激活，授权前native0。
+    native_status_confirmed_at: 2026-10-07 14:43:30 UTC
+  session_probe:
+    status: TECHNICAL_PASS
+    scope: exact Hub cwd, limit 3, supported sourceKinds; metadata only
+    allowed_methods:
+    - initialize
+    - thread/list
+    - thread/read
+    denied_effects:
+    - thread/start
+    - thread/resume
+    - turn/start
+    - command/exec
+    - other task messaging
+    - private session files
+    - real Hub filesystem permission
+    adapter_root: owned disposable temporary directory
+    cli_version: 0.159.3
+    schema_initialized: true
+    first_helper_exit: 0
+    full_5_1_acceptance: BLOCKED explicit exact idle-thread authorization/ownership
+      and same-ID resume not yet established
+    actual_counts:
+      cli: 0
+      appServer: 0
+      vscode: 3
+    native_calls: 15
+    model_turns: 0
+    continuation_enabled: false
+    source_capabilities:
+      cli: supported-empty
+      appServer: supported-empty
+      vscode: readable metadata, notLoaded, continuation unverified
+      cloud: UNPROBED
+      remote: UNPROBED
+  risk_lane: GOVERNED_config_native_precheck
+  staged_css_trial_contract:
+    id: HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v7-PROCESS-CONFIG
+    status: BLOCKED_POST_CAPABILITY
+    evidence: docs/reports/linux-workbench/INDEX.md#HUB_LWB_CSP_CSS_TRIAL_CONTRACT_BEGIN
+    activation: fresh Judge PASS and Governor APPROVE v7 candidate2, fixed source/intent/config
+      projections reverified
+  trial_registration:
+    task_id: csp-css-trial-20261007
+    record: data/workbench/csp-css-trial/registration.json
+    status: PARTIAL_BLOCKED_POST_CAPABILITY
+    source_effects: 0
+    model_turns: 1
+    config_sha256: 768973adc2a0fc9683f7e12c59af7323c3c81636d25f84ce9cc0e61f865a1b04
+    config_mtime_ns: 1791356257936833499
+    registration_sha256: ed8ca1f7063f9443c9b86a7113c224342d713dea78bae4f970ce5906ee5aa46b
+    grant_sha256: d116bbbc46ad678876f77e2e2a6437923d2efa5722fb58aa154f7673626ab21c
+    prompt_sha256: d6af0d7aec7f4aba91809791c65ffbba1d7cd80916f785635675df18b79fb1f3
+    actor: trusted_local_owner
+    native_new_threads: 2
+    thread_id: 01a1155c-2200-7f10-9e3d-4e11e051e5b5
+    turn_id: 01a1157b-f571-7c91-a799-6a3a56a20a19
+    owned_adapter_closed: true
+    failure: CSS_ISOLATION_UNVERIFIED
+    failure_evidence: data/workbench/csp-css-trial/preflight-failure.json
+    trial_css_unchanged: true
+    native_created_empty_directories:
+    - .agents
+    - .aws
+    - .codex
+    - .git
+    resume_count: 1
+    diagnostic_status: executed_parent_boundary_failed
+    diagnostic_record: data/workbench/csp-css-trial/isolation-diagnostic-v4.json
+    review_registration: data/workbench/csp-css-trial/diagnostic-review-registration-v4.json
+    diagnostic_v3_judge: FAIL
+    diagnostic_v3_native_commands: 1
+    diagnostic_v4_native_commands: 1
+    diagnostic_v4_status: root_verified_pending_fresh_judge
+    diagnostic_v4_judge: PASS
+    diagnostic_v4_governor: APPROVE
+    replacement_limit: 1
+    total_native_thread_limit: 2
+    model_turn_limit: 1
+    replacement_threads: 1
+    latest_failure: 'CSS_CONFIG_STRUCTURE_REJECTED: global defaults ultra→xhigh after
+      ownedload; exactcauseunproven'
+    latest_failure_evidence: data/workbench/csp-css-trial/owned-resume-failure-v6.json
+    recovery_authority: data/workbench/csp-css-trial/recovery-authority-v5.json
+    recovery_authority_sha256: b35f613a1182f3609423ef7daa418f69535c1bc6c8c90d9037ad3babf07e826b
+    replacement_registration: data/workbench/csp-css-trial/replacement-registration-v5.json
+    recovery_config_sha256: 12d3f7fb223f801b8a63db97fe03d3d7803c1b13adda2ea7da042f3e78c84ab5
+    recovery_config_identity:
+    - 66306
+    - 12090357
+    - 4122
+    - 1791359347398206632
+    - 1791359347398206632
+    replacement_thread_id: 01a1155c-2200-7f10-9e3d-4e11e051e5b5
+    read_diagnostic: data/workbench/csp-css-trial/replacement-read-diagnostic-v5.json
+    read_diagnostic_count: 2
+    read_diagnostic_r2: metadata_read_succeeded; idle/zero/recoverable UNVERIFIED;
+      newv6admission native notLoaded; LOAD-THEN-IDLE contract revision
+    active_config_churn: data/workbench/csp-css-trial/active-config-churn-v5.json
+    loaded_mcp_disabled: true
+    parent_native_isolation: PASS actual process+loaded probes
+    placeholder_attribution: PASS exact fouremptydirs fromnative thread/start
+    owned_resume_authority: data/workbench/csp-css-trial/owned-resume-authority-v6.json
+    owned_resume_authority_sha256: 8b98d9513829f9c9c0a0ed878b9949ff7fd2247c9fa23688a4f75240ebc5ae72
+    native_loaded_idle: PASS actual sameID/cwd/statusidle; not historyhydration proof
+    resume_calls: 4
+    native_thread_count: 2
+    evidence: data/workbench/csp-css-trial/process-resume-partial-v7.json
+    evidence_sha256: df90413075ef535772be4eb8b14062f5fc545ed26ffd7313a25b49e6fc3167aa
+    preview_evidence: data/workbench/csp-css-trial/preview-trial-manifest-v8.json
+    source_writes: 0
+    latest_actual_failure: v10 schema-valid bound thread/tokenUsage/updated rejected
+      by fixedallowlist; native closed; v9 rejectednotice remains unknown
+    latest_actual_evidence: data/workbench/csp-css-trial/capability-recovery-runtime-registration-v10.json
+  process_config_candidate:
+    contract: HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v7-PROCESS-CONFIG
+    status: APPROVED_PRE_DISPATCH
+    registration: data/workbench/csp-css-trial/process-resume-registration-v7-r2.json
+    candidate_sha256: 74789f58d8cefe329f71decfdf77a21475d2dffc98488d6a2a669b175cbf9d77
+    evidence_sha256: 84f3d4efa605e35664b0e64178bc2eb07e4fe2fdfb47b064e868ff373e2ca90b
+    prior_review: candidate1 FAIL marketplace nonsecret value drift
+    checks: 27 CSS / 333 Hub PASS
+    runtime: native final resume2 + one completed model; exact trial CSS and native
+      after-isolation PASS; post-capability failed, no promotion
+    frozen_expiry: 1791362363.438937
+  capability_evidence_repair:
+    registration: data/workbench/csp-css-trial/capability-evidence-registration-v8.json
+    candidate: 6a6627b52eb9b114b2af232ca7587c1b460ac9a590f74e1f02bd754bd2e7f017
+    evidence: 128ca8e3deee01168355ac34ca1e9afa823f427aa816be7a2279deddd10433b4
+    status: APPROVED_OFFLINE_AND_UNPROMOTED_PREVIEWS
+    tests: 6 specific / 339 all Hub PASS
+    runtime: NOT_RUN
+    judge: capability_retention_judge PASS
+    governor: entry_governor APPROVE v8; native effects not authorized under v8
+  capability_recovery:
+    contract: HUB-LWB-2.3-CSP-CAPABILITY-RECOVERY-GOV-v9
+    status: RUNTIME_FAIL_GOV_REQUEST_REPAIR_GRANT_EXPIRED
+    registration: data/workbench/csp-css-trial/capability-recovery-registration-v9-r5.json
+    candidate: 8e41bd10910e76c997f19eb5cd7d68d3b8bd5ce3b6a1f8298afde7e3cee0511e
+    evidence: 74d98dd8261fba3da383d690764f1f52b8ccba14604b3d380c27428d9ceb1fcf
+    checks: 13 offline /352 Hub PASS; fixture clock fixed, runtime expiry remains
+      real
+    runtime: NOT_RUN
+    resume_total_limit: 3
+    model_turns_allowed: 0
+    source_promotion_allowed: false
+    prior_review: candidate4 independent hashes/dependency closure/13+352tests matched;
+      no decision after Root clock-fixture issue; Judge continuing fresh exact r5
+      review. candidate1/2 FAIL and candidate3 interruption retained.
+    authority: data/workbench/csp-css-trial/capability-recovery-authority-v9.json
+    review: data/workbench/csp-css-trial/capability-recovery-review-v9-r5.json
+    runtime_registration: data/workbench/csp-css-trial/capability-recovery-runtime-registration-v9.json
+    runtime_evidence: ec740105ebe7a9ff146572b87c5296fb923adce5897c169fddc166af6feca024
+    native_helper_closed: true
+    native_resume_total: 3
+    model_turn_total: 1
+    no_fourth_resume: true
+    frozen_grant_expiry: 1791364398
+    failure_fingerprint:
+      target: postprobe notification drain
+      version: codex0.159.3/v9-r5
+      class: DIAGNOSTIC_NOTIFICATION_REJECTED
+      method: single exact bound evidence-only helper; rejected notice identity not
+        retained
+      native_retries_allowed: 0
+    runtime_judge: capability_runtime_evidence_judge FAIL; positive subsets valid
+    runtime_governor: entry_governor REQUEST_REPAIR offline only; no reconcile/promotion
+    grant_status: EXPIRED
+  notification_retention_repair:
+    registration: data/workbench/csp-css-trial/notification-retention-registration-v9.json
+    candidate: ac5b76271f1b95d6dfe10d35e605d6bceafbcb7031d4e01f20cd4c1650b1d728
+    evidence: feeec00ae4e1448fdf4ec69450a71d09df92cf48e939b68bd4318e6d1642b3bc
+    checks: 8 scoped /360 Hub PASS
+    status: APPROVED_OFFLINE_ONLY
+    native_effects_allowed: 0
+    judge: notification_retention_judge PASS
+    governor: entry_governor APPROVE
+  capability_recovery_v10:
+    contract: HUB-LWB-2.3-CSP-CAPABILITY-RECOVERY-GOV-v10
+    contract_record: data/workbench/csp-css-trial/capability-recovery-contract-v10.json
+    status: RUNTIME_FAIL_OFFLINE_BASELINE_REPAIR_ALLOWED
+    native_effects_before_review: 0
+    prior_resumes: 3
+    total_resume_limit: 4
+    new_model_turns_allowed: 0
+    fifth_resume_allowed: false
+    source_promotion_allowed: false
+    registration: data/workbench/csp-css-trial/capability-recovery-registration-v10.json
+    candidate: f884e13beed27d1ca8671b4f766a41bf7afe90e184e7b45d5b42cef1a1c2442d
+    evidence: 1dd739dea98e096502abd0a0cd928d7d08dcea341f378841141c78b5867a49f0
+    checks: 18 scoped /365 final Hub PASS; syntax/diff PASS
+    runtime: PARTIAL_BLOCKED DIAGNOSTIC_NOTIFICATION_REJECTED
+    authority: data/workbench/csp-css-trial/capability-recovery-authority-v10.json
+    review: data/workbench/csp-css-trial/capability-recovery-review-v10.json
+    expires_at: 1791366681.8198423
+    judge: capability_v10_judge PASS
+    governor: entry_governor APPROVE
+    runtime_registration: data/workbench/csp-css-trial/capability-recovery-runtime-registration-v10.json
+    runtime_evidence: 8091494f8ca5c7958cb36a63469846070850014221058a13919126fa6eb3c104
+    native_helper_closed: true
+    helper_exit: 0
+    native_resume_total: 4
+    model_turn_total: 1
+    source_writes: 0
+    taskstore_writes: 0
+    failure_fingerprint:
+      target: post-resume exact thread/read
+      version: codex0.159.3/v10
+      class: known unallowlisted thread/tokenUsage/updated; exactthread/turn schema
+        valid
+      method: fourth final evidence-only load; safe projection retained before rejection
+      native_retries_allowed: 0
+    runtime_judge: capability_v10_runtime_judge FAIL; valid scopedmetadata/closure/preservation
+    runtime_governor: entry_governor REQUEST_REPAIR; no native/fifth/promotion
+    authority_status: EXPIRED; no renewal
+  completed_usage_baseline_repair:
+    contract: HUB-LWB-2.3-COMPLETED-USAGE-BASELINE-OFFLINE-v10
+    contract_record: data/workbench/csp-css-trial/baseline-contract-v10.json
+    status: APPROVED_OFFLINE_ONLY
+    native_effects_allowed: 0
+    fifth_resume_allowed: false
+    registration: data/workbench/csp-css-trial/baseline-registration-v10.json
+    candidate: 9a075b908f5bd1ffe6af3d6e75da63e2eff9fdc05c9eb4b8dc928cb90ee12efc
+    evidence: 16910b074c76636daa244db147bd187eb36d2ee20660d781b2678644f72bd6b7
+    checks: 27 scoped /374 final Hub PASS; syntax/diff PASS
+    runtime: NOT_RUN
+    judge: completed_baseline_judge PASS
+    governor: entry_governor APPROVE
+  capability_recovery_v11:
+    contract: HUB-LWB-2.3-CSP-CAPABILITY-RECOVERY-GOV-v11
+    status: PREDISPATCH_BLOCKED_SEMANTIC_CONFIG_PROOF
+    prior_resumes: 4
+    total_resume_limit: 5
+    new_model_turns_allowed: 0
+    sixth_resume_allowed: false
+    source_promotion_allowed: false
+    checks: 27 scoped /374Hub PASS; AST/diff PASS
+    runtime: NOT_RUN
+    config_drift: data/workbench/csp-css-trial/capability-recovery-config-drift-v11.json
+    cause: UNPROVEN protectedprojection SHA changed; types/mcpnames/sensitive structure
+      same; no repin/globalwrite/native
+    failure_fingerprint:
+      target: v11 registration preflight
+      version: candidatev11/currentsharedconfig
+      class: CSS_PROCESS_PROTECTED_CONFIG_DRIFT
+      method: original protected pin verification; one attempt; no helper
+    native_resumes_total: 4
+  semantic_config_rebaseline:
+    status: APPROVED_OFFLINE_ONLY
+    old_pin: 2f3221497d84381ad9b9e52c58516e8be69f47b00677be04c433f3ff92de633d
+    current_observed_pin: bbe8991ceb0d954fd8b6178b74ab11511426637c383e9adb3a7942dbbfc43986
+    current_pin_authorized: false
+    top_key_count: 15
+    same_types_and_mcp_names: true
+    source_version: rust-v0.159.3
+    source_references:
+    - https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/app-server/src/lib.rs
+    - https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/features/src/lib.rs
+    - https://raw.githubusercontent.com/openai/codex/rust-v0.159.3/codex-rs/core/config.schema.json
+    verified_source_finding: AppServer startup derives config/cloud-auth/environment
+      components before request dispatch; no-model method gate alone cannot prove
+      every config subtree inert
+    source_lookup_failure: old core/src/features.rs path404; actual features/src/lib.rs
+      verified; no retry same path
+    next_required: separate v11.1 native config precheck candidate and review; no
+      fifth resume
+    native_helpers_allowed_now: 0
+    fifth_resume_allowed_now: false
+    source_promotion_allowed: false
+    registration: data/workbench/csp-css-trial/semantic-config-registration-v11-r2.json
+    candidate_sha256: 796bc18c65e3d05b4d88751a979d32caaf3908300ccf8ed55e27a4fd44b8d241
+    evidence_sha256: fb70a1225a51a4ccfc5ed9ee36582e07d78c6e6239a04461e0b940fde59b52a9
+    semantic_pin_sha256: e1596f20f668c6878c60b522c8504da8157382d6d3ef23a1a8991810dcc78d0e
+    checks: 47 scoped /389 Hub/331subtests;28AST/diff/runner/source3/trial/task/auth/protected38
+      PASS; no native effects
+    review_reservation_tokens: 6000
+    judge: semantic_config_v11_r2_judge
+    judge_decision: PASS
+    failure_fingerprint: dd2ac230 /rust-v0.159.3 /projects trust_selector_only incorrectly
+      inert; actual loader and native trust persistence consumers omitted
+    judge_verified: 28code/28evidence digests;18source pins/lines/witnesses;47scoped55subtests/389Hub331subtests;AST/diff/runner/source3/trial/task/auth
+      matched. Offline only; no native authority.
+    defect: 'prior normalization repaired: active trust/layers bound; readonly evidence
+      profile; cold-only resume and full global/projects preservation. Native stack/permissions/isolation
+      still NOT_RUN.'
+    governor: entry_governor
+    repair_contract: bind full cwd/canonical/project/repo lookup closure and actual
+      config-layer candidates/disabled reasons/hooks/exec-policy; dedicated readonly
+      managed profile; cold-notLoaded resume explicit override/echo; global config
+      identity/projects preserved; no native effects
+    prior_review:
+      registration: data/workbench/csp-css-trial/semantic-config-registration-v11.json
+      candidate_sha256: dd2ac230b15f0aaf08c4358b3c21c5593e52772fb753b46cf0fed758fd2c570c
+      evidence_sha256: 6568c17bd1e5fa12ac7ba76bdb57b518b355330ad6ca944474d6b6a5733bba45
+      judge: semantic_config_v11_judge
+      judge_decision: FAIL
+      failure_fingerprint: dd2ac230 /rust-v0.159.3 /projects trust_selector_only incorrectly
+        inert; actual loader and native trust persistence consumers omitted
+    source_proof: data/workbench/csp-css-trial/semantic-config-sources-v11-r2.json
+    source_pin_count: 18
+    source_reachability_correction: sole trust setter is in thread_start_task; resume
+      reachability UNPROVEN; config drift cause UNPROVEN
+    governor_decision: APPROVE
+  config_precheck:
+    contract: HUB-LWB-2.3-CSP-CONFIG-DIAGNOSTIC-GOV-v11.4
+    contract_record: data/workbench/csp-css-trial/config-precheck-contract-v11-4.json
+    revision: r3
+    status: ACTUAL_DIAGNOSTIC_PARTIAL_BLOCKED
+    registration: data/workbench/csp-css-trial/config-precheck-registration-v11-4-r3.json
+    candidate_sha256: d148d2c43816e77d8dca7431c3f1703fd1f0d44b64021a8eb144f596a46d0aeb
+    evidence_sha256: d1e20ffa5125db8a8226e48ff495d33f97b101fa730b87c5ed215780fd28e5c4
+    checks:
+      scoped: 23passed
+      full_hub: 412passed
+      AST3: PASS
+      diff_check: PASS exit0
+      previous113pins: only2owned changed;other111exact
+      source3_trial_auth_task_semantic: PASS
+      priorfailure_retained: v11.4/r2 freshJudge FAIL exactrecords/preimages; originalv11.1–3actualFAIL
+        intact
+    judge_decision: PASS
+    governor_decision: APPROVE
+    native_helpers_allowed_now: 0
+    actual_helpers_consumed: 1
+    cumulative_metadata_helpers: 5
+    actual_status: PARTIAL_BLOCKED
+    actual_judge_decision: FAIL
+    actual_governor_decision: REVISE_TASK
+    fifth_resume_allowed: false
+    full_metadata_acceptance: NOT_RUN diagnostic route only
+    review_reservation_tokens: 6000
+    failed_v11_4: data/workbench/csp-css-trial/config-precheck-review-v11-4.json
+    previous_v11_1:
+      status: PARTIAL_BLOCKED
+      error: CSS_PRECHECK_LAYERS_REJECTED
+      native_helpers_consumed: 1
+      registration: data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-1.json
+      review: data/workbench/csp-css-trial/config-precheck-runtime-review-v11-1.json
+    previous_v11_2:
+      status: PARTIAL_BLOCKED
+      error: CSS_PROCESS_MCP_STRUCTURE_REJECTED
+      native_helpers_consumed: 1
+      registration: data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-2.json
+      review: data/workbench/csp-css-trial/config-precheck-runtime-review-v11-2.json
+    previous_v11_3:
+      runtime_registration: data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-3.json
+      runtime_review: data/workbench/csp-css-trial/config-precheck-runtime-review-v11-3.json
+      status: PARTIAL_BLOCKED
+      error: CSS_PROCESS_SEMANTIC_STRUCTURE_REJECTED
+      helper_consumed: true
+      judge: FAIL
+      governor: REVISE_TASK
+      preservation: all8true; wire4exact; fullmetadataunaccepted
+    failed_v11_4_r2: data/workbench/csp-css-trial/config-precheck-review-v11-4-r2.json
+    review: data/workbench/csp-css-trial/config-precheck-review-v11-4-r3.json
+    authority: data/workbench/csp-css-trial/config-precheck-authority-v11-4.json
+    expires_at: 1791375405.2481713
+    helper_literal_status: PASS_CONFIG_STRUCTURE_DIAGNOSTIC_ONLY
+    actual_error: CSS_DIAGNOSTIC_UNKNOWN_PRIVATE_STRUCTURE
+    unknown_private_counts:
+      desktop: 2
+    result: data/workbench/csp-css-trial/config-precheck-result-v11-4.json
+    runtime_registration: data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-4.json
+    preservation: all8true/PID2004799closedexit0/init+configread; no semantictypedcap
+      acceptance
+    actual_review: data/workbench/csp-css-trial/config-precheck-runtime-review-v11-4.json
+    offline_desktop_candidate:
+      status: FRESH_JUDGE_PASS_GOVERNOR_APPROVED_OFFLINE
+      registration: data/workbench/csp-css-trial/config-precheck-registration-v11-5-r3.json
+      candidate_sha256: 312535ad8c35ac0fe078b38a038a449a21d3f30c6216cbe914272cb5c5243fb4
+      evidence_sha256: 9a215f12a06512d296130b5f30f67ff885b478aba596ecd189a6d1c4ac55fffb
+      scoped_tests: 35
+      hub_tests: 424
+      native_helpers_allowed: 0
+      prior_registration_failure: data/workbench/csp-css-trial/config-precheck-registration-error-v11-5-r1.json
+      prior_candidate_failure: data/workbench/csp-css-trial/config-precheck-review-v11-5-r2.json
+      review: data/workbench/csp-css-trial/config-precheck-review-v11-5-r3.json
+    metadata_successor_contract:
+      id: HUB-LWB-2.3-CSP-FULL-METADATA-PRECHECK-GOV-v11.6-r4
+      revision: v11.6-r4
+      record: data/workbench/csp-css-trial/config-precheck-contract-v11-6-r4-final.json
+      sha256: 45119b30715357810ea150852a945941bd638ab60b8fa3980e18604aba8fe087
+      status: FRESH_JUDGE_PASS_GOVERNOR_SINGLE_NATIVE_PRECHECK
+      source_record: data/workbench/csp-css-trial/feature-catalog-source-closure-v11-6-r2.json
+      source_sha256: f2410fceb603951c4e8dcf948435ad23ab9b7ae0c34b4d6ff36266d02d34cd4b
+      failed_r1: data/workbench/csp-css-trial/config-precheck-contract-review-v11-6-r1.json
+      native_helpers_allowed_now: 0
+      review: data/workbench/csp-css-trial/config-precheck-review-v11-6-r4.json
+      failed_r2: data/workbench/csp-css-trial/config-precheck-contract-review-v11-6-r2.json
+    offline_full_metadata_candidate:
+      candidate_sha256: 89454f7a3d124f9455dd89dc644fdc79ac587301e5f688f2ef84e9ef76287e23
+      evidence_sha256: 552213cd59ab0cb17dc3aa36289e8dbc205487d6c80580f8b0d69bcbd399b559
+      checks:
+        scoped: 52passed exit0 (38precheck14metadata)
+        full_hub: 441passed exit0; previousSQLiteResourceWarning retained
+        AST2: PASS
+        owned_candidate_whitespace: PASS
+        prior174evidencepins: 174exact
+        prior35codepins: only2owned changed;other33exact
+        r4actual: FAIL/PARTIAL_BLOCKED retained; all8guards/authmode/schemaCleanup/effectlimits
+          true; noViolation; A152exact; MCP/B/fullconfigNOT_RUN
+        native_effects: 0 sinceconsumedr4
+        offline_only: true
+      registration: data/workbench/csp-css-trial/config-precheck-registration-v11-6-r5.json
+      status: FAILED_R5_MCP_CONSUMER_CONFLICT
+      native_helpers_allowed: 0
+      review: data/workbench/csp-css-trial/config-precheck-review-v11-6-r5.json
+      judge: FAIL
+      governor: REQUEST_REVISION
+      revision: v11.6-r5
+    full_metadata_actual:
+      status: PARTIAL_BLOCKED
+      error: CSS_PRECHECK_LAYER_STRUCTURE_REJECTED
+      result: data/workbench/csp-css-trial/config-precheck-result-v11-6-r4.json
+      runtime_registration: data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-6-r4.json
+      runtime_evidence_sha256: 6913e4a26059a834f2c886eace33d0371369d8a4e590d7bbe9893e345353d8d6
+      pid: 2158680
+      exit: 0
+      catalogA: 152/152exact2pages
+      catalogB_MCP_fullconfiguration: NOT_RUN
+      effects:
+        auth_mode: 2
+        helper: 1
+        mount: 5
+        preview_head: 4
+        schema: 1
+        source_head: 4
+        version: 1
+      preservation: all8+authmode/schemaCleanup true; noeffectsviolation;closedexit0
+      runtime_review: FAIL
+      helper_consumed: true
+      actual_review: data/workbench/csp-css-trial/config-precheck-runtime-review-v11-6-r4.json
+      governor: REQUEST_REPAIR
+    safe_config_feature_candidate:
+      status: FRESH_JUDGE_PASS_GOVERNOR_APPROVED_OFFLINE
+      registration: data/workbench/csp-css-trial/config-precheck-registration-v11-6-r6.json
+      candidate_sha256: b755f80276ae8a0b559add575057bb856f98617f38cf4ee4d7ad8f911065e7a3
+      evidence_sha256: c8e8c2275762146e224037a22ddab7c96e0ac28444d44da2a922d102c580d840
+      checks:
+        scoped: 53passed exit0 (39precheck14catalog/schema/effect)
+        full_hub: 442passed exit0; preexistingSQLiteResourceWarning retained
+        AST4_whitespace: PASS
+        prior189evidence: all189exact
+        prior35code: 4owned changed other31exact
+        source_closure: 56pins/440schemas/152templates current
+        native_now: 0
+        earlier_r6_test_failure: secondcatalogfixture retainedoldMCP consumedset;
+          scoped14/full442 failed1; source-correctedphase nowpassed; no relaxation
+        original_denominator: fullmetadata/MCPruntime/resume/M2 stillblocked
+      source_record: data/workbench/csp-css-trial/feature-catalog-source-closure-v11-6-r6.json
+      source_sha256: f3995f31fdd23205ebc2c6ee71a3a2fc80d593464f6edf53f5767e5050507619
+      native_helpers_allowed: 0
+      full_metadata_acceptance: BLOCKED
+      MCP_runtime: NOT_RUN
+      fifth_resume_allowed: false
+      judge: PASS_OFFLINE_ONLY
+      review: data/workbench/csp-css-trial/config-precheck-review-v11-6-r6.json
+      governor: APPROVE_OFFLINE_ONLY
+      governor_record: data/workbench/csp-css-trial/config-precheck-governor-decision-v11-6-r6.json
+    sdk_refresh_candidate:
+      status: FRESH_JUDGE_PASS_GOVERNOR_APPROVED_OFFLINE_PREPARATION
+      contract: data/workbench/csp-css-trial/config-precheck-contract-v11-7.json
+      contract_sha256: 7991b8eaf1cb50e6250938e62b56d3f1bc74d22364ec9d8cdfc3a2343741809e
+      registration: data/workbench/csp-css-trial/config-precheck-registration-v11-7-r1.json
+      candidate_sha256: 862215cc3e95df74310e2a913b233e5fd02ef63a0d77fa96a2dc255d8c63ef96
+      evidence_sha256: 23922c677f72e731cb38f16b9dc2d1594fc80370ee1524603052033615383f22
+      checks:
+        AST2_whitespace: PASS
+        full_hub: 454passed exit0
+        native_effects: 0
+        owner_effect_authorization: ABSENT; stagedinactive/noruntimeauthority
+        prior255evidence: all255exact
+        prior35code: only2ownedchanged/other33exact
+        prior_first_candidate: FAIL firstauthbaselinehole; original62/451PASSdoesnot
+          override freshFAIL
+        scoped: 65passed exit0
+        source_binary_catalog: current68publicsources/440schemas/152templates/staticpubliccatalogexact
+      owner_effect_grant: ABSENT
+      native_helpers_allowed: 0
+      full_metadata_actual: NOT_RUN
+      source_record: data/workbench/csp-css-trial/metadata-auth-refresh-source-v11-7.json
+      fifth_resume_allowed: false
+      judge: PASS_STAGED_INACTIVE
+      review: data/workbench/csp-css-trial/config-precheck-review-v11-7-r1.json
+      governor: APPROVE_OFFLINE_PREPARATION_ONLY
+      governor_record: data/workbench/csp-css-trial/config-precheck-governor-decision-v11-7-r1.json
+      previous_v11_7_failed_candidate:
+        status: FAILED_FIRST_AUTH_BASELINE_GAP
+        contract: data/workbench/csp-css-trial/config-precheck-contract-v11-7.json
+        contract_sha256: 7991b8eaf1cb50e6250938e62b56d3f1bc74d22364ec9d8cdfc3a2343741809e
+        registration: data/workbench/csp-css-trial/config-precheck-registration-v11-7.json
+        candidate_sha256: c48e2df330e10860d627097a5067e0d9f97ed3915d571b470b4f92d3f4112efb
+        evidence_sha256: 413f9dd8cc5890be5bd4768cba29bf9d1b459c0492300445aae9af69fe14b445
+        checks:
+          AST5_whitespace: PASS
+          failure_retained: firstnewtest usedrejectedunknownconfigfield:58error1 thenfixed62;
+            firstsourcecheck publiccatalogmode0664 rejected; fixedowned0644 thenPASS;
+            failedapplypatchscriptcontext nofileschanged
+          full_hub: 451passed exit0
+          native_effects: 0
+          prior232evidence: allpriorpins retained
+          prior35code: 5owned changed/30exact
+          runtime_owner_permission: ABSENT; noauthority/intent/result/helper
+          scoped: 62passed exit0
+          source_binary_catalog: PASS;68publicsources/440schemas/152templates; no
+            native
+        owner_effect_grant: ABSENT
+        native_helpers_allowed: 0
+        full_metadata_actual: NOT_RUN
+        source_record: data/workbench/csp-css-trial/metadata-auth-refresh-source-v11-7.json
+        fifth_resume_allowed: false
+        judge: FAIL
+        review: data/workbench/csp-css-trial/config-precheck-review-v11-7.json
+        governor: REQUEST_REPAIR
+        governor_record: data/workbench/csp-css-trial/config-precheck-governor-v11-7-fail.json
+      revision: v11.7-r1
+  failure_fingerprints:
+  - target: v11.1 native config/read layer validation
+    version: 8b2c5901a78fe83e9cc2832c0529b167493557035ee0925c2fb1275adc8e92da
+    class: CSS_PRECHECK_LAYERS_REJECTED
+    method: one fixed-cwd includeLayers native metadata helper; consumed once
+    new_evidence: all preservation PASS; actual layer count/order omitted on rejection;
+      no retry without public projection diagnosis and fresh authority
+  - target: v11.2 native config/read user-layer MCP shape
+    version: 42b86244080dda798befb215169d7d23e667083d82107902c355d05f469a7ebb
+    class: CSS_PROCESS_MCP_STRUCTURE_REJECTED
+    method: one metadata helper; consumed once
+    new_evidence: wire4highlow names confirmed, failure narrowed to MCP raw-layertype;
+      closure8PASS; no rerun without sourcecoercion diagnosis/freshauthority
+  - target: v11.3 native user-layer semantic_structure
+    version: ffe8ebd68056d02ece557924dde01eb0fb58e5035c8b68d26fe98580cf0eb8bd
+    class: CSS_PROCESS_SEMANTIC_STRUCTURE_REJECTED
+    method: one bounded metadata helper; consumed once
+    new_evidence: MCP primitive gate passed but later usersemantic shape rejects;
+      no validatedcause/group yet; switch to fixed shape diagnosis before any additional
+      repair
+  - target: HUB-LWB-2.3 nativeconfig
+    version: v11.4-r3/codex0.159.3
+    class: CSS_DIAGNOSTIC_UNKNOWN_PRIVATE_STRUCTURE
+    method: one fixed-group aggregated initconfig sample
+    evidence: data/workbench/csp-css-trial/config-precheck-runtime-registration-v11-4.json
+    new_evidence: desktopunknown2 only; othergroups exact exceptknownMCPduration;
+      no blindretry
+  - target: v11.7 first authentication credential bracket
+    version: c48e2df330e10860d627097a5067e0d9f97ed3915d571b470b4f92d3f4112efb
+    class: FIRST_AUTH_BASELINE_GAP
+    method: fresh independent staged candidate review; no native helper
+    new_evidence: r1 captures A before any admission/auth and compares immediately
+      after firstlogin; A toBthenstable blocks; targeted65/Hub454/freshJudgePASS;
+      ownerpermission stillabsent
+  cursor_handoff:
+    status: CURSOR_ACTIVE_INITIAL_DELIVERY_PREPARED
+    prepared_at: '2026-10-07T18:05:48.066595+00:00'
+    document: prompts/linux_workbench/CURSOR_HANDOFF_PROMPT.md
+    previous_execution_prompt: prompts/linux_workbench/EXECUTION_PROMPT.md
+    risk_lane: DIRECT_document_only
+    execution_here: handoff only; no Cursor runtime/Git/credential/admin window activation
+    receiver: Cursor local Agent same Linux repository
+    mode_request: native /goal plus native /loop on same Goal; capability/activation
+      proof required; no duplicate personalHook
+    owner_visual_feedback: '2026-10-08: new and old look indistinguishable; currenttrial
+      notvisuallyaccepted; keepoverallstyle andbothversions'
+    previous_blocked_next_action: 所有者明确批准一次120秒内官方SDK完整metadata样本可能OAuth/provider刷新及非原子官方凭据更新；收到后以精确r1候选和当前保护项请求Governor一次激活，授权前native0。
+    git_delivery_grant:
+      authority: 'direct owner2026-10-08: Cursor firstcommit existingtask changes
+        toGitHubmain thencommit everyimplementationround'
+      repository: alalapi-0/personal-control-hub
+      target: main
+      scope: verified taskowned initialunit andeachchangedround; sharedhunks/others
+        preserved; no secrets/runtimeDB/unrevieweddata
+      protection: normal push/PR/main integration and exactremoteSHA; no force/historyrewrite/protectionbypass
+      execution_here: true
+      initial_delivery: PREPARED_REMOTE_SHA_PENDING
+      local_snapshot:
+        branch: agent/governance-closure-20260812
+        HEAD: 8fa0a4e53e00207823e3fb406ee04b94b77141a9
+        stored_origin_main: b2a3e090167678bfeb24c80f72eb7b7cb44a2c78
+        tracked_modified: 38
+        untracked_top_level_entries: 73
+        staged: 0
+        local_only_commits: 1
+        stored_remote_only_commits: 153
+        fresh_fetch: origin/main 0c0f592fdf1e8baf53b86afc4300916aa59166e8
+        integration_branch: codex/lwb-initial-main-delivery
+    admin_window_request:
+      hours: 20
+      authority: owner specified 20hours for Cursor preflight/localTerminal workflow
+      status: NOT_OPENED_BACKEND_NOT_VERIFIED
+      scope: only necessary approved fixed administrator operations; currentSDKeffect
+        isordinaryuser credentialboundary, notsudo
+      requirements: existing linux-admin-window skill qualifiedbackend, trustedstatus,hardexpiry,revocation,crossTTY
+        verification,owner localpasswordonly
+      terminal_open: owner requested; not evidence of capability or guaranteedcontinuation
+    media_write_window:
+      status: RESERVED_FOR_MEDIA_STORAGE_CURSOR_PENDING_SCOPE_COMPLETION
+      holder_thread: null
+      holder_task: LINUX-MEDIA-OUTPUT-STORAGE-GOAL-20261007
+      generated_media_directory: docs/reports/linux-workbench
+      current_media_count: 25
+      scope: generated screenshot files only; mixed INDEX/text parent cannot movewhole;
+        corresponding capture/fixture outputpath/reference portions
+      source_entry_points:
+      - tests/lwb_real_preview_fixture.py
+      - data/workbench/csp-css-trial/capture_trial_preview.py
+      - src/hub/css_trial.py:IMAGE
+      - src/hub/readonly_preview.py:registered preview references
+      root_writer_status: this Hub Root no longer writes these media or capturepaths;
+        all live descendants enumerated completed; no currenttask writer left
+      protected: inputs/accounts/databases/runtime dependencies/currenttrial/business
+        candidates andexecutionguardsemantics unchanged
+      cursor_rule: Hub business Cursor waits for separate media storage Cursor completion
+        and explicit release of this exact group; does not wait for paused Codex;
+        no concurrent captures/moves/staging/source writes; dependent complete commit
+        units wait, independent units may continue
+      media_state_owner: media storage Cursor only media_apps_storage_goal; Hub business
+        Cursor only linux_visual_workbench
+      executor: separate Cursor media storage Goal; DOCUMENT_READY_CURSOR_NOT_STARTED
+      executor_handoff_document: prompts/workstation/CURSOR_MEDIA_STORAGE_HANDOFF_PROMPT.md
+      executor_state: media_apps_storage_goal.cursor_handoff
+      previous_codex_holder_thread: 01a113b8-2626-7a62-8973-b21daf4c7057
+      previous_codex_status: PAUSED confirmed in media canonical state; documentation
+        only; no further source/migration/validation/Git execution
+      scope_status: Hub25 screenshots andmixedparent not yet migrated; scope unchanged
+    updated_at: '2026-10-08T04:02:48+09:00'
+    withheld_from_initial_commit:
+    - docs/reports/linux-workbench generated screenshots (25)
+    - docs/reports/linux-workbench preview manifests and capture json
+    - data/workbench/csp-css-trial/capture_trial_preview.py
+    - tests/lwb_real_preview_fixture.py
+    - data/workbench/tasks.sqlite3
+    - data/design_governance/design-store.json screenshot registration
+    - metric_sources.yaml and other-task metric/registry diffs
+    - workstation scripts and media-storage handoff files

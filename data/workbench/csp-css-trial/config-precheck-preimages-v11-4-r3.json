@@ -1,0 +1,14 @@
+{
+  "scripts/precheck_css_config.py": {
+    "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r3-precheck_css_config.py",
+    "sha256": "f2043d5e3dd91eba7b860b0b8400135b29bdf1d402eea36bb4147481bb313ee1"
+  },
+  "src/hub/css_config_precheck.py": {
+    "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r3-css_config_precheck.py",
+    "sha256": "c017009b69cfe8239964672cf4f1d6d614fae78d89ad60a87c8e04ed8bbbf759"
+  },
+  "tests/test_hub_css_config_precheck.py": {
+    "preimage": "data/workbench/csp-css-trial/config-precheck-preimage-v11-4-r3-test_hub_css_config_precheck.py",
+    "sha256": "af9d6e120c1afaa63abb347d837b6c0b0aee0824b84872d0f8f64ce3381581e0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "candidate_hash": "211a9a0651e3042f1aaeec9cbc82a38093563d2efa970c2861d5b137ab032d70",
+  "candidate_id": "csp-home-readonly-code",
+  "candidate_revision": 2,
+  "changes_explained": "Earlier owned CSP readonly-mobile-v2 revision2 baseline/candidate facts in store revision22; currentcandidate makeszeroDesignStore writes; do not restore older optionalbaseline hash",
+  "manifest_file_sha256": "b7d5bff8a5603a201c619cd0c5dd96fb4110788cc909d3407f52c9edb5517706",
+  "manifest_hash": "75a00d6e0943ccf7938e19dba18718a22a394aa4fe61b6c48483a91f9dc4bbdb",
+  "registration_valid": true,
+  "related_fact_count": 7,
+  "related_facts_sha256": "bc545a820118a056f32d6dbdebbff5b3c1526c2bf59e0040fd52f0d401e9087f",
+  "source_head_native_guard": "NOT_RUN until one authorizedprecheck",
+  "store_revision": 22,
+  "store_sha256": "cb27ff3bd8806e87609873d452cce21710ac0112721bde960cea801fecc8ad65"
+}

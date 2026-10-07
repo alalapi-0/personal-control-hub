@@ -1,0 +1,64 @@
+{
+  "features": [
+    {
+      "enabled": true,
+      "name": "code_mode_host"
+    },
+    {
+      "enabled": false,
+      "name": "memories"
+    },
+    {
+      "enabled": false,
+      "name": "hooks"
+    },
+    {
+      "enabled": false,
+      "name": "multi_agent"
+    },
+    {
+      "enabled": false,
+      "name": "multi_agent_v2"
+    },
+    {
+      "enabled": false,
+      "name": "apps"
+    },
+    {
+      "enabled": false,
+      "name": "plugins"
+    },
+    {
+      "enabled": false,
+      "name": "in_app_browser"
+    },
+    {
+      "enabled": false,
+      "name": "browser_use"
+    },
+    {
+      "enabled": false,
+      "name": "browser_use_full_cdp_access"
+    },
+    {
+      "enabled": false,
+      "name": "browser_use_external"
+    },
+    {
+      "enabled": false,
+      "name": "computer_use"
+    },
+    {
+      "enabled": false,
+      "name": "remote_plugin"
+    }
+  ],
+  "has_next_page": true,
+  "kind": "rpc_result",
+  "method": "experimentalFeature/list",
+  "other_feature_count": 87,
+  "raw_body_retained": false,
+  "request_cursor_present": false,
+  "row_count": 100,
+  "thread_id": "01a1155c-2200-7f10-9e3d-4e11e051e5b5"
+}

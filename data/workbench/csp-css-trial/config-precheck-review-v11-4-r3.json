@@ -1,0 +1,12 @@
+{
+  "candidate": "d148d2c43816e77d8dca7431c3f1703fd1f0d44b64021a8eb144f596a46d0aeb",
+  "contract": "HUB-LWB-2.3-CSP-CONFIG-DIAGNOSTIC-GOV-v11.4",
+  "created_at": 1791374480.9010475,
+  "decision": "APPROVE",
+  "evidence": "d1e20ffa5125db8a8226e48ff495d33f97b101fa730b87c5ed215780fd28e5c4",
+  "governor": "/root/entry_governor",
+  "judge": "/root/config_diagnostic_v11_4_r3_judge",
+  "native_authority": "separateone900secnonrenewablehelper120sec initconfigonly; metadataNOT_RUN; 8closureguards; no threadsresumesmodelorwrites",
+  "reproduced": "all120pins/23scoped/412Hub/AST3; mandatorynullprofile/alluseroriginmatching/currentoriginpresent; boundedprivacy unchanged",
+  "result": "PASS"
+}

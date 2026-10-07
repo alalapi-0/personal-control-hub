@@ -1,0 +1,820 @@
+--- before/src/hub/css_config_precheck.py
++++ after/src/hub/css_config_precheck.py
+@@ -2,8 +2,11 @@
+ import copy
+ import json
+ import math
++import os
+ import re
+ import stat
++import subprocess
++import tempfile
+ import threading
+ import time
+ import tomllib
+@@ -16,14 +19,17 @@
+ from .codex_adapter import AppServerAdapter, EVIDENCE_PERMISSION_PROFILE, REGISTERED_SERVERS, profile_arguments
+ from .css_read_diagnostic import atomic_record
+ from .service_contract import ServiceError
+-
+-CONTRACT='HUB-LWB-2.3-CSP-DESKTOP-OPAQUE-ROUNDTRIP-GOV-v11.5-r1'
+-METHODS=('initialize','config/read')
++from .css_metadata_effects import MetadataEffects
++
++CONTRACT='HUB-LWB-2.3-CSP-FULL-METADATA-PRECHECK-GOV-v11.6-r4'
++METHODS=('initialize','config/read','mcpServerStatus/list','experimentalFeature/list')
+ NOTICES=frozenset({'remoteControl/status/changed','account/updated','account/rateLimits/updated','configWarning'})
+-REGISTRATION='config-precheck-registration-v11-5-r3.json'
+-AUTHORITY='config-precheck-authority-v11-5-r1.json'
+-INTENT='config-precheck-intent-v11-5-r1.json'
+-RESULT='config-precheck-result-v11-5-r1.json'
++REGISTRATION='config-precheck-registration-v11-6-r4.json'
++AUTHORITY='config-precheck-authority-v11-6-r4.json'
++INTENT='config-precheck-intent-v11-6-r4.json'
++RESULT='config-precheck-result-v11-6-r4.json'
++PROTOCOL_SOURCE='feature-catalog-source-closure-v11-6-r2.json'
++PROTOCOL_SOURCE_SHA='f2410fceb603951c4e8dcf948435ad23ab9b7ae0c34b4d6ff36266d02d34cd4b'
+ DESKTOP_SOURCE='desktop-roundtrip-source-closure-v11-5-r1.json'
+ DESKTOP_SOURCE_SHA='d7e40c9226ccfe7049bffa388673d0223e5dbf0c5f87053b487a7bab9681fcd0'
+ NUMBER_TOKEN='$serde_json::private::Number'
+@@ -156,12 +162,16 @@
+ 
+ def config_fact(result,pin):
+     """Validate bodies privately; retain no native layer version/content hash."""
++    if type(result)is not dict or set(result)!={'config','layers','origins'}or type(result['config'])is not dict:
++        raise ServiceError('CSS_PRECHECK_PUBLIC_STRUCTURE_REJECTED')
++    bounded_tree(result['config'])
+     context=pin['sensitive_structure']['projects']['bound_active_context']
+     if context['trust']['selected']!={'selector':None,'trust_level':None}or context['closure']['cwd_canonical']!=str(c.TRIAL):
+         raise ServiceError('CSS_PRECHECK_TRUST_REJECTED')
+     layers=result.get('layers');expected=SERIALIZATION['wire_layers']
+     if type(layers)is not list or len(layers)!=4:raise ServiceError('CSS_PRECHECK_LAYERS_REJECTED')
+     home=Path(p.process_environment()['HOME']);user=home/'.codex/config.toml'
++    origin_rows(result['origins'],{'type':'user','file':str(user),'profile':None})
+     disabled=f'To load project-local config, hooks, and exec policies, add {c.TRIAL} as a trusted project in {user}.'
+     original=original_config(pin)
+     desktop=desktop_roundtrip_fact(original.get('desktop',MISSING),result.get('config',{}).get('desktop',MISSING),raw_layer=False)
+@@ -169,7 +179,7 @@
+         raise ServiceError('CSS_PRECHECK_DESKTOP_ROUNDTRIP_REJECTED')
+     bodies={};facts=[]
+     for index,(layer,kind)in enumerate(zip(layers,expected)):
+-        if type(layer)is not dict or set(layer)-{'config','name','version','disabledReason'}or \
++        if type(layer)is not dict or set(layer)!={'config','name','version','disabledReason'}or \
+             type(layer.get('version'))is not str or not layer['version']or type(layer.get('config'))is not dict:
+             raise ServiceError('CSS_PRECHECK_LAYER_STRUCTURE_REJECTED')
+         name=layer.get('name');body=layer['config'];reason=layer.get('disabledReason')
+@@ -512,6 +522,95 @@
+     protected_inputs: str
+ 
+ 
++def protocol_source_snapshot():
++    """Exact public experimental exports and DTO/source closure, before effects."""
++    try:
++        raw=(c.HUB_ROOT/c.PRIVATE/PROTOCOL_SOURCE).read_bytes()
++        if c.sha(raw)!=PROTOCOL_SOURCE_SHA:return None
++        proof=json.loads(raw)
++        for name,digest in proof['sources'].items():
++            if c.sha((c.HUB_ROOT/name).read_bytes())!=digest:return None
++        bundle=json.loads((c.HUB_ROOT/proof['schema_bundle']['file']).read_text())['json_schema']
++        if len(bundle)!=440 or {k:c.sha(v.encode())for k,v in bundle.items()}!=proof['schema_bundle']['files']:
++            return None
++        if len(proof['templates'])!=152 or len({t['name']for t in proof['templates']})!=152:return None
++        return (PROTOCOL_SOURCE_SHA,tuple(sorted(proof['sources'].items())))
++    except (OSError,ValueError,KeyError,TypeError):return None
++
++
++def protocol_proof():
++    if protocol_source_snapshot()is None:raise ServiceError('PUBLIC_PROTOCOL_UNPROVEN')
++    return json.loads((c.HUB_ROOT/c.PRIVATE/PROTOCOL_SOURCE).read_text())
++
++
++@dataclass(frozen=True)
++class AuthReceipt:
++    mode: str
++    exit: int
++
++
++def authentication_receipt():
++    fact=c.auth_check()  # Raw stdout/stderr remain private to the existing check.
++    return AuthReceipt(fact['mode'],fact['exit'])
++
++
++def observed_verified(pin,receipt):
++    if type(receipt)is not AuthReceipt or type(receipt.exit)is not int or type(receipt.mode)is not str or receipt!=AuthReceipt('ChatGPT',0):
++        raise ServiceError('CSS_PRECHECK_AUTH_RECEIPT_REJECTED')
++    first=p.observe(semantic=True);second=p.observe(semantic=True)
++    if first['projection']!=pin or second['projection']!=pin or not all(p.preservation_fact(first,second).values()):
++        raise ServiceError('CSS_PROCESS_PROTECTED_CONFIG_DRIFT')
++    return second
++
++
++def load_native_schemas(a,effects):
++    """Generate once into a new owned directory; verify every public export."""
++    proof=protocol_proof();env=p.process_environment()
++    run=subprocess.run(['codex','--version'],cwd=c.HUB_ROOT,env=env,capture_output=True,timeout=5)
++    if run.returncode or run.stdout.strip()!=b'codex-cli 0.159.3'or run.stderr:
++        raise ServiceError('CODEX_VERSION_UNSUPPORTED')
++    folder=c.HUB_ROOT/c.PRIVATE
++    if folder.is_symlink()or not folder.is_dir():raise ServiceError('CSS_PRECHECK_SCHEMA_DIRECTORY_REJECTED')
++    directory=None;a.schema_temp_cleaned=False
++    try:
++        with tempfile.TemporaryDirectory(prefix='schema-native-v11-6-',dir=folder)as directory:
++            target=Path(directory);info=target.lstat()
++            if not stat.S_ISDIR(info.st_mode)or stat.S_IMODE(info.st_mode)!=0o700 or info.st_uid!=os.getuid():
++                raise ServiceError('CSS_PRECHECK_SCHEMA_DIRECTORY_REJECTED')
++            effects.schema_directory=directory
++            previous=os.umask(0o077)
++            try:
++                run=subprocess.run(['codex','app-server','generate-json-schema','--experimental','--out',directory],
++                    cwd=c.HUB_ROOT,env=env,capture_output=True,timeout=10)
++            finally:os.umask(previous)
++            if run.returncode or run.stdout or run.stderr:raise ServiceError('CODEX_SCHEMA_UNAVAILABLE')
++            expected=proof['schema_bundle']['files'];actual={};schemas={};total=0
++            directories={str(parent)for name in expected for parent in Path(name).parents if str(parent)!='.'}
++            for path in target.rglob('*'):
++                info=path.lstat()
++                if info.st_uid!=os.getuid()or stat.S_IMODE(info.st_mode)not in (0o600,0o700):
++                    raise ServiceError('CSS_PRECHECK_SCHEMA_DIRECTORY_REJECTED')
++                if stat.S_ISDIR(info.st_mode):
++                    if str(path.relative_to(target))not in directories:raise ServiceError('CODEX_SCHEMA_CHANGED')
++                    continue
++                if not stat.S_ISREG(info.st_mode)or info.st_nlink!=1 or info.st_size>1048576:
++                    raise ServiceError('CSS_PRECHECK_SCHEMA_DIRECTORY_REJECTED')
++                name=str(path.relative_to(target))
++                if name not in expected or len(actual)>=440:raise ServiceError('CODEX_SCHEMA_CHANGED')
++                raw=path.read_bytes();total+=len(raw)
++                if total>8388608 or c.sha(raw)!=expected[name]:raise ServiceError('CODEX_SCHEMA_CHANGED')
++                actual[name]=c.sha(raw)
++                if path.stem in schemas:raise ServiceError('CODEX_SCHEMA_CHANGED')
++                schemas[path.stem]=json.loads(raw)
++            if actual!=expected:raise ServiceError('CODEX_SCHEMA_CHANGED')
++            a.schemas=schemas
++            a.schema_hashes={Path(k).stem:v for k,v in actual.items()}
++            if any(a.schema_hashes.get(k)!=v['sha256']for k,v in proof['schemas'].items()):
++                raise ServiceError('CODEX_SCHEMA_CHANGED')
++    finally:
++        a.schema_temp_cleaned=directory is not None and not Path(directory).exists()
++
++
+ def fixed_inputs_current(reg):
+     """Read-only checks before creating any adapter or consuming authority."""
+     before=p.observe(semantic=True)
+@@ -527,6 +626,9 @@
+ def admit(authority):
+     source=desktop_source_snapshot()
+     if source is None:raise ServiceError('FEATURE_GRAPH_UNPROVEN')
++    protocol=protocol_source_snapshot()
++    if protocol is None:raise ServiceError('PUBLIC_PROTOCOL_UNPROVEN')
++    source=(source,protocol)
+     r.unexpired(authority)
+     expected={'contract':CONTRACT,'task_id':c.TASK,'methods':list(METHODS),'config_read_params':config_params(),
+         'profile_arguments':list(profile_arguments(c.TRIAL,read_only=True)),'helpers_allowed':1,
+@@ -555,16 +657,16 @@
+         raise ServiceError('CSS_PRECHECK_STATE_REJECTED')
+     if (c.HUB_ROOT/c.PRIVATE/INTENT).exists():raise ServiceError('CSS_PRECHECK_ALREADY_CONSUMED')
+     if not fixed_inputs_current(reg):raise ServiceError('CSS_PRECHECK_INPUT_CHANGED')
+-    return Admission(reg['candidate_sha256'],reg['evidence_sha256'],source,source[1],
++    return Admission(reg['candidate_sha256'],reg['evidence_sha256'],source,source[0][1],
+         c.digest({k:reg[k]for k in ('semantic_pin','source','trial','auth_identity','task_hash')}))
+ 
+ 
+-def adapter(pin,authority):
++def adapter(pin,authority,receipt=None,effects=None):
+     admission=admit(authority)
+     if pin!=authority.get('semantic_pin'):raise ServiceError('CSS_PRECHECK_AUTHORITY_REJECTED')
+     class ConfigOnly(AppServerAdapter):
+         def _child_environment(self):return p.process_environment()
+-        def _configuration_hash(self):return p.verify(pin)['_private_content_hash']
++        def _configuration_hash(self):return observed_verified(pin,receipt)['_private_content_hash']
+         def _send(self,value):
+             method=value.get('method')
+             if method=='initialized':
+@@ -578,11 +680,15 @@
+         def open(self):
+             # A directly called open cannot reuse a stale validated snapshot.
+             if admit(authority)!=admission:raise ServiceError('CSS_PRECHECK_ADMISSION_CHANGED')
++            observed_verified(pin,receipt)
++            if type(effects)is not MetadataEffects:raise ServiceError('CSS_PRECHECK_EFFECT_AUDIT_REQUIRED')
+             self.deadline=time.monotonic()+100
+             atomic_record(c.HUB_ROOT/c.PRIVATE/INTENT,{'contract':CONTRACT,
+                 'approved_candidate':authority['approved_candidate'],'approved_evidence':authority['approved_evidence'],
+                 'helpers_allowed':1,'threads':0,'resumes':0,'model_turns':0})
+             self.watchdog=threading.Timer(120,self.deadline_close);self.watchdog.start()
++            load_native_schemas(self,effects)
++            effects.bind_helper(self._configuration_hash())
+             return super().open()
+         def deadline_close(self):
+             self.wall_exceeded=True;self.close()
+@@ -594,9 +700,14 @@
+                 'config/read':config_params(),'mcpServerStatus/list':{'threadId':None,'limit':100,'detail':'toolsAndAuthOnly'}}
+             if method in fixed:
+                 if params!=fixed[method]or method in self.consumed:raise ServiceError('CSS_PRECHECK_PARAMS_REJECTED')
++                if method in ('config/read','mcpServerStatus/list')and (self.snapshots!=1 or not self.feature_complete or self.feature_active):
++                    raise ServiceError('CSS_PRECHECK_PHASE_REJECTED')
++                if method=='mcpServerStatus/list'and 'config/read'not in self.consumed:
++                    raise ServiceError('CSS_PRECHECK_PHASE_REJECTED')
+                 self.consumed.add(method)
+             else:
+-                if params!={'threadId':None,'limit':100,'cursor':self.cursor}or self.pages>=8 or self.feature_complete:
++                if params!={'threadId':None,'limit':100,'cursor':self.cursor}or self.pages>=8 or self.feature_complete or \
++                    not self.feature_active:
+                     raise ServiceError('CSS_PRECHECK_PARAMS_REJECTED')
+                 self.pages+=1
+             self.audit.append({'method':method,'unscoped':True})
+@@ -612,8 +723,13 @@
+             super()._notification_observation(value,outcome)
+             if outcome!='validated'or value.get('method')not in NOTICES:
+                 raise ServiceError('CSS_PRECHECK_NOTIFICATION_REJECTED')
++            if value['method']=='remoteControl/status/changed'and value['params']['status']!='disabled':
++                raise ServiceError('CSS_PRECHECK_REMOTE_STATUS_REJECTED')
++            if value['method']=='account/updated'and value['params'].get('authMode')not in {'chatgpt','chatgptAuthTokens'}:
++                raise ServiceError('CSS_PRECHECK_AUTH_MODE_NOTIFICATION_REJECTED')
+     a=ConfigOnly(c.TRIAL,command=('codex','app-server','--stdio',*p.OVERRIDES),read_only=True)
+     a.consumed=set();a.audit=[];a.pages=0;a.cursor=None;a.feature_complete=False;a.wall_exceeded=False
++    a.feature_active=False;a.snapshots=0;a.schema_temp_cleaned=False
+     a.initialized_accepted=False;a.active_request=None
+     a.notification_allowed=NOTICES
+     return a
+@@ -632,9 +748,16 @@
+ 
+ 
+ def capability_fact(a,servers,flags):
++    fields={'name','runtimeStatus','pluginId','httpOrigin','serverInfo','serverCapabilities',
++        'tools','toolsError','resources','resourceTemplates','authStatus'}
++    if type(servers)is not dict or set(servers)!={'data','nextCursor'}or type(servers['data'])is not list or \
++        any(type(row)is not dict or set(row)!=fields for row in servers['data']):
++        raise ServiceError('CSS_PRECHECK_CAPABILITY_REJECTED')
+     rows=servers['data']
+     if servers['nextCursor']is not None or len(rows)!=6 or sorted(x['name']for x in rows)!=sorted(REGISTERED_SERVERS)or \
+         any(x['runtimeStatus']!='disabled'or x['tools']or x['resources']or x['resourceTemplates']or x['serverCapabilities']is not None for x in rows)or \
++        any(x['pluginId']is not None or x['serverInfo']is not None or x['toolsError']is not None or
++            x['authStatus']not in {'unknown','unsupported','notLoggedIn','bearerToken','oAuth'}for x in rows)or \
+         any(flags.get(k)is not False for k in p.FROZEN_DISABLES)or flags.get('code_mode_host')is not True or \
+         a.remote_control_status!='disabled'or a.mcp_startup_seen or a.denials:
+         raise ServiceError('CSS_PRECHECK_CAPABILITY_REJECTED')
+@@ -643,38 +766,101 @@
+         'remote':'disabled','startup_seen':False,'local_native_tool_host':True}
+ 
+ 
++def feature_page(result,templates,start):
++    """Public source-ordered page, exact emitted DTO, and canonical cursor."""
++    if type(result)is not dict or set(result)!={'data','nextCursor'}or type(result['data'])is not list:
++        raise ServiceError('CSS_PRECHECK_FEATURE_CATALOG_REJECTED')
++    end=min(start+100,len(templates));expected=templates[start:end]
++    if len(result['data'])!=len(expected)or not expected:
++        raise ServiceError('CSS_PRECHECK_FEATURE_CATALOG_REJECTED')
++    flags={}
++    for row,template in zip(result['data'],expected):
++        if type(row)is not dict or set(row)!={*template,'enabled'}or type(row['enabled'])is not bool or \
++            not same_json({k:v for k,v in row.items()if k!='enabled'},template):
++            raise ServiceError('CSS_PRECHECK_FEATURE_CATALOG_REJECTED')
++        flags[row['name']]=row['enabled']
++    cursor=str(end)if end<len(templates)else None
++    if type(result['nextCursor'])is not type(cursor)or result['nextCursor']!=cursor:
++        raise ServiceError('CSS_PRECHECK_FEATURE_CURSOR_REJECTED')
++    return flags,end
++
++
++def feature_snapshot(a):
++    if a.snapshots>=2 or a.feature_active or not a.initialized_accepted or not a.initialized_sent:
++        raise ServiceError('CSS_PRECHECK_PHASE_REJECTED')
++    if a.snapshots==0 and a.consumed!={'initialize'}or a.snapshots==1 and a.consumed!=set(METHODS[:-1]):
++        raise ServiceError('CSS_PRECHECK_PHASE_REJECTED')
++    templates=protocol_proof()['templates'];flags={};start=0
++    a.snapshots+=1;a.cursor=None;a.feature_complete=False;a.feature_active=True
++    try:
++        while not a.feature_complete:
++            response=a.call('experimentalFeature/list',{'threadId':None,'limit':100,'cursor':a.cursor})
++            page,start=feature_page(response,templates,start)
++            if flags.keys()&page.keys():raise ServiceError('CSS_PRECHECK_FEATURE_CATALOG_REJECTED')
++            flags.update(page)
++        if len(flags)!=152 or any(flags.get(k)is not False for k in p.FROZEN_DISABLES)or flags.get('code_mode_host')is not True:
++            raise ServiceError('CSS_PRECHECK_CAPABILITY_REJECTED')
++    finally:a.feature_active=False
++    return flags
++
++
+ def run():
+-    folder=c.HUB_ROOT/c.PRIVATE;authority=json.loads((folder/AUTHORITY).read_text());admit(authority)
+-    before=p.verify(authority['semantic_pin']);source=r.source_snapshot();trial=c.placeholder_snapshot();auth=r.auth_identity()
+-    task=r.TaskStore(c.HUB_ROOT).task(c.TASK)
+-    if source!=authority['source']or trial!=authority['trial']or auth!=authority['auth_identity']or c.digest(task)!=authority['task_hash']:
+-        raise ServiceError('CSS_PRECHECK_INPUT_CHANGED')
+-    if authority['expires_at']-time.time()<150:raise ServiceError('CSS_PRECHECK_CLOSE_HEADROOM')
+-    r.mapping_check(task['intent']['grant'])
+-    a=adapter(authority['semantic_pin'],authority);record={'contract':CONTRACT,'status':'PARTIAL_BLOCKED','threads':0,'resumes':0,'model_turns':0}
+-    a.notification_recorder=lambda n,f:atomic_record(folder/f'config-precheck-notification-v11-5-r1-{n}.json',f)
++    folder=c.HUB_ROOT/c.PRIVATE;authority=json.loads((folder/AUTHORITY).read_text())
++    effects=MetadataEffects();effects.install()
++    record={'contract':CONTRACT,'status':'PARTIAL_BLOCKED','threads':0,'resumes':0,'model_turns':0}
++    a=None;before=None;source=None;trial=None;auth=None;receipt=None
+     try:
++        initial=admit(authority)
++        effects.source_receipt=initial.source
++        effects.source_check=lambda:(desktop_source_snapshot(),protocol_source_snapshot())
++        if authority['expires_at']-time.time()<150:raise ServiceError('CSS_PRECHECK_CLOSE_HEADROOM')
++        receipt=authentication_receipt();before=observed_verified(authority['semantic_pin'],receipt)
++        source=r.source_snapshot();trial=c.placeholder_snapshot();auth=r.auth_identity()
++        task=r.TaskStore(c.HUB_ROOT).task(c.TASK)
++        if source!=authority['source']or trial!=authority['trial']or auth!=authority['auth_identity']or c.digest(task)!=authority['task_hash']:
++            raise ServiceError('CSS_PRECHECK_INPUT_CHANGED')
++        r.mapping_check(task['intent']['grant'])
++        a=adapter(authority['semantic_pin'],authority,receipt,effects)
++        a.notification_recorder=lambda n,f:atomic_record(folder/f'config-precheck-notification-v11-6-r4-{n}.json',f)
+         a.open();record['pid']=a.proc.pid
+-        response=a.call('config/read',config_params());record['layer_shape']=layer_shape(response)
+-        record['diagnostic']=diagnostic_matrix(response,original_config(authority['semantic_pin']))
+-        drain(a);record['status']='PASS_CONFIG_STRUCTURE_DIAGNOSTIC_ONLY'
++        drain(a);flags_before=feature_snapshot(a)
++        record['catalog']={'public_catalog_count':152,'expected_complete_snapshots':2,'complete_snapshots':1,
++            'shared_pages':a.pages,'before_templates_exact':True,'after_templates_exact':False,
++            'all_enabled_flags_stable':'NOT_RUN','source_sha256':PROTOCOL_SOURCE_SHA}
++        response=a.call('config/read',config_params());record['configuration']=config_fact(response,authority['semantic_pin'])
++        servers=a.call('mcpServerStatus/list',{'threadId':None,'limit':100,'detail':'toolsAndAuthOnly'})
++        record['capabilities']=capability_fact(a,servers,flags_before)
++        drain(a);flags_after=feature_snapshot(a)
++        record['catalog'].update(complete_snapshots=2,after_templates_exact=True,shared_pages=a.pages,
++            all_enabled_flags_stable=same_json(flags_before,flags_after))
++        if not same_json(flags_before,flags_after):raise ServiceError('CSS_PRECHECK_FEATURE_STATE_CHANGED')
++        record['capabilities']=capability_fact(a,servers,flags_after)
++        record['catalog']['all_public_templates_exact']=True
++        drain(a);record['status']='PASS_FULL_METADATA_PRECHECK'
+     except Exception as error:record['error']=error.code if isinstance(error,ServiceError)else type(error).__name__
+     finally:
+         def check(name,fn):
+             try:record[name]=fn()
+             except Exception as error:
+                 record[name]=False;record.setdefault('closure_errors',[]).append({'check':name,'code':error.code if isinstance(error,ServiceError)else type(error).__name__})
+-        check('closed',lambda:(a.close(),a.proc is not None and a.proc.poll()is not None)[1])
++        check('closed',lambda:(a.close(),a.proc is not None and a.proc.poll()is not None)[1]if a else False)
+         if getattr(a,'watchdog',None):a.watchdog.cancel();a.watchdog.join()
+         check('final_notice_state',lambda:r.final_capability_state(a,record))
+-        check('global_config_preserved',lambda:all(p.preservation_fact(before,p.verify(authority['semantic_pin'])).values()))
++        check('auth_mode_preserved',lambda:receipt is not None and authentication_receipt()==receipt)
++        check('global_config_preserved',lambda:before is not None and all(p.preservation_fact(before,
++            observed_verified(authority['semantic_pin'],receipt)).values()))
+         check('source3_unchanged',lambda:r.source_snapshot()==source)
+         check('trial_css_four_dirs_unchanged',lambda:c.placeholder_snapshot()==trial)
+         check('auth_metadata_unchanged',lambda:r.auth_identity()==auth)
+-        check('task_row_unchanged',lambda:c.digest(r.TaskStore(c.HUB_ROOT).task(c.TASK))==authority['task_hash'])
++        check('task_row_unchanged',lambda:before is not None and c.digest(r.TaskStore(c.HUB_ROOT).task(c.TASK))==authority['task_hash'])
+         check('expiry_at_close',lambda:(r.unexpired(authority),True)[1])
+-        record.update(exit=a.proc.returncode if a.proc else None,methods=a.audit,wall_exceeded=a.wall_exceeded)
+-        if record['exit']!=0 or a.wall_exceeded or not all(record[k]for k in ('closed','final_notice_state','global_config_preserved','source3_unchanged',
+-            'trial_css_four_dirs_unchanged','auth_metadata_unchanged','task_row_unchanged','expiry_at_close')):record['status']='PARTIAL_BLOCKED'
++        record.update(exit=a.proc.returncode if a and a.proc else None,methods=a.audit if a else[],
++            wall_exceeded=a.wall_exceeded if a else False,schema_temp_cleaned=a.schema_temp_cleaned if a else False,
++            effects=effects.fact())
++        if a and a.proc:record['pid']=a.proc.pid
++        if record['exit']!=0 or record['wall_exceeded']or not record['schema_temp_cleaned']or \
++            not record['effects']['effect_limits_satisfied']or not all(record[k]for k in ('closed','final_notice_state','auth_mode_preserved',
++            'global_config_preserved','source3_unchanged','trial_css_four_dirs_unchanged','auth_metadata_unchanged',
++            'task_row_unchanged','expiry_at_close')):record['status']='PARTIAL_BLOCKED'
+         atomic_record(folder/RESULT,record)
+     return record
+--- before/scripts/precheck_css_config.py
++++ after/scripts/precheck_css_config.py
+@@ -4,4 +4,4 @@
+ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
+ from hub.css_config_precheck import run
+ if __name__=='__main__':
+-    result=run();print(result['status']);raise SystemExit(0 if result['status']=='PASS_CONFIG_STRUCTURE_DIAGNOSTIC_ONLY'else 1)
++    result=run();print(result['status']);raise SystemExit(0 if result['status']=='PASS_FULL_METADATA_PRECHECK'else 1)
+--- before/tests/test_hub_css_config_precheck.py
++++ after/tests/test_hub_css_config_precheck.py
+@@ -36,9 +36,12 @@
+         patch.start();self.addCleanup(patch.stop)
+         patch=mock.patch.object(q,'desktop_source_verified',return_value=True)
+         patch.start();self.addCleanup(patch.stop)
++        patch=mock.patch.object(q,'protocol_source_snapshot',return_value=('protocol',()))
++        patch.start();self.addCleanup(patch.stop)
+         self.fixture_admission=q.Admission('fixture','fixture','fixture','fixture','fixture')
+         with mock.patch.object(q,'admit',return_value=self.fixture_admission):
+             self.a=q.adapter(self.pin,self.authority)
++        self.a.snapshots=1;self.a.feature_complete=True
+         patch=mock.patch.object(q,'original_timeout',side_effect=lambda _:self.user['mcp_servers']['node_repl']['startup_timeout_sec'])
+         patch.start();self.addCleanup(patch.stop)
+ 
+@@ -350,11 +353,34 @@
+             with self.assertRaises(ServiceError):self.a.call('initialize',{})
+         call.assert_not_called()
+ 
+-    def test_diagnostic_has_no_capability_or_feature_requests(self):
++    def test_each_fixed_metadata_method_is_once_and_cannot_skip_snapshot(self):
++        mcp={'threadId':None,'limit':100,'detail':'toolsAndAuthOnly'}
++        with mock.patch.object(q.AppServerAdapter,'call',return_value={})as call:
++            self.a.snapshots=0;self.a.feature_complete=False
++            with self.assertRaises(ServiceError):self.a.call('config/read',q.config_params())
++            self.a.snapshots=1;self.a.feature_complete=True
++            with self.assertRaises(ServiceError):self.a.call('mcpServerStatus/list',mcp)
++            self.a.call('config/read',q.config_params());self.a.call('mcpServerStatus/list',mcp)
++            with self.assertRaises(ServiceError):self.a.call('mcpServerStatus/list',mcp)
++            self.a.snapshots=2
++            with self.assertRaises(ServiceError):self.a.call('config/read',q.config_params())
++        self.assertEqual(call.call_count,2)
++
++    def test_contradictory_remote_or_auth_notice_is_rejected_immediately(self):
++        with mock.patch.object(q.AppServerAdapter,'_notification_observation'):
++            for value in ({'method':'remoteControl/status/changed','params':{'status':'enabled'}},
++                {'method':'account/updated','params':{'authMode':'apiKey'}},
++                {'method':'mcpServer/startupStatus/updated','params':{}},
++                {'method':'unknown','params':{}}):
++                with self.assertRaises(ServiceError):self.a._notification_observation(value,'validated')
++            self.a._notification_observation({'method':'remoteControl/status/changed','params':{'status':'disabled'}},'validated')
++            self.a._notification_observation({'method':'account/updated','params':{'authMode':'chatgpt'}},'validated')
++
++    def test_full_metadata_has_no_scoped_or_inactive_feature_requests(self):
+         with mock.patch.object(q.AppServerAdapter,'call',return_value={'data':[],'nextCursor':'private-cursor'})as call:
+             for method in ('experimentalFeature/list','mcpServerStatus/list'):
+                 with self.assertRaises(ServiceError):self.a.call(method,{'threadId':None,'limit':100,'cursor':None})
+-        call.assert_not_called();self.assertEqual(q.METHODS,('initialize','config/read'))
++        call.assert_not_called();self.assertEqual(q.METHODS,('initialize','config/read','mcpServerStatus/list','experimentalFeature/list'))
+ 
+     def test_no_helper_without_independent_authority(self):
+         with mock.patch.object(q,'admit',side_effect=ServiceError('NO_AUTHORITY')),mock.patch.object(q.AppServerAdapter,'open')as opened:
+@@ -450,32 +476,42 @@
+             'task_hash':q.c.digest(task),'approved_candidate':'fixture','approved_evidence':'fixture'}
+         (folder/q.AUTHORITY).write_text(json.dumps(authority))
+         fake=SimpleNamespace(proc=SimpleNamespace(pid=123,returncode=0,poll=lambda:0),audit=[],cursor=None,feature_complete=False,
+-            wall_exceeded=False,remote_control_status='disabled',mcp_startup_seen=False,denials=[],close=lambda:None)
++            wall_exceeded=False,remote_control_status='disabled',mcp_startup_seen=False,denials=[],close=lambda:None,
++            schema_temp_cleaned=True,pages=4)
+         def opened():q.atomic_record(folder/q.INTENT,{'fixture':True});return fake
+         fake.open=opened
+         def call(method,params):
+             fake.audit.append({'method':method,'unscoped':True})
+             if method=='config/read':return self.native()
+-            raise AssertionError('diagnostic attempted additional method')
++            if method=='mcpServerStatus/list':return self.servers()
++            raise AssertionError('unregistered method')
+         fake.call=call
+         before={'identity':[1,2,3,4,5],'_private_content_hash':'private','_private_projects_hash':'private-projects'}
+         after=dict(before,identity=[1,2,3,4,6])
+-        with mock.patch.object(q.c,'HUB_ROOT',self.root),mock.patch.object(q,'admit',return_value={}),\
+-            mock.patch.object(q.p,'verify',side_effect=[before,after]),mock.patch.object(q.r,'source_snapshot',return_value={}),\
++        with mock.patch.object(q.c,'HUB_ROOT',self.root),mock.patch.object(q,'admit',return_value=self.fixture_admission),\
++            mock.patch.object(q,'observed_verified',side_effect=[before,after]),mock.patch.object(q.r,'source_snapshot',return_value={}),\
+             mock.patch.object(q.c,'placeholder_snapshot',return_value={}),mock.patch.object(q.r,'auth_identity',return_value=[]),\
+             mock.patch.object(q.r,'TaskStore',return_value=SimpleNamespace(task=lambda _:task)),\
+             mock.patch.object(q.r,'mapping_check'),mock.patch.object(q,'adapter',return_value=fake),mock.patch.object(q,'drain'),\
+             mock.patch.object(q,'original_config',return_value=self.user),\
++            mock.patch.object(q,'authentication_receipt',return_value=q.AuthReceipt('ChatGPT',0)),\
++            mock.patch.object(q,'feature_snapshot',return_value={k:False for k in q.p.FROZEN_DISABLES}|{'code_mode_host':True}),\
++            mock.patch.object(q.MetadataEffects,'install'),\
++            mock.patch.object(q.MetadataEffects,'fact',return_value={'effect_limits_satisfied':True}),\
+             mock.patch.object(q.r,'final_capability_state',return_value=True):
+             result=q.run()
+         self.assertEqual(result['status'],'PARTIAL_BLOCKED');self.assertFalse(result['global_config_preserved'])
+-        self.assertEqual(len(result['diagnostic']['groups']),16);self.assertEqual(result['resumes'],0)
+-        self.assertEqual([x['method']for x in result['methods']],['config/read'])
++        self.assertEqual(result['catalog']['public_catalog_count'],152);self.assertEqual(result['resumes'],0)
++        self.assertEqual([x['method']for x in result['methods']],['config/read','mcpServerStatus/list'])
+         self.assertEqual(result['model_turns'],0);self.assertNotIn('NEVER_RETAIN',(folder/q.RESULT).read_text())
+ 
++    def servers(self):
++        return {'nextCursor':None,'data':[{'name':name,'runtimeStatus':'disabled','tools':{},'resources':[],
++            'resourceTemplates':[],'serverCapabilities':None,'pluginId':None,'httpOrigin':None,
++            'serverInfo':None,'toolsError':None,'authStatus':'unsupported'}for name in q.REGISTERED_SERVERS]}
++
+     def test_unscoped_capabilities_are_exact_and_do_not_claim_loaded_thread(self):
+-        servers={'nextCursor':None,'data':[{'name':name,'runtimeStatus':'disabled','tools':{},'resources':[],
+-            'resourceTemplates':[],'serverCapabilities':None}for name in q.REGISTERED_SERVERS]}
++        servers=self.servers()
+         flags={k:False for k in q.p.FROZEN_DISABLES}|{'code_mode_host':True}
+         a=SimpleNamespace(remote_control_status='disabled',mcp_startup_seen=False,denials=[])
+         fact=q.capability_fact(a,servers,flags);self.assertIn('no loaded thread claim',fact['scope'])
+--- /dev/null
++++ after/src/hub/css_metadata_effects.py
+@@ -0,0 +1,114 @@
++"""Parent-process effects for the standalone, once-only CSS metadata check."""
++import os
++import sys
++import threading
++
++from . import css_trial as c, css_process_config as p
++from .codex_adapter import child_environment, isolated_launch
++from .service_contract import ServiceError
++
++
++class MetadataEffects:
++    limits = {'version': 1, 'schema': 1, 'auth_mode': 2, 'mount': 5, 'source_head': 4, 'preview_head': 4, 'helper': 1}
++    timeouts = {'version': 5, 'schema': 10, 'auth_mode': 5, 'mount': 1, 'source_head': 5, 'preview_head': 2, 'helper': 120}
++    installed = False
++
++    def __init__(self):
++        self.counts = dict.fromkeys(self.limits, 0)
++        self.audit = []
++        self.violations = []
++        self.parent_environment = dict(os.environ)  # Private, never serialized or hashed.
++        self.schema_directory = None
++        self.helper_command = None
++        self.source_check = None
++        self.source_receipt = None
++        self.owner = threading.get_ident()
++
++    def install(self):
++        # Audit hooks live until process exit. This route runs only in its own
++        # single-threaded script process, never in the production Hub service.
++        if self.installed or threading.active_count() != 1 or os.getcwd() != str(c.HUB_ROOT):
++            raise ServiceError('CSS_PRECHECK_STANDALONE_PROCESS_REQUIRED')
++        type(self).installed = True
++        sys.addaudithook(self.event)
++
++    def reject(self, reason):
++        if len(self.violations) < 16:
++            self.violations.append(reason)
++        raise ServiceError('CSS_PRECHECK_EFFECT_REJECTED')
++
++    def bind_helper(self, config_hash):
++        self.helper_command = isolated_launch(('codex', 'app-server', '--stdio', *p.OVERRIDES),
++            root=c.TRIAL, expected_config_sha256=config_hash, read_only=True)[0]
++
++    def caller(self):
++        # Inspect public code identity only. Never inspect locals or retain a
++        # stack. Identical argv in css_trial.verify is not this metadata route.
++        prefix=str(c.HUB_ROOT/'src/hub')+'/'
++        frame=sys._getframe(1)
++        while frame is not None:
++            code=frame.f_code
++            if code.co_filename.startswith(prefix)and not code.co_filename.endswith('/css_metadata_effects.py'):
++                return code.co_filename[len(prefix):],code.co_name
++            frame=frame.f_back
++        return None
++
++    def event(self, event, args):
++        if event.startswith('socket.'):
++            return self.reject('PARENT_SOCKET')
++        if event in {'os.system', 'os.exec', 'os.posix_spawn', 'os.fork', 'os.forkpty', 'pty.spawn'}:
++            return self.reject('OTHER_SPAWN')
++        if event != 'subprocess.Popen':
++            return
++        if threading.get_ident() != self.owner:
++            return self.reject('OTHER_WRITER_THREAD')
++        executable, argv, cwd, env = args
++        if type(argv) not in (list, tuple) or any(type(x) is not str for x in argv):
++            return self.reject('ARGV')
++        argv = tuple(argv)
++        commands = {
++            'version': ('codex', '--version'),
++            'auth_mode': ('codex', 'login', 'status'),
++            'mount': ('findmnt', '--json', '--target', str(c.HUB_ROOT), '--output', 'TARGET,SOURCE,FSTYPE,UUID'),
++            'source_head': ('git', 'rev-parse', 'HEAD'),
++            'preview_head': ('git', '-C', str(c.ROOT), 'rev-parse', 'HEAD'),
++        }
++        if self.schema_directory is not None:
++            commands['schema'] = ('codex', 'app-server', 'generate-json-schema', '--experimental', '--out', self.schema_directory)
++        if self.helper_command is not None:
++            commands['helper'] = self.helper_command
++        kind = next((k for k, value in commands.items() if argv == value), None)
++        if kind is None or executable != argv[0]:
++            return self.reject('ARGV')
++        callers={'version':('css_config_precheck.py','load_native_schemas'),
++            'schema':('css_config_precheck.py','load_native_schemas'),
++            'auth_mode':('css_trial.py','auth_check'),'mount':('task_storage.py','mount_identity'),
++            'source_head':('css_capability_recovery.py','mapping_check'),
++            'preview_head':('readonly_preview.py','check'),'helper':('codex_adapter.py','open')}
++        if self.caller()!=callers[kind]:return self.reject('CALL_SITE')
++        if argv[0]=='codex'and (self.source_check is None or self.source_receipt is None or
++                self.source_check()!=self.source_receipt):return self.reject('PUBLIC_SOURCE_OR_BINARY')
++        expected_cwd = {'source_head': str(c.ROOT), 'helper': str(c.TRIAL),
++            'version': str(c.HUB_ROOT), 'schema': str(c.HUB_ROOT)}.get(kind)
++        if (str(cwd) if cwd is not None else None) != expected_cwd:
++            return self.reject('CWD')
++        expected_env = None if kind in {'mount', 'source_head', 'preview_head'} else (
++            child_environment() if kind == 'auth_mode' else p.process_environment())
++        if env != expected_env or (env is None and dict(os.environ) != self.parent_environment):
++            return self.reject('ENVIRONMENT')
++        if self.counts[kind] >= self.limits[kind]:
++            return self.reject('COUNT')
++        self.counts[kind] += 1
++        self.audit.append({'operation': kind, 'ordinal': self.counts[kind],
++            'timeout_seconds': self.timeouts[kind],
++            'timeout_evidence': 'pinned source and bounded runner',
++            'cwd_category': {'source_head': 'canonical_source', 'helper': 'trial'}.get(kind, 'Hub'),
++            'environment': 'inherited_private_snapshot' if env is None else ('base4' if kind == 'auth_mode' else 'process5')})
++
++    def fact(self):
++        complete = not self.violations and all(self.counts[k] == n for k, n in
++            {'version': 1, 'schema': 1, 'auth_mode': 2, 'helper': 1}.items())
++        return {'parent_processes': self.audit, 'counts': dict(self.counts),
++            'effect_limits_satisfied': complete, 'violations': list(self.violations),
++            'parent_socket_audit': 'active; creation and operations rejected',
++            'child_network_visibility': 'NOT_RUN', 'raw_outputs_or_environment_retained': False}
+--- /dev/null
++++ after/tests/test_hub_css_full_metadata.py
+@@ -0,0 +1,215 @@
++"""Public fixtures and negative boundaries; no native commands or auth queries."""
++import copy
++import json
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++from types import SimpleNamespace
++from unittest import mock
++
++sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
++from hub import css_config_precheck as q
++from hub.css_metadata_effects import MetadataEffects
++from hub.service_contract import ServiceError
++
++
++class FullMetadataTests(unittest.TestCase):
++    @classmethod
++    def setUpClass(cls):
++        folder=q.c.HUB_ROOT/q.c.PRIVATE
++        cls.proof=json.loads((folder/q.PROTOCOL_SOURCE).read_text())
++        cls.exports=json.loads((q.c.HUB_ROOT/cls.proof['schema_bundle']['file']).read_text())['json_schema']
++
++    def rows(self):
++        return [dict(t,enabled=t['name']=='code_mode_host')for t in self.proof['templates']]
++
++    def test_source_order_entire_catalog_and_canonical_pagination(self):
++        rows=self.rows();templates=self.proof['templates']
++        flags,end=q.feature_page({'data':rows[:100],'nextCursor':'100'},templates,0)
++        tail,end=q.feature_page({'data':rows[100:],'nextCursor':None},templates,end)
++        self.assertEqual(end,152);self.assertEqual(len(flags|tail),152)
++        self.assertIs((flags|tail)['code_mode_host'],True)
++        for cursor in ('0100','101','0','private-cursor',None,100):
++            with self.subTest(cursor=cursor),self.assertRaises(ServiceError):
++                q.feature_page({'data':rows[:100],'nextCursor':cursor},templates,0)
++        for cursor in ('152','100','private-cursor',0):
++            with self.assertRaises(ServiceError):q.feature_page({'data':rows[100:],'nextCursor':cursor},templates,100)
++
++    def test_unknown_missing_extra_duplicate_reordered_type_and_nullable_fields_reject(self):
++        page={'data':self.rows()[:100],'nextCursor':'100'}
++        changes=[lambda x:x['data'].pop(),lambda x:x['data'].append(copy.deepcopy(x['data'][0])),
++            lambda x:x['data'].__setitem__(1,copy.deepcopy(x['data'][0])),lambda x:x['data'].reverse(),
++            lambda x:x['data'][0].update(name='private-unknown'),lambda x:x['data'][0].update(enabled=0),
++            lambda x:x['data'][0].update(defaultEnabled=0),lambda x:x['data'][0].update(stage='future'),
++            lambda x:x['data'][0].pop('displayName'),lambda x:x['data'][0].update(private='secret'),
++            lambda x:x.update(private='secret'),lambda x:x.pop('nextCursor')]
++        for change in changes:
++            value=copy.deepcopy(page);change(value)
++            with self.subTest(change=change),self.assertRaises(ServiceError)as error:
++                q.feature_page(value,self.proof['templates'],0)
++            self.assertNotIn('private',error.exception.code)
++
++    def fake_adapter(self):
++        a=SimpleNamespace(snapshots=0,feature_active=False,feature_complete=False,initialized_accepted=True,
++            initialized_sent=True,consumed={'initialize'},cursor=None,pages=0)
++        rows=self.rows()
++        def call(method,params):
++            self.assertEqual(method,'experimentalFeature/list');self.assertEqual(params['threadId'],None)
++            self.assertEqual(params['limit'],100);self.assertEqual(params['cursor'],a.cursor)
++            start=int(a.cursor or 0);end=min(start+100,152);a.pages+=1
++            a.cursor=str(end)if end<152 else None;a.feature_complete=a.cursor is None
++            return {'data':copy.deepcopy(rows[start:end]),'nextCursor':a.cursor}
++        a.call=call
++        return a
++
++    def test_two_actual_snapshots_and_all_enabled_flags_stable(self):
++        a=self.fake_adapter()
++        with mock.patch.object(q,'protocol_proof',return_value=self.proof):
++            before=q.feature_snapshot(a)
++            a.consumed|={'config/read','mcpServerStatus/list'}
++            after=q.feature_snapshot(a)
++            self.assertEqual(before,after);self.assertEqual((a.snapshots,a.pages),(2,4))
++            with self.assertRaises(ServiceError):q.feature_snapshot(a)
++        self.assertFalse(a.feature_active)
++
++    def test_missing_initialize_wrong_phase_or_unsafe_feature_blocks_snapshot(self):
++        with mock.patch.object(q,'protocol_proof',return_value=self.proof):
++            for field,value in [('initialized_accepted',False),('initialized_sent',False),
++                ('consumed',{'initialize','config/read'}),('feature_active',True)]:
++                a=self.fake_adapter();setattr(a,field,value)
++                with self.assertRaises(ServiceError):q.feature_snapshot(a)
++            a=self.fake_adapter();old=a.call
++            def unsafe(method,params):
++                result=old(method,params)
++                for row in result['data']:
++                    if row['name']=='hooks':row['enabled']=True
++                return result
++            a.call=unsafe
++            with self.assertRaises(ServiceError):q.feature_snapshot(a)
++            self.assertFalse(a.feature_active)
++
++    def test_schema_generator_exact440_export_identity_and_cleanup(self):
++        with tempfile.TemporaryDirectory()as directory:
++            root=Path(directory);(root/q.c.PRIVATE).mkdir(parents=True)
++            a=SimpleNamespace(schema_temp_cleaned=False);effects=MetadataEffects();calls=[]
++            def generated(argv,**kwargs):
++                calls.append(argv[:3]);self.assertEqual(kwargs['env'],q.p.process_environment())
++                self.assertEqual(kwargs['cwd'],root)
++                if argv==['codex','--version']:return SimpleNamespace(returncode=0,stdout=b'codex-cli 0.159.3\n',stderr=b'')
++                self.assertEqual(kwargs['timeout'],10)
++                for name,body in self.exports.items():
++                    path=Path(argv[-1])/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text(body)
++                return SimpleNamespace(returncode=0,stdout=b'',stderr=b'')
++            with mock.patch.object(q.c,'HUB_ROOT',root),mock.patch.object(q,'protocol_proof',return_value=self.proof),\
++                mock.patch.object(q.subprocess,'run',side_effect=generated):q.load_native_schemas(a,effects)
++            self.assertEqual(len(a.schemas),440);self.assertEqual(len(calls),2);self.assertTrue(a.schema_temp_cleaned)
++            self.assertFalse(Path(effects.schema_directory).exists())
++            self.assertEqual(a.schema_hashes['ConfigReadResponse'],'4ec77e1a3eed746037149799c3b6bb8fe7b4b593e5930fc9f410e6282de9df50')
++
++    def test_schema_drift_unexpected_output_link_and_missing_export_fail_and_clean(self):
++        for kind in ('drift','link','missing','stdout'):
++            with self.subTest(kind=kind),tempfile.TemporaryDirectory()as directory:
++                root=Path(directory);(root/q.c.PRIVATE).mkdir(parents=True);a=SimpleNamespace();effects=MetadataEffects()
++                def generated(argv,**kwargs):
++                    if argv==['codex','--version']:return SimpleNamespace(returncode=0,stdout=b'codex-cli 0.159.3',stderr=b'')
++                    target=Path(argv[-1]);(target/'unknown.json').write_text('secret')
++                    if kind=='link':(target/'unknown.json').unlink();(target/'unknown.json').symlink_to('/etc/passwd')
++                    if kind=='missing':(target/'unknown.json').unlink()
++                    return SimpleNamespace(returncode=0,stdout=b'private prompt'if kind=='stdout'else b'',stderr=b'')
++                with mock.patch.object(q.c,'HUB_ROOT',root),mock.patch.object(q,'protocol_proof',return_value=self.proof),\
++                    mock.patch.object(q.subprocess,'run',side_effect=generated),self.assertRaises(ServiceError)as error:
++                    q.load_native_schemas(a,effects)
++                self.assertTrue(a.schema_temp_cleaned);self.assertFalse(Path(effects.schema_directory).exists())
++                self.assertNotIn('private',error.exception.code)
++
++    def test_receipt_is_immutable_and_intermediate_observation_never_queries_auth(self):
++        receipt=q.AuthReceipt('ChatGPT',0)
++        with self.assertRaises(AttributeError):receipt.mode='API'
++        value={'projection':{},'identity':[1], '_private_content_hash':'private','_private_projects_hash':'private'}
++        with mock.patch.object(q.p,'observe',return_value=value),mock.patch.object(q.c,'auth_check')as auth:
++            q.observed_verified({},receipt)
++            for invalid in (None,{},q.AuthReceipt('API',0),q.AuthReceipt('ChatGPT',1),q.AuthReceipt('ChatGPT',False)):
++                with self.assertRaises(ServiceError):q.observed_verified({},invalid)
++        auth.assert_not_called()
++
++    def test_unproven_protocol_blocks_admission_before_readonly_native_guards(self):
++        with mock.patch.object(q,'desktop_source_snapshot',return_value=('source','binary')),\
++            mock.patch.object(q,'protocol_source_snapshot',return_value=None),\
++            mock.patch.object(q,'fixed_inputs_current')as fixed,mock.patch.object(q.c,'auth_check')as auth,\
++            mock.patch.object(q.subprocess,'Popen')as spawn:
++            with self.assertRaises(ServiceError)as error:q.admit({})
++        self.assertEqual(error.exception.code,'PUBLIC_PROTOCOL_UNPROVEN')
++        fixed.assert_not_called();auth.assert_not_called();spawn.assert_not_called()
++
++
++class MetadataEffectTests(unittest.TestCase):
++    def audit(self):
++        a=MetadataEffects();a.source_receipt=('public_fixture',);a.source_check=lambda:a.source_receipt
++        return a
++
++    def event(self,a,argv,cwd=None,env=None):
++        callers={'login':('css_trial.py','auth_check'),'--version':('css_config_precheck.py','load_native_schemas'),
++            'app-server':('css_config_precheck.py','load_native_schemas'),
++            '--json':('task_storage.py','mount_identity'),'rev-parse':('css_capability_recovery.py','mapping_check')}
++        with mock.patch.object(a,'caller',return_value=callers.get(argv[1])):
++            return a.event('subprocess.Popen',(argv[0],argv,cwd,env))
++
++    def test_exact_auth_environment_counts_and_no_raw_evidence(self):
++        a=self.audit()
++        from hub.codex_adapter import child_environment
++        env=child_environment()
++        self.event(a,['codex','login','status'],env=env);self.event(a,['codex','login','status'],env=env)
++        with self.assertRaises(ServiceError):self.event(a,['codex','login','status'],env=env)
++        text=json.dumps(a.fact());self.assertNotIn(env['HOME'],text);self.assertNotIn('PATH',text)
++        self.assertEqual(a.counts['auth_mode'],2)
++
++    def test_unknown_commands_cwd_environment_sockets_and_counts_deny_before_start(self):
++        from hub.codex_adapter import child_environment
++        failures=[(['codex','exec'],None,child_environment()),
++            (['codex','--version'],'/other',q.p.process_environment()),
++            (['codex','--version'],str(q.c.HUB_ROOT),child_environment()),
++            (['git','status'],str(q.c.ROOT),None)]
++        for argv,cwd,env in failures:
++            a=self.audit()
++            with self.assertRaises(ServiceError):self.event(a,argv,cwd,env)
++            self.assertEqual(sum(a.counts.values()),0)
++        for event in ('socket.__new__','socket.connect','socket.getaddrinfo','os.system','os.exec','os.posix_spawn','os.fork','os.forkpty'):
++            a=self.audit()
++            with self.assertRaises(ServiceError):a.event(event,())
++            self.assertFalse(a.fact()['effect_limits_satisfied'])
++        a=self.audit();argv=['findmnt','--json','--target',str(q.c.HUB_ROOT),'--output','TARGET,SOURCE,FSTYPE,UUID']
++        for _ in range(5):self.event(a,argv)
++        with self.assertRaises(ServiceError):self.event(a,argv)
++        self.assertEqual(a.counts['mount'],5)
++
++    def test_schema_target_is_new_bound_path_and_inherited_env_drift_is_rejected(self):
++        a=self.audit();argv=['codex','app-server','generate-json-schema','--experimental','--out','/unknown']
++        with self.assertRaises(ServiceError):self.event(a,argv,str(q.c.HUB_ROOT),q.p.process_environment())
++        a=self.audit();a.schema_directory='/owned/new';argv[-1]='/owned/new'
++        self.event(a,argv,str(q.c.HUB_ROOT),q.p.process_environment());self.assertEqual(a.counts['schema'],1)
++        a=self.audit();a.parent_environment={'private':'secret'}
++        with self.assertRaises(ServiceError):self.event(a,['git','rev-parse','HEAD'],str(q.c.ROOT))
++        self.assertNotIn('secret',json.dumps(a.fact()))
++
++    def test_same_git_argv_from_unowned_trial_verify_is_rejected(self):
++        a=self.audit()
++        with mock.patch.object(a,'caller',return_value=('css_trial.py','verify')),self.assertRaises(ServiceError):
++            a.event('subprocess.Popen',('git',['git','rev-parse','HEAD'],str(q.c.ROOT),None))
++        self.assertEqual(a.counts['source_head'],0)
++
++    def test_real_auth_call_site_is_verified_with_fake_private_output(self):
++        a=self.audit()
++        def private_run(argv,**kwargs):
++            a.event('subprocess.Popen',(argv[0],argv,kwargs.get('cwd'),kwargs['env']))
++            return SimpleNamespace(returncode=0,stdout='Logged in using ChatGPT',stderr='')
++        with mock.patch.object(q.c.subprocess,'run',side_effect=private_run):
++            self.assertEqual(q.c.auth_check()['mode'],'ChatGPT')
++        self.assertEqual(a.counts['auth_mode'],1)
++
++    def test_missing_or_changed_public_source_blocks_every_codex_spawn(self):
++        from hub.codex_adapter import child_environment
++        for checker in (None,lambda:('changed',)):
++            a=self.audit();a.source_check=checker
++            with self.assertRaises(ServiceError):self.event(a,['codex','login','status'],env=child_environment())
++            self.assertEqual(a.counts['auth_mode'],0)

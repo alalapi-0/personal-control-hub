@@ -1,0 +1,77 @@
+{
+  "source": "supported unscoped capability metadata only; bounded feature pagination",
+  "command_exec_count": 0,
+  "new_threads": 0,
+  "model_turns": 0,
+  "observed_at": 1791357860.4242663,
+  "mcp": [
+    {
+      "name": "registered_server",
+      "runtimeStatus": null,
+      "tools_count": 0,
+      "resources_count": 0,
+      "resourceTemplates_count": 0,
+      "serverCapabilities_present": false
+    },
+    {
+      "name": "registered_server",
+      "runtimeStatus": null,
+      "tools_count": 0,
+      "resources_count": 0,
+      "resourceTemplates_count": 0,
+      "serverCapabilities_present": false
+    },
+    {
+      "name": "registered_server",
+      "runtimeStatus": null,
+      "tools_count": 0,
+      "resources_count": 0,
+      "resourceTemplates_count": 0,
+      "serverCapabilities_present": false
+    },
+    {
+      "name": "registered_server",
+      "runtimeStatus": null,
+      "tools_count": 0,
+      "resources_count": 0,
+      "resourceTemplates_count": 0,
+      "serverCapabilities_present": false
+    },
+    {
+      "name": "registered_server",
+      "runtimeStatus": null,
+      "tools_count": 0,
+      "resources_count": 0,
+      "resourceTemplates_count": 0,
+      "serverCapabilities_present": false
+    },
+    {
+      "name": "registered_server",
+      "runtimeStatus": null,
+      "tools_count": 0,
+      "resources_count": 0,
+      "resourceTemplates_count": 0,
+      "serverCapabilities_present": false
+    }
+  ],
+  "features": {
+    "apps": false,
+    "plugins": false,
+    "remote_plugin": false,
+    "browser_use": false,
+    "browser_use_external": false,
+    "browser_use_full_cdp_access": false,
+    "computer_use": false,
+    "in_app_browser": false,
+    "hooks": false,
+    "image_generation": false,
+    "multi_agent": false,
+    "multi_agent_v2": false,
+    "goals": false,
+    "memories": false
+  },
+  "local_native_tool_host": true,
+  "feature_pages": 2,
+  "cursor_remaining": false,
+  "closed": true
+}

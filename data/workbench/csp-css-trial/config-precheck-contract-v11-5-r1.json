@@ -1,0 +1,19 @@
+{
+  "acceptance": "proveactive serde_jsonfeatures viaexact staticdependencyclosure andbinaryidentity first; unknownfeature FEATURE_GRAPH_UNPROVEN no code/helper; exactopaqueexpectedwire comparison inclkeys/types/values/order without reversewrappernormalization; onlydesktop_present/roundtrip_supported/values_equal/fixedreasons persisted; other14groups+MCPduration+securityunchanged; boundedJSON/no duplicatekey/nonfinite/limits/ambiguousparse; wrapperlikeordinaryobjects preserved",
+  "budget": "samecumulative/reservefreshcontractJudge6000+candidate/runtimeJudge+closure; noreset/taskremainingcostunknown",
+  "created_at": 1791374995.1049755,
+  "cumulative": {
+    "closed_rounds": 16,
+    "metadata_helpers": 4,
+    "model_turns": 1,
+    "resumes": 4,
+    "threads": 2
+  },
+  "effects": "offlineonly; no helper/resume/model/nativecommand/task/source/global/auth/Git writes",
+  "governor": "/root/entry_governor",
+  "id": "HUB-LWB-2.3-CSP-DESKTOP-OPAQUE-ROUNDTRIP-GOV-v11.5-r1",
+  "lane": "GOVERNED",
+  "objective": "desktop opaqueJSON subtree expectedwire from exactprovedpublicserialization, privately deep equal; no publicslotname premise",
+  "revision_reason": "v11.5 two-public-slot identity impossible since public desktop HashMapJsonValue; retainallpriorFAIL; revision doesnotwaive private equality",
+  "scope": "publicsource research/offlineprecheck/codefixtures/tests/registration/soleSTATEINDEX"
+}

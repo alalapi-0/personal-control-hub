@@ -1,0 +1,12 @@
+{
+  "agent": "/root/desktop_opaque_v11_5_r3_judge",
+  "candidate_sha256": "312535ad8c35ac0fe078b38a038a449a21d3f30c6216cbe914272cb5c5243fb4",
+  "checks": "35scoped424HubPASS",
+  "decision": "PASS",
+  "evidence_sha256": "9a215f12a06512d296130b5f30f67ff885b478aba596ecd189a6d1c4ac55fffb",
+  "governor": "/root/entry_governor",
+  "governor_decision": "APPROVE_OFFLINE_ONLY",
+  "independent_fulcio_rekor": "NOT_RUN",
+  "native_authority_intent_result": "ABSENT",
+  "pins": "33code134evidence/27source exact; installedbinarydigeststamp/currentfixedinputs exact"
+}

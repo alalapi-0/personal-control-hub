@@ -230,6 +230,8 @@ class DesignService:
                 raise ServiceError("REQUEST_CONFLICT", status=409)
             return self._decision_result(prior)
         candidate = self._candidate(store, reference)
+        if candidate.get('decision_eligible') is False:
+            raise ServiceError('SNAPSHOT_DECISION_DISABLED', status=403)
         if candidate["scope"] != scope:
             raise ServiceError("CANDIDATE_SCOPE_MISMATCH", status=409)
         self._assert_current_candidate(store, candidate)
@@ -680,7 +682,12 @@ class DesignService:
         )
         if relative.is_absolute() or not relative.parts or any(part in {"", ".", ".."} for part in relative.parts):
             raise ServiceError("ARTIFACT_UNAVAILABLE", status=404)
-        if not any(relative == root or relative.is_relative_to(root) for root in allowed):
+        readonly_captures = {
+            Path('docs/reports/linux-workbench/csp-preview-desktop.jpg'),
+            Path('docs/reports/linux-workbench/csp-preview-mobile.jpg'),
+            Path('docs/reports/linux-workbench/csp-preview-mobile-v2.jpg'),
+        }
+        if relative not in readonly_captures and not any(relative == root or relative.is_relative_to(root) for root in allowed):
             raise ServiceError("ARTIFACT_UNAVAILABLE", status=404)
         target = self.store.hub_root / relative
         if target in {self.store.path, self.store.lock_path}:

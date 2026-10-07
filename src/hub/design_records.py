@@ -205,6 +205,12 @@ def validate_candidate(record: Any) -> dict[str, Any]:
     scope_value = record.get("scope")
     family_scoped = isinstance(scope_value, dict) and scope_value.get("family_id") is not None
     keys = base_keys | ({"family_binding"} if family_scoped else set())
+    snapshot_fields = {'purpose', 'decision_eligible', 'execution_allowed'}
+    if any(k in record for k in snapshot_fields):
+        keys |= snapshot_fields
+        if (record.get('purpose') != 'read_only_snapshot' or record.get('decision_eligible') is not False
+                or record.get('execution_allowed') is not False or family_scoped):
+            raise DesignRecordError('candidate: invalid read-only snapshot')
     record = _obj(record, "candidate", keys); _version(record, "candidate")
     _enum(record["kind"], "candidate.kind", {"candidate"}); _id(record["id"], "candidate.id"); _time(record["created_at"], "candidate.created_at")
     _enum(record["classification"], "candidate.classification", {"real", "mock", "dry-run", "imported"})

@@ -1,0 +1,779 @@
+"""Offline tests only: no native helper or authentication subprocess."""
+import copy
+import io
+import json
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+from types import SimpleNamespace
+from unittest import mock
+
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
+from hub import css_config_precheck as q
+from hub.service_contract import ServiceError
+import test_hub_css_process_config as fixtures
+
+
+class ConfigPrecheckTests(unittest.TestCase):
+    def setUp(self):
+        tmp=tempfile.TemporaryDirectory();self.addCleanup(tmp.cleanup);self.root=Path(tmp.name)
+        trial=self.root/'trial';trial.mkdir();(trial/'.codex').mkdir()
+        environment={**q.p.process_environment(),'HOME':str(self.root)}
+        for patch in (mock.patch.object(q.c,'TRIAL',trial),mock.patch.object(q.p,'process_environment',return_value=environment),
+            mock.patch('hub.codex_adapter.child_environment',return_value=environment),
+            mock.patch.object(q.r.time,'time',return_value=100.0)):
+            patch.start();self.addCleanup(patch.stop)
+        self.authority={'created_at':90.,'expires_at':400.}
+        self.user=fixtures.ProcessConfigTests().semantic_fixture();self.pin=q.p.semantic_projection(self.user)
+        self.authority['semantic_pin']=self.pin
+        self.original_reader=q.original_timeout
+        self.original_config_reader=q.original_config
+        patch=mock.patch.object(q,'original_config',side_effect=lambda _:copy.deepcopy(self.user))
+        patch.start();self.addCleanup(patch.stop)
+        self.real_source_checker=q.desktop_source_snapshot
+        patch=mock.patch.object(q,'desktop_source_snapshot',return_value=('fixture','binary',(),()))
+        patch.start();self.addCleanup(patch.stop)
+        patch=mock.patch.object(q,'desktop_source_verified',return_value=True)
+        patch.start();self.addCleanup(patch.stop)
+        patch=mock.patch.object(q,'protocol_source_snapshot',return_value=('protocol',()))
+        patch.start();self.addCleanup(patch.stop)
+        self.fixture_admission=q.Admission('fixture','fixture',
+            (q.desktop_source_snapshot(),q.protocol_source_snapshot()),'fixture','fixture')
+        with mock.patch.object(q,'admit',return_value=self.fixture_admission):
+            self.a=q.adapter(self.pin,self.authority)
+        self.a.snapshots=1;self.a.feature_complete=True
+        patch=mock.patch.object(q,'original_timeout',side_effect=lambda _:self.user['mcp_servers']['node_repl']['startup_timeout_sec'])
+        patch.start();self.addCleanup(patch.stop)
+
+    def native(self):
+        user=str(self.root/'.codex/config.toml')
+        # ConfigLayer's public serde omits disabled_reason when None.
+        layer=lambda kind,body,**name:{'name':{'type':kind,**name},'config':body,'version':'NEVER_RETAIN_PRIVATE_LAYER_HASH'}
+        layers=[layer('sessionFlags',q.session_config()),layer('project',{},dotCodexFolder=str(q.c.TRIAL/'.codex')),
+            layer('user',copy.deepcopy(self.user),file=user,profile=None),layer('system',{},file='/etc/codex/config.toml')]
+        layers[1]['disabledReason']=f'To load project-local config, hooks, and exec policies, add {q.c.TRIAL} as a trusted project in {user}.'
+        layers[2]['config']['mcp_servers']['node_repl']['startup_timeout_sec']=float(self.user['mcp_servers']['node_repl']['startup_timeout_sec'])
+        config=copy.deepcopy(q.PACKAGED_DEFAULTS)
+        for x in reversed(layers):
+            if x.get('disabledReason')is None:config=q.merged(config,x['config'])
+        effective=q.effective_config(config)
+        # Independent source fixture: only the two integer leaves become
+        # Number structs in the raw TOML layer; final API integers stay intact.
+        for key in ('sansFontSize','codeFontSize'):
+            layers[2]['config']['desktop'][key]={q.NUMBER_TOKEN:str(self.user['desktop'][key])}
+        return {'layers':layers,'config':effective,'origins':{'NEVER_RETAIN_KEY':{
+            'name':{'type':'packagedDefaults','file':'/NEVER_RETAIN_FILE'},'version':'NEVER_RETAIN_ORIGIN'},
+            'NEVER_RETAIN_USER_KEY':{'name':{'type':'user','file':user,'profile':None},'version':'NEVER_RETAIN_USER_VERSION'}}}
+
+    def native_mcp(self):
+        # Public unscoped source: no runtime-status map or enabled clients.
+        return {'data':[{'name':name,'runtimeStatus':None,'authStatus':'unsupported',
+            'pluginId':None,'httpOrigin':None,'serverInfo':None,'serverCapabilities':None,
+            'tools':{},'toolsError':None,'resources':[],'resourceTemplates':[]}
+            for name in sorted(q.REGISTERED_SERVERS)],'nextCursor':None}
+
+    def test_fixed_layers_and_effective_profile_have_no_private_body_or_version(self):
+        self.user['mcp_servers']['github']['command']='NEVER_RETAIN_COMMAND'
+        self.pin=q.p.semantic_projection(self.user)
+        fact=q.config_fact(self.native(),self.pin);text=json.dumps(fact)
+        self.assertNotIn('NEVER_RETAIN',text);self.assertFalse(fact['raw_config_or_layer_body_retained'])
+        self.assertEqual(fact['layer_count'],4);self.assertEqual(fact['active_project_trust'],None)
+        self.assertEqual(fact['configured_profile'],q.EVIDENCE_PERMISSION_PROFILE)
+        self.assertEqual(fact['layers'][1]['disabled_reason'],'missing_trust')
+        self.assertTrue(fact['packaged_defaults_filtered']);self.assertEqual(fact['wire_precedence'],'high_to_low')
+        self.assertTrue(fact['native_profile_echo'].startswith('NOT_RUN'))
+
+    def test_native_serde_omits_none_reason_and_rejects_noncanonical_layer_fields(self):
+        native=self.native()
+        for index in (0,2,3):
+            self.assertEqual(set(native['layers'][index]),{'name','version','config'})
+        self.assertIsInstance(native['layers'][1]['disabledReason'],str)
+        self.assertEqual(q.config_fact(native,self.pin)['layer_count'],4)
+        changes=[lambda x:x['layers'][0].update(disabledReason=None),
+            lambda x:x['layers'][2].update(disabledReason=None),
+            lambda x:x['layers'][3].update(disabledReason=None),
+            lambda x:x['layers'][0].update(disabledReason='unexpected'),
+            lambda x:x['layers'][1].pop('disabledReason'),
+            lambda x:x['layers'][1].update(disabledReason=None),
+            lambda x:x['layers'][0].update(unregistered=None),
+            lambda x:x['layers'][0].pop('version'),
+            lambda x:x['layers'][0].pop('config'),
+            lambda x:x['layers'][1].update(disabledReason='wrong'),
+            lambda x:x['layers'][1].update(disabledReason=1)]
+        for index,change in enumerate(changes):
+            value=self.native();change(value)
+            with self.subTest(index=index),self.assertRaises(ServiceError):q.config_fact(value,self.pin)
+
+    def test_unknown_enabled_reordered_wrong_source_and_mutated_layers_are_rejected(self):
+        changes=[lambda x:x['layers'].append(copy.deepcopy(x['layers'][0])),
+            lambda x:x['layers'][0]['name'].update(type='enterpriseManaged'),
+            lambda x:x['layers'][3]['config'].update(hooks={}),
+            lambda x:x['layers'][2]['name'].update(file='/other/config.toml'),
+            lambda x:x['layers'][1].update(disabledReason=None),
+            lambda x:x['layers'][1]['config'].update(exec_policy={}),
+            lambda x:x['layers'][1]['name'].update(dotCodexFolder='/other/.codex'),
+            lambda x:x['layers'][0]['config']['features'].update(hooks=True),
+            lambda x:x['layers'].reverse(),lambda x:x['config'].update(default_permissions='writer'),
+            lambda x:x['config'].update(unclassified_effect=True),lambda x:x['config'].update(unclassified_effect=None)]
+        for index,change in enumerate(changes):
+            value=self.native();change(value)
+            with self.subTest(index=index),self.assertRaises(ServiceError):q.config_fact(value,self.pin)
+        pin=copy.deepcopy(self.pin);pin['sensitive_structure']['projects']['bound_active_context']['trust']['selected']['trust_level']='trusted'
+        with self.assertRaises(ServiceError):q.config_fact(self.native(),pin)
+
+    def test_api_serialization_and_resolved_flags_are_separate_from_raw_merge(self):
+        native=self.native();effective=native['config'];raw=copy.deepcopy(q.PACKAGED_DEFAULTS)
+        for layer in reversed(native['layers']):
+            if layer.get('disabledReason')is None:raw=q.merged(raw,layer['config'])
+        self.assertNotEqual(raw,effective)
+        self.assertIs(effective['allow_login_shell'],True)
+        self.assertIsNone(effective['shell_environment_policy']['inherit'])
+        self.assertIsNone(effective['model_instructions_file'])
+        self.assertEqual(effective['model_providers'],{})
+        self.assertIsNone(effective['features']['network_proxy'])
+        self.assertIs(effective['features']['auth_elicitation'],True)
+        self.assertIs(effective['features']['remote_plugin'],False)
+        self.assertIs(effective['features']['background_paginated_rollout_migration'],False)
+        self.assertEqual(effective['mcp_servers']['github']['environment_id'],'local')
+        self.assertIsNone(effective['mcp_servers']['github']['tool_timeout_sec'])
+        profile=effective['permissions'][q.EVIDENCE_PERMISSION_PROFILE]
+        self.assertIsNone(profile['extends']);self.assertIsNone(profile['filesystem']['glob_scan_max_depth'])
+        with self.assertRaises(ServiceError):q.config_fact(dict(native,config=raw),self.pin)
+        changes=[lambda x:x['features'].update(auth_elicitation=False),
+            lambda x:x['features'].update(auth_elicitation=1),lambda x:x['features'].update(network_proxy={}),
+            lambda x:x.update(allow_login_shell=False),lambda x:x.update(unknown_nullable=None),
+            lambda x:x['permissions'][q.EVIDENCE_PERMISSION_PROFILE]['network'].update(proxy_url='private'),
+            lambda x:x['mcp_servers']['github'].update(environment_id='remote'),
+            lambda x:x['agents'].update(default_subagent_model='another'),
+            lambda x:next(iter(x['marketplaces'].values())).update(last_revision='private')]
+        for index,change in enumerate(changes):
+            value=self.native();change(value['config'])
+            with self.subTest(index=index),self.assertRaises(ServiceError):q.config_fact(value,self.pin)
+
+    def test_packaged_layer_filtered_and_failure_shape_does_not_keep_unknown_names(self):
+        value=self.native();value['layers'].append({'name':{'type':'packagedDefaults','file':'private'},'config':{},'version':'private'})
+        with self.assertRaises(ServiceError):q.config_fact(value,self.pin)
+        shape=q.layer_shape(value);self.assertEqual(shape['count'],5);self.assertEqual(shape['names'][-1],'unknown')
+        value['layers'][-1]['name']['type']='NEVER_RETAIN_UNKNOWN';value['layers'][-1]['disabledReason']='NEVER_RETAIN_REASON'
+        self.assertNotIn('NEVER_RETAIN',json.dumps(q.layer_shape(value)))
+        self.assertEqual(q.layer_shape({'layers':None}),{'array_present':False,'count':None,'names':[]})
+
+    def test_only_exact_duration_roundtrip_equal_to_original_integer_is_accepted(self):
+        native=self.native();body=native['layers'][2]['config'];old=copy.deepcopy(body)
+        self.assertEqual(q.user_projection(body,self.pin),self.pin);self.assertEqual(body,old)
+        timeout=self.user['mcp_servers']['node_repl']['startup_timeout_sec']
+        for value in (timeout,True,float(timeout)+.5,float('nan'),float('inf'),float('-inf'),0.,121.,float(timeout)+1):
+            changed=copy.deepcopy(body);changed['mcp_servers']['node_repl']['startup_timeout_sec']=value
+            with self.subTest(value_type=type(value).__name__),self.assertRaises(ServiceError):q.user_projection(changed,self.pin)
+        for change in (lambda x:x['mcp_servers']['node_repl'].pop('startup_timeout_sec'),
+            lambda x:x['mcp_servers']['github'].update(startup_timeout_sec=float(timeout)),
+            lambda x:x['mcp_servers']['node_repl'].update(unknown_timeout=float(timeout)),
+            lambda x:x['agents'].update(max_concurrent_threads_per_session=3.),
+            lambda x:x['mcp_servers'].update(wrong_server=x['mcp_servers'].pop('node_repl'))):
+            changed=copy.deepcopy(body);change(changed)
+            with self.assertRaises(ServiceError):q.user_projection(changed,self.pin)
+
+    def test_private_original_integer_read_is_identity_guarded_and_not_retained(self):
+        folder=self.root/'.codex';folder.mkdir();path=folder/'config.toml'
+        path.write_text('[mcp_servers.node_repl]\nstartup_timeout_sec=30\n')
+        def snapshot():
+            st=path.lstat()
+            return {'projection':self.pin,'identity':[st.st_dev,st.st_ino,st.st_size,st.st_mtime_ns,st.st_ctime_ns],
+                '_private_content_hash':'never-output','_private_projects_hash':'never-output'}
+        with mock.patch.object(q,'original_config',self.original_config_reader),mock.patch.object(q.p,'observe',side_effect=lambda **_:snapshot()):
+            self.assertEqual(self.original_reader(self.pin),30)
+            for value in ('30.0','true','0','121'):
+                path.write_text('[mcp_servers.node_repl]\nstartup_timeout_sec='+value+'\n')
+                with self.assertRaises(ServiceError):self.original_reader(self.pin)
+            path.write_text('[mcp_servers.node_repl]\nstartup_timeout_sec=30\n')
+            before=snapshot();after=dict(before,identity=[0,0,0,0,0])
+            with mock.patch.object(q.p,'observe',side_effect=[before,after]),self.assertRaises(ServiceError):
+                self.original_reader(self.pin)
+
+    def test_diagnostic_aggregates_multiple_groups_without_coercion_or_acceptance(self):
+        native=self.native();wire=native['layers'][2]['config']
+        wire['desktop']['sansFontSize']=float(self.user['desktop']['sansFontSize'])
+        wire['agents']['max_concurrent_threads_per_session']=3.
+        wire['memories'].pop('generate_memories')
+        old=copy.deepcopy(native);matrix=q.diagnostic_matrix(native,self.user)
+        rows={x['group']:x for x in matrix['groups']}
+        self.assertEqual(len(rows),16);self.assertEqual(native,old)
+        for group in ('agents','mcp_servers'):
+            self.assertIn('TYPE_DIFF',rows[group]['reasons'])
+        self.assertIn('KEYS_DIFF',rows['memories']['reasons'])
+        self.assertTrue(matrix['diagnostic_only'])
+        self.assertEqual(matrix['semantic_typed_effective_capabilities_acceptance'],'NOT_RUN')
+        self.assertEqual(set(rows['desktop']),{'group','desktop_present','roundtrip_supported','values_equal','reasons'})
+        self.assertIn('VALUE_DIFF',rows['desktop']['reasons'])
+        self.assertTrue(rows['desktop']['roundtrip_supported'])
+        self.assertFalse(matrix['desktop']['raw_forward_equal'])
+
+    def test_diagnostic_has_no_private_names_values_paths_or_unknown_fingerprints(self):
+        native=self.native();wire=native['layers'][2]['config']
+        wire['plugins']['NEVER_RETAIN_DYNAMIC_KEY']={'NEVER_RETAIN_SECRET_FIELD':'NEVER_RETAIN_VALUE'}
+        wire['NEVER_RETAIN_UNKNOWN_TOP']={'nested':'NEVER_RETAIN_UNKNOWN_VALUE'}
+        first=q.diagnostic_matrix(native,self.user);text=json.dumps(first)
+        self.assertNotIn('NEVER_RETAIN',text);self.assertNotIn(str(self.root),text)
+        self.assertNotIn('startup_timeout_sec',text);self.assertNotIn('sha256',text)
+        row=next(x for x in first['groups']if x['group']=='plugins')
+        self.assertEqual(row['unknown_private_count'],1)
+        self.assertIn('UNKNOWN_PRIVATE_STRUCTURE',row['reasons'])
+        self.assertEqual(first['unknown_private_count'],1)
+        wire['plugins']['NEVER_RETAIN_DYNAMIC_KEY']={'DIFFERENT_PRIVATE_KEY':{'another':['SECRET',1,False]}}
+        wire['NEVER_RETAIN_UNKNOWN_TOP']=['OTHER_SECRET',{'OTHER_PRIVATE_KEY':'SECRET'}]
+        self.assertEqual(first,q.diagnostic_matrix(native,self.user))
+
+    def test_same_structured_secret_changes_produce_identical_safe_diagnostic(self):
+        self.user['mcp_servers']['github']['command']='PRIVATE_COMMAND_A'
+        first=q.diagnostic_matrix(self.native(),self.user)
+        self.user['mcp_servers']['github']['command']='PRIVATE_COMMAND_B_LONGER'
+        second=q.diagnostic_matrix(self.native(),self.user)
+        self.assertEqual(first,second)
+        self.assertNotIn('PRIVATE_COMMAND',json.dumps(second))
+        wire=self.native();wire['layers'][2]['config']['mcp_servers']['github']['command']='OTHER_SECRET'
+        third=q.diagnostic_matrix(wire,self.user)
+        row=next(x for x in third['groups']if x['group']=='mcp_servers')
+        self.assertFalse(row['values_equal']);self.assertNotIn('OTHER_SECRET',json.dumps(third))
+
+    def test_presence_count_type_and_equality_are_independent_safe_facts(self):
+        native=self.native();wire=native['layers'][2]['config'];wire.pop('desktop')
+        wire['agents']['interrupt_message']=not wire['agents']['interrupt_message']
+        wire['mcp_servers']['github']['args'].append('private-extra-argument')
+        matrix=q.diagnostic_matrix(native,self.user);rows={x['group']:x for x in matrix['groups']}
+        self.assertFalse(rows['desktop']['desktop_present'])
+        self.assertIn('PRESENCE_DIFF',rows['desktop']['reasons'])
+        self.assertTrue(rows['agents']['types_equal']);self.assertTrue(rows['agents']['keys_equal'])
+        self.assertFalse(rows['agents']['values_equal'])
+        self.assertFalse(rows['mcp_servers']['types_equal'])
+        self.assertNotIn('private-extra-argument',json.dumps(matrix))
+
+    def test_raw_and_final_desktop_are_separate_gates_without_overwriting_actual(self):
+        native=self.native();before=copy.deepcopy(native)
+        matrix=q.diagnostic_matrix(native,self.user)
+        self.assertEqual(native,before)
+        self.assertTrue(all(matrix['desktop'][key]for key in ('raw_forward_equal','final_desktop_equal',
+            'expected_builder_preserves_desktop','final_config_equal')))
+        for field in ('sansFontSize','codeFontSize'):
+            changed=copy.deepcopy(native);changed['config']['desktop'][field]+=1
+            matrix=q.diagnostic_matrix(changed,self.user)
+            self.assertTrue(matrix['desktop']['raw_forward_equal'])
+            self.assertFalse(matrix['desktop']['final_desktop_equal'])
+            self.assertFalse(matrix['desktop']['final_config_equal'])
+            with self.assertRaises(ServiceError):q.config_fact(changed,self.pin)
+        changed=copy.deepcopy(native);changed['layers'][2]['config']['desktop']['sansFontSize'][q.NUMBER_TOKEN]='99'
+        matrix=q.diagnostic_matrix(changed,self.user)
+        self.assertFalse(matrix['desktop']['raw_forward_equal']);self.assertTrue(matrix['desktop']['final_desktop_equal'])
+        with self.assertRaises(ServiceError):q.config_fact(changed,self.pin)
+
+    def test_desktop_shape_does_not_enter_effective_histogram_or_fixed_facts(self):
+        first=q.diagnostic_group('effective_config',{'desktop':{'PRIVATE_A':[1,2]}},
+            {'desktop':{'PRIVATE_B':{'nested':{'value':'PRIVATE'}}}})
+        second=q.diagnostic_group('effective_config',{'desktop':{'DIFFERENT':[False]}},
+            {'desktop':{'CHANGED':[1,2,3,4]}})
+        self.assertEqual(first,second)
+        self.assertNotIn('PRIVATE',json.dumps(first))
+
+    def test_native_json_reader_rejects_duplicate_keys_and_nonfinite_without_new_decoder(self):
+        for raw in (b'{"id":1,"result":{"desktop":{"PRIVATE":1,"PRIVATE":2}}}\n',
+            b'{"id":1,"result":{"desktop":{"PRIVATE":NaN}}}\n'):
+            self.a.proc=SimpleNamespace(stdout=io.BytesIO(raw))
+            self.a._read()
+            self.assertEqual(self.a.failed,'CODEX_PROTOCOL_REJECTED')
+            self.assertNotIn('PRIVATE',json.dumps(self.a.failed_details))
+
+    def test_public_dto_layer_and_effective_unknown_fields_or_type_drift_reject(self):
+        changes=[lambda x:x.update(UNKNOWN_PUBLIC='SECRET'),lambda x:x['config'].update(UNKNOWN_PUBLIC='SECRET'),
+            lambda x:x['config'].update(model=4),lambda x:x['layers'][2].update(UNKNOWN_PUBLIC='SECRET'),
+            lambda x:x['layers'][2]['name'].update(UNKNOWN_PUBLIC='SECRET'),
+            lambda x:x['layers'][2]['name'].update(type='enterpriseManaged'),
+            lambda x:x['layers'].reverse(),lambda x:x['layers'].append(copy.deepcopy(x['layers'][2])),
+            lambda x:x['layers'][2].update(version=3),lambda x:x['layers'][1].update(disabledReason=None)]
+        for index,change in enumerate(changes):
+            native=self.native();change(native)
+            with self.subTest(index=index),self.assertRaisesRegex(ServiceError,'CSS_DIAGNOSTIC_PUBLIC_STRUCTURE_REJECTED'):
+                q.diagnostic_matrix(native,self.user)
+        with self.assertRaises(ServiceError):q.diagnostic_group('PRIVATE_UNKNOWN_GROUP',{}, {})
+
+    def test_diagnostic_capacity_is_bounded_and_counts_saturate(self):
+        for item in ([0]*513,'X'*65537,float('nan'),float('inf'),2**63,object(),{1:'secret'}):
+            with self.subTest(kind=type(item).__name__),self.assertRaises(ServiceError):q.bounded_tree(item)
+        nested=[]
+        for _ in range(14):nested=[nested]
+        with self.assertRaises(ServiceError):q.bounded_tree(nested)
+        with self.assertRaises(ServiceError):q.bounded_tree([[0]*512 for _ in range(9)])
+        q.bounded_tree(['private']*300)
+        original={str(i):{'enabled':False}for i in range(300)};wire=copy.deepcopy(original)
+        row=q.diagnostic_group('plugins',original,wire)
+        self.assertEqual(row['original_count'],255);self.assertEqual(row['original_types']['bool'],255)
+        with mock.patch.object(q,'OUTPUT_LIMIT',1),self.assertRaises(ServiceError):
+            q.diagnostic_matrix(self.native(),self.user)
+
+    def test_original_wire_effective_unknown_subtrees_never_fingerprint(self):
+        samples=[]
+        for secret in ('PRIVATE_SCALAR',{'PRIVATE_KEY':{'deeper':[1,False,'SECRET']}}):
+            original=copy.deepcopy(self.user);original['plugins']['PRIVATE_ROW']={'SECRET_FIELD':secret}
+            native=self.native();native['layers'][2]['config']['plugins']['PRIVATE_ROW']={'SECRET_FIELD':secret}
+            native['config']['plugins']['PRIVATE_ROW']={'SECRET_FIELD':secret}
+            matrix=q.diagnostic_matrix(native,original);samples.append(matrix)
+            for group in ('plugins','effective_config'):
+                row=next(x for x in matrix['groups']if x['group']==group)
+                self.assertFalse(row['values_equal']);self.assertFalse(row['types_equal']);self.assertFalse(row['keys_equal'])
+                self.assertEqual(row['unknown_private_count'],2)
+                self.assertIn('UNKNOWN_PRIVATE_STRUCTURE',row['reasons'])
+            self.assertNotIn('PRIVATE_ROW',json.dumps(matrix));self.assertNotIn('SECRET_FIELD',json.dumps(matrix))
+            self.assertNotIn('PRIVATE_SCALAR',json.dumps(matrix));self.assertNotIn('PRIVATE_KEY',json.dumps(matrix))
+        self.assertEqual(samples[0],samples[1])
+        row=q.diagnostic_group('plugins',{'PRIVATE':{'enabled':False}}, {'OTHER_PRIVATE':{'enabled':False}})
+        self.assertFalse(row['keys_equal']);self.assertNotIn('PRIVATE',json.dumps(row))
+
+    def test_origins_required_mapping_and_strict_public_metadata_rows(self):
+        for value in (None,[],['PRIVATE'],{'PRIVATE':None},{'PRIVATE':'SECRET'},{'PRIVATE':{}},
+            {'PRIVATE':{'name':{'type':'unknown'},'version':'SECRET'}},
+            {'PRIVATE':{'name':{'type':'system','file':4},'version':'SECRET'}},
+            {'PRIVATE':{'name':{'type':'user','file':'/private','profile':[]},'version':'SECRET'}},
+            {'PRIVATE':{'name':{'type':'system','file':'/private'},'version':'SECRET','extra':'SECRET'}}):
+            native=self.native();native['origins']=value
+            with self.subTest(kind=type(value).__name__),self.assertRaises(ServiceError):q.diagnostic_matrix(native,self.user)
+        native=self.native();native.pop('origins')
+        with self.assertRaises(ServiceError):q.diagnostic_matrix(native,self.user)
+        q.origin_rows({})
+        native=self.native();native['origins']={}
+        with self.assertRaises(ServiceError):q.diagnostic_matrix(native,self.user)
+
+    def test_user_profile_is_required_and_consistent_in_layer_and_origins(self):
+        for change in (lambda x:x['layers'][2]['name'].pop('profile'),
+            lambda x:x['origins']['NEVER_RETAIN_USER_KEY']['name'].pop('profile'),
+            lambda x:x['layers'][2]['name'].update(profile='PRIVATE_PROFILE'),
+            lambda x:x['origins']['NEVER_RETAIN_USER_KEY']['name'].update(profile='PRIVATE_PROFILE'),
+            lambda x:x['origins']['NEVER_RETAIN_USER_KEY']['name'].update(profile=4),
+            lambda x:x['origins']['NEVER_RETAIN_USER_KEY']['name'].update(file='/another/private'),
+            lambda x:x['origins'].pop('NEVER_RETAIN_USER_KEY')):
+            native=self.native();change(native)
+            with self.assertRaises(ServiceError):q.diagnostic_matrix(native,self.user)
+        name={'type':'user','file':'/private','profile':'PUBLIC_DTO_VALID_STRING'}
+        q.origin_rows({'private':{'name':name,'version':'private'}})
+
+    def test_every_execution_method_and_raw_send_is_closed(self):
+        with mock.patch.object(q.AppServerAdapter,'call')as call,mock.patch.object(q.AppServerAdapter,'_send')as send:
+            for method in ('thread/start','thread/read','thread/resume','thread/list','turn/start','turn/steer','command/exec','fs/writeFile'):
+                with self.subTest(method=method),self.assertRaises(ServiceError):self.a.call(method,{})
+                with self.assertRaises(ServiceError):self.a._send({'id':1,'method':method,'params':{}})
+            with self.assertRaises(ServiceError):self.a._send({'id':1,'method':'config/read','params':q.config_params()})
+            with self.assertRaises(ServiceError):self.a._send({'method':'initialized','params':{}})
+        call.assert_not_called();send.assert_not_called()
+
+    def test_exact_config_once_and_no_scoped_mcp_or_features(self):
+        with mock.patch.object(q.AppServerAdapter,'call',return_value={})as call:
+            for params in ({'includeLayers':False},{'cwd':'/other','includeLayers':True}):
+                with self.assertRaises(ServiceError):self.a.call('config/read',params)
+            self.a.call('config/read',q.config_params())
+            with self.assertRaises(ServiceError):self.a.call('config/read',q.config_params())
+            with self.assertRaises(ServiceError):self.a.call('mcpServerStatus/list',{'threadId':'other','limit':100,'detail':'toolsAndAuthOnly'})
+            with self.assertRaises(ServiceError):self.a.call('experimentalFeature/list',{'threadId':'other','limit':100,'cursor':None})
+        self.assertEqual(call.call_count,1)
+
+    def test_failed_config_is_consumed_without_replay_and_expiry_blocks_rpc(self):
+        with mock.patch.object(q.AppServerAdapter,'call',side_effect=ServiceError('LOST_RESPONSE'))as call:
+            with self.assertRaises(ServiceError):self.a.call('config/read',q.config_params())
+            with self.assertRaises(ServiceError):self.a.call('config/read',q.config_params())
+        self.assertEqual(call.call_count,1)
+        self.authority['expires_at']=99.
+        with mock.patch.object(q.AppServerAdapter,'call')as call:
+            with self.assertRaises(ServiceError):self.a.call('initialize',{})
+        call.assert_not_called()
+
+    def test_each_fixed_metadata_method_is_once_and_cannot_skip_snapshot(self):
+        mcp={'threadId':None,'limit':100,'detail':'toolsAndAuthOnly'}
+        with mock.patch.object(q.AppServerAdapter,'call',return_value={})as call:
+            self.a.snapshots=0;self.a.feature_complete=False
+            with self.assertRaises(ServiceError):self.a.call('config/read',q.config_params())
+            self.a.snapshots=1;self.a.feature_complete=True
+            with self.assertRaises(ServiceError):self.a.call('mcpServerStatus/list',mcp)
+            self.a.call('config/read',q.config_params())
+            self.a.call('mcpServerStatus/list',mcp)
+            with self.assertRaises(ServiceError):self.a.call('mcpServerStatus/list',mcp)
+            self.a.snapshots=2
+            with self.assertRaises(ServiceError):self.a.call('config/read',q.config_params())
+        self.assertEqual(call.call_count,2)
+
+    def test_contradictory_remote_or_auth_notice_is_rejected_immediately(self):
+        with mock.patch.object(q.AppServerAdapter,'_notification_observation'):
+            for value in ({'method':'remoteControl/status/changed','params':{'status':'enabled'}},
+                {'method':'account/updated','params':{'authMode':'apiKey'}},
+                {'method':'mcpServer/startupStatus/updated','params':{}},
+                {'method':'unknown','params':{}}):
+                with self.assertRaises(ServiceError):self.a._notification_observation(value,'validated')
+            self.a._notification_observation({'method':'remoteControl/status/changed','params':{'status':'disabled'}},'validated')
+            self.a._notification_observation({'method':'account/updated','params':{'authMode':'chatgpt'}},'validated')
+
+    def test_full_metadata_has_no_scoped_or_inactive_feature_requests(self):
+        with mock.patch.object(q.AppServerAdapter,'call',return_value={'data':[],'nextCursor':'private-cursor'})as call:
+            for method in ('experimentalFeature/list','mcpServerStatus/list'):
+                with self.assertRaises(ServiceError):self.a.call(method,{'threadId':None,'limit':100,'cursor':None})
+        call.assert_not_called();self.assertEqual(q.METHODS,('initialize','config/read','mcpServerStatus/list','experimentalFeature/list'))
+
+    def test_no_helper_without_independent_authority(self):
+        with mock.patch.object(q,'admit',side_effect=ServiceError('NO_AUTHORITY')),mock.patch.object(q.AppServerAdapter,'open')as opened:
+            with self.assertRaises(ServiceError):self.a.open()
+        opened.assert_not_called()
+
+    def test_registration_integrity_exact_state_counter_and_consumed_intent_gate(self):
+        reg={'files':{},'evidence_files':{},'semantic_pin':{},'source':{},'trial':{},'credential_storage_safe':True,'task_hash':'task','created_at':1.}
+        reg['candidate_sha256']=q.c.digest(reg['files'])
+        reg['evidence_sha256']=q.c.digest({k:v for k,v in reg.items()if k not in ('candidate_sha256','evidence_sha256','created_at')})
+        authority={**self.authority,'contract':q.CONTRACT,'task_id':q.c.TASK,'methods':list(q.METHODS),
+            'config_read_params':q.config_params(),'profile_arguments':list(q.profile_arguments(q.c.TRIAL,read_only=True)),
+            'mcp_status_params':q.mcp_params(),'official_sdk_refresh_allowed':True,'effect_grant_id':q.REFRESH_GRANT,
+            'helpers_allowed':1,'helper_wall_seconds':120,'threads_allowed':0,'resumes_allowed':0,'model_turns_allowed':0,
+            'renewal_allowed':False,'auth_mode':'ChatGPT','approved_candidate':reg['candidate_sha256'],'approved_evidence':reg['evidence_sha256'],
+            **{k:reg[k]for k in ('semantic_pin','source','trial','credential_storage_safe','task_hash')}}
+        state={'linux_visual_workbench':{'contract':{'id':q.CONTRACT,'decision':'APPROVE_NATIVE_PRECHECK','status':'APPROVED_SINGLE_NATIVE_PRECHECK'},
+            'authorization':{'conditional_pilot_write_grant':{'state':'active_exact_css_trial','task_id':q.c.TASK,
+                'grant_id':'csp-css-trial-grant-v1','project_id':'computer-study-plan'},
+                'sdk_metadata_refresh_grant':{'state':'explicit_one_sample','grant_id':q.REFRESH_GRANT,'contract':q.CONTRACT,
+                    'candidate_sha256':reg['candidate_sha256'],'evidence_sha256':reg['evidence_sha256'],'official_sdk_refresh_allowed':True}},
+                'trial_registration':{'resume_calls':4}}}
+        def read(path,*args,**kwargs):return q.yaml.safe_dump(state)if path.name=='STATE.yaml'else json.dumps(reg)
+        with mock.patch.object(Path,'read_text',read),mock.patch.object(Path,'exists',return_value=False),\
+            mock.patch.object(q,'fixed_inputs_current',return_value=True):
+            admitted=q.admit(authority);self.assertEqual(admitted.candidate,reg['candidate_sha256'])
+            self.assertEqual(admitted.evidence,reg['evidence_sha256'])
+            refresh=state['linux_visual_workbench']['authorization']['sdk_metadata_refresh_grant']
+            for key,bad in [('state','STAGED_INACTIVE'),('official_sdk_refresh_allowed',False),('candidate_sha256','other')]:
+                original=refresh[key];refresh[key]=bad
+                with self.assertRaises(ServiceError):q.admit(authority)
+                refresh[key]=original
+            with self.assertRaises(AttributeError):admitted.binary='forged'
+            state['linux_visual_workbench']['trial_registration']['resume_calls']=5
+            with self.assertRaises(ServiceError):q.admit(authority)
+            state['linux_visual_workbench']['trial_registration']['resume_calls']=4
+            reg['source']={'tampered':True}
+            with self.assertRaises(ServiceError):q.admit(authority)
+            del reg['source']['tampered']
+            with mock.patch.object(Path,'exists',return_value=True),self.assertRaises(ServiceError):q.admit(authority)
+            with self.assertRaises(ServiceError):q.admit(dict(authority,model_turns_allowed=1))
+            with mock.patch.object(q,'fixed_inputs_current',return_value=False),\
+                mock.patch.object(q,'atomic_record')as write,mock.patch.object(q.AppServerAdapter,'__init__')as init,\
+                mock.patch.object(q.AppServerAdapter,'open')as opened,\
+                mock.patch('hub.codex_adapter.subprocess.Popen')as spawn,mock.patch.object(q.AppServerAdapter,'call')as rpc:
+                with self.assertRaises(ServiceError):q.adapter(reg['semantic_pin'],authority)
+                write.assert_not_called();init.assert_not_called();opened.assert_not_called();spawn.assert_not_called();rpc.assert_not_called()
+
+    def test_unproven_source_blocks_admit_adapter_creation_and_direct_open_before_any_effect(self):
+        with mock.patch.object(q,'desktop_source_snapshot',return_value=None),mock.patch.object(q,'atomic_record')as write,\
+            mock.patch.object(q.AppServerAdapter,'__init__')as init,mock.patch.object(q.AppServerAdapter,'open')as opened,\
+            mock.patch('hub.codex_adapter.subprocess.Popen')as spawn,mock.patch.object(q.AppServerAdapter,'call')as rpc:
+            for action in (lambda:q.admit(self.authority),lambda:q.adapter(self.pin,self.authority),self.a.open):
+                with self.assertRaises(ServiceError)as error:action()
+                self.assertEqual(error.exception.code,'FEATURE_GRAPH_UNPROVEN')
+            write.assert_not_called();init.assert_not_called();opened.assert_not_called();spawn.assert_not_called();rpc.assert_not_called()
+
+    def test_changed_admission_token_cannot_open_or_consume_intent(self):
+        changed=q.Admission('changed','fixture','fixture','fixture','fixture')
+        with mock.patch.object(q,'admit',return_value=changed),mock.patch.object(q,'atomic_record')as write,\
+            mock.patch.object(q.AppServerAdapter,'open')as opened,mock.patch('hub.codex_adapter.subprocess.Popen')as spawn,\
+            mock.patch.object(q.AppServerAdapter,'call')as rpc:
+            with self.assertRaises(ServiceError)as error:self.a.open()
+            self.assertEqual(error.exception.code,'CSS_PRECHECK_ADMISSION_CHANGED')
+            write.assert_not_called();opened.assert_not_called();spawn.assert_not_called();rpc.assert_not_called()
+
+    def test_real_source_checker_rejects_missing_hash_graph_source_and_post_admit_binary_drift(self):
+        # Local synthetic public provenance; never modify installed binary/cache.
+        binary=self.root/'binary';binary.write_bytes(b'public-binary-fixture')
+        source=self.root/'source';source.write_bytes(b'public-source-fixture')
+        folder=self.root/q.c.PRIVATE;folder.mkdir(parents=True)
+        closure=folder/q.DESKTOP_SOURCE
+        proof={'feature_graph_proven':True,'arbitrary_precision':True,'sources':{'source':q.c.sha(source.read_bytes())},
+            'binary_path':str(binary),'binary_sha256':q.c.sha(binary.read_bytes())}
+        raw=json.dumps(proof).encode();closure.write_bytes(raw)
+        # The original function was saved before the default fixture patch.
+        reader=self.real_source_checker
+        with mock.patch.object(q.c,'HUB_ROOT',self.root),mock.patch.object(q,'DESKTOP_SOURCE_SHA',q.c.sha(raw)),\
+            mock.patch.object(q,'desktop_source_snapshot',side_effect=reader),mock.patch.object(q,'atomic_record')as write,\
+            mock.patch.object(q.AppServerAdapter,'open')as opened,mock.patch('hub.codex_adapter.subprocess.Popen')as spawn,\
+            mock.patch.object(q.AppServerAdapter,'call')as rpc:
+            self.assertIsNotNone(reader())
+            for kind in ('missing','wrong_hash','feature_incomplete','feature_missing','arbitrary_missing','binary_drift','source_drift'):
+                closure.write_bytes(raw);binary.write_bytes(b'public-binary-fixture');source.write_bytes(b'public-source-fixture')
+                if kind=='missing':closure.unlink()
+                elif kind=='wrong_hash':closure.write_bytes(b'{}')
+                elif kind=='binary_drift':binary.write_bytes(b'changed-public-binary')
+                elif kind=='source_drift':source.write_bytes(b'changed-public-source')
+                else:
+                    changed=dict(proof,feature_graph_proven=False)
+                    if kind=='feature_missing':changed.pop('feature_graph_proven')
+                    if kind=='arbitrary_missing':changed.pop('arbitrary_precision')
+                    bad=json.dumps(changed).encode();closure.write_bytes(bad)
+                patch=mock.patch.object(q,'DESKTOP_SOURCE_SHA',q.c.sha(bad))if kind in ('feature_incomplete','feature_missing','arbitrary_missing')else mock.patch.object(q,'DESKTOP_SOURCE_SHA',q.c.sha(raw))
+                with patch,self.assertRaises(ServiceError)as error:self.a.open()
+                self.assertEqual(error.exception.code,'FEATURE_GRAPH_UNPROVEN')
+            write.assert_not_called();opened.assert_not_called();spawn.assert_not_called();rpc.assert_not_called()
+
+    def test_zero_model_fixture_flow_retains_positive_facts_after_preservation_failure(self):
+        folder=self.root/q.c.PRIVATE;folder.mkdir(parents=True)
+        task={'intent':{'grant':{}}};authority={**self.authority,'semantic_pin':self.pin,'source':{},'trial':{},'credential_storage_safe':True,
+            'task_hash':q.c.digest(task),'approved_candidate':'fixture','approved_evidence':'fixture'}
+        (folder/q.AUTHORITY).write_text(json.dumps(authority))
+        fake=SimpleNamespace(proc=SimpleNamespace(pid=123,returncode=0,poll=lambda:0),audit=[],cursor=None,feature_complete=False,
+            wall_exceeded=False,remote_control_status='disabled',mcp_startup_seen=False,denials=[],close=lambda:None,
+            schema_temp_cleaned=True,pages=4,stderr_outcome='NO_REFRESH_FAILURE_SIGNAL')
+        def opened():q.atomic_record(folder/q.INTENT,{'fixture':True});return fake
+        fake.open=opened
+        def call(method,params):
+            fake.audit.append({'method':method,'unscoped':True})
+            if method=='config/read':return self.native()
+            if method=='mcpServerStatus/list':return self.native_mcp()
+            raise AssertionError('unregistered method')
+        fake.call=call
+        before={'identity':[1,2,3,4,5],'_private_content_hash':'private','_private_projects_hash':'private-projects'}
+        after=dict(before,identity=[1,2,3,4,6])
+        with mock.patch.object(q.c,'HUB_ROOT',self.root),mock.patch.object(q,'admit',return_value=self.fixture_admission),\
+            mock.patch.object(q,'observed_verified',side_effect=[before,after]),mock.patch.object(q.r,'source_snapshot',return_value={}),\
+            mock.patch.object(q.c,'placeholder_snapshot',return_value={}),mock.patch.object(q,'credential_snapshot',return_value=(1,2,3,4,5,33152,q.os.getuid(),1)),\
+            mock.patch.object(q.r,'TaskStore',return_value=SimpleNamespace(task=lambda _:task)),\
+            mock.patch.object(q.r,'mapping_check'),mock.patch.object(q,'adapter',return_value=fake),mock.patch.object(q,'drain'),\
+            mock.patch.object(q,'original_config',return_value=self.user),\
+            mock.patch.object(q,'authentication_receipt',return_value=q.AuthReceipt('ChatGPT',0)),\
+            mock.patch.object(q,'feature_snapshot',return_value={k:False for k in q.p.FROZEN_DISABLES}|{'code_mode_host':True}),\
+            mock.patch.object(q.MetadataEffects,'install'),\
+            mock.patch.object(q.MetadataEffects,'fact',return_value={'effect_limits_satisfied':True}),\
+            mock.patch.object(q.r,'final_capability_state',return_value=True):
+            result=q.run()
+        self.assertEqual(result['status'],'PARTIAL_BLOCKED');self.assertFalse(result['global_config_preserved'])
+        self.assertEqual(result['catalog']['public_catalog_count'],152);self.assertEqual(result['resumes'],0)
+        self.assertEqual([x['method']for x in result['methods']],['config/read','mcpServerStatus/list'])
+        self.assertEqual(result['full_metadata_acceptance'],'BLOCKED')
+        self.assertEqual(result['mcp_status_rpc_count'],1)
+        self.assertFalse(result['fifth_resume_allowed'])
+        self.assertEqual(result['model_turns'],0);self.assertNotIn('NEVER_RETAIN',(folder/q.RESULT).read_text())
+
+    def test_configured_features_do_not_claim_unobserved_mcp_runtime(self):
+        configuration=q.config_fact(self.native(),self.pin)
+        flags={k:False for k in q.p.FROZEN_DISABLES}|{'code_mode_host':True}
+        a=SimpleNamespace(remote_control_status='disabled',mcp_startup_seen=False,denials=[])
+        fact=q.configured_feature_fact(a,configuration,flags)
+        self.assertEqual(fact['mcp_status_rpc_count'],0)
+        self.assertEqual(fact['full_metadata_acceptance'],'BLOCKED')
+        self.assertEqual(set(fact['mcp_runtime'].values()),{'NOT_RUN'})
+        self.assertEqual(set(fact['mcp_configuration']),set(q.REGISTERED_SERVERS))
+        for change in (lambda:configuration.update(configured_mcp_disabled=False),lambda:flags.update(hooks=True),lambda:setattr(a,'remote_control_status','enabled')):
+            change()
+            with self.assertRaises(ServiceError):q.configured_feature_fact(a,configuration,flags)
+
+    def test_mcp_rpc_outside_config_phase_and_direct_send_rejected_without_native_call(self):
+        params={'threadId':None,'limit':100,'detail':'toolsAndAuthOnly'}
+        for phase in (0,1,2):
+            self.a.snapshots=phase
+            with mock.patch.object(q.AppServerAdapter,'call')as call:
+                with self.assertRaises(ServiceError):self.a.call('mcpServerStatus/list',params)
+            call.assert_not_called()
+        with mock.patch.object(q.AppServerAdapter,'_send')as send:
+            with self.assertRaises(ServiceError):self.a._send({'id':1,'method':'mcpServerStatus/list','params':params})
+        send.assert_not_called()
+
+    def test_source_correct_unscoped_null_is_not_disabled_or_loaded_thread(self):
+        flags={k:False for k in q.p.FROZEN_DISABLES}|{'code_mode_host':True}
+        config=q.config_fact(self.native(),self.pin)
+        a=SimpleNamespace(remote_control_status='disabled',mcp_startup_seen=False,denials=[])
+        fact=q.capability_fact(a,self.native_mcp(),config,flags)
+        self.assertEqual(fact['loaded_thread'],'NOT_RUN')
+        self.assertTrue(all(x['runtimeStatus']is None for x in fact['mcp'].values()))
+        changes=[lambda x:x['data'][0].update(runtimeStatus='disabled'),
+            lambda x:x['data'][0].update(authStatus='unknown'),lambda x:x['data'][0].update(authStatus='oAuth'),
+            lambda x:x['data'][0].update(tools=[]),lambda x:x['data'][0].update(resources={}),
+            lambda x:x['data'][0].update(resourceTemplates={}),lambda x:x['data'][0].update(serverCapabilities={}),
+            lambda x:x['data'][0].update(pluginId='NEVER_RETAIN'),lambda x:x['data'][0].update(toolsError='NEVER_RETAIN'),
+            lambda x:x['data'][0].update(httpOrigin=4),lambda x:x['data'].reverse(),
+            lambda x:x['data'].__setitem__(1,copy.deepcopy(x['data'][0])),lambda x:x.update(nextCursor='6')]
+        for change in changes:
+            rows=self.native_mcp();change(rows)
+            with self.subTest(change=change),self.assertRaises(ServiceError):q.capability_fact(a,rows,config,flags)
+
+    def test_mcp_lost_response_consumes_once_without_replay(self):
+        self.a.consumed={'initialize','config/read'}
+        with mock.patch.object(q.AppServerAdapter,'call',side_effect=ServiceError('LOST_RESPONSE'))as call:
+            with self.assertRaises(ServiceError):self.a.call('mcpServerStatus/list',q.mcp_params())
+            with self.assertRaises(ServiceError):self.a.call('mcpServerStatus/list',q.mcp_params())
+        self.assertEqual(call.call_count,1)
+
+    def test_metadata_stderr_is_fixed_enum_only_never_base_hash_or_count(self):
+        for text,expected in [(b'','NO_REFRESH_FAILURE_SIGNAL'),
+            (b'prefix Failed to refresh token: NEVER_RETAIN_TOKEN_URL','SDK_REFRESH_FAILURE_REPORTED'),
+            (b'NEVER_RETAIN_UNKNOWN_PRIVATE_LOG','UNKNOWN_STDERR')]:
+            self.a.proc=SimpleNamespace(stderr=io.BytesIO(text));self.a.stderr_outcome='NO_REFRESH_FAILURE_SIGNAL'
+            before=self.a.stderr_hash.hexdigest();self.a._read_errors()
+            self.assertEqual(self.a.stderr_outcome,expected)
+            self.assertEqual(self.a.stderr_hash.hexdigest(),before);self.assertEqual(self.a.stderr_bytes,0)
+            if text:self.assertEqual(self.a.failed,'CSS_SDK_REFRESH_EFFECT_UNCERTAIN')
+        class Chunks:
+            def __init__(self):self.items=iter([b'Failed to ref',b'resh token: NEVER_RETAIN',b''])
+            def read(self,size):return next(self.items)
+        self.a.proc=SimpleNamespace(stderr=Chunks());self.a.stderr_outcome='NO_REFRESH_FAILURE_SIGNAL'
+        self.a._read_errors();self.assertEqual(self.a.stderr_outcome,'SDK_REFRESH_FAILURE_REPORTED')
+
+    def test_credentials_stat_only_alias_permissions_and_hardlink_reject(self):
+        path=self.root/'credential-fixture';path.write_text('synthetic noncredential fixture');path.chmod(0o600)
+        with mock.patch.object(q.c,'CREDENTIAL_PATH',path),mock.patch.object(Path,'read_bytes',side_effect=AssertionError('no content')),\
+            mock.patch.object(Path,'read_text',side_effect=AssertionError('no content')):
+            before=q.credential_snapshot();path.chmod(0o644)
+            with self.assertRaises(ServiceError):q.credential_snapshot()
+            path.chmod(0o600);link=self.root/'alias';link.symlink_to(path)
+            with mock.patch.object(q.c,'CREDENTIAL_PATH',link),self.assertRaises(ServiceError):q.credential_snapshot()
+            import os
+            os.link(path,self.root/'hardlink')
+            with self.assertRaises(ServiceError):q.credential_snapshot()
+        fact=q.credential_fact(before,(before[0],before[1]+1,*before[2:]),'NO_REFRESH_FAILURE_SIGNAL')
+        self.assertTrue(fact['identity_changed']);self.assertEqual(fact['refresh_success'],'NOT_OBSERVED')
+        self.assertNotIn(str(before),json.dumps(fact))
+
+    def test_nonfile_credential_store_is_rejected_before_metadata_acceptance(self):
+        for mode in ('keyring','auto','ephemeral'):
+            self.user['cli_auth_credentials_store']=mode
+            with self.subTest(mode=mode),self.assertRaises(ServiceError):q.p.semantic_projection(self.user)
+            self.user.pop('cli_auth_credentials_store')
+            with mock.patch.dict(q.PACKAGED_DEFAULTS,cli_auth_credentials_store=mode),self.assertRaises(ServiceError):
+                q.config_fact(self.native(),self.pin)
+
+    def run_auth_fixture(self,outcome,identities,closure_mode='ChatGPT'):
+        folder=self.root/q.c.PRIVATE;folder.mkdir(parents=True,exist_ok=True)
+        task={'intent':{'grant':{}}};authority={**self.authority,'semantic_pin':self.pin,'source':{},'trial':{},
+            'credential_storage_safe':True,'task_hash':q.c.digest(task),'approved_candidate':'fixture','approved_evidence':'fixture'}
+        (folder/q.AUTHORITY).write_text(json.dumps(authority))
+        fake=SimpleNamespace(proc=SimpleNamespace(pid=123,returncode=0,poll=lambda:0),audit=[],
+            wall_exceeded=False,remote_control_status='disabled',mcp_startup_seen=False,denials=[],close=lambda:None,
+            schema_temp_cleaned=True,pages=4,stderr_outcome=outcome)
+        def opened():q.atomic_record(folder/q.INTENT,{'fixture':True});return fake
+        def call(method,params):
+            fake.audit.append({'method':method,'unscoped':True})
+            return self.native()if method=='config/read'else self.native_mcp()
+        fake.open=opened;fake.call=call
+        config={'identity':[1,2,3,4,5],'_private_content_hash':'private','_private_projects_hash':'private-projects'}
+        with mock.patch.object(q.c,'HUB_ROOT',self.root),mock.patch.object(q,'admit',return_value=self.fixture_admission),\
+            mock.patch.object(q,'observed_verified',return_value=config),mock.patch.object(q.r,'source_snapshot',return_value={}),\
+            mock.patch.object(q.c,'placeholder_snapshot',return_value={}),mock.patch.object(q,'credential_snapshot',side_effect=identities),\
+            mock.patch.object(q.r,'TaskStore',return_value=SimpleNamespace(task=lambda _:task)),\
+            mock.patch.object(q.r,'mapping_check'),mock.patch.object(q,'adapter',return_value=fake),mock.patch.object(q,'drain'),\
+            mock.patch.object(q,'original_config',return_value=self.user),\
+            mock.patch.object(q,'authentication_receipt',side_effect=[q.AuthReceipt('ChatGPT',0),q.AuthReceipt(closure_mode,0)]),\
+            mock.patch.object(q,'feature_snapshot',return_value={k:False for k in q.p.FROZEN_DISABLES}|{'code_mode_host':True}),\
+            mock.patch.object(q.MetadataEffects,'install'),mock.patch.object(q.MetadataEffects,'fact',return_value={'effect_limits_satisfied':True}),\
+            mock.patch.object(q.r,'final_capability_state',return_value=True):result=q.run()
+        self.assertNotIn('NEVER_RETAIN',(folder/q.RESULT).read_text())
+        return result
+
+    def test_official_storage_change_in_mcp_window_does_not_claim_refresh_success(self):
+        import os
+        before=(1,2,3,4,5,33152,os.getuid(),1);after=(1,9,8,7,6,33152,os.getuid(),1)
+        result=self.run_auth_fixture('NO_REFRESH_FAILURE_SIGNAL',[before,before,after,after])
+        self.assertEqual(result['status'],'PASS_NATIVE_CONFIG_PRECHECK')
+        self.assertEqual(result['full_metadata_acceptance'],'PASS_UNSCOPED_PROCESS_ONLY')
+        self.assertTrue(result['auth_storage_effect_bounded']);self.assertTrue(result['credential_effect']['identity_changed'])
+        self.assertEqual(result['credential_effect']['refresh_success'],'NOT_OBSERVED')
+        self.assertEqual(result['credential_effect']['physical_request_count'],'NOT_OBSERVED')
+        self.assertFalse(result['fifth_resume_allowed']);self.assertEqual(result['model_turns'],0)
+
+    def test_sdk_failure_unknown_log_auth_mode_and_outside_window_changes_block(self):
+        import os
+        before=(1,2,3,4,5,33152,os.getuid(),1);after=(1,9,8,7,6,33152,os.getuid(),1)
+        cases=[('SDK_REFRESH_FAILURE_REPORTED',[before]*4,'ChatGPT'),('UNKNOWN_STDERR',[before]*4,'ChatGPT'),
+            ('NO_REFRESH_FAILURE_SIGNAL',[before]*4,'API'),('NO_REFRESH_FAILURE_SIGNAL',[before,before,before,after],'ChatGPT'),
+            ('NO_REFRESH_FAILURE_SIGNAL',[before,after,after],'ChatGPT')]
+        for outcome,ids,mode in cases:
+            with self.subTest(outcome=outcome,mode=mode):
+                result=self.run_auth_fixture(outcome,ids,mode)
+                self.assertEqual(result['status'],'PARTIAL_BLOCKED');self.assertEqual(result['full_metadata_acceptance'],'BLOCKED')
+            for name in (q.INTENT,q.RESULT):
+                (self.root/q.c.PRIVATE/name).unlink()
+
+    def test_public_catalog_exact_content_mode_alias_and_source_identity(self):
+        path=self.root/'public-models.json';raw=q.MODEL_CATALOG.read_bytes();path.write_bytes(raw);path.chmod(0o644)
+        with mock.patch.object(q,'MODEL_CATALOG',path):
+            before=q.catalog_snapshot();self.assertEqual(before,q.catalog_snapshot())
+            path.write_bytes(raw+b' ')
+            with self.assertRaises(ServiceError):q.catalog_snapshot()
+            path.write_bytes(raw);path.chmod(0o600)
+            with self.assertRaises(ServiceError):q.catalog_snapshot()
+            path.chmod(0o644);path.unlink();path.symlink_to(q.c.HUB_ROOT/q.c.PRIVATE/'public-source-v11-6-mcp/bundled-models.json')
+            with self.assertRaises(ServiceError):q.catalog_snapshot()
+
+    def test_model_catalog_override_is_only_in_helper_and_expected_session(self):
+        self.assertEqual(q.metadata_overrides()[:-2],q.p.OVERRIDES)
+        self.assertEqual(q.metadata_overrides()[-2:],('-c','model_catalog_json='+json.dumps(str(q.MODEL_CATALOG))))
+        self.assertEqual(q.session_config()['model_catalog_json'],str(q.MODEL_CATALOG))
+        effects=q.MetadataEffects()
+        with mock.patch('hub.css_metadata_effects.isolated_launch',return_value=(('fixed-helper',),[]))as launch:
+            effects.bind_helper('private-config-hash')
+        self.assertEqual(launch.call_args.args[0],('codex','app-server','--stdio',*q.metadata_overrides()))
+
+class DesktopRoundtripTests(unittest.TestCase):
+    def setUp(self):
+        patch=mock.patch.object(q,'desktop_source_verified',return_value=True)
+        patch.start();self.addCleanup(patch.stop)
+
+    def test_nested_source_fixture_with_active_and_inactive_integer_serializers(self):
+        original={'PRIVATE':[-2,{'nested':7,'boolean':True,'string':'7'},[]], 'zero':0,
+            'min':-(2**63),'max':2**63-1,'empty':{}}
+        expected={'PRIVATE':[{q.NUMBER_TOKEN:'-2'},{'nested':{q.NUMBER_TOKEN:'7'},'boolean':True,'string':'7'},[]],
+            'zero':{q.NUMBER_TOKEN:'0'},'min':{q.NUMBER_TOKEN:str(-(2**63))},
+            'max':{q.NUMBER_TOKEN:str(2**63-1)},'empty':{}}
+        before=copy.deepcopy(original)
+        self.assertEqual(q._desktop_forward(original),expected)
+        self.assertEqual(q._desktop_forward(original,False),original)
+        self.assertEqual(original,before)
+        self.assertTrue(q.desktop_roundtrip_fact(original,expected)['values_equal'])
+        self.assertFalse(q.desktop_roundtrip_fact(original,original)['values_equal'])
+        self.assertTrue(q.desktop_roundtrip_fact(original,original,raw_layer=False)['values_equal'])
+
+    def test_reserved_sentinel_objects_are_ambiguous_and_fail_closed_at_any_depth(self):
+        for token in (q.NUMBER_TOKEN,q.RAW_VALUE_TOKEN):
+            for value in ({token:'7'},{'nested':[{token:'7','ordinary':'private'}]}):
+                fact=q.desktop_roundtrip_fact(value,value)
+                self.assertFalse(fact['roundtrip_supported']);self.assertEqual(fact['reasons'],['ROUNDTRIP_UNSUPPORTED'])
+        ordinary={'Number':'7','wrapper':{'value':'PRIVATE_STRING'},'n':7}
+        wire={'Number':'7','wrapper':{'value':'PRIVATE_STRING'},'n':{q.NUMBER_TOKEN:'7'}}
+        self.assertTrue(q.desktop_roundtrip_fact(ordinary,wire)['values_equal'])
+
+    def test_loss_extra_keys_types_values_and_array_order_are_rejected(self):
+        original={'a':7,'b':['first','second'],'c':False,'private':'PRIVATE_VALUE'}
+        expected={'a':{q.NUMBER_TOKEN:'7'},'b':['first','second'],'c':False,'private':'PRIVATE_VALUE'}
+        changes=(lambda x:x.pop('private'),lambda x:x.update(extra='PRIVATE_EXTRA'),
+            lambda x:x['a'].update({q.NUMBER_TOKEN:'8'}),lambda x:x.update(a=7),
+            lambda x:x['a'].update(extra='PRIVATE_EXTRA'),lambda x:x.update(c=0),
+            lambda x:x['b'].reverse(),lambda x:x['b'].append('PRIVATE_EXTRA'),
+            lambda x:x.update(private='CHANGED_VALUE'))
+        for change in changes:
+            wire=copy.deepcopy(expected);change(wire);fact=q.desktop_roundtrip_fact(original,wire)
+            self.assertFalse(fact['values_equal']);self.assertEqual(fact['reasons'],['VALUE_DIFF'])
+            self.assertNotIn('PRIVATE',json.dumps(fact));self.assertNotIn('CHANGED',json.dumps(fact))
+        # Member order alone is not a semantic change.
+        self.assertTrue(q.desktop_roundtrip_fact(original,dict(reversed(list(expected.items()))))['values_equal'])
+
+    def test_unsupported_original_types_nonfinite_and_unicode_have_fixed_facts(self):
+        for value in (1.,float('nan'),float('inf'),None,2**63,-(2**63)-1,b'private',{'bad\ud800':'PRIVATE'},'bad\udfff'):
+            fact=q.desktop_roundtrip_fact({'PRIVATE':value},{})
+            self.assertFalse(fact['roundtrip_supported']);self.assertEqual(fact['reasons'],['ROUNDTRIP_UNSUPPORTED'])
+            self.assertEqual(set(fact),{'desktop_present','roundtrip_supported','values_equal','reasons'})
+        for wire in ({'PRIVATE':float('nan')},{'PRIVATE':'bad\ud800'}):
+            fact=q.desktop_roundtrip_fact({'PRIVATE':'valid'},wire)
+            self.assertFalse(fact['values_equal']);self.assertEqual(fact['reasons'],['ROUNDTRIP_UNSUPPORTED'])
+
+    def test_capacity_and_missing_inputs_fail_without_private_counts(self):
+        deep={};cursor=deep
+        for _ in range(q.DEPTH_LIMIT+1):cursor['next']={};cursor=cursor['next']
+        many={'row'+str(i):[0]*q.CONTAINER_LIMIT for i in range(10)}
+        inputs=(deep,{'PRIVATE':[0]*(q.CONTAINER_LIMIT+1)},many,{'PRIVATE':'s'*65537},
+            {'k'*4097:'PRIVATE'},{'PRIVATE':['s'*65536]*5})
+        for value in inputs:
+            fact=q.desktop_roundtrip_fact(value,{})
+            self.assertFalse(fact['roundtrip_supported']);self.assertEqual(fact['reasons'],['ROUNDTRIP_UNSUPPORTED'])
+        for a,b in ((q.MISSING,{}),({},q.MISSING),(q.MISSING,q.MISSING)):
+            fact=q.desktop_roundtrip_fact(a,b);self.assertEqual(fact['reasons'],['PRESENCE_DIFF'])
+
+    def test_unproven_source_never_enables_a_normalizer(self):
+        with mock.patch.object(q,'desktop_source_verified',return_value=False):
+            fact=q.desktop_roundtrip_fact({'PRIVATE':7},{q.NUMBER_TOKEN:'7'})
+        self.assertFalse(fact['roundtrip_supported']);self.assertFalse(fact['values_equal'])
+        self.assertEqual(fact['reasons'],['FEATURE_GRAPH_UNPROVEN'])
+
+if __name__=='__main__':unittest.main()

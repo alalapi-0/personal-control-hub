@@ -1,0 +1,178 @@
+{
+  "authority": {
+    "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v5-REPLACEMENT",
+    "version": 1,
+    "actor": "trusted_local_owner",
+    "task_id": "csp-css-trial-20261007",
+    "task_hash": "1608e23eb42b62cc14104799a0590fd6c2324ddf0ac0f5655ae5a31b4c7d9498",
+    "intent_hash": "bcef1ef45fee92309f469d2a5b3eed76df2f7cc2496cff0b4cc2ce37f676d699",
+    "request_hash": "b9082b372cf50ad7e77dcc86e32e1dbfbd02eff2e3e1e87bd43e0e439f711188",
+    "grant_hash": "d116bbbc46ad678876f77e2e2a6437923d2efa5722fb58aa154f7673626ab21c",
+    "annotation_hash": "4adcb994411f85f3130ff5b450c9492cb11dd2396b5e4a1a57c4f12bba829e64",
+    "old_thread_id": "01a11536-4647-7030-a9aa-8e397078d146",
+    "old_thread_unavailable": {
+      "rpc_code": -32600,
+      "error_categories": [
+        "thread_unavailable"
+      ],
+      "message_sha256": "a466643ea0246842177d02bfc48a4f28555f179263e768f26842d4d9988c5a1d",
+      "message_bytes": 55,
+      "raw_message_retained": false
+    },
+    "replacement_limit": 1,
+    "model_turn_limit": 1,
+    "expires_at": 1791363294.5242357,
+    "head": "f5570473cf213f42b52b597e3e46e368dc53932e",
+    "source_preimage": "20a1d7e6819684232f8675e0841f026e3ab379046a25b75cb8a39cf2f839df1d",
+    "docs_preimages": {
+      "docs/PROJECT_STATE.md": "afcd3027fcace6120c4c436af804fcc3594f6ed889f5364386bacd676c1c2b7e",
+      "docs/NEXT_ACTIONS.md": "4a5cea91842a95695f1ed9a8752edd7e2cdd683a8190a13349121d7e36fdf5e8"
+    },
+    "registry_hash": "8b5dff132e96964604065671fc012d61ab526073bb5c4c66c4867dac09d6592a",
+    "profile_argv": [
+      "-c",
+      "default_permissions=\"hub_lwb_fixture_v1\"",
+      "-c",
+      "permissions.hub_lwb_fixture_v1.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"write\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+      "-c",
+      "permissions.hub_lwb_fixture_v1.network.enabled=false"
+    ],
+    "config_sha256": "12d3f7fb223f801b8a63db97fe03d3d7803c1b13adda2ea7da042f3e78c84ab5",
+    "config_identity": [
+      66306,
+      12090357,
+      4122,
+      1791359347398206632,
+      1791359347398206632
+    ],
+    "auth": {
+      "source": "supported codex login status",
+      "mode": "ChatGPT",
+      "exit": 0,
+      "credential_bytes_read": 0
+    },
+    "parent_canary": {
+      "sha256": "fab4ea7c43fde89586c8eed255a81bdb5f0c46039f145afca3846bde8129ff22",
+      "identity": [
+        66306,
+        45763806,
+        62,
+        1791359694524072943,
+        1791359694524072943
+      ]
+    },
+    "v4_candidate": "ed8dbf24c09a4c1d41319f9e2fb906feb1abd0ca07143e97841189d13e5bf2dc",
+    "v4_evidence": "660ef4e07ce1a9492f938f69f930ca02c41cff2267687b629db9a8794617f3d8",
+    "capability_requirement": "unscoped strict null metadata + loaded thread six disabled; all14featuresfalse; remote/browser/web/memoryoff",
+    "closed_owner_receipt_hash": "73796553398bb45ad91cb5be9773a2dee9df0793ffcc437c2f8a69bcd0613a72",
+    "recovery_config_pin": {
+      "sha256": "12d3f7fb223f801b8a63db97fe03d3d7803c1b13adda2ea7da042f3e78c84ab5",
+      "identity": [
+        66306,
+        12090357,
+        4122,
+        1791359347398206632,
+        1791359347398206632
+      ],
+      "projection": {
+        "top_key_types": {
+          "model": "str",
+          "model_reasoning_effort": "str",
+          "service_tier": "str",
+          "approval_policy": "str",
+          "approvals_reviewer": "str",
+          "sandbox_mode": "str",
+          "desktop": "dict",
+          "marketplaces": "dict",
+          "plugins": "dict",
+          "mcp_servers": "dict",
+          "features": "dict",
+          "memories": "dict",
+          "projects": "dict",
+          "skills": "dict",
+          "agents": "dict"
+        },
+        "mcp_key_types": {
+          "chrome-devtools": {
+            "command": "str",
+            "args": "list"
+          },
+          "context7": {
+            "command": "str",
+            "args": "list"
+          },
+          "playwright": {
+            "command": "str",
+            "args": "list"
+          },
+          "openaiDeveloperDocs": {
+            "url": "str"
+          },
+          "github": {
+            "command": "str",
+            "args": "list"
+          },
+          "node_repl": {
+            "args": "list",
+            "command": "str",
+            "startup_timeout_sec": "int",
+            "env": "dict"
+          }
+        },
+        "model": "gpt-6.1-sol",
+        "reasoning_effort": "xhigh",
+        "approval_policy": "never",
+        "sandbox_mode": "danger-full-access",
+        "features": {
+          "memories": true
+        },
+        "permission_profile_names": [],
+        "mcp_names": [
+          "chrome-devtools",
+          "context7",
+          "github",
+          "node_repl",
+          "openaiDeveloperDocs",
+          "playwright"
+        ],
+        "body_retained": false,
+        "credential_bytes_read": 0
+      },
+      "auth": {
+        "source": "supported codex login status",
+        "mode": "ChatGPT",
+        "exit": 0,
+        "credential_bytes_read": 0
+      },
+      "original_grant_identity": [
+        66306,
+        12073401,
+        4117,
+        1791356257936833499,
+        1791356257936833499
+      ],
+      "observed_at": 1791359694.5414531,
+      "contract": "HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v5-REPLACEMENT",
+      "scope": "exact task replacement; original grant and intent unchanged"
+    }
+  },
+  "prior_thread": {
+    "thread_id": "01a11536-4647-7030-a9aa-8e397078d146",
+    "turn_id": null,
+    "provider_status": null,
+    "result": {
+      "details": {},
+      "effects_rolled_back": false,
+      "error_class": "CSS_ISOLATION_UNVERIFIED",
+      "request_denials": [],
+      "stream_observation": {
+        "count": 0,
+        "methods": {},
+        "sha256_chain": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "intent_hash": "bcef1ef45fee92309f469d2a5b3eed76df2f7cc2496cff0b4cc2ce37f676d699"
+  },
+  "version": 1,
+  "action": "one_replacement_same_task"
+}

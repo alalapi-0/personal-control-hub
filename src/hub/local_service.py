@@ -6,6 +6,7 @@ initialize stores. The selected Hub UI uses the same local application service.
 from __future__ import annotations
 
 import hmac
+import hashlib
 import json
 import re
 import secrets
@@ -18,6 +19,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qsl, urlsplit
 
 from .service_contract import ArtifactResponse, OwnerAction, ServiceError
+from .owner_auth import OwnerAuth
+from .material_service import MaterialResponse
 
 API_VERSION = "1.0"
 MAX_BODY_BYTES = 64 * 1024
@@ -31,11 +34,18 @@ WEB_ASSETS = {
     "/assets/common.js": ("common.js", "text/javascript; charset=utf-8"),
     "/assets/connection_view.mjs": ("connection_view.mjs", "text/javascript; charset=utf-8"),
     "/assets/designs.js": ("designs.js", "text/javascript; charset=utf-8"),
+    "/assets/host.js": ("host.js", "text/javascript; charset=utf-8"),
+    "/assets/workbench.js": ("workbench.js", "text/javascript; charset=utf-8"),
+    "/assets/tasks.js": ("tasks.js", "text/javascript; charset=utf-8"),
+    "/assets/materials.js": ("materials.js", "text/javascript; charset=utf-8"),
+    "/assets/sessions.js": ("sessions.js", "text/javascript; charset=utf-8"),
+    "/assets/preview_bridge.js": ("preview_bridge.js", "text/javascript; charset=utf-8"),
+    "/assets/live_preview.js": ("live_preview.js", "text/javascript; charset=utf-8"),
     "/assets/icon.svg": ("icon.svg", "image/svg+xml"),
 }
 UI_CSP = ("default-src 'none'; script-src 'self'; style-src 'self'; "
           "connect-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; "
-          "object-src 'none'; frame-ancestors 'none'; form-action 'none'")
+          "media-src 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'none'")
 
 
 def _object_pairs(pairs):
@@ -58,17 +68,17 @@ class _Sessions:
         self.lock = threading.Lock()
         self.cookie_name = "hub_" + secrets.token_hex(8)
 
-    def issue(self):
+    def issue(self, *, owner=False, credential_version=None):
         with self.lock:
             now = self.clock()
             self.values = {key: value for key, value in self.values.items() if value[1] > now}
             while len(self.values) >= self.capacity:
                 del self.values[next(iter(self.values))]
             session, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
-            self.values[session] = (csrf, now + self.ttl)
+            self.values[session] = (csrf, now + self.ttl, owner, credential_version)
             return session, csrf
 
-    def validate(self, cookie, csrf=None):
+    def _session_id(self, cookie):
         if not cookie or len(cookie) > 8192:
             raise ServiceError("SESSION_REQUIRED", status=401)
         try:
@@ -80,6 +90,10 @@ class _Sessions:
             session = parsed[self.cookie_name].value
         except (CookieError, KeyError, ValueError):
             raise ServiceError("SESSION_REQUIRED", status=401) from None
+        return session
+
+    def validate(self, cookie, csrf=None, *, require_owner=False, credential_version=None):
+        session = self._session_id(cookie)
         with self.lock:
             saved = self.values.get(session)
             if saved is None or saved[1] <= self.clock():
@@ -88,6 +102,37 @@ class _Sessions:
             if csrf is not None and (not isinstance(csrf, str) or not csrf.isascii() or
                                      not hmac.compare_digest(saved[0], csrf)):
                 raise ServiceError("CSRF_REJECTED", status=403)
+            if saved[2] and saved[3] != credential_version:
+                self.values.pop(session, None)
+                raise ServiceError('SESSION_REQUIRED', status=401)
+            if require_owner and not saved[2]:
+                raise ServiceError('OWNER_AUTH_REQUIRED', status=401)
+            return saved[2]
+
+    def bootstrap(self, cookie, *, credential_version=None):
+        if cookie:
+            if len(cookie) > 8192:
+                raise ServiceError('SESSION_REQUIRED', status=401)
+            count = sum(part.strip().split('=', 1)[0] == self.cookie_name for part in cookie.split(';'))
+            if count == 0:
+                # Cookies share a host across ports; another Hub instance is not
+                # this instance's proof and must not prevent a guest bootstrap.
+                return self.issue()
+            session = self._session_id(cookie)
+            try:
+                self.validate(cookie, credential_version=credential_version)
+                with self.lock:
+                    saved = self.values.get(session)
+                    if saved and saved[1] > self.clock():
+                        return session, saved[0]
+            except ServiceError:
+                pass
+        return self.issue()
+
+    def revoke(self, cookie):
+        session = self._session_id(cookie)
+        with self.lock:
+            self.values.pop(session, None)
 
 
 class HubHTTPServer(ThreadingHTTPServer):
@@ -96,13 +141,20 @@ class HubHTTPServer(ThreadingHTTPServer):
     allow_reuse_address = False
     request_queue_size = 8
 
-    def __init__(self, projects, designs, *, host="127.0.0.1", port=0):
+    def __init__(self, projects, designs, *, host="127.0.0.1", port=0, owner_auth=None, host_observer=None, previews=None, tasks=None, materials=None, session_view=None):
         if host != "127.0.0.1":
             raise ServiceError("NON_LOOPBACK_BIND_REJECTED")
         if type(port) is not int or not 0 <= port <= 65535:
             raise ServiceError("INVALID_PORT")
         self.projects, self.designs = projects, designs
         self.sessions = _Sessions()
+        self.owner_auth = owner_auth or OwnerAuth()
+        self.host_observer = host_observer
+        self.previews = previews
+        self.tasks = tasks
+        self.materials = materials
+        self.session_view = session_view
+        self.backend_instance = secrets.token_hex(16)
         self._slots = threading.BoundedSemaphore(8)
         super().__init__((host, port), HubRequestHandler)
         self.host_header = f"127.0.0.1:{self.server_address[1]}"
@@ -168,6 +220,8 @@ class HubRequestHandler(BaseHTTPRequestHandler):
             raise ServiceError("FETCH_SITE_REJECTED", status=403)
         if self._one_header("Transfer-Encoding") is not None:
             raise ServiceError("TRANSFER_ENCODING_REJECTED")
+        if self._one_header('Authorization') is not None:
+            raise ServiceError('AUTH_HEADER_REJECTED', status=403)
         # Check these even on GET so duplicate/framed requests cannot be smuggled.
         length = self._one_header("Content-Length")
         if not mutation and length not in {None, "0"}:
@@ -223,7 +277,14 @@ class HubRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(data)))
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("Content-Security-Policy", UI_CSP if ui else "default-src 'none'; sandbox; frame-ancestors 'none'")
+        csp = UI_CSP
+        bridge = getattr(self.server.previews, 'fixture_bridge', None)
+        if ui and bridge is not None:
+            csp += '; frame-src ' + bridge.origin
+        live = getattr(self.server.previews, 'readonly_preview', None)
+        if ui and live is not None and live.origin:
+            csp += (' ' if bridge is not None else '; frame-src ') + live.origin
+        self.send_header("Content-Security-Policy", csp if ui else "default-src 'none'; sandbox; frame-ancestors 'none'")
         self.send_header("Cross-Origin-Resource-Policy", "same-origin")
         self.send_header("Referrer-Policy", "no-referrer")
         self.send_header("Connection", "close")
@@ -246,7 +307,9 @@ class HubRequestHandler(BaseHTTPRequestHandler):
             self.close_connection = True
 
     def _success(self, value):
-        if isinstance(value, ArtifactResponse):
+        if isinstance(value, MaterialResponse):
+            self._send(value.data, status=value.status, content_type=value.content_type, headers=value.headers)
+        elif isinstance(value, ArtifactResponse):
             if not FILENAME.fullmatch(value.filename) or value.disposition not in {"inline", "attachment"}:
                 raise ServiceError("INVALID_ARTIFACT_RESPONSE", status=500)
             if value.content_type not in {"application/octet-stream", "application/zip", "image/png",
@@ -273,13 +336,111 @@ class HubRequestHandler(BaseHTTPRequestHandler):
             if path == "/api/health":
                 self._success({"service": "hub-local", "ui_implemented": True})
             else:
-                session, csrf = self.server.sessions.issue()
+                session, csrf = self.server.sessions.bootstrap(self._one_header('Cookie'), credential_version=self.server.owner_auth.version)
                 cookie = f"{self.server.sessions.cookie_name}={session}; HttpOnly; SameSite=Strict; Path=/api"
                 self._json({"api_version": API_VERSION, "ok": True, "data": {"csrf_token": csrf}},
                            headers={"Set-Cookie": cookie})
             return
-        self.server.sessions.validate(self._one_header("Cookie"))
-        if path == "/api/projects":
+        owner = self.server.sessions.validate(self._one_header("Cookie"), credential_version=self.server.owner_auth.version)
+        if path == '/api/identity':
+            if query:
+                raise ServiceError('INVALID_QUERY')
+            try:
+                ledger = self.server.projects.list_projects(query={}, design_snapshot={}).get('head')
+            except Exception:
+                ledger = None
+            snapshot = self._design_snapshot()
+            result = {'backend_instance': self.server.backend_instance, 'owner_authenticated': owner and self.server.owner_auth.configured,
+                      'owner_configured': self.server.owner_auth.configured, 'execution_enabled': False,
+                      'ledger_head': ledger, 'design_revision': snapshot.get('store_revision'),
+                      'data_classification': snapshot.get('store_classification', 'unavailable')}
+        elif path == '/api/sessions':
+            if query: raise ServiceError('INVALID_QUERY')
+            def authorize_sessions():
+                if not self.server.owner_auth.configured: raise ServiceError('OWNER_AUTH_UNAVAILABLE', status=503)
+                cookie = self._one_header('Cookie')
+                self.server.sessions.validate(cookie, require_owner=True, credential_version=self.server.owner_auth.version)
+                return (self.server.owner_auth.version, self.server.sessions._session_id(cookie))
+            authorize_sessions()
+            if self.server.session_view is None: raise ServiceError('SESSION_VIEW_UNAVAILABLE', status=503)
+            result = self.server.session_view.catalog(authorize_sessions)
+            authorize_sessions()
+        elif path == '/api/tasks' or path.startswith('/api/tasks/'):
+            if query:raise ServiceError('INVALID_QUERY')
+            self.server.sessions.validate(self._one_header('Cookie'),require_owner=True,credential_version=self.server.owner_auth.version)
+            if self.server.tasks is None:raise ServiceError('TASK_RUNTIME_UNAVAILABLE',status=503)
+            if path=='/api/tasks':result=self.server.tasks.list()
+            elif path.startswith('/api/tasks/options/'):result=self.server.tasks.options(path[len('/api/tasks/options/'):])
+            else:result=self.server.tasks.get(path[len('/api/tasks/'):])
+        elif path == '/api/materials' or path.startswith('/api/materials/'):
+            def authorize():
+                if not self.server.owner_auth.configured: raise ServiceError('OWNER_AUTH_UNAVAILABLE', status=503)
+                return self.server.sessions.validate(self._one_header('Cookie'), require_owner=True,
+                    credential_version=self.server.owner_auth.version)
+            authorize()
+            if self.server.materials is None: raise ServiceError('MATERIAL_VIEW_UNAVAILABLE', status=503)
+            if path == '/api/materials':
+                if query: raise ServiceError('INVALID_QUERY')
+                result = self.server.materials.catalog(authorize)
+            else:
+                if set(query) != {'version'}: raise ServiceError('INVALID_QUERY')
+                result = self.server.materials.read(path[len('/api/materials/'):], query['version'],
+                    range_header=self._one_header('Range'), authorize=authorize)
+            authorize()
+        elif path.startswith('/api/live-preview/'):
+            if query: raise ServiceError('INVALID_QUERY')
+            ident = path[len('/api/live-preview/'):]
+            if not ID.fullmatch(ident): raise ServiceError('INVALID_QUERY')
+            self.server.sessions.validate(self._one_header('Cookie'), require_owner=True,
+                                credential_version=self.server.owner_auth.version)
+            live = getattr(self.server.previews, 'readonly_preview', None)
+            if live is None: raise ServiceError('REAL_PREVIEW_UNAVAILABLE', status=503)
+            selected = self.server.previews.resolve(ident)
+            if selected['binding']['candidate_id'] != live.candidate_id:
+                raise ServiceError('PREVIEW_UNAVAILABLE', status=404)
+            result = live.describe()
+            self.server.sessions.validate(self._one_header('Cookie'), require_owner=True,
+                                credential_version=self.server.owner_auth.version)
+        elif path.startswith('/api/preview-bridge/'):
+            if query: raise ServiceError('INVALID_QUERY')
+            ident = path[len('/api/preview-bridge/'):]
+            if not ID.fullmatch(ident): raise ServiceError('INVALID_QUERY')
+            if not self.server.owner_auth.configured: raise ServiceError('OWNER_AUTH_UNAVAILABLE', status=503)
+            self.server.sessions.validate(self._one_header('Cookie'), require_owner=True,
+                                credential_version=self.server.owner_auth.version)
+            session_id = self.server.sessions._session_id(self._one_header('Cookie'))
+            bridge = getattr(self.server.previews, 'fixture_bridge', None)
+            if bridge is None:
+                result = {'available': False, 'reason': 'BRIDGE_DISABLED', 'execution_allowed': False}
+            elif bridge.binding['preview_id'] != ident:
+                raise ServiceError('PREVIEW_UNAVAILABLE', status=404)
+            else:
+                result = bridge.issue((session_id, self.server.owner_auth.version))
+            self.server.sessions.validate(self._one_header('Cookie'), require_owner=True,
+                                credential_version=self.server.owner_auth.version)
+        elif path in {'/api/previews', '/api/annotations'} or path.startswith('/api/previews/') or path.startswith('/api/annotations/requests/'):
+            if query:
+                raise ServiceError('INVALID_QUERY')
+            if self.server.previews is None:
+                raise ServiceError('WORKBENCH_UNAVAILABLE', status=503)
+            if path == '/api/previews': result = self.server.previews.catalog()
+            elif path == '/api/annotations': result = self.server.previews.annotations()
+            elif path.startswith('/api/annotations/requests/'):
+                request_id = path[len('/api/annotations/requests/'):]
+                if not ID.fullmatch(request_id): raise ServiceError('INVALID_QUERY')
+                result = self.server.previews.receipt(request_id)
+            elif path.endswith('/image'):
+                preview_id = path[len('/api/previews/'):-len('/image')]
+                if not ID.fullmatch(preview_id): raise ServiceError('INVALID_QUERY')
+                result = self.server.previews.resolve(preview_id, image=True)
+            else: raise ServiceError('NOT_FOUND', status=404)
+        elif path == '/api/host':
+            if query:
+                raise ServiceError('INVALID_QUERY')
+            result = (self.server.host_observer.snapshot() if self.server.host_observer else
+                      {'available': False, 'metrics': {}, 'reason': 'OBSERVER_NOT_RUNNING',
+                       'capacity_recommendation': None})
+        elif path == "/api/projects":
             snapshot = self._design_snapshot()
             result = self.server.projects.list_projects(query=query, design_snapshot=snapshot)
         elif path.startswith("/api/projects/"):
@@ -337,12 +498,52 @@ class HubRequestHandler(BaseHTTPRequestHandler):
             token = self._one_header("X-Hub-CSRF")
             if not token:
                 raise ServiceError("CSRF_REJECTED", status=403)
-            self.server.sessions.validate(self._one_header("Cookie"), token)
+            self.server.sessions.validate(self._one_header("Cookie"), token, credential_version=self.server.owner_auth.version)
             command = self._body()
-            if path not in {"/api/refresh", "/api/designs/decisions", "/api/designs/exports"}:
+            if path == '/api/owner/login':
+                if set(command) != {'token'}:
+                    raise ServiceError('INVALID_OWNER_PROOF')
+                version = self.server.owner_auth.verify(command['token'])
+                self.server.sessions.revoke(self._one_header('Cookie'))
+                session, csrf = self.server.sessions.issue(owner=True, credential_version=version)
+                cookie = f'{self.server.sessions.cookie_name}={session}; HttpOnly; SameSite=Strict; Path=/api'
+                self._json({'api_version': API_VERSION, 'ok': True, 'data': {'csrf_token': csrf}},
+                           headers={'Set-Cookie': cookie})
+                return
+            if path == '/api/owner/logout':
+                if command:
+                    raise ServiceError('INVALID_OWNER_PROOF')
+                self.server.sessions.revoke(self._one_header('Cookie'))
+                self._success({'owner_authenticated': False})
+                return
+            if path not in {"/api/refresh", "/api/designs/decisions", "/api/designs/exports", '/api/annotations', '/api/tasks'} and not (path.startswith('/api/tasks/')and path.endswith(('/cancel','/respond'))):
                 raise ServiceError("NOT_FOUND", status=404)
+            if not self.server.owner_auth.configured:
+                raise ServiceError('OWNER_AUTH_UNAVAILABLE', status=503)
+            self.server.sessions.validate(self._one_header('Cookie'), token, require_owner=True, credential_version=self.server.owner_auth.version)
             operation_started = True
-            if path == "/api/refresh":
+            if path == '/api/tasks' or path.startswith('/api/tasks/'):
+                if self.server.tasks is None:raise ServiceError('TASK_RUNTIME_UNAVAILABLE',status=503)
+                version=self.server.owner_auth.version
+                # Stable across Hub restarts, rotated with the owner credential.
+                owner_context=hashlib.sha256(b'hub-task-owner-v1'+version).hexdigest()
+                def authorize_task():
+                    self.server.sessions.validate(self._one_header('Cookie'),token,require_owner=True,credential_version=self.server.owner_auth.version)
+                    if self.server.owner_auth.version!=version:raise ServiceError('OWNER_AUTH_FAILED',status=401)
+                if path=='/api/tasks':result=self.server.tasks.submit(command,owner_context=owner_context,authorize=authorize_task)
+                elif path.endswith('/respond'):result=self.server.tasks.respond_control(path[len('/api/tasks/'):-len('/respond')],command,owner_context=owner_context,authorize=authorize_task)
+                else:
+                    if command:raise ServiceError('INVALID_TASK_REQUEST')
+                    result=self.server.tasks.cancel(path[len('/api/tasks/'):-len('/cancel')])
+            elif path == '/api/annotations':
+                if self.server.previews is None: raise ServiceError('WORKBENCH_UNAVAILABLE', status=503)
+                def authorize_annotation():
+                    self.server.sessions.validate(self._one_header('Cookie'), token, require_owner=True,
+                                                  credential_version=self.server.owner_auth.version)
+                    return self.server.sessions._session_id(self._one_header('Cookie'))
+                result = self.server.previews.save(command, backend_instance=self.server.backend_instance,
+                    context=(authorize_annotation(), self.server.owner_auth.version), authorize=authorize_annotation)
+            elif path == "/api/refresh":
                 result = self.server.projects.refresh(command)
             elif path == "/api/designs/decisions":
                 result = self.server.designs.decide(command, owner_action=OwnerAction(

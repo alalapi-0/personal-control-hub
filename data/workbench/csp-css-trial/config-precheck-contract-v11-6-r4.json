@@ -1,0 +1,269 @@
+{
+  "acceptance": [
+    "strict public layers/origins/DTO, 4layerprecedence and actualtyped finalconfig",
+    "opaque desktop exactrawforward +finaloriginal +expectedbuilderpreserves +fullfinalconfig equality; no ignore/reverse/shape leaks",
+    "other14groups+preciseMCPDuration+trust/layer+semantic exact",
+    "6MCP exactdisabled; no unknown/tools/resources/templates/capabilities/startup/authtrigger",
+    "2 feature snapshots exact152sourceorderedtemplates/schema; missing/duplicate/extra/unknown/invalidcursor/pagingFAIL; frozen14false/hosttrue both; otherenabled exactbeforeafter",
+    "remote/startupoff; unknown/contradictorynotice rejected",
+    "8 pre/postguards +closedexit0/notwall/expiry; all mandatory"
+  ],
+  "authentication_billing": "existing legal ChatGPT auth, no API billing switch or provider/model request",
+  "authentication_guard": "before exact login status mode receipt immutable; intermediate observe+private receipt preserve pin no implicit p.verify/authquery; closure independent second mode check equalsbefore; credentialmetadata statonly",
+  "auxiliary_process_inventory": {
+    "audit": "standalone owner run Python process audit hook installed before admission; all subprocess.Popen fixed argv/cwd/env/count; source-pinned timeout for existing mount/git, controlled run timeouts for nativeaux; extra rejected before start; envNone allowed solely source-pinned mount/git, inheritedparentenvironment compared privately to preadmission snapshot; auth uses4keys, helper/version/schema5keys exact; exact pinned callerfilename/function required; css_trial.verify Git is forbidden despite identicalargv; current publicbinary/source receipt rechecked before everycodex spawn",
+    "auth_mode": {
+      "argv": [
+        "codex",
+        "login",
+        "status"
+      ],
+      "count": 2,
+      "cwd": null,
+      "env": {
+        "HOME": "OS-owned registered user home",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      },
+      "positions": [
+        "before",
+        "closure"
+      ],
+      "receipt": "immutable controlledmode+exit only; no stdout/stderr/account/credentialvalue retained or hashed",
+      "source": "src/hub/css_trial.py auth_check timeout5; inherited effectivecwdHubRoot",
+      "timeout": 5
+    },
+    "codex_schema": {
+      "argv": [
+        "codex",
+        "app-server",
+        "generate-json-schema",
+        "--experimental",
+        "--out",
+        "NEW_HUB_OWNED_TEMP"
+      ],
+      "count": 1,
+      "cwd": "HubRoot",
+      "env": {
+        "CODEX_INTERNAL_APP_SERVER_REMOTE_CONTROL_DISABLED": "1",
+        "HOME": "OS-owned registered user home",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      },
+      "timeout": 10
+    },
+    "codex_version": {
+      "argv": [
+        "codex",
+        "--version"
+      ],
+      "count": 1,
+      "cwd": "HubRoot",
+      "env": {
+        "CODEX_INTERNAL_APP_SERVER_REMOTE_CONTROL_DISABLED": "1",
+        "HOME": "OS-owned registered user home",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      },
+      "timeout": 5
+    },
+    "git_total_max_count": 8,
+    "helper": {
+      "argv": "exact isolated_launch tuple from pinned semantic config/profile/overrides",
+      "count": 1,
+      "cwd": "TRIAL",
+      "env": {
+        "CODEX_INTERNAL_APP_SERVER_REMOTE_CONTROL_DISABLED": "1",
+        "HOME": "OS-owned registered user home",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      },
+      "wall_seconds": 120
+    },
+    "mount": {
+      "argv": [
+        "findmnt",
+        "--json",
+        "--target",
+        "HubRoot",
+        "--output",
+        "TARGET,SOURCE,FSTYPE,UUID"
+      ],
+      "cwd": null,
+      "env": null,
+      "max_count": 5,
+      "private_output": "fixed guard match only; no UUID/device/source/output/hash",
+      "source": "src/hub/task_storage.py mount_identity",
+      "timeout": 1
+    },
+    "other_parent_spawns": 0,
+    "preview_head": {
+      "argv": [
+        "git",
+        "-C",
+        "canonicalCSP",
+        "rev-parse",
+        "HEAD"
+      ],
+      "capture": "bytes",
+      "check": true,
+      "cwd": null,
+      "env": null,
+      "max_count": 4,
+      "private_output": "same authorizedHEAD match only; no stdout/environment/path expansion saved or hashed",
+      "source": "src/hub/readonly_preview.py check",
+      "timeout": 2
+    },
+    "retry": false,
+    "source_head": {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "canonicalCSP",
+      "env": null,
+      "max_count": 4,
+      "private_output": "HEAD match only no output/hash",
+      "source": "src/hub/css_capability_recovery.py mapping_check",
+      "timeout": 5
+    }
+  },
+  "budget": "same native cumulative; reserve contract/candidate/runtimeJudge6000each +closure; remaining/costunknown; no reset",
+  "cumulative": {
+    "closed_rounds": 16,
+    "metadata_helpers": 4,
+    "model_turns": 1,
+    "resumes": 4,
+    "threads": 2
+  },
+  "design_registration": "data/workbench/csp-css-trial/readonly-registration-protection-v11-6-r4.json",
+  "design_registration_sha256": "47f5bff79ffa8bd75863d828cd9567d57cf5a108484586b2095e3b9238d3f02a",
+  "effects_now": "OFFLINE ONLY NO AUTHORITY; conditional effects require exact freshJudge +Gov execution decision",
+  "environment_source": "src/hub/codex_adapter.py child_environment four exact keys; src/hub/css_process_config.py:198-201 adds remote-disabled marker; src/hub/css_trial.py:54-59 auth_check uses base4 and cwdNone",
+  "failure": "any gate PARTIAL_BLOCKED/FAIL; retainpartialfacts/denominator; no autoretry/resume/model/diagnosticPASS",
+  "feature_source": "data/workbench/csp-css-trial/feature-catalog-source-closure-v11-6-r2.json",
+  "feature_source_sha256": "f2410fceb603951c4e8dcf948435ad23ab9b7ae0c34b4d6ff36266d02d34cd4b",
+  "frozen_disables": [
+    "apps",
+    "plugins",
+    "remote_plugin",
+    "browser_use",
+    "browser_use_external",
+    "browser_use_full_cdp_access",
+    "computer_use",
+    "in_app_browser",
+    "hooks",
+    "image_generation",
+    "multi_agent",
+    "multi_agent_v2",
+    "goals",
+    "memories"
+  ],
+  "frozen_model": {
+    "effort": "xhigh",
+    "model": "gpt-6.1-sol"
+  },
+  "governor": "/root/entry_governor",
+  "id": "HUB-LWB-2.3-CSP-FULL-METADATA-PRECHECK-GOV-v11.6-r4",
+  "lane": "GOVERNED",
+  "network_evidence": {
+    "allowed": "existing legal ChatGPT readonly account/rate-limit/process metadata notices only",
+    "child_visibility": "NOT_RUN no attestation of zero child networking",
+    "forbidden": "model/turn/provider/tool/Web/MCPexecution/remote/authrefresh/billing/accountconfig; visible prompt/download/provider request/refresh causes FAIL; version/schema local readonly sourcebound",
+    "parent": "socket creation/connect rejected by process audit"
+  },
+  "objective": "single bounded full raw/typed/effective/capability metadata precheck; all gates samehelper; no diagnostic partial PASS",
+  "prerequisites": [
+    "v11.5-r3 exactfreshJudgePASS+GovAPPROVE (saved)",
+    "v11.6 contract and exact harness registration freshJudgePASS+Gov explicitonehelper authority",
+    "current source/trial/task/configsafeprojection/authmode/protection exact; previous4helperfail retained"
+  ],
+  "privacy": "no raworiginaldesktop/dynamic keys/responsebody/origins/privatehash or secret evidence; fixed facts and public feature names/nonsecretbooleans only; all privatecomparison memory",
+  "profile_arguments": [
+    "-c",
+    "default_permissions=\"hub_lwb_evidence_v11\"",
+    "-c",
+    "permissions.hub_lwb_evidence_v11.filesystem={\":root\"=\"deny\",\":minimal\"=\"read\",\":tmpdir\"=\"deny\",\":slash_tmp\"=\"deny\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007\"=\"read\",\"/home/alalapi/Temp/personal-control-hub/linux-workbench\"=\"deny\"}",
+    "-c",
+    "permissions.hub_lwb_evidence_v11.network.enabled=false"
+  ],
+  "registered_servers": [
+    "chrome-devtools",
+    "context7",
+    "github",
+    "node_repl",
+    "openaiDeveloperDocs",
+    "playwright"
+  ],
+  "revision": "v11.6-r4",
+  "runtime_conditional": {
+    "authority_max_seconds": 900,
+    "config_read": {
+      "cwd": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+      "includeLayers": true
+    },
+    "feature_params": "threadIdNone/limit100/canonical numeric cursor, 2fullsnapshots combined<=8pages; A afterinitialize/drain; B afterconfig/MCP/drain/beforeclose",
+    "forbidden": [
+      "otherRPC",
+      "thread/start/read/resume",
+      "turn",
+      "command",
+      "provider",
+      "tool",
+      "TaskStorewrite",
+      "projectsource",
+      "Git",
+      "globalconfig",
+      "auth/credential",
+      "productionservice",
+      "Mac/otherproject"
+    ],
+    "helpers": 1,
+    "initialized_notifications": 1,
+    "mcp_params": {
+      "detail": "toolsAndAuthOnly",
+      "limit": 100,
+      "threadId": null
+    },
+    "methods": [
+      "initialize",
+      "config/read",
+      "mcpServerStatus/list",
+      "experimentalFeature/list"
+    ],
+    "renewal": false,
+    "rpc_counts": {
+      "config/read": 1,
+      "experimentalFeature/list": {
+        "shared_max_pages": 8,
+        "snapshots": 2
+      },
+      "initialize": 1,
+      "mcpServerStatus/list": 1
+    },
+    "start_headroom_seconds": 150,
+    "wall_seconds": 120
+  },
+  "schema_temp": {
+    "cleanup": "delete own new directory only; before close accepted record cleanup true; failure cleanup also mandatory",
+    "create": "new mkdtemp0700 under nonsymlink owned dir, never reuse",
+    "limits": {
+      "bytes": 8388608,
+      "files": 440
+    },
+    "prefix": "schema-native-v11-6-",
+    "root": "HubRoot/data/workbench/csp-css-trial",
+    "validation": "all440 paths regular/no symlinks/owner/boundedbytes, exact public experimental export hashes, ten required method/schema pins; reuse base schema validation for every response/notice"
+  },
+  "scope": "Hub owned offline harness/fixtures/tests/canonicalSTATEINDEX/source evidence; no other writers",
+  "source_callgraph": "data/workbench/csp-css-trial/full-metadata-callgraph-v11-6-r4.json",
+  "source_callgraph_sha256": "6453b62c5d26cbaeab59bb63aa2f02f95a7df145a25eec890e9d405f58315d99",
+  "status": "FROZEN_OFFLINE_ONLY_PENDING_FRESH_REVIEW",
+  "supersedes_contract_sha256": "c0832182f43108596f069cc2da93858c7e94244a942f43ef31d6be63c04ea3ed",
+  "supersedes_failed_contract_sha256": "cfdc848b5a6a4fc94ff7467bb1b40d7d6dd4200f9b54cfbb1486832e7faaec4e"
+}
