@@ -1,0 +1,436 @@
+{
+  "auth_mode_preserved": true,
+  "auth_storage_effect_bounded": false,
+  "capabilities": {
+    "loaded_thread": "NOT_RUN",
+    "mcp": {
+      "chrome-devtools": {
+        "authStatus": "unsupported",
+        "capabilities_null": true,
+        "configured_enabled": false,
+        "resources_empty": true,
+        "runtimeStatus": null,
+        "templates_empty": true,
+        "tools_empty": true
+      },
+      "context7": {
+        "authStatus": "unsupported",
+        "capabilities_null": true,
+        "configured_enabled": false,
+        "resources_empty": true,
+        "runtimeStatus": null,
+        "templates_empty": true,
+        "tools_empty": true
+      },
+      "github": {
+        "authStatus": "unsupported",
+        "capabilities_null": true,
+        "configured_enabled": false,
+        "resources_empty": true,
+        "runtimeStatus": null,
+        "templates_empty": true,
+        "tools_empty": true
+      },
+      "node_repl": {
+        "authStatus": "unsupported",
+        "capabilities_null": true,
+        "configured_enabled": false,
+        "resources_empty": true,
+        "runtimeStatus": null,
+        "templates_empty": true,
+        "tools_empty": true
+      },
+      "openaiDeveloperDocs": {
+        "authStatus": "unsupported",
+        "capabilities_null": true,
+        "configured_enabled": false,
+        "resources_empty": true,
+        "runtimeStatus": null,
+        "templates_empty": true,
+        "tools_empty": true
+      },
+      "playwright": {
+        "authStatus": "unsupported",
+        "capabilities_null": true,
+        "configured_enabled": false,
+        "resources_empty": true,
+        "runtimeStatus": null,
+        "templates_empty": true,
+        "tools_empty": true
+      }
+    },
+    "mcp_status_rpc_count": 1,
+    "private_fields_retained": false,
+    "remote": "disabled",
+    "scope": "unscoped process metadata; runtimeStatus null is no loaded-thread status",
+    "startup_seen": false
+  },
+  "catalog": {
+    "after_templates_exact": true,
+    "all_enabled_flags_stable": true,
+    "all_public_templates_exact": true,
+    "before_templates_exact": true,
+    "complete_snapshots": 2,
+    "expected_complete_snapshots": 2,
+    "public_catalog_count": 152,
+    "shared_pages": 4,
+    "source_sha256": "95872e17955ce713e29eb0b610048f96b2921f79a5dfc7f12b272ae8670ec38f"
+  },
+  "closed": true,
+  "closure_errors": [
+    {
+      "check": "final_notice_state",
+      "code": "CSS_RECOVERY_TERMINAL_STREAM_UNVERIFIED"
+    }
+  ],
+  "configuration": {
+    "active_project_trust": null,
+    "configured_mcp_count": 6,
+    "configured_mcp_disabled": true,
+    "configured_profile": "hub_lwb_evidence_v11",
+    "desktop": {
+      "desktop_present": true,
+      "expected_builder_preserves_desktop": true,
+      "final_config_equal": true,
+      "final_desktop_equal": true,
+      "raw_forward_equal": true,
+      "reasons": [],
+      "roundtrip_supported": true
+    },
+    "effort": "xhigh",
+    "exact_cwd": "/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007",
+    "layer_count": 4,
+    "layers": [
+      {
+        "disabled": false,
+        "disabled_reason": null,
+        "index": 0,
+        "name": "sessionFlags",
+        "project_present": false,
+        "source_category": "sessionFlags"
+      },
+      {
+        "disabled": true,
+        "disabled_reason": "missing_trust",
+        "index": 1,
+        "name": "project",
+        "project_present": true,
+        "source_category": "project"
+      },
+      {
+        "disabled": false,
+        "disabled_reason": null,
+        "index": 2,
+        "name": "user",
+        "project_present": false,
+        "source_category": "user"
+      },
+      {
+        "disabled": false,
+        "disabled_reason": null,
+        "index": 3,
+        "name": "system",
+        "project_present": false,
+        "source_category": "system"
+      }
+    ],
+    "model": "gpt-6.1-sol",
+    "native_profile_echo": "NOT_RUN requires later cold resume",
+    "packaged_defaults_filtered": true,
+    "private_layer_version_or_hash_retained": false,
+    "raw_config_or_layer_body_retained": false,
+    "resolved_feature_overlay_verified": true,
+    "typed_serialization_verified": true,
+    "wire_precedence": "high_to_low"
+  },
+  "configuration_features": {
+    "features": {
+      "apps": false,
+      "browser_use": false,
+      "browser_use_external": false,
+      "browser_use_full_cdp_access": false,
+      "computer_use": false,
+      "goals": false,
+      "hooks": false,
+      "image_generation": false,
+      "in_app_browser": false,
+      "memories": false,
+      "multi_agent": false,
+      "multi_agent_v2": false,
+      "plugins": false,
+      "remote_plugin": false
+    },
+    "full_metadata_acceptance": "BLOCKED",
+    "local_native_tool_host": true,
+    "mcp_configuration": {
+      "chrome-devtools": {
+        "enabled": false
+      },
+      "context7": {
+        "enabled": false
+      },
+      "github": {
+        "enabled": false
+      },
+      "node_repl": {
+        "enabled": false
+      },
+      "openaiDeveloperDocs": {
+        "enabled": false
+      },
+      "playwright": {
+        "enabled": false
+      }
+    },
+    "mcp_runtime": {
+      "authStatus": "NOT_RUN",
+      "loaded_thread": "NOT_RUN",
+      "resourceTemplates": "NOT_RUN",
+      "resources": "NOT_RUN",
+      "runtimeStatus": "NOT_RUN",
+      "serverCapabilities": "NOT_RUN",
+      "tools": "NOT_RUN"
+    },
+    "mcp_status_rpc_count": 0,
+    "remote": "disabled",
+    "scope": "configuration and features only; no MCP runtime or loaded thread claim",
+    "startup_seen": false
+  },
+  "contract": "HUB-LWB-2.3-CSP-FULL-METADATA-AUTH-REFRESH-GOV-v11.7",
+  "credential_effect": {
+    "after_exists": true,
+    "after_safe": {
+      "nofollow": true,
+      "owner": true,
+      "private_mode": true,
+      "regular": true,
+      "single_link": true
+    },
+    "before_exists": true,
+    "before_safe": {
+      "nofollow": true,
+      "owner": true,
+      "private_mode": true,
+      "regular": true,
+      "single_link": true
+    },
+    "child_network_visibility": "NOT_RUN",
+    "content_read_copied_hashed": false,
+    "identity_changed": false,
+    "official_storage_only_source_bound": true,
+    "physical_request_count": "NOT_OBSERVED",
+    "refresh_outcome": "UNKNOWN_STDERR",
+    "refresh_success": "NOT_OBSERVED",
+    "safe_attributes": true
+  },
+  "effects": {
+    "child_network_visibility": "NOT_RUN",
+    "counts": {
+      "auth_mode": 2,
+      "helper": 1,
+      "mount": 5,
+      "preview_head": 4,
+      "schema": 1,
+      "source_head": 4,
+      "version": 1
+    },
+    "effect_limits_satisfied": true,
+    "parent_processes": [
+      {
+        "cwd_category": "Hub",
+        "environment": "inherited_private_snapshot",
+        "operation": "mount",
+        "ordinal": 1,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 1
+      },
+      {
+        "cwd_category": "canonical_source",
+        "environment": "inherited_private_snapshot",
+        "operation": "source_head",
+        "ordinal": 1,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 5
+      },
+      {
+        "cwd_category": "Hub",
+        "environment": "inherited_private_snapshot",
+        "operation": "preview_head",
+        "ordinal": 1,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 2
+      },
+      {
+        "cwd_category": "Hub",
+        "environment": "base4",
+        "operation": "auth_mode",
+        "ordinal": 1,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 5
+      },
+      {
+        "cwd_category": "Hub",
+        "environment": "inherited_private_snapshot",
+        "operation": "mount",
+        "ordinal": 2,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 1
+      },
+      {
+        "cwd_category": "canonical_source",
+        "environment": "inherited_private_snapshot",
+        "operation": "source_head",
+        "ordinal": 2,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 5
+      },
+      {
+        "cwd_category": "Hub",
+        "environment": "inherited_private_snapshot",
+        "operation": "preview_head",
+        "ordinal": 2,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 2
+      },
+      {
+        "cwd_category": "Hub",
+        "environment": "inherited_private_snapshot",
+        "operation": "mount",
+        "ordinal": 3,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 1
+      },
+      {
+        "cwd_category": "canonical_source",
+        "environment": "inherited_private_snapshot",
+        "operation": "source_head",
+        "ordinal": 3,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 5
+      },
+      {
+        "cwd_category": "Hub",
+        "environment": "inherited_private_snapshot",
+        "operation": "preview_head",
+        "ordinal": 3,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 2
+      },
+      {
+        "cwd_category": "Hub",
+        "environment": "inherited_private_snapshot",
+        "operation": "mount",
+        "ordinal": 4,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 1
+      },
+      {
+        "cwd_category": "canonical_source",
+        "environment": "inherited_private_snapshot",
+        "operation": "source_head",
+        "ordinal": 4,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 5
+      },
+      {
+        "cwd_category": "Hub",
+        "environment": "inherited_private_snapshot",
+        "operation": "preview_head",
+        "ordinal": 4,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 2
+      },
+      {
+        "cwd_category": "Hub",
+        "environment": "process5",
+        "operation": "version",
+        "ordinal": 1,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 5
+      },
+      {
+        "cwd_category": "Hub",
+        "environment": "process5",
+        "operation": "schema",
+        "ordinal": 1,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 10
+      },
+      {
+        "cwd_category": "trial",
+        "environment": "process5",
+        "operation": "helper",
+        "ordinal": 1,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 120
+      },
+      {
+        "cwd_category": "Hub",
+        "environment": "base4",
+        "operation": "auth_mode",
+        "ordinal": 2,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 5
+      },
+      {
+        "cwd_category": "Hub",
+        "environment": "inherited_private_snapshot",
+        "operation": "mount",
+        "ordinal": 5,
+        "timeout_evidence": "pinned source and bounded runner",
+        "timeout_seconds": 1
+      }
+    ],
+    "parent_socket_audit": "active; creation and operations rejected",
+    "raw_outputs_or_environment_retained": false,
+    "violations": []
+  },
+  "exit": 0,
+  "expiry_at_close": true,
+  "fifth_resume_allowed": false,
+  "final_notice_state": false,
+  "full_metadata_acceptance": "BLOCKED",
+  "global_config_preserved": true,
+  "mcp_status_rpc_count": 1,
+  "methods": [
+    {
+      "method": "initialize",
+      "unscoped": true
+    },
+    {
+      "method": "experimentalFeature/list",
+      "unscoped": true
+    },
+    {
+      "method": "experimentalFeature/list",
+      "unscoped": true
+    },
+    {
+      "method": "config/read",
+      "unscoped": true
+    },
+    {
+      "method": "mcpServerStatus/list",
+      "unscoped": true
+    },
+    {
+      "method": "experimentalFeature/list",
+      "unscoped": true
+    },
+    {
+      "method": "experimentalFeature/list",
+      "unscoped": true
+    }
+  ],
+  "model_turns": 0,
+  "pid": 100859,
+  "public_catalog_unchanged": true,
+  "resumes": 0,
+  "schema_temp_cleaned": true,
+  "source3_unchanged": true,
+  "status": "PARTIAL_BLOCKED",
+  "task_row_unchanged": true,
+  "threads": 0,
+  "trial_css_four_dirs_unchanged": true,
+  "wall_exceeded": false
+}

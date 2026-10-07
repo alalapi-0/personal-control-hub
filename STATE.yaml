@@ -30,7 +30,7 @@ linux_visual_workbench:
   - HUB-LWB-4.1
   - HUB-LWB-4.3
   next_round: HUB-LWB-2.3
-  next_action: 请所有者一次确认候选 862215cc3e95df74310e2a913b233e5fd02ef63a0d77fa96a2dc255d8c63ef96 的 120 秒官方 SDK metadata 效果。20 小时窗口无合格后端，未开启。未获授权前不运行 metadata helper。媒体截图组仍不提交。
+  next_action: 候选 862215cc3e95df74310e2a913b233e5fd02ef63a0d77fa96a2dc255d8c63ef96 的一次 120 秒样本已执行，结果 PARTIAL_BLOCKED：退出 0，凭据身份未变，stderr 未确认无刷新失败，终端流未验证。不重试。媒体截图组仍不提交。M1/M2 未验收。同类阻塞先自行判断，无法判断则后置并继续。
   baseline:
     host: lab-root
     date: '2026-10-03'
@@ -381,7 +381,7 @@ linux_visual_workbench:
       grant_id: csp-css-trial-grant-v1
       task_id: csp-css-trial-20261007
     sdk_metadata_refresh_grant:
-      state: STAGED_INACTIVE_PENDING_OWNER_EXACT_EFFECT_GRANT
+      state: consumed_partial_blocked
       grant_id: csp-metadata-sdk-refresh-v11-7
       contract: HUB-LWB-2.3-CSP-FULL-METADATA-AUTH-REFRESH-GOV-v11.7
       candidate_sha256: 862215cc3e95df74310e2a913b233e5fd02ef63a0d77fa96a2dc255d8c63ef96
@@ -389,7 +389,8 @@ linux_visual_workbench:
       official_sdk_refresh_allowed: false
       effect: one complete metadata helper; possible official OAuth/providerrefresh
         and non-atomic officialcredentialfileupdate; no manualcredentials/model/thread/sourcepromotion/Git/config
-      owner_authorization: NOT_RECEIVED
+      owner_authorization: RECEIVED
+      governor_activation: APPROVE 02d7aa3d-1ee4-4f9c-9869-f18e50e8aa95
   milestones:
     M1: HUB-LWB-2.4
     M1_status: NOT_RUN
@@ -532,14 +533,14 @@ linux_visual_workbench:
       +closure; remaining/costunknown; no reset
     cumulative:
       closed_rounds: 16
-      metadata_helpers: 5
+      metadata_helpers: 6
       model_turns: 1
       resumes: 4
       threads: 2
     record: data/workbench/csp-css-trial/config-precheck-contract-v11-7.json
     sha256: 7991b8eaf1cb50e6250938e62b56d3f1bc74d22364ec9d8cdfc3a2343741809e
-    status: STAGED_INACTIVE_FRESH_JUDGE_PASS_OFFLINE_PREPARATION_APPROVED
-    decision: NO_RUNTIME_AUTHORITY
+    status: APPROVED_SINGLE_NATIVE_PRECHECK
+    decision: APPROVE_NATIVE_PRECHECK
     evidence: data/workbench/csp-css-trial/config-precheck-registration-v11-7-r1.json
     governor_evidence: data/workbench/csp-css-trial/config-precheck-governor-decision-v11-7-r1.json
     frozen_contract_unchanged: true
