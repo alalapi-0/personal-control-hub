@@ -4,7 +4,17 @@ project: {id: personal-control-hub, phase: Phase 1, health: active}
 current_round: {id: ROUND-1-1, name: Registry Runtime Validation, status: active, last_completed_round: ROUND-1, next_round: ROUND-1-5}
 legacy_context: {source: 'origin/main:15a4971', meaning: Historical roadmap only; never resumes it; later unmerged work remains preserved.}
 all_projects_governance: {budget: {cooldown: 75k tokens/30min+trigger, coverage: native visible, current_visible_tokens: 6048100, first_250k_rebaseline: completed, last_health: 完成审计已PASS；Hub 47b435c, prior_visible_tokens: 14061875}, candidate_paths: [STATE.yaml], completed: ['history_ref:964a8fb9c2745886a513b5d99e7ea0ffcbe787c3#STATE.completed'], coverage: {business_blockers: 59, cloud_excluded: 17, local: 24, metrics: 1518, numeric_metrics: 1098, removed_local: 2, unknown: 420}, delivery: {history_ref: dc3930ecce91d89d259087df4fead8d77fca4653#STATE.delivery, latest: {unit: V3-08/ai-music-foundry, project: 5c697b7f8820b5695f6489713be9d59a83643baf, hub: 2e86948e56d15ebbf2d931c26c557dd0c600b8b1, ci: 34575180184}, remote_verified: true}, delivery_inventory: docs/reports/all-projects-governance/round-2026-09-09/delivery-inventory.json, execution_document: docs/all_projects_governance_execution.md, lane: REVIEWED, native_task_id: 01a07ef7-735b-7270-9c21-3347e1232b5a, next_action: 适用验收已齐。11项未授权产品债保留恢复点。, recovery: {history_ref: 964a8fb9c2745886a513b5d99e7ea0ffcbe787c3#STATE.recovery}, route_version: 3, status: ACTIVE, task_id: ALL-PROJECTS-CODEX-GOVERNANCE-V1, unit: V3-11/complete-audit, project_id: personal-control-hub, unresolved: [downloads空模板无业务源；24分母保留, 漫画56真实重做/3待审仍未授权；7无Git；Pixel main e32d954/CI34600062981仍123f/857p/22s（同34344708324）；ROADMAP单行WIP保留, Desktop JAV接入已验收；离线仍缺bs4/soupsieve，联网安装/抓取未授权；无Git, Desktop Tool离线7/8，pagination_no_next失败；迁移通过, Zara 9项非数据WIP受保护，aggregate01ce09ce；未提交, 学习计划接入已验收；WIP 30+3仍保留未提交；main 8550d05；storage入口78不修, Anime外置守卫阻塞：60项WIP；storage_runtime=78，修复重叠未跟踪脚本；条件变化前不重试, Audio Clone守卫通过；AUDIO-TC2-DISCOVERY-SCOPE-001需所有者明确永久历史元数据范围并fresh Judge；禁重扫, YouTube接入已验收；tokens.json仍0644且在未加密、owners-disabled外盘，内容未读，不改权限, MPV历史4实例11pass/1fail代码绑定unknown；main445e199已验收, 续写接入已验收；WIP未在该分支提交；main ae79395], stopped_as_unnecessary: Anime/轻小说/续写/学习计划/Zara/HTML/jav非数据修复停做；WIP保留, prepared_plan: {version: 3, status: activated, roadmap: data/roadmap/project_data_v3.yaml, prompt: prompts/all_projects_governance_goal_mode.md}, v3: {plan_id: PROJECT-DATA-PUBLISH-SYNC-V3, plan_version: 3, activated_at: '2026-09-10T14:12:00+08:00', owner_authority: 路线内实施、逐仓交付及对应main正常推送；禁强推/绕过保护, stage_id: V3-11, unit_id: V3-11/complete-audit, project_id: personal-control-hub, prior_state_ref: aafc4c5206814107626d52fec41f30e1988387d5#STATE.all_projects_governance.v3, acceptance_history_ref: 725135a70abd5fe27d4b4aa056ff9684434df9d8#STATE.all_projects_governance.v3.acceptance, acceptance: {accepted_count: 30, latest: {unit: V3-11/complete-audit, status: ACCEPTED, evidence: 31适用ID均有STATE证据；remaining空；unresolved仍11；verify-remote已核；Judge PASS 85509d34/d727b19b；Hub 47b435c}}, rollout: {accepted_count: 22, blocked_count: 0, remaining_count: 0, history_ref: 4d968106749574c90e86856143e278c6d9f55d3a#STATE.all_projects_governance.v3.rollout, latest: {unit: V3-08-A1/A2/A3, status: ACCEPTED, evidence: rollout 22/0/0；分母未降；verify-remote Hub/novel/study已核对；Judge PASS 6c6b51b3/c957e6c5}}, review: {verdict: PASS, judge: 85509d34-d1f8-4d6e-849b-7898fda84d61, candidate: d727b19b6261b82d3961d9d5ec9523aa8f335ce1c6f0fa0f55b33c351d239b7a}, delivery: {status: DELIVERED, project_commit: ae793957000daf3d265ea0946a245716964f21c0, project_main_commit: ae793957000daf3d265ea0946a245716964f21c0, hub_commit: 47b435cf4e223e4889e6bdfeaa167719b7c70bbc, hub_main_commit: 47b435cf4e223e4889e6bdfeaa167719b7c70bbc, hub_ci_run: 34669870685, hub_ci: success}, project_unit_history: {ref: '9891b50343fe9e76dc7257311bf7d80abd28eb9e:governance/round_state.yaml#codex_governance', accepted_count: 26, blocked_count: 4}, baseline_refs: ['origin/main:19a01574bd0cebc5a65c0d5fc3e599f2dd3f678e/STATE.yaml', 'agent/governance-closure-20260812:0ca1ee547990fd876e9917c8c6ee1fa7d2bb8142/STATE.yaml'], forecast: {remaining_rounds: 0, confidence: high, reason: 适用验收已齐；11项standing阻塞不计入剩余适用项}, deduplicated_execution_rounds: {prior: unknown_preserved, v3: 65, cumulative: unknown_prior_plus_65}}}
-candidate_paths: [STATE.yaml, .agents/skills/linux-network-maintenance/SKILL.md, .agents/skills/linux-network-maintenance/references/incidents.md, prompts/linux_network_maintenance_goal_mode.md]
+candidate_paths:
+- STATE.yaml
+- .agents/skills/linux-network-maintenance/SKILL.md
+- .agents/skills/linux-network-maintenance/references/incidents.md
+- prompts/linux_network_maintenance_goal_mode.md
+- docs/workstation/media_apps_storage_goal_zh.md
+- scripts/admin20/prepare.py
+- scripts/admin20/bootstrap.py
+- scripts/admin20/scoped_ops.py
+- scripts/admin20/test_boundary.py
+- scripts/admin20/README.md
 feishu_cloud_sync: {task_id: FEISHU-PROJECT-CLOUD-SYNC-V1, status: PREPARED_NOT_ACTIVATED, plan_version: 1, prepared_at: '2026-09-14', plan: docs/feishu_project_cloud_sync_plan.md, prompt: prompts/feishu_project_cloud_sync_goal_mode.md, lane: DIRECT, baseline_main: e967d46a4357d950488e68ac2a06d08d6d4346bd, objective: 每现存登记项目独立Sheets、总Bitable；真实数据经程序与API自动同步，运行不依赖Agent。, authority: owner_20260914_plan_and_per_round_main_delivery; implementation awaits goal prompt, acceptance: docs/feishu_project_cloud_sync_plan.md#6-最终验收清单, implementation_acceptance_passed: [], owner_setup: H01-H07 not_checked; upfront checklist in plan section 1, scope_baseline: 26 registered / 24 local / 2 removed; 17 cloud excluded; new unsynced deferred, preserved_work: 原工作树registry未提交新增条目未纳入；v3证据与65轮历史原样保留。, round_accounting: {planning_units: 1, implementation_rounds: 0}, delivery: {status: verify_in_git, remote: origin, branch: main}, planning_validation: 'PASS; repository checks, new state references and prior-state preservation', blocker: null, unverified: 个人租户、应用、权限、目标、凭据入口、运行环境与所有真实云同步均未验证。, next_action: 所有者将启动prompt交给新Agent后，从最新main执行P00并集中完成H01-H07。, ci_repair: {contract: TC-CI-RESTORE-1, lane: GOVERNED, evidence: git, verdict: approved}}
 linux_network_maintenance: {status: HANDOFF_SENT, next: linux_result}
 linux_visual_workbench:
@@ -1426,3 +1436,552 @@ linux_visual_workbench:
     - data/design_governance/design-store.json screenshot registration
     - metric_sources.yaml and other-task metric/registry diffs
     - workstation scripts and media-storage handoff files
+
+media_apps_storage_goal:
+  task_id: LINUX-MEDIA-OUTPUT-STORAGE-GOAL-20261007
+  native_thread_id: 01a113b8-2626-7a62-8973-b21daf4c7057
+  status: IN_PROGRESS
+  risk_lane: DIRECT
+  scope: Requested applications and extra-app table; titled entertainment directories to WD-MEDIA;
+    per-project generated media/binary directories and real future output routes to DATA;
+    stable operation and authorized main delivery. Full original Goal retained.
+  execution_method: Human2026-10-08 returned media/app execution to Codex Root. One owned
+    media State, serial project work, no roles/backups/per-round reports.
+  disks:
+    entertainment:
+      name: WD-MEDIA
+      mount: /run/media/alalapi/WD-MEDIA
+      uuid: FEC3-FDBC
+    project_outputs:
+      name: DATA
+      mount: /data
+      uuid: 98a6a740-bf5c-41b5-90fe-fd8e78fa5f55
+    roles: owner confirmed
+  rules:
+  - 'Entertainment: only whole directories explicitly named for a film or TV work.'
+  - Loose, unmarked or temporary Downloads media stay put; confirmed project media follow
+    that project.
+  - Project outputs are classified by actual function/call chain; move the whole output folder
+    and update real generation/export paths.
+  - Preserve games/MODs, source inputs, models, DB/accounts/runtime, existing backups, mixed
+    parents and overlapping active work.
+  - Verify the transfer and actual output paths, then remove only the matching source; no
+    additional backup.
+  - Normal main delivery of verified routing plus required existing source dependencies under
+    current owner authorization; preserve paused business Goal, unrelated files and concurrent
+    work.
+  applications:
+    Baidu: Community user Flatpak8.7.0 from official RPM; native window verified. Failed DEB
+      launch retained in historical evidence; old menu hidden.
+    Discord: Official updater/full native stable client1.0.160; window verified.
+    Thunder: Community user Flatpak1.0.0.1; native window verified.
+    X: Independent Chrome web-app launcher; official login page verified.
+    TikTok: Independent Chrome web-app launcher; official home page verified.
+    accounts: Login/download not tested; no account state copied.
+  recommendation_table: docs/workstation/media_apps_storage_goal_zh.md
+  entertainment:
+    result: NO_ELIGIBLE_SOURCE_WITHIN_FROZEN_SCOPE
+    eligible_directories: 0
+    roots:
+    - /home/alalapi/Desktop
+    - /home/alalapi/Documents
+    - /home/alalapi/Downloads
+    - /home/alalapi/Music
+    - /home/alalapi/Pictures
+    - /home/alalapi/Public
+    - /home/alalapi/Templates
+    - /home/alalapi/Videos
+    directory_count: 292
+    scope_limit: bounded named media roots only; not whole-host completion
+    sources_moved: 0
+    loose_media_untouched: true
+    xdg_roots: Current XDG user directories match all8 previously checked roots; no additional
+      media root configured.
+  accepted_previous_outputs:
+    ai-music-foundry:
+      outputs: /data/ProjectOutputs/ai-music-foundry
+      status: output routing and source cleanup accepted; remote main verified
+      main_commit: c918e04c5bc092f0a4d6e0fb896f6a18d390f058
+    audio-clone:
+      outputs: /data/ProjectOutputs/audio-clone
+      status: output routing and source cleanup accepted; remote main verified
+      main_commit: 0cfee232b6ca0049d3a66454cf13381956a65dd3
+      limits: Storage technical acceptance only; UI/business acceptance unchanged. Hub verify.json
+        root is on origin/main ac9adcb604ea4de1c7557154b78f07fa6557b469.
+    mpv-clip-workbench:
+      outputs: /data/ProjectOutputs/mpv-clip-workbench
+      status: output routing and source cleanup accepted; remote main verified
+      main_commit: 8ba7509bfd1dbe2d81afc6af593cb5e3dcfbba47
+      limits: 2 pre-existing dirty files preserved; original 20 NOT_RUN unchanged.
+    light-novel:
+      outputs: /data/ProjectOutputs/light-novel
+      status: output routing and source cleanup accepted; remote main verified
+      main_commit: 6342df6138915d49fddc08cf7f3ec99c1f042be6
+      limits:
+      - physical unplug midrun NOT_RUN
+      - no formal manuscript/API/scheduler/business resumed
+      - no native GUI acceptance
+    skill-lab:
+      outputs: /data/ProjectOutputs/skill-lab
+      status: output routing and source cleanup accepted; remote main verified
+      main_commit: 7c28f38d64799dd9670e3de19fad0c5870ea4b99
+      limits: physicalunplug/nativebusiness/installation/realSource/fullGoal unaccepted
+    wechat-article-scheduler:
+      outputs: /data/ProjectOutputs/wechat-article-scheduler/task-packages
+      status: Future package/cover routing accepted; no existing media to move; old placeholder
+        retained
+      main_commit: 844d37da80fd60cd6c1b62914f24070b4fef4f80
+      verification: 16 storage checks and381full tests PASS,1prior skip; real8-file mock package
+        and69Bcover onDATA verified, wrongUUID rejected before files; fixtures/reports cleaned
+      limits: Mock/export-disabled default and all other config fields unchanged; originals/DB/accounts
+        untouched; no business/API/publishing resumed
+    linux-video-workbench:
+      root: /data/ProjectOutputs/linux-video-workbench
+      main: c487ae46a215c99b97b611a532c91e85bd76a822
+      checks: 218 unit PASS; actual Qt459 content pins and photo/anime profiles PASS; old/new
+        DATA paths admitted; originals/models/DB unchanged
+      source_delivery: 59 required source/dependency files; only storage State header and
+        application README staged; pre-existing business history/docs/checkers and foreign
+        connector preserved
+    movie-swipe:
+      root: /data/ProjectOutputs/movie-swipe/artifacts
+      main: 3c05868157f4d448580b4e7981a371a409bc8a50
+      checks: storage/41-file engineering PASS;54 local tests PASS;6 cover hashes/source package
+        PASS; normal main fast-forward and exact remote verified
+      limits: Original artwork and runtime-required covers unchanged; real-device/product
+        gates retain previous unverified status; no WeChat upload.
+    story-faceless-utopia:
+      outputs: /data/ProjectOutputs/story-faceless-utopia
+      status: Existing storage acceptance and remote main verified; unchanged evidence in
+        migrations.
+      main_commit: febc04ae4286e8219f743e6a038f95967b3d3df4
+      limits: Storage acceptance only; original business Goal and pre-existing dirty work
+        unchanged.
+    pixel-world-asset-forge:
+      outputs: /data/ProjectOutputs/pixel-world-asset-forge
+      status: Existing storage acceptance and remote main verified; unchanged evidence in
+        migrations.
+      main_commit: ec1a4c80cd1d1dd22844d3b2cb3da75ba893214f
+      limits: Storage acceptance only; original business Goal and pre-existing dirty work
+        unchanged.
+    ai-anime-short-factory:
+      outputs: /data/ProjectOutputs/ai-anime-short-factory
+      status: Existing storage acceptance and remote main verified; unchanged evidence in
+        migrations.
+      main_commit: 6e5442ee10a2e57e1d98fe0142d41360c4af7fdd
+      limits: Storage acceptance only; original business Goal and pre-existing dirty work
+        unchanged.
+    creator_workbench:
+      outputs: /data/ProjectOutputs/creator_workbench
+      main_commit: 91cf4211855d4f6d2ebeb0328e6aa2948ea4f71d
+      history_commit: 2996f463f7621e7e529e1ebe7bef5fbdeb694141
+      checks: 135PNG whole folders plus589history file links;9 storage checks and11original
+        input checks passed on current boot
+      remote_at_verification: Current clean main 9e713dd9e97719012be71d965a92ad79ab24eb73;
+        routing and history commits ancestors
+      limits: Electron business/UI suites NOT_RUN; icons/text upload fixture remain inputs
+    computer-study-plan:
+      outputs: /data/ProjectOutputs/computer-study-plan/linux-ui
+      status: Whole historical generated output leaf and legacy routing accepted
+      checks: 11files3399869bytes, full metadata/hash and DATA write/read/remove; validation.json
+        unchanged
+      limits: No CSP source or UI/candidate changes; no active screenshot producer, no business
+        capture acceptance
+    personal-control-hub:
+      outputs: /data/ProjectOutputs/personal-control-hub/linux-workbench
+      status: 25 historical media links and bounded Pixel/audio readers verified
+      checks: 25 valid legacy links; cursor storage commit is ancestor of freshly fetched
+        origin/main bd36f855ac7cc335ff5d28791909715cbaefb759
+      main_commit: ac9adcb604ea4de1c7557154b78f07fa6557b469
+      limits: Hub/M2 business state/source unchanged; no broad app tests resumed
+  migrations:
+  - project: movie-swipe
+    from: /home/alalapi/Artifacts/movie-swipe
+    to: /data/ProjectOutputs/movie-swipe/artifacts
+    status: MOVED
+    contents: generated candidateZIP and postercontactJPEG only
+    files: 2
+    bytes: 406728
+    old_path: compatibility symlink toDATA; no extra copy
+    configuration: artifactRoot+diskUUID updated; storage checkPASS
+    Git: Current source/storage commits normally fast-forwarded to main under owner instruction;
+      exact remote verified; worktree clean; prior work branch preserved.
+    local_commit: 78ac99d63146660751a88c7e229d164df9e764d5
+    main_commit: 3c05868157f4d448580b4e7981a371a409bc8a50
+  - project: story-faceless-utopia
+    from: /home/alalapi/Artifacts/story-faceless-utopia
+    to: /data/ProjectOutputs/story-faceless-utopia/artifacts
+    status: MOVED
+    contents: exported wholeworldpackageZIP only
+    files: 1
+    bytes: 151058
+    old_path: compatibility link toDATA; repo dist link pointsdirectDATA; noextra copy
+    configuration: only exportpath/diskUUID adjusted; storage checkPASS, 60original media
+      aliases remain
+    main_commit: febc04ae4286e8219f743e6a038f95967b3d3df4
+    Git: owned storage path hunks only; other business changes preserved; normal main push
+      verified
+  - project: linux-video-workbench
+    from: /home/alalapi/Projects/linux-video-workbench/runtime/outputs
+    to: /data/ProjectOutputs/linux-video-workbench/outputs
+    status: MOVED
+    configuration: local output-storage.json + guarded DATA path; future outputs route to
+      DATA; internal inputs/models/DB unchanged
+    old_path: compatibility symlink; source copy removed; no backup
+    files: 13833
+    bytes: 5462454834
+    verification: 54 checks PASS;2830existing namespaces and7image results readable; wrong
+      disk rejected.
+    Git: Required application/source dependency unit delivered normally on main; exact remote
+      verified; pre-existing business history/docs/checkers preserved unstaged.
+    main_commit: c487ae46a215c99b97b611a532c91e85bd76a822
+  - project: linux-video-workbench
+    from: /home/alalapi/Projects/linux-video-workbench/runtime/images
+    to: /data/ProjectOutputs/linux-video-workbench/images
+    status: MOVED
+    old_path: compatibility symlink; source copy removed; no backup
+    files: 66
+    bytes: 60104864
+    main_commit: c487ae46a215c99b97b611a532c91e85bd76a822
+    Git: Required application/source dependency unit delivered normally on main; exact remote
+      verified; pre-existing business history/docs/checkers preserved unstaged.
+  - project: pixel-world-asset-forge
+    from: /home/alalapi/ProjectData/pixel-world-asset-forge/assets
+    to: /data/ProjectOutputs/pixel-world-asset-forge/assets
+    status: MOVED
+    files: 5998
+    bytes: 2997120
+    old_path: exact compatibility symlink; original source removed after full hash/mode/link
+      checks; no backup
+    configuration: whole generated library including sidecars; 15 active storage_root locators
+      updated; real generators/export reports and smoke output point DATA; source/runtime/provenance
+      stay internal
+    verification: 96 checks PASS; schema and real DATA PNG PASS; HTTP130executed/61prior skips;
+      Hub reads15assets.
+    Git: 7 owned files only; main clean, normal push and remote exact verified
+    main_commit: ec1a4c80cd1d1dd22844d3b2cb3da75ba893214f
+    Hub: Existing collector reads 15 assets from DATA; only metadata_root changed.
+  - project: pixel-world-asset-forge
+    from: /home/alalapi/Artifacts/pixel-world-asset-forge/visual-reports
+    to: /data/ProjectOutputs/pixel-world-asset-forge/visual-reports
+    status: MOVED
+    files: 7
+    bytes: 21127
+    old_path: exact compatibility symlink; original source removed after full hash/mode/link
+      checks; no backup
+  - project: ai-anime-short-factory
+    from: /home/alalapi/ProjectData/ai-anime-short-factory/external-media
+    to: /data/ProjectOutputs/ai-anime-short-factory/external-media
+    status: MOVED
+    files: 253
+    bytes: 7490407
+    old_path: exact link; no backup
+    configuration: Guarded DATA media/output routes; actual typed-sink PNG write/read and
+      legacy path verified
+    verification: 50 related checks PASS, 1 prior skip; schema and real DATA PNG/legacy path
+      PASS. Broad suite interrupted after295passes, not full PASS.
+    main_commit: 6e5442ee10a2e57e1d98fe0142d41360c4af7fdd
+    Git: Only 5 owned files on main; remote exact verified; all prior staged/uncommitted business
+      work preserved
+  - project: ai-anime-short-factory
+    from: /home/alalapi/Artifacts/ai-anime-short-factory/historical-ui-snapshots
+    to: /data/ProjectOutputs/ai-anime-short-factory/historical-ui-snapshots
+    status: MOVED
+    files: 10
+    bytes: 3305788
+    old_path: exact link; no backup
+  - project: ai-anime-short-factory
+    from: /home/alalapi/Artifacts/ai-anime-short-factory/previews/homepage-v3
+    to: /data/ProjectOutputs/ai-anime-short-factory/previews/homepage-v3
+    status: MOVED
+    files: 31
+    bytes: 428931645
+    old_path: exact link; no backup
+  - project: ai-anime-short-factory
+    from: /home/alalapi/Temp/ai-anime-short-factory/outputs
+    to: /data/ProjectOutputs/ai-anime-short-factory/outputs
+    status: MOVED
+    files: 2
+    bytes: 90
+    old_path: exact link; no backup
+  - project: creator_workbench
+    from: /home/alalapi/Projects/creator_workbench/runtime/r08-root-58b24-captures
+    to: /data/ProjectOutputs/creator_workbench/captures/r08-root-58b24-captures
+    status: MOVED
+    contents: Whole generated PNG capture directory; Codex owner resumed from completed Cursor
+      migration
+    files: 31
+    bytes: 6387942
+    verification: whole SHA/mode/owner/mtime compared before source removal; exact old alias
+      retained; no backup
+    configuration: Future guarded DATA capture/fixture route on main; Root current test:media-storage
+      passed. History PNG migration separately complete. Input icons and text upload fixture
+      stay.
+    Git: main 91cf4211855d4f6d2ebeb0328e6aa2948ea4f71d; origin/main exact match
+  - project: creator_workbench
+    from: /home/alalapi/Projects/creator_workbench/runtime/r08-judge-58b24-r06-captures
+    to: /data/ProjectOutputs/creator_workbench/captures/r08-judge-58b24-r06-captures
+    status: MOVED
+    contents: Whole generated PNG capture directory; Codex owner resumed from completed Cursor
+      migration
+    files: 49
+    bytes: 8192144
+    verification: whole SHA/mode/owner/mtime compared before source removal; exact old alias
+      retained; no backup
+    configuration: Future guarded DATA capture/fixture route on main; Root current test:media-storage
+      passed. History PNG migration separately complete. Input icons and text upload fixture
+      stay.
+    Git: main 91cf4211855d4f6d2ebeb0328e6aa2948ea4f71d; origin/main exact match
+  - project: creator_workbench
+    from: /home/alalapi/Projects/creator_workbench/runtime/r06-root-5a7-captures
+    to: /data/ProjectOutputs/creator_workbench/captures/r06-root-5a7-captures
+    status: MOVED
+    contents: Whole generated PNG capture directory; Codex owner resumed from completed Cursor
+      migration
+    files: 26
+    bytes: 4618011
+    verification: whole SHA/mode/owner/mtime compared before source removal; exact old alias
+      retained; no backup
+    configuration: Future guarded DATA capture/fixture route on main; Root current test:media-storage
+      passed. History PNG migration separately complete. Input icons and text upload fixture
+      stay.
+    Git: main 91cf4211855d4f6d2ebeb0328e6aa2948ea4f71d; origin/main exact match
+  - project: creator_workbench
+    from: /home/alalapi/Projects/creator_workbench/runtime/r08-judge-58b24-captures
+    to: /data/ProjectOutputs/creator_workbench/captures/r08-judge-58b24-captures
+    status: MOVED
+    contents: Whole generated PNG capture directory; Codex owner resumed from completed Cursor
+      migration
+    files: 29
+    bytes: 5300721
+    verification: whole SHA/mode/owner/mtime compared before source removal; exact old alias
+      retained; no backup
+    configuration: Future guarded DATA capture/fixture route on main; Root current test:media-storage
+      passed. History PNG migration separately complete. Input icons and text upload fixture
+      stay.
+    Git: main 91cf4211855d4f6d2ebeb0328e6aa2948ea4f71d; origin/main exact match
+  - project: computer-study-plan
+    from: /home/alalapi/Artifacts/computer-study-plan/linux-ui
+    to: /data/ProjectOutputs/computer-study-plan/linux-ui
+    status: MOVED_VERIFIED
+    files: 11
+    media_files: 10
+    bytes: 3399869
+    contents: Whole historical output leaf, 10 PNG and original validation.json
+    old_path: Exact absolute DATA symlink; originals removed only after complete bytes and
+      metadata comparison; no backup
+    verification: SHA/mode/uid/gid/mtime preserved; legacy-path read and disposable DATA write/read/remove
+      passed; validation.json unchanged
+    configuration: No active screenshot producer in current CSP scripts/tests. Legacy path
+      resolves to DATA; no source/UI/candidate/DB changes
+    Git: Non-repository generated data; media State delivery pending
+  - project: creator_workbench
+    from: runtime root/r09/r12 generated history PNG leaves
+    to: /data/ProjectOutputs/creator_workbench/captures
+    status: MOVED_VERIFIED
+    files: 589
+    bytes: 115239251
+    old_path: 589 exact legacy file links, all valid; mixed text/SQLite/runtime parents preserved
+    verification: Root current read verified all589links and new-boot npm run test:media-storage
+      PASS; no business UI acceptance inferred
+    main_commit: 2996f463f7621e7e529e1ebe7bef5fbdeb694141
+  - project: personal-control-hub
+    from: /home/alalapi/Projects/personal-control-hub/docs/reports/linux-workbench
+    to: /data/ProjectOutputs/personal-control-hub/linux-workbench
+    status: MOVED_VERIFIED
+    files: 25
+    bytes: 2379240
+    old_path: 25 exact generated media file links; INDEX/text parent stays
+    verification: All legacy targets valid; storage source commit ancestor of current remote
+      main
+    main_commit: ac9adcb604ea4de1c7557154b78f07fa6557b469
+  protected_dependencies:
+  - Creator MediaPathHandoff20261008 committed in State/prompt at6c8c8d41bfe6a7310abe32490148cb920ebdd283;
+    exact bounded capture/fixture path custody transfers from paused Codex media Root to storage-goal
+    Cursor. Other business Cursor must wait only for this group to finish; inputs/DB/accounts/business
+    Goal unchanged.
+  - Hub linux_visual_workbench.cursor_handoff.media_write_window explicitly releases25generated
+    screenshots and bounded capture/reference paths; former owner records no active writer.
+    Storage-goal Cursor inherits media custody; Hub business/M2 Cursor waits only for this
+    group; unrelated fields preserved.
+  - Independent computer-study-plan LinuxUI11file output group is NOT automatically released
+    by Hub25media handoff. LAN original transfer data/DB and other20hour-backend owner remain
+    protected; current role/path classification must precede any output effects.
+  pending:
+  - Final owned State/admin20 source delivery to main, preserving foreign Hub work.
+  - 'New shared20hour window for LAN File Share and creator_workbench: prepared fixed root
+    operations, one local terminal authentication required; old grant inactive after reboot.'
+  - 'Scope limits unchanged: account login, actual downloads and Creator business UI acceptance
+    are separate; Electron runtime root preparation is admitted for the new window but not
+    performed.'
+  - LAN transfer uploads/objects/parts/SQLite are original input/runtime data, NO_MIGRATION.
+    Games, originals, unmarked Downloads media, input icons/models/accounts/databases stay.
+  - Bounded entertainment inspection found0eligible titled film/TV directories in292directories
+    across8roots;3loose temporary downloads stay. No full-host completeness claim.
+  withdrawn_candidate: WeChat output candidate fully withdrawn previously; original repository
+    restored clean; no media was moved or business goal resumed.
+  historical_evidence: /home/alalapi/Temp/personal-control-hub/media-apps-storage-20261007
+  retained_failure_conclusions:
+  - P5 fixture/no-clobber checker errors repaired without weakening original tests.
+  - Previous rule/YAML registration failures repaired; old evidence retained at historical_evidence.
+  - LinuxVideo baseline39 checks passed; after external relocation one internal-mount-only
+    expectation failed; corrected to the configured output root, all54 related checks now
+    pass.
+  - Pixel baseline default-Python3.14 drift repaired only by explicit admitted3.12.3 wrapper/venv
+    reference; interpreter and all dependency contents unchanged. New negative test first
+    stopped at sandbox read-only host precondition; host simulation fixed and96checks passed.
+  - Anime destination/output parent group-write permissions failed guard initially; only owned
+    output parent modes fixed. 50 focused checks/real DATA route then passed; broad unrelated
+    business suite deliberately stopped, not counted as full PASS.
+  - 'WeChat baseline guard rejected stale boot device numbers. Same UUID/inodes/owners/modes/interpreter
+    SHA/venv links/packages verified; refreshed only chain device numbers. A mistaken source-field
+    edit was rejected and restored: original filesystem source remains unchanged.'
+  - LVW actual Qt/model guard rejected stale66307/259:3 kernel device values; same UUID/partition/inodes/content
+    pins confirmed and only those numeric values refreshed. Original historical dependency/model
+    records unchanged.
+  candidate_paths:
+  - STATE.yaml
+  - docs/workstation/media_apps_storage_goal_zh.md
+  - scripts/admin20/prepare.py
+  - scripts/admin20/bootstrap.py
+  - scripts/admin20/scoped_ops.py
+  - scripts/admin20/test_boundary.py
+  - scripts/admin20/README.md
+  phase: DIRECT_SHARED_ADMIN20_PREPARATION
+  active_project: personal-control-hub owned admin20 source and media State only
+  progress:
+    deduplicated_rounds: 17
+    last_closed_round: DIRECT_CREATOR_OUTPUT_RELOCATION
+    current_round_key: DIRECT_CODEX_RESUME_MEDIA_AND_ADMIN20
+    current_round_closed: false
+    completion_rate: unknown; full denominator not yet established
+    remaining_rate: unknown; pending items remain in scope
+    execution_change: Root moved CSP11files with full hash/metadata/legacy write/read verification;
+      prepared fixed20h LAN/Creator bundle and7boundary checks; root activation remains pending.
+    scope_change: Owner returned media/app Goal to Codex and explicitly requests new20hours
+      for LAN File Share and creator_workbench.
+    evidence_correction: Root confirmed prior Cursor Creator history/routes and Hub25media/reader
+      unit on current main ancestry; old window corrected ACTIVE->INACTIVE BOOT_CHANGED.
+    estimated_remaining_rounds: unknown
+    estimate_confidence: unknown; heterogeneous pending boundaries
+    native_goal_status: paused in actual native get_goal; human explicitly resumes authorization,
+      no supported resume API exposed; Codex executing current user turn without a duplicate
+      scheduler.
+    first_250k_rebaseline:
+      completed: true
+      native_visible_tokens: 303220
+      status: BOUNDARY
+      reason: missing installation authentication and disk/source owner decisions
+      telemetry_coverage: current native Goal actual snapshot, no cost estimate
+      cooldown: 75000 tokens or30 active minutes plus eligible trigger; milestone P1 now accepted
+    previous_goal_turn_classification: Partial existing Creator execution round closed once
+      at human handoff; document/status-only work is not a new implementation round.
+    handoff_blocked_turns: 0
+    handoff_blocker: Bounded media custody resolved; actual new administrator authentication
+      remains.
+    accepted_project_storage_units: 14
+    closed_at: '2026-10-07T18:15:11.608108+00:00'
+  next_action: Normal main delivery of owned State/table/admin20 source; then human local
+    terminal authentication and actual trusted root status/negative-scope verification.
+  handoff_permission: Human explicitly authorized handoff requests then transferred all remaining
+    media Goal execution to Cursor; exact Creator and Hub limited capture/path windows acknowledged
+    in their State. No broad source ownership transfer.
+  cursor_handoff:
+    status: RETURNED_TO_CODEX
+    prepared_at: '2026-10-07T18:15:11.608108+00:00'
+    document: prompts/workstation/CURSOR_MEDIA_STORAGE_HANDOFF_PROMPT.md
+    receiver: local Cursor storage Goal, sole writer; not Creator/Hub business Goal
+    risk_lane: DIRECT_document_only
+    mode_request: native /goal plus built-in /loop in same chat; real activation evidence
+      required
+    codex_native_goal_status: paused confirmed by get_goal; no implementation resumed
+    source_candidate:
+      project: creator_workbench
+      base_main: 6c8c8d41bfe6a7310abe32490148cb920ebdd283
+      status: STORAGE_ACCEPTED_CURRENT_BOOT
+      main_commit: 91cf4211855d4f6d2ebeb0328e6aa2948ea4f71d
+      remote: origin/main exact match after fetch
+      modified_or_untracked_paths:
+      - src/generated-media.ts
+      - src/main/app-runtime.ts
+      - src/materials/catalog.ts
+      - tests/local-fixtures/materials.ts
+      - tests/r03/runtime.ts
+      - tests/r04/runtime.ts
+      - tests/r05/runtime.ts
+      - tests/r05/ui.ts
+      - tests/r06/ui.ts
+      - tests/r08/runtime.ts
+      - tests/r09/integration.ts
+      verification: Root npm run test:media-storage PASS on clean current main,589history
+        links valid; business UI NOT_RUN
+      existing_moved_files: 135
+      existing_moved_bytes: 24498818
+    admin_window:
+      hours: 20
+      authority: owner explicitly requests20hours covering necessary administrators operations
+        for this Goal
+      status: INACTIVE_BOOT_CHANGED_CURRENT_READONLY_CLIENT
+      window_id: cursor-shared-admin20-241668ad-9dd5-46dc-9f0d-5c356500b033
+      manifest_sha256: a7df750fb5f0a09b8e12075a0f7ba5352e263258b1d8031c07a15f9a17d1dd73
+      contract: CURSOR-SHARED-ADMIN-20H-v1
+      client: /var/lib/linux-admin-window/cursor20-20261008-v1/client.py
+      verified_at: '2026-10-08T04:33:00+09:00'
+      expires_at: '2026-10-09T00:26:13.602122+09:00'
+      boot_id: 8d760558-0593-42b7-aa5b-4c8ab37cfc4b
+      host: lab-root
+      effective_uid: 0
+      owner_uid: 1000
+      data_state: OK ext4 rw /dev/sdb1 uuid 98a6a740-bf5c-41b5-90fe-fd8e78fa5f55
+      readonly_check: Current root-owned client status INACTIVE BOOT_CHANGED, active_capability_verified
+        false. New boot3c8f3e43-3605-4e44-af20-5cb401c0d869; no old window reuse or root effect.
+      legacy_script_limit: 16hour tmux arbitrary root shell; not qualified limited backend;
+        do not start or just edit duration
+      cursor_action: qualified trusted status/hard expiry/scoped commands/revocation; one
+        local user password if no actual existing grant; no GUI askpass, no password capture,
+        no fake human approval
+      new_request: Owner explicitly selects new20hours shared principally by LAN File Share
+        and creator_workbench; Root preparing finite protected backend in new namespace, no
+        authentication performed.
+    git_delivery_grant: Cursor every changed round commits all verified safe taskowned code/config/tests/docs/state
+      plus required dependencies and normally delivers each repository main with exactremoteSHA;
+      initial unverified candidate must first be repaired/validated; no broad dirty staging,
+      force, credentials or binary data upload.
+    current_document_delivery: local only; no source commit/push or main integration in Codex
+      handoff turn
+    execution_here: Human returns media Goal to Codex; Cursor media loop was stopped. Retain
+      Cursor completed units, revalidate only changed/uncertain remaining boundaries.
+    remaining_discovery_correction: CSP historical11file leaf now moved and verified; LAN
+      remains NO_MIGRATION; Creator inputs classified and kept.
+    new_admin_window:
+      status: PREPARED_NOT_AUTHENTICATED
+      hours: 20
+      window_id: codex-shared-admin20-cf0d902b-c488-4803-a420-2bb34fc4d374
+      contract: CODEX-LAN-CREATOR-SHARED-ADMIN-20H-v1
+      boot_id: 3c8f3e43-3605-4e44-af20-5cb401c0d869
+      client: /var/lib/linux-admin-window/codex20-20261008-v1/client.py
+      activation_command: /usr/bin/bash /home/alalapi/Temp/personal-control-hub/media-apps-storage-20261007/admin20-inputs/activate.sh
+      bundle_sha256: 036020ca83bc2b675563337cf31ee7e12120d6c3fab1916e605d0117ccbf02ab
+      payloads:
+        client.py: 7835694d845edcbe83e92186e9ee55bc3342e407ae2c7d4bb5d0cafebd49a33f
+        manifest.json: 9f33944573567f7d171fce1e1f0e7ec55c4874dc5459ae745b6d3634f7223caf
+        scoped_ops.py: b1ff8a1ebb88a3884d74b98e9bde85a4e4bfc3e69034661568ca6fe1f883dbde
+        server.py: 5b23fd75920616613eac5794cd9800accb9b1f28070cac46ff59c490fdfc86af
+      scope:
+      - LAN File Share
+      - creator_workbench
+      - media storage
+      validation: 7 pure boundary tests PASS; fixed tar payloads and official actual Electron
+        archive members/hashes verified; activation shell syntax PASS; actual root peer/status/expiry/negative
+        scope NOT_RUN until local user authentication
+      duration_rule: 72000seconds from root backend actual start, hard epoch and CLOCK_BOOTTIME;
+        no restart/renewal, reboot/revoke/expiry deny new requests
+      manual_action: User question shown with actual fixed command; password only local terminal;
+        no auth attempted
+  ownership_resolution: TASK-UI-01 in_progress is product progress, not a native Agent writer.
+    Identified associated Hub native task idle with latest user stop, no current screenshot
+    producer in CSP scripts/tests;11historical output files unchanged since2026-10-03. Root
+    fresh owner media-migration grant covers this non-repository generated output leaf. No
+    CSP source/UI/candidate/DB/runtime changes; source/candidate boundaries remain protected.
+    Old aliases and original validation bytes preserved; all source bytes and metadata rechecked
+    before removal.
