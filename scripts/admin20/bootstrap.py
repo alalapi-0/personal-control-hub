@@ -111,10 +111,11 @@ def main():
     grant = {'window_id': cfg['window_id'], 'boot_id': cfg['boot_id'],
              'machine_id': cfg['machine_id'], 'payloads': cfg['payloads']}
     put(root / 'grant.json', (json.dumps(grant, sort_keys=True) + '\n').encode(), 0o444)
-    # The backend rejects new effects at 72000s. The extra 900s runtime ceiling
-    # allows an already admitted bounded transaction to finish safely.
+    # Root's immutable epoch/boottime gate rejects new requests at 72000s,
+    # independently of the Agent. Do not attach a systemd runtime kill timer:
+    # a package transaction already admitted must be allowed to finish.
     command = ['/usr/bin/systemd-run', '--quiet', '--unit=' + cfg['unit'],
-               '--property=Type=exec', '--property=RuntimeMaxSec=72900',
+               '--property=Type=exec',
                '--property=TimeoutStopSec=240', '--property=KillMode=control-group',
                '--property=UMask=0077', '--property=Restart=no',
                '/usr/bin/python3.14', '-I', '-B', str(root / 'server.py')]

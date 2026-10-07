@@ -52,9 +52,9 @@ def installed():
     return result
 
 
-def call(argv, env, input_bytes=None):
+def call(argv, env, input_bytes=None, timeout=180):
     p = subprocess.run(argv, input=input_bytes, stdout=subprocess.PIPE,
-                       stderr=subprocess.PIPE, timeout=180, env=env)
+                       stderr=subprocess.PIPE, timeout=timeout, env=env)
     # Never include stdout/stderr in responses: this also covers credential operations.
     return p.returncode
 
@@ -100,7 +100,11 @@ def operate(api, state, manifest, request):
                 raise ValueError('FIXED_PACKAGE_BYTES_CHANGED')
             paths.append(str(p))
         state['packages_attempted'] = True; api.save(state); api.begin_transaction()
-        rc = call(['/usr/bin/dpkg', '--install', *paths], api.ENV)
+        # Never kill a dpkg transaction to satisfy the window's deadline or a
+        # generic subprocess timeout. Admission already requires 600s headroom;
+        # no next request is dispatched until this one finishes. The saved
+        # one-shot attempt forbids replay if a caller disconnects.
+        rc = call(['/usr/bin/dpkg', '--install', *paths], api.ENV, timeout=None)
         after = installed(); state['packages_result'] = {'exit': rc, 'packages': after}; api.save(state)
         return {'status': 'OK' if rc == 0 and all(after[n] == v + '|installed' for n, v in PACKAGES) else 'FAILED',
                 'exit': rc, 'packages': after, 'only_fixed_two_packages': True}

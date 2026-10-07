@@ -1863,8 +1863,10 @@ media_apps_storage_goal:
       prepared fixed20h LAN/Creator bundle and7boundary checks; root activation remains pending.
     scope_change: Owner returned media/app Goal to Codex and explicitly requests new20hours
       for LAN File Share and creator_workbench.
-    evidence_correction: Root confirmed prior Cursor Creator history/routes and Hub25media/reader
-      unit on current main ancestry; old window corrected ACTIVE->INACTIVE BOOT_CHANGED.
+    evidence_correction: Root confirmed Cursor Creator/Hub media results and corrected old
+      window BOOT_CHANGED; final unactivated candidate also repaired package expiry handling,
+      with8boundary checks PASS. Round18 counted once; current candidate repair is not a new
+      round.
     estimated_remaining_rounds: unknown; actual administrator authentication/root negative
       proof pending, no three comparable delivery samples
     estimate_confidence: unknown
@@ -1965,28 +1967,31 @@ media_apps_storage_goal:
     new_admin_window:
       status: PREPARED_NOT_AUTHENTICATED
       hours: 20
-      window_id: codex-shared-admin20-cf0d902b-c488-4803-a420-2bb34fc4d374
+      window_id: codex-shared-admin20-30416c1b-142b-47fc-b1cd-778b05317a57
       contract: CODEX-LAN-CREATOR-SHARED-ADMIN-20H-v1
       boot_id: 3c8f3e43-3605-4e44-af20-5cb401c0d869
       client: /var/lib/linux-admin-window/codex20-20261008-v1/client.py
       activation_command: /usr/bin/bash /home/alalapi/Temp/personal-control-hub/media-apps-storage-20261007/admin20-inputs/activate.sh
-      bundle_sha256: 036020ca83bc2b675563337cf31ee7e12120d6c3fab1916e605d0117ccbf02ab
+      bundle_sha256: 8388be27d67c2ec340523d061ff8ada444c37ff74aafa87e01d855aa25d2cd60
       payloads:
         client.py: 7835694d845edcbe83e92186e9ee55bc3342e407ae2c7d4bb5d0cafebd49a33f
-        manifest.json: 9f33944573567f7d171fce1e1f0e7ec55c4874dc5459ae745b6d3634f7223caf
-        scoped_ops.py: b1ff8a1ebb88a3884d74b98e9bde85a4e4bfc3e69034661568ca6fe1f883dbde
+        manifest.json: d4a423c00a34ab91174ad7dbb295913c81cca9b2b7d8cf978a4eeb8fd30c3f0e
+        scoped_ops.py: 16fd072e139cbd0b6721cfecc7820d283ca7822293615ba925378a2aff899dd1
         server.py: 5b23fd75920616613eac5794cd9800accb9b1f28070cac46ff59c490fdfc86af
       scope:
       - LAN File Share
       - creator_workbench
       - media storage
-      validation: 7 pure boundary tests PASS; fixed tar payloads and official actual Electron
-        archive members/hashes verified; activation shell syntax PASS; actual root peer/status/expiry/negative
-        scope NOT_RUN until local user authentication
+      validation: 8pure boundary tests PASS, including no killing inflight package transaction;
+        fixed payload hashes and shell syntax verified. Actual root peer/status/negative scope
+        still NOT_RUN before local authentication.
       duration_rule: 72000seconds from root backend actual start, hard epoch and CLOCK_BOOTTIME;
         no restart/renewal, reboot/revoke/expiry deny new requests
       manual_action: User question shown with actual fixed command; password only local terminal;
         no auth attempted
+      expiry_transaction_policy: Fixed72000second immutable epoch/boottime admission, no daemon
+        runtime kill timer and no dpkg kill timeout. After expiry only an already admitted
+        one-shot transaction may finish; no new requests or renewal.
   ownership_resolution: TASK-UI-01 in_progress is product progress, not a native Agent writer.
     Identified associated Hub native task idle with latest user stop, no current screenshot
     producer in CSP scripts/tests;11historical output files unchanged since2026-10-03. Root
@@ -1999,5 +2004,6 @@ media_apps_storage_goal:
     remote_main_verified: true
     method: Clean managed worktree from current remote main, exact7file owned unit only, normal
       HEAD:main push; original dirty source branch/index and foreign State retained
-    closure_record: Current owned State follows the verified source unit, its final remote
-      commit verified after normal push
+    closure_record: Final package deadline repair and its frozen bundle metadata are the current
+      following owned unit; exact remote verified after normal push.
+    prior_closure_commit: 17d2e5d3c6680d5b1fdfa1c97bf4fa0b944e7f3d

@@ -97,5 +97,11 @@ class Boundary(unittest.TestCase):
     def test_root_authentication_is_required_before_effects(self):
         with patch.object(bootstrap.os,'geteuid',return_value=1000):
             with self.assertRaisesRegex(ValueError,'ROOT_AUTHENTICATION_REQUIRED'):bootstrap.main()
+    def test_expiry_does_not_kill_inflight_package_transaction(self):
+        with patch.object(scoped.subprocess,'run') as run:
+            run.return_value.returncode=0
+            self.assertEqual(scoped.call(['/usr/bin/dpkg','--install','fixed.deb'],{},timeout=None),0)
+            self.assertIsNone(run.call_args.kwargs['timeout'])
+        self.assertNotIn('--property=RuntimeMaxSec=72900',(HERE/'bootstrap.py').read_text())
 
 if __name__=='__main__':unittest.main()

@@ -26,4 +26,4 @@
 
 Electron 字节已核对[官方校验表](https://github.com/electron/electron/releases/download/v44.6.0/SHASUMS256.txt)。项目采用 Electron 的[沙箱机制](https://www.electronjs.org/docs/latest/tutorial/sandbox)，实际应用启动仍须由原项目执行者验证。
 
-`python3 -B scripts/admin20/test_boundary.py` 验证实际组合后的 gate、所有新增操作的身份/期限/参数限制、范围外拒绝、凭据 CLI 阻断及 bootstrap 的哈希/别名/归档拒绝。不执行 root 操作；不能声称完成了 20 小时经过时间验收。认证后必须实际查询可信 status，再验证无副作用的范围外拒绝。范围不包括账号登录、手机/Mac 信任确认、浏览器扩展手动加载、未知未来版本、全局 VPN/DNS/路由、重新启动或业务发布。
+`python3 -B scripts/admin20/test_boundary.py` 验证实际组合后的 gate、所有新增操作的身份/期限/参数限制、范围外拒绝、凭据 CLI 阻断及 bootstrap 的哈希/别名/归档拒绝。包安装没有强杀超时，后端没有到期强杀定时器；72000秒后拒绝新请求，已开始的固定事务允许结束。不执行 root 操作；不能声称完成了 20 小时经过时间验收。认证后必须实际查询可信 status，再验证无副作用的范围外拒绝。范围不包括账号登录、手机/Mac 信任确认、浏览器扩展手动加载、未知未来版本、全局 VPN/DNS/路由、重新启动或业务发布。
