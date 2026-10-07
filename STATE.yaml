@@ -30,7 +30,7 @@ linux_visual_workbench:
   - HUB-LWB-4.1
   - HUB-LWB-4.3
   next_round: HUB-LWB-2.3
-  next_action: 远端 main 已核对为 3987f5869199b0f4d94c250d60e89a73c5d4f0de。下一步预检精确 SDK 授权提案与 20 小时窗口资格，再恢复 HUB-LWB-2.3。未获授权前不运行 metadata helper。媒体截图组仍不提交。
+  next_action: 请所有者一次确认候选 862215cc3e95df74310e2a913b233e5fd02ef63a0d77fa96a2dc255d8c63ef96 的 120 秒官方 SDK metadata 效果。20 小时窗口无合格后端，未开启。未获授权前不运行 metadata helper。媒体截图组仍不提交。
   baseline:
     host: lab-root
     date: '2026-10-03'
@@ -1369,7 +1369,13 @@ linux_visual_workbench:
     admin_window_request:
       hours: 20
       authority: owner specified 20hours for Cursor preflight/localTerminal workflow
-      status: NOT_OPENED_BACKEND_NOT_VERIFIED
+      status: NOT_OPENED_NO_QUALIFIED_BACKEND
+      checked_at: '2026-10-08T04:08:29+09:00'
+      boot_id: 8d760558-0593-42b7-aa5b-4c8ab37cfc4b
+      sudo_noninteractive: exit 0 with digest-spec warning on linux-codex-update; not a fixed-hour scoped window
+      legacy_tmux_status: exit 1 session absent or revoked; 16h arbitrary root shell is not a 20h backend
+      bootstrap_dir: /run/linux-agent-bootstrap mode 700 root:root unreadable
+      qualified_backend: absent; no open command issued
       scope: only necessary approved fixed administrator operations; currentSDKeffect
         isordinaryuser credentialboundary, notsudo
       requirements: existing linux-admin-window skill qualifiedbackend, trustedstatus,hardexpiry,revocation,crossTTY
