@@ -692,10 +692,20 @@ class DesignService:
         target = self.store.hub_root / relative
         if target in {self.store.path, self.store.lock_path}:
             raise ServiceError("ARTIFACT_UNAVAILABLE", status=404)
-        directory = os.open(self.store.hub_root, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+        open_root = self.store.hub_root
+        open_relative = relative
+        if relative in readonly_captures and target.is_symlink():
+            allowed = Path('/data/ProjectOutputs/personal-control-hub/linux-workbench') / relative.name
+            if Path(os.readlink(target)) != allowed or allowed.is_symlink() or not allowed.is_file():
+                raise ServiceError("ARTIFACT_UNAVAILABLE", status=404)
+            if allowed.stat().st_dev != Path('/data').stat().st_dev:
+                raise ServiceError("ARTIFACT_UNAVAILABLE", status=404)
+            open_root = allowed.parent
+            open_relative = Path(allowed.name)
+        directory = os.open(open_root, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0))
         descriptor: int | None = None
         try:
-            for part in relative.parts[:-1]:
+            for part in open_relative.parts[:-1]:
                 child = os.open(
                     part,
                     os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0),
@@ -703,7 +713,7 @@ class DesignService:
                 )
                 os.close(directory)
                 directory = child
-            descriptor = os.open(relative.name, READ_FLAGS, dir_fd=directory)
+            descriptor = os.open(open_relative.name, READ_FLAGS, dir_fd=directory)
         except OSError as exc:
             if descriptor is not None:
                 os.close(descriptor)

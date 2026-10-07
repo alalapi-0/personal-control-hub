@@ -38,6 +38,8 @@ PRIVATE = 'data/workbench/csp-css-trial'
 DOCS = {'docs/PROJECT_STATE.md':'afcd3027fcace6120c4c436af804fcc3594f6ed889f5364386bacd676c1c2b7e',
         'docs/NEXT_ACTIONS.md':'4a5cea91842a95695f1ed9a8752edd7e2cdd683a8190a13349121d7e36fdf5e8'}
 IMAGE = 'docs/reports/linux-workbench/csp-preview-desktop.jpg'
+IMAGE_OUTPUT = Path('/data/ProjectOutputs/personal-control-hub/linux-workbench/csp-preview-desktop.jpg')
+DATA_UUID = '98a6a740-bf5c-41b5-90fe-fd8e78fa5f55'
 FIELDS = {'contract','canonical_root','head','source_sha256','source_mode','source_identity',
           'docs_sha256','before_ref','expected_sha256','image_ref','registry_hash','outside_probe','config_identity'}
 
@@ -122,6 +124,25 @@ def prepare():
         'registration_sha256':sha((private/'registration.json').read_bytes()),'source_effects':0,'model_turns':0}
 
 
+def image_bytes_path():
+    legacy = HUB_ROOT / IMAGE
+    if not legacy.is_symlink():
+        return legacy
+    if Path(os.readlink(legacy)) != IMAGE_OUTPUT:
+        raise ServiceError('IMAGE_PATH_REJECTED', status=409)
+    data = Path('/data')
+    mount = json.loads(subprocess.check_output(
+        ['/usr/bin/findmnt', '--target', '/data', '--json', '--output', 'TARGET,FSTYPE,UUID,OPTIONS'], text=True))['filesystems'][0]
+    options = str(mount.get('options') or '')
+    if (data.is_symlink() or data.resolve() != data or mount.get('target') != '/data' or mount.get('fstype') != 'ext4'
+            or mount.get('uuid') != DATA_UUID or 'rw' not in options.split(',')):
+        raise ServiceError('IMAGE_DATA_DISK_UNAVAILABLE', status=409)
+    info = IMAGE_OUTPUT.lstat()
+    if IMAGE_OUTPUT.is_symlink() or not stat.S_ISREG(info.st_mode) or info.st_dev != data.stat().st_dev:
+        raise ServiceError('IMAGE_PATH_REJECTED', status=409)
+    return IMAGE_OUTPUT
+
+
 def read_file(path, *, mode=None):
     from .task_storage import components
     path = Path(path); components(path.parent)
@@ -178,7 +199,7 @@ def validate(grant, *, live=False, preparing_recovery=False):
         before,_=read_file(HUB_ROOT/t['before_ref']); expected_css(before)
         trial,_=read_file(TRIAL/'progress_ui.css',mode=0o644)
         if trial!=before:raise ServiceError('CSS_TRIAL_CONTENT_REJECTED')
-        image,_=read_file(HUB_ROOT/IMAGE)
+        image,_=read_file(image_bytes_path())
         if sha(image)!=grant['image_sha256']:raise ServiceError('IMAGE_VERSION_STALE',status=409)
         source_check(grant,preparing_recovery=preparing_recovery)
     return grant
