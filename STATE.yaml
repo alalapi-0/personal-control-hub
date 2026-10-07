@@ -30,7 +30,7 @@ linux_visual_workbench:
   - HUB-LWB-4.1
   - HUB-LWB-4.3
   next_round: HUB-LWB-2.3
-  next_action: 25 张截图已在 DATA 核对通过：文档路径都是指向该目录的精确符号链接，清单 v2 的 14 个哈希与读到的字节一致，INDEX 仍是文本，守卫未放宽。这不是视觉接受。120 秒样本不重试。M1/M2 未验收。
+  next_action: 25 张截图已在 DATA 核对通过，不是视觉接受。本机没有 SSH 配置、控制套接字或 ssh 进程，Mac 验收无法从这里发起。120 秒样本不重试。M1/M2 未验收。
   baseline:
     host: lab-root
     date: '2026-10-03'
