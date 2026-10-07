@@ -30,7 +30,7 @@ linux_visual_workbench:
   - HUB-LWB-4.1
   - HUB-LWB-4.3
   next_round: HUB-LWB-2.3
-  next_action: 候选 862215cc3e95df74310e2a913b233e5fd02ef63a0d77fa96a2dc255d8c63ef96 的一次 120 秒样本已执行，结果 PARTIAL_BLOCKED：退出 0，凭据身份未变，stderr 未确认无刷新失败，终端流未验证。不重试。媒体截图组仍不提交。M1/M2 未验收。同类阻塞先自行判断，无法判断则后置并继续。
+  next_action: 候选 862215cc3e95df74310e2a913b233e5fd02ef63a0d77fa96a2dc255d8c63ef96 的一次 120 秒样本已执行，结果 PARTIAL_BLOCKED，不重试。共用 20 小时窗口已核实 ACTIVE，到期 2026-10-09T00:26:13+09:00，不覆盖 SDK 凭据效果；/data 已挂载且 UUID 匹配，本任务无待执行 root 操作。媒体截图组仍不提交。M1/M2 未验收。
   baseline:
     host: lab-root
     date: '2026-10-03'
@@ -1370,13 +1370,17 @@ linux_visual_workbench:
     admin_window_request:
       hours: 20
       authority: owner specified 20hours for Cursor preflight/localTerminal workflow
-      status: NOT_OPENED_NO_QUALIFIED_BACKEND
-      checked_at: '2026-10-08T04:08:29+09:00'
+      status: ACTIVE_VERIFIED
+      checked_at: '2026-10-08T04:32:00+09:00'
+      window_id: cursor-shared-admin20-241668ad-9dd5-46dc-9f0d-5c356500b033
+      manifest_sha256: a7df750fb5f0a09b8e12075a0f7ba5352e263258b1d8031c07a15f9a17d1dd73
+      expires_at: '2026-10-09T00:26:13.602122+09:00'
+      remaining_seconds_at_check: 71584
       boot_id: 8d760558-0593-42b7-aa5b-4c8ab37cfc4b
       sudo_noninteractive: exit 0 with digest-spec warning on linux-codex-update; not a fixed-hour scoped window
       legacy_tmux_status: exit 1 session absent or revoked; 16h arbitrary root shell is not a 20h backend
       bootstrap_dir: /run/linux-agent-bootstrap mode 700 root:root unreadable
-      qualified_backend: absent; no open command issued
+      qualified_backend: cursor-shared-admin20 ACTIVE effective_uid 0 owner_uid 1000 boot 8d760558-0593-42b7-aa5b-4c8ab37cfc4b; SDK credential effect uncovered; /data already mounted uuid 98a6a740-bf5c-41b5-90fe-fd8e78fa5f55 rw; no root operation run
       scope: only necessary approved fixed administrator operations; currentSDKeffect
         isordinaryuser credentialboundary, notsudo
       requirements: existing linux-admin-window skill qualifiedbackend, trustedstatus,hardexpiry,revocation,crossTTY
