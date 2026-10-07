@@ -30,7 +30,7 @@ linux_visual_workbench:
   - HUB-LWB-4.1
   - HUB-LWB-4.3
   next_round: HUB-LWB-2.3
-  next_action: 候选 862215cc3e95df74310e2a913b233e5fd02ef63a0d77fa96a2dc255d8c63ef96 的一次 120 秒样本已执行，结果 PARTIAL_BLOCKED，不重试。共用 20 小时窗口已核实 ACTIVE，到期 2026-10-09T00:26:13+09:00，不覆盖 SDK 凭据效果；/data 已挂载且 UUID 匹配，本任务无待执行 root 操作。媒体截图组仍不提交。M1/M2 未验收。
+  next_action: 25 张截图已在 DATA 核对通过：文档路径都是指向该目录的精确符号链接，清单 v2 的 14 个哈希与读到的字节一致，INDEX 仍是文本，守卫未放宽。这不是视觉接受。120 秒样本不重试。M1/M2 未验收。
   baseline:
     host: lab-root
     date: '2026-10-03'
