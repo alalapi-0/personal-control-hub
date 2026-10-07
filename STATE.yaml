@@ -1808,16 +1808,18 @@ media_apps_storage_goal:
     by Hub25media handoff. LAN original transfer data/DB and other20hour-backend owner remain
     protected; current role/path classification must precede any output effects.
   pending:
-  - Final owned State/admin20 source delivery to main, preserving foreign Hub work.
-  - 'New shared20hour window for LAN File Share and creator_workbench: prepared fixed root
-    operations, one local terminal authentication required; old grant inactive after reboot.'
-  - 'Scope limits unchanged: account login, actual downloads and Creator business UI acceptance
-    are separate; Electron runtime root preparation is admitted for the new window but not
-    performed.'
-  - LAN transfer uploads/objects/parts/SQLite are original input/runtime data, NO_MIGRATION.
-    Games, originals, unmarked Downloads media, input icons/models/accounts/databases stay.
-  - Bounded entertainment inspection found0eligible titled film/TV directories in292directories
-    across8roots;3loose temporary downloads stay. No full-host completeness claim.
+  - Local terminal authentication of the prepared new20hour shared window; then trusted root
+    status, exact start/expiry and no-effect outside-scope rejection. No authentication or
+    privileged task effect performed.
+  - Native Goal still paused in actual get_goal; owner authorizes continued work, current
+    tools have no resume API. No duplicate scheduler or Goal created.
+  - Requested5application forms and recommendation table delivered. Accounts/actual downloads
+    NOT_RUN; no account material touched.
+  - Audited entertainment roots contained0eligible titled film/TV directories; loose temporary
+    media untouched. Full-host inventory is not claimed.
+  - 14project storage units accepted with applicable limits in accepted_previous_outputs.
+    LAN transfer inputs/DB and other project originals/models/games remain internal. Original
+    project business/UI acceptance is not inferred.
   withdrawn_candidate: WeChat output candidate fully withdrawn previously; original repository
     restored clean; no media was moved or business goal resumed.
   historical_evidence: /home/alalapi/Temp/personal-control-hub/media-apps-storage-20261007
@@ -1847,13 +1849,14 @@ media_apps_storage_goal:
   - scripts/admin20/scoped_ops.py
   - scripts/admin20/test_boundary.py
   - scripts/admin20/README.md
-  phase: DIRECT_SHARED_ADMIN20_PREPARATION
-  active_project: personal-control-hub owned admin20 source and media State only
+  phase: WAITING_LOCAL_ADMIN_AUTHENTICATION
+  active_project: LAN File Share and creator_workbench shared20hour capability; no business
+    Goal resumed
   progress:
-    deduplicated_rounds: 17
-    last_closed_round: DIRECT_CREATOR_OUTPUT_RELOCATION
+    deduplicated_rounds: 18
+    last_closed_round: DIRECT_CODEX_RESUME_MEDIA_AND_ADMIN20
     current_round_key: DIRECT_CODEX_RESUME_MEDIA_AND_ADMIN20
-    current_round_closed: false
+    current_round_closed: true
     completion_rate: unknown; full denominator not yet established
     remaining_rate: unknown; pending items remain in scope
     execution_change: Root moved CSP11files with full hash/metadata/legacy write/read verification;
@@ -1862,8 +1865,9 @@ media_apps_storage_goal:
       for LAN File Share and creator_workbench.
     evidence_correction: Root confirmed prior Cursor Creator history/routes and Hub25media/reader
       unit on current main ancestry; old window corrected ACTIVE->INACTIVE BOOT_CHANGED.
-    estimated_remaining_rounds: unknown
-    estimate_confidence: unknown; heterogeneous pending boundaries
+    estimated_remaining_rounds: unknown; actual administrator authentication/root negative
+      proof pending, no three comparable delivery samples
+    estimate_confidence: unknown
     native_goal_status: paused in actual native get_goal; human explicitly resumes authorization,
       no supported resume API exposed; Codex executing current user turn without a duplicate
       scheduler.
@@ -1874,15 +1878,17 @@ media_apps_storage_goal:
       reason: missing installation authentication and disk/source owner decisions
       telemetry_coverage: current native Goal actual snapshot, no cost estimate
       cooldown: 75000 tokens or30 active minutes plus eligible trigger; milestone P1 now accepted
-    previous_goal_turn_classification: Partial existing Creator execution round closed once
-      at human handoff; document/status-only work is not a new implementation round.
+    previous_goal_turn_classification: One Root execution/validation/main delivery round closed
+      once; user clarification and credential question/tool calls not counted as new rounds.
     handoff_blocked_turns: 0
     handoff_blocker: Bounded media custody resolved; actual new administrator authentication
       remains.
     accepted_project_storage_units: 14
-    closed_at: '2026-10-07T18:15:11.608108+00:00'
-  next_action: Normal main delivery of owned State/table/admin20 source; then human local
-    terminal authentication and actual trusted root status/negative-scope verification.
+    closed_at: '2026-10-07T21:04:08.419545+00:00'
+  next_action: User runs the prepared local terminal command once; Root then verifies actual
+    trusted status/72000second deadline and harmless outside-scope rejection, records actual
+    window facts. Native Goal persistence still needs supported user-side resume; no exposed
+    resume API.
   handoff_permission: Human explicitly authorized handoff requests then transferred all remaining
     media Goal execution to Cursor; exact Creator and Hub limited capture/path windows acknowledged
     in their State. No broad source ownership transfer.
@@ -1894,7 +1900,9 @@ media_apps_storage_goal:
     risk_lane: DIRECT_document_only
     mode_request: native /goal plus built-in /loop in same chat; real activation evidence
       required
-    codex_native_goal_status: paused confirmed by get_goal; no implementation resumed
+    codex_native_goal_status: Actual get_goal paused; human resumed execution authorization
+      and Root performed current media/admin preparation turn. Exposed native tools have no
+      resume API; no duplicate Goal created.
     source_candidate:
       project: creator_workbench
       base_main: 6c8c8d41bfe6a7310abe32490148cb920ebdd283
@@ -1947,8 +1955,9 @@ media_apps_storage_goal:
       plus required dependencies and normally delivers each repository main with exactremoteSHA;
       initial unverified candidate must first be repaired/validated; no broad dirty staging,
       force, credentials or binary data upload.
-    current_document_delivery: local only; no source commit/push or main integration in Codex
-      handoff turn
+    current_document_delivery: Owned media State, app table and5admin20 files delivered normally
+      to GitHub main 1f542d0376c0b8618100c521ff0982ccf4b87646; exact ls-remote match. Closure
+      State is a following owned unit.
     execution_here: Human returns media Goal to Codex; Cursor media loop was stopped. Retain
       Cursor completed units, revalidate only changed/uncertain remaining boundaries.
     remaining_discovery_correction: CSP historical11file leaf now moved and verified; LAN
@@ -1985,3 +1994,10 @@ media_apps_storage_goal:
     CSP source/UI/candidate/DB/runtime changes; source/candidate boundaries remain protected.
     Old aliases and original validation bytes preserved; all source bytes and metadata rechecked
     before removal.
+  main_delivery:
+    source_commit: 1f542d0376c0b8618100c521ff0982ccf4b87646
+    remote_main_verified: true
+    method: Clean managed worktree from current remote main, exact7file owned unit only, normal
+      HEAD:main push; original dirty source branch/index and foreign State retained
+    closure_record: Current owned State follows the verified source unit, its final remote
+      commit verified after normal push
