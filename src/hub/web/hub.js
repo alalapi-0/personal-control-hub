@@ -1,6 +1,6 @@
 import {el, button, api, notify, navigate, validRefreshCommand, connectionState, ownerLogin, ownerLogout} from './common.js';
 import {renderDesigns} from './designs.js';
-import {attention, freshness, refreshable, projectFacts, projectTasks, projectSummary, loadProjectDirectory} from './connection_view.mjs';
+import {attention, freshness, refreshable, projectFacts, projectTasks, projectSummary, loadProjectDirectory, loadSyncStatus, coreGapSummary} from './connection_view.mjs';
 
 const main = document.querySelector('#main');
 const connection = document.querySelector('#connection');
@@ -50,7 +50,7 @@ async function updateConnection() {
 }
 const statuses = {active:'进行中',paused:'已暂停',blocked:'受阻',complete:'已完成',unknown:'来源未提供状态'};
 const types = {internal_control_plane:'管理',governance_program:'治理',code:'开发',creative:'创作',document:'文档'};
-let generation=0, lastProjects=[], pendingRefresh=null, projectDirectoryLoaded=false;
+let generation=0, lastProjects=[], pendingRefresh=null, projectDirectoryLoaded=false, syncStatus=null, syncStatusError=null;
 const projectNames=new Map();
 try {pendingRefresh=validRefreshCommand(JSON.parse(localStorage.getItem('hub:refresh-pending')||'null'));} catch {}
 function time(value){if(!value)return '尚未读取';const d=new Date(value);return Number.isNaN(d.valueOf())?'时间未提供':d.toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}
@@ -83,20 +83,22 @@ function operationalSourceNotice(project){
     diagnostics.length?el('p',{className:'warning'},`另有 ${diagnostics.length} 条来源诊断；完整记录见页面底部诊断信息。`):null,
   );
 }
-function failure(error){const code=error.code||error.message;const map={PROJECT_DIRECTORY_INCONSISTENT:'项目目录在读取期间发生变化或分页不完整。请重新读取完整目录。',REFRESH_AUTHORITY_UNAVAILABLE:'项目来源规则已变化，请先核对接入记录。原快照已保留。',REFRESH_HEAD_CONFLICT:'刷新期间其他更新已完成。请重新读取后再刷新。',SESSION_REQUIRED:'本地会话已失效，请重试。',REFRESH_REQUEST_CONFLICT:'该刷新请求与已保存的记录冲突，请核对原请求。'};return map[code]||'暂时无法读取或保存。已保留原有数据，请重试。';}
+function failure(error){const code=error.code||error.message;const map={SYNC_SCOPE_UNAVAILABLE:'固定刷新范围尚未配置或不可读取，请核对接入范围后再试。',SYNC_AUTHORITY_CHANGED:'来源规则在读取期间发生变化，请重新核对目录。',SYNC_HEAD_CHANGED:'其他刷新刚刚完成，请重新核对目录。',SYNC_STATUS_INCONSISTENT:'刷新范围或统计版本不一致，请重新读取完整目录后再刷新。',PROJECT_DIRECTORY_INCONSISTENT:'项目目录在读取期间发生变化或分页不完整。请重新读取完整目录。',REFRESH_AUTHORITY_UNAVAILABLE:'项目来源规则已变化，请先核对接入记录。原快照已保留。',REFRESH_HEAD_CONFLICT:'刷新期间其他更新已完成。请重新读取后再刷新。',SESSION_REQUIRED:'本地会话已失效，请重试。',REFRESH_REQUEST_CONFLICT:'该刷新请求与已保存的记录冲突，请核对原请求。'};return map[code]||'暂时无法读取或保存。已保留原有数据，请重试。';}
 function savePending(value){pendingRefresh=value;try{if(value)localStorage.setItem('hub:refresh-pending',JSON.stringify(value));else localStorage.removeItem('hub:refresh-pending');}catch{notify('浏览器无法保存恢复记录，请保持当前页面打开。','warning');}}
 async function refreshProjects(ids,control){
   if(!ids.length&&!pendingRefresh){notify('当前没有可读取的项目。');return;}
-  const command=pendingRefresh||{request_id:crypto.randomUUID(),project_ids:ids,expected_head:lastProjects[0]?.provenance.ledger_head||{sequence:0,hash:'0'.repeat(64)}};
+  if(!syncStatus||!(pendingRefresh?.project_ids||ids).every(id=>syncStatus.eligible_project_ids.includes(id))){notify('刷新范围暂不可用，请重新读取目录后再试。','warning');return;}
+  const command=pendingRefresh||{request_id:crypto.randomUUID(),project_ids:ids,expected_head:syncStatus.head||{sequence:0,hash:'0'.repeat(64)}};
   if(!command.expected_head){notify('尚未取得来源版本，请重新读取列表。','warning');return;}
-  savePending(command);control.disabled=true;const label=control.textContent;control.textContent='正在刷新…';
+  if(!pendingRefresh)savePending(command);control.disabled=true;const label=control.textContent;control.textContent='正在刷新…';
   notify(`正在读取 ${command.project_ids.length} 个项目的允许来源…`);
   try{
     const result=await api('/api/refresh',command);
-    savePending(null);
     const rows=Object.values(result.projection?.projects||{}).filter(p=>p.latest_attempt?.request_id===command.request_id);
     const failed=rows.filter(p=>p.latest_attempt?.success===false).length;
-    notify(failed?`刷新完成，${failed} 项未能更新，保留上次成功快照。`:`已完成 ${command.project_ids.length} 项刷新。`,failed?'warning':'success');
+    const complete=rows.length===command.project_ids.length&&result.request?.status==='FINISHED';
+    if(complete)savePending(null);
+    notify(!complete?'刷新尚未覆盖原请求全部项目，原请求已保留，可继续重试。':failed?`刷新结束，${failed} 项读取失败；缺失值保留未知，已有成功记录保留为历史。`:`已完成 ${command.project_ids.length} 项刷新。`,!complete||failed?'warning':'success');
     await route(false);
   }catch(error){
     // Keep uncertain commands byte-for-byte. A known noncommit conflict is safe
@@ -107,7 +109,33 @@ async function refreshProjects(ids,control){
     if(error.code==='REFRESH_HEAD_CONFLICT'&&error.outcome==='NOT_COMMITTED')await route(false);
   }finally{if(control.isConnected){control.disabled=false;control.textContent=label;}}
 }
-function refreshButton(projects){let b=button(pendingRefresh?'重试原刷新':projects.length===1?'刷新此项目':'刷新全部',()=>refreshProjects(projects.filter(refreshable).map(p=>p.project_id),b));b.disabled=!pendingRefresh&&!projects.some(refreshable);return b;}
+async function syncFeedback(directory,token){
+  let status=null,error=null;
+  try{status=await loadSyncStatus(api,directory);}catch(problem){error=problem;}
+  if(token===generation){syncStatus=status;syncStatusError=error;}
+}
+function refreshButton(projects,full=false){
+  const ids=full?(syncStatus?.eligible_project_ids||[]):projects.filter(p=>refreshable(p)&&syncStatus?.eligible_project_ids.includes(p.project_id)).map(p=>p.project_id);
+  const label=pendingRefresh?'重试原刷新':full?`刷新全部符合资格项目（${syncStatus?.counts.eligible??'未知'} 项）`:'刷新此项目';
+  const b=button(label,()=>refreshProjects(ids,b));
+  b.disabled=!syncStatus||(!full&&ids.length!==1)||(pendingRefresh?!pendingRefresh.project_ids.every(id=>syncStatus.eligible_project_ids.includes(id)):ids.length===0);
+  return b;
+}
+function syncOverview(){
+  if(!syncStatus)return el('section',{className:'panel stack','aria-label':'刷新范围'},
+    el('p',{role:'status',className:'warning'},'刷新范围与统计暂不可用。新的全量或单项目刷新已停用；项目来源仍可查看。'),
+    el('p',{className:'caption'},syncStatusError?failure(syncStatusError):'等待核对完整目录。'),button('重新核对范围',()=>route(false)));
+  const c=syncStatus.counts,last=syncStatus.last_request;
+  return el('section',{className:'panel stack','aria-label':'刷新范围'},el('h2',{},'项目来源同步'),
+    el('p',{},`固定范围 ${syncStatus.scope_total} 项 · 已登记 ${c.registered} 项 · 符合刷新资格 ${c.eligible} 项 · 排除条目 ${c.excluded} 项 · 固定范围内无资格 ${c.ineligible} 项`),
+    el('p',{},`完整 ${c.complete} · 不完整 ${c.partial} · 读取失败 ${c.failed} · 过期 ${c.stale} · 尚未读取 ${c.unread}`),
+    el('p',{className:'caption'},'统计覆盖固定范围全部项目，不随搜索或筛选变化。刷新只读取符合资格项目的允许来源，不启动 Agent、测试或 GPU 工作。未登记项目数量未知；此处只核对已登记范围。'),
+    last?el('p',{className:last.failed?'warning':'caption'},`最近批次记录：已处理 ${last.completed} · 剩余 ${last.remaining} · 失败 ${last.failed}。${last.authority_drift?'来源规则已变化；':''}历史批次不代表当前来源已更新。`):el('p',{className:'caption'},'尚无刷新批次记录。'),
+    pendingRefresh?el('p',{className:'warning'},pendingRefresh.project_ids.every(id=>syncStatus.eligible_project_ids.includes(id))?'已保存原刷新请求，可按原请求重试；不会扩大范围。':'已保存的原刷新请求包含当前无资格项目，重试已停用。原请求完整保留，请先核对资格。'):null,
+    Object.keys(syncStatus.core_field_gaps).length?el('p',{className:'caption'},'当前字段缺口：'+coreGapSummary(syncStatus)):null,
+    Object.keys(syncStatus.failure_codes).length?diagnostic(syncStatus.failure_codes,'查看批次失败原因'):null,
+    c.excluded?el('details',{},el('summary',{},'查看排除项及原因'),el('ul',{},...syncStatus.excluded.map(row=>el('li',{},`${projectNames.get(row.project_id)||row.project_id}：${({missing_registration:'缺少当前登记',removed_local:'已从本地移除',removed_local_no_probe:'已从本地移除，禁止探测',disabled:'接入已停用',summary_disabled:'汇总已停用',connection_read_disabled:'当前来源读取未获允许',legacy_noncurrent_root:'历史入口，不属于当前范围'})[row.reason]||row.reason}`)))):null);
+}
 function summaryView(project,compact=false){
   const summary=projectSummary(project);
   const shorten=text=>compact && text.length>140 ? text.slice(0,140)+'…（详情中查看完整内容）' : text;
@@ -155,7 +183,8 @@ async function projectTaskPanel(project,token){
   return panel;
 }
 async function projectsPage(token){
-  const data=await loadProjectDirectory(api);if(token!==generation)return;lastProjects=data.projects;
+  const data=await loadProjectDirectory(api);if(token!==generation)return;
+  await syncFeedback(data,token);if(token!==generation)return;lastProjects=data.projects;
   projectNames.clear();
   for(const project of lastProjects)projectNames.set(project.project_id,project.name);
   projectDirectoryLoaded=true;
@@ -163,7 +192,7 @@ async function projectsPage(token){
   const fresh=el('select',{id:'fresh-filter','aria-label':'来源筛选'},el('option',{value:''},'全部来源'),el('option',{value:'attention'},'需要关注'),el('option',{value:'fresh'},'已更新'));
   function filter(){const q=search.value.trim().toLocaleLowerCase();const rows=lastProjects.filter(p=>(!q||`${p.name} ${p.project_id}`.toLocaleLowerCase().includes(q))&&(!status.value||p.business.normalized_status===status.value)&&(!fresh.value||(fresh.value==='attention'?attention(p):p.freshness.state==='fresh')));count.textContent=`${rows.length} 个项目 · ${rows.filter(attention).length} 项来源需关注`;list.replaceChildren(...(rows.length?rows.map(projectRow):[el('div',{className:'empty'},el('h2',{},'没有匹配的项目'),el('p',{className:'muted'},'试试其他名称或清除筛选。'),button('清除筛选',()=>{search.value='';status.value='';fresh.value='';filter();}))]));}
   search.addEventListener('input',filter);status.addEventListener('change',filter);fresh.addEventListener('change',filter);
-  main.replaceChildren(el('section',{className:'stack'},el('h1',{},'项目'),count,el('div',{className:'filters'},el('label',{className:'field search',htmlFor:'search-projects'},el('span',{className:'caption'},'搜索'),search),el('label',{className:'field',htmlFor:'status-filter'},el('span',{className:'caption'},'项目状态'),status),refreshButton(lastProjects)),el('div',{className:'row'},el('label',{className:'field',htmlFor:'fresh-filter'},el('span',{className:'caption'},'来源筛选'),fresh)),list));filter();
+  main.replaceChildren(el('section',{className:'stack'},el('h1',{},'项目'),syncOverview(),count,el('div',{className:'filters'},el('label',{className:'field search',htmlFor:'search-projects'},el('span',{className:'caption'},'搜索'),search),el('label',{className:'field',htmlFor:'status-filter'},el('span',{className:'caption'},'项目状态'),status),refreshButton(lastProjects,true)),el('div',{className:'row'},el('label',{className:'field',htmlFor:'fresh-filter'},el('span',{className:'caption'},'来源筛选'),fresh)),list));filter();
 }
 async function projectDetail(id,token){
   const p=await api(`/api/projects/${encodeURIComponent(id)}`);if(token!==generation)return;
@@ -175,7 +204,12 @@ async function projectDetail(id,token){
     for(const project of directory.projects)projectNames.set(project.project_id,project.name);
     projectDirectoryLoaded=true;
   }
-  // Single detail supplies the exact ledger head used by its refresh command.
+  try{
+    const scopeDirectory=await loadProjectDirectory(api);if(token!==generation)return;
+    await syncFeedback(scopeDirectory,token);
+  }catch(error){if(token===generation){syncStatus=null;syncStatusError=error;}}
+  if(token!==generation)return;
+  if(syncStatus&&JSON.stringify(syncStatus.head)!==JSON.stringify(p.provenance.ledger_head)){syncStatus=null;syncStatusError={code:'SYNC_STATUS_INCONSISTENT'};}
   lastProjects=[p];
   const fields=factsView(p),taskPanel=await projectTaskPanel(p,token);if(token!==generation)return;
   const sources=el('section',{className:'panel stack'},el('h2',{},'状态来源'),el('p',{className:'caption'},`最近观察：${time(p.source.observed_at)}`),el('p',{className:attention(p)?'warning':'success'},freshness(p)));
@@ -189,7 +223,7 @@ async function projectDetail(id,token){
   const designCount=p.design.references.filter(x=>x.kind==='candidate').length;
   const design=el('section',{className:'panel stack'},el('h2',{},'界面设计'),el('p',{className:'muted'},designCount?`${designCount} 个设计版本可查看`:'尚未登记设计候选'),el('a',{className:'button',href:`#designs/${encodeURIComponent(id)}`},designCount?'进入设计审核':'查看设计入口'));
   const exception=p.declared.hub_connection_exception;
-  main.replaceChildren(el('section',{className:'stack'},el('a',{href:'#projects'},'← 所有项目'),el('h1',{},p.name),el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},refreshButton([p]),!refreshable(p)?el('p',{className:'caption'},'按当前读取范围停用刷新。'):null),exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,el('section',{className:'panel stack'},el('h2',{},'项目权威状态'),summaryView(p),el('p',{className:'caption'},'仅显示项目登记来源明确提供的事实。缺值和过期记录保留为未知。'),fields),taskPanel,el('a',{className:'button',href:'#host'},'查看 Linux 主机观测'),el('div',{className:'details-grid'},el('div',{className:'stack'},sources,relations),design),diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields,quality:p.business.quality})));
+  main.replaceChildren(el('section',{className:'stack'},el('a',{href:'#projects'},'← 所有项目'),el('h1',{},p.name),el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},refreshButton([p]),(!refreshable(p)||!syncStatus?.eligible_project_ids.includes(p.project_id))?el('p',{className:'caption'},syncStatus?'此项目不在符合资格的刷新范围内。':'刷新范围暂不可用，请回到项目列表重新核对。'):null),exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,el('section',{className:'panel stack'},el('h2',{},'项目权威状态'),summaryView(p),el('p',{className:'caption'},'仅显示项目登记来源明确提供的事实。缺值和过期记录保留为未知。'),fields),taskPanel,el('a',{className:'button',href:'#host'},'查看 Linux 主机观测'),el('div',{className:'details-grid'},el('div',{className:'stack'},sources,relations),design),diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields,quality:p.business.quality})));
 }
 async function route(focus=true){
   const token=++generation;const parts=location.hash.slice(1).split('/').map(p=>{try{return decodeURIComponent(p);}catch{return '';}});const kind=parts[0]||'projects';

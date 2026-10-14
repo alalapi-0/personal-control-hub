@@ -500,6 +500,7 @@ class ProjectService:
         declared_view = {key: copy.deepcopy(declared.get(key)) for key in (
             "enabled", "summary_enabled", "project_type", "priority_source",
             "current_state_status", "access_profile")}
+        declared_view["summary_enabled"] = declared.get("summary_enabled", declared.get("enabled")) is True
         declared_view["connection_read_allowed"] = connection_read_allowed
         declared_view["hub_connection_exception"] = copy.deepcopy(
             declared.get("hub_connection_exception"))
@@ -508,7 +509,7 @@ class ProjectService:
         source_record = copy.deepcopy(latest)
         source = {
             "entrypoints": (copy.deepcopy(declared.get("current_state_paths", []))
-                            if declared.get("summary_enabled") and
+                            if declared_view["summary_enabled"] and
                             row["local_presence"] != "removed_local" else []),
             "availability": latest["disposition"] if latest else row["freshness"]["state"],
             "role": (latest["sources"][0]["role"] if latest and latest["sources"] else None),
@@ -638,6 +639,72 @@ class ProjectService:
             if row["project_id"] == project_id:
                 return row
         raise _error("PROJECT_NOT_FOUND", status=404, details={"project_id": project_id})
+
+    def sync_status(self) -> dict:
+        """Full finite-scope counts, without probing roots or refreshing sources."""
+        from hub.connection_sync import scope_plan
+
+        resolver = self._resolver()
+        try:
+            scope = scope_plan(self.root, resolver)
+        except (RecordError, OSError, TypeError, ValueError, KeyError) as exc:
+            raise _error("SYNC_SCOPE_UNAVAILABLE", status=503) from exc
+        rows, snapshot = self._all(None)
+        if snapshot["authority"] != resolver.authority:
+            raise _error("SYNC_AUTHORITY_CHANGED", status=409, retryable=True)
+        by_id = {row["project_id"]: row for row in rows}
+        eligible = set(scope["eligible_project_ids"])
+        counts = {"registered": scope["registered_count"], "scope": scope["scope_total"],
+                  "eligible": len(eligible), "excluded": len(scope["excluded"]),
+                  "ineligible": scope["scope_total"] - len(eligible),
+                  "complete": 0, "partial": 0, "failed": 0, "stale": 0, "unread": 0}
+        failure_codes, core_field_gaps = {}, {}
+        for project_id in scope["project_ids"]:
+            row = by_id.get(project_id)
+            latest = row["operational"].get("latest_attempt") if row else None
+            if project_id not in eligible or latest is None:
+                category = "unread"
+            elif latest.get("success") is False:
+                category = "failed"
+                for error in latest.get("errors", []):
+                    code = error["code"]
+                    failure_codes[code] = failure_codes.get(code, 0) + 1
+            elif row["freshness"]["state"] != "fresh":
+                category = "stale"
+            else:
+                category = ("complete" if row["business"]["quality"]["core_complete"]
+                            else "partial")
+            counts[category] += 1
+            if row:
+                for field in row["business"]["quality"]["core_missing"]:
+                    core_field_gaps[field] = core_field_gaps.get(field, 0) + 1
+        ledger = self._read_ledger()
+        last_request = None
+        if ledger:
+            history = ledger.history(current_authority=resolver.authority)
+            if history["head"] != snapshot["ledger_head"]:
+                raise _error("SYNC_HEAD_CHANGED", status=409, retryable=True)
+            requests = [request for request in history["requests"]
+                        if set(request["project_ids"]) == eligible]
+            if requests:
+                request = requests[-1]
+                failed = sum(not result["success"] for result in history["results"]
+                             if result["request_id"] == request["request_id"])
+                last_request = {"request_id": request["request_id"],
+                                "status": request["status"],
+                                "completed": len(request["completed_project_ids"]),
+                                "remaining": len(request["remaining_project_ids"]),
+                                "failed": failed,
+                                "authority_drift": request["authority_drift"]}
+        return {"schema_version": "1.0", "scope_id": scope["scope_id"],
+                "scope_total": scope["scope_total"], "head": snapshot["ledger_head"],
+                "counts": counts, "eligible_project_ids": scope["eligible_project_ids"],
+                "excluded": scope["excluded"],
+                "discovery": {"mode": "registered_scope_only",
+                              "registered_candidates": scope["scope_total"],
+                              "unregistered_count": None},
+                "failure_codes": failure_codes, "core_field_gaps": core_field_gaps,
+                "last_request": last_request}
 
     def _refresh_receipt(self, request_id: str) -> tuple[str, dict[str, Any]]:
         try:

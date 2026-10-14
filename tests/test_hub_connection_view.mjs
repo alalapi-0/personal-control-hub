@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {attention, freshness, refreshable, projectFacts, projectTasks, projectSummary, loadProjectDirectory} from '../src/hub/web/connection_view.mjs';
+import {attention, freshness, refreshable, projectFacts, projectTasks, projectSummary, loadProjectDirectory, validateSyncStatus, loadSyncStatus, coreGapSummary} from '../src/hub/web/connection_view.mjs';
 
 function project(overrides = {}) {
   return {
@@ -329,4 +329,104 @@ test('null heads cannot hide ledger creation, missing row heads or malformed pag
     }),error=>error.code==='PROJECT_DIRECTORY_INCONSISTENT');
     assert.equal(calls,2);
   }
+});
+
+
+function syncFixture(total=43,scope=39,head=directoryHead){
+  const directory=directoryPage(total,0);
+  directory.projects=Array.from({length:total},(_,i)=>({project_id:'p'+i,
+    provenance:{ledger_head:head},declared:{connection_read_allowed:i<scope,summary_enabled:true},freshness:{state:'fresh'}}));
+  directory.head=head;
+  const status={schema_version:'1.0',scope_id:'frozen-test-scope',scope_total:scope,head,
+    counts:{registered:total,scope,eligible:scope,excluded:total-scope,ineligible:0,
+      complete:0,partial:scope,failed:0,stale:0,unread:0},
+    eligible_project_ids:directory.projects.slice(0,scope).map(p=>p.project_id),
+    excluded:directory.projects.slice(scope).map(p=>({project_id:p.project_id,reason:'legacy excluded'})),
+    discovery:{mode:'registered_scope_only',registered_candidates:scope,unregistered_count:null},
+    last_request:null,failure_codes:{},core_field_gaps:{'current_work.phase':scope}};
+  return {directory,status};
+}
+
+test('sync counters preserve frozen scope across a complete directory larger than 100',async()=>{
+  const {directory,status}=syncFixture(243,239);
+  let calls=0;
+  const result=await loadSyncStatus(async url=>{calls++;assert.equal(url,'/api/sync-status');return status;},directory);
+  assert.equal(calls,1);assert.equal(result.scope_total,239);assert.equal(result.counts.registered,243);
+  assert.equal(result.eligible_project_ids.length,239);
+  assert.equal(coreGapSummary(result),'项目阶段 239 项');
+  // A search result or first page cannot substitute for the complete directory.
+  assert.throws(()=>validateSyncStatus({...directory,projects:directory.projects.slice(0,100)},status),{code:'SYNC_STATUS_INCONSISTENT'});
+});
+
+test('zero scope and explicit null genesis heads remain real known zero values',()=>{
+  for(const total of [0,4]){
+    const {directory,status}=syncFixture(total,0,null);
+    assert.equal(validateSyncStatus(directory,status).scope_total,0);
+    assert.equal(status.counts.partial,0);assert.equal(status.discovery.unregistered_count,null);
+  }
+});
+
+test('scope withholding preserves denominator and includes missing registrations as unread',()=>{
+  const {directory,status}=syncFixture();
+  status.eligible_project_ids.pop();status.counts.eligible--;status.counts.ineligible++;
+  status.counts.partial--;status.counts.unread++;
+  status.excluded.push({project_id:'missing-registration',reason:'current registered identity missing'});status.counts.excluded++;
+  assert.equal(validateSyncStatus(directory,status).scope_total,39);
+  assert.equal(status.counts.eligible,38);assert.equal(status.counts.excluded,5);
+});
+
+test('missing, malformed, mixed-head and permission-conflicting sync data never reduces scope',()=>{
+  const changes=[
+    (d,s)=>delete s.head,(d,s)=>s.head=null,(d,s)=>s.head={...s.head,hash:'d'.repeat(64)},
+    (d,s)=>delete s.counts,(d,s)=>delete s.counts.unread,(d,s)=>s.counts.partial--,
+    (d,s)=>delete d.projects.at(-1).provenance.ledger_head,
+    (d,s)=>d.projects.at(-1).project_id='',
+    (d,s)=>s.scope_total=38,(d,s)=>s.counts.registered--,(d,s)=>s.counts.ineligible++,
+    (d,s)=>s.eligible_project_ids.pop(),(d,s)=>s.eligible_project_ids[1]=s.eligible_project_ids[0],
+    (d,s)=>s.eligible_project_ids[0]='missing',(d,s)=>d.projects[0].declared.connection_read_allowed=false,
+    (d,s)=>d.projects[0].freshness.local_presence='removed_local',(d,s)=>s.excluded[0].project_id=s.eligible_project_ids[0],
+    (d,s)=>s.discovery.unregistered_count=0,(d,s)=>delete s.core_field_gaps,(d,s)=>s.failure_codes={READ_FAILED:-1},
+    (d,s)=>s.last_request={request_id:'old',status:'FINISHED',completed:39,remaining:0,failed:40,authority_drift:false},
+  ];
+  for(const change of changes){
+    const {directory,status}=syncFixture();change(directory,status);
+    assert.throws(()=>validateSyncStatus(directory,status),{code:'SYNC_STATUS_INCONSISTENT'});
+  }
+});
+
+test('unavailable sync endpoint propagates its real error instead of deriving totals',async()=>{
+  const {directory}=syncFixture();
+  const error=Object.assign(new Error('scope missing'),{code:'SYNC_SCOPE_UNAVAILABLE'});
+  await assert.rejects(loadSyncStatus(async()=>{throw error;},directory),problem=>problem===error);
+  assert.throws(()=>validateSyncStatus(directory,undefined),{code:'SYNC_STATUS_INCONSISTENT'});
+});
+
+test('historical full-scope batch and failure details remain distinct from present counts',()=>{
+  const {directory,status}=syncFixture();
+  status.last_request={request_id:'historical-full-scope',status:'FINISHED',completed:39,remaining:0,failed:2,authority_drift:true};
+  status.failure_codes={SOURCE_INVALID:2};status.counts.failed=2;status.counts.partial-=2;
+  const result=validateSyncStatus(directory,status);
+  assert.equal(result.last_request.authority_drift,true);assert.equal(result.last_request.failed,2);
+  assert.equal(result.counts.complete,0);assert.equal(result.counts.failed,2);
+  assert.equal(result.failure_codes.SOURCE_INVALID,2);
+});
+
+
+test('sync scope remains exact after a directory traversal exceeding 100 pages',async()=>{
+  const {directory,status}=syncFixture(10001,9997);
+  let calls=0;
+  const traversed=await loadProjectDirectory(async url=>{
+    calls++;const offset=Number(new URL(url,'http://fixture').searchParams.get('offset'));
+    return {head:directory.head,total:directory.total,limit:100,offset,projects:directory.projects.slice(offset,offset+100)};
+  });
+  assert.equal(calls,101);
+  assert.equal(validateSyncStatus(traversed,status).scope_total,9997);
+});
+
+test('alternative core facts and unavailable observations retain distinct readable gap names',()=>{
+  const text=coreGapSummary({core_field_gaps:{'current_work.phase|current_work.objective':17,
+    'current_work.next_action|blockers':18,'source.current_observation':1,
+    'declared.connection_read_allowed':2,'current_work.status':19}});
+  for(const label of ['项目阶段或目标 17 项','下一步或阻塞说明 18 项','当前来源观察 1 项','来源读取资格 2 项','工作状态 19 项'])assert.ok(text.includes(label));
+  assert.equal(text.includes('其他核心字段'),false);
 });

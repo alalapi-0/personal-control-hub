@@ -1,0 +1,49 @@
+# Static qualified identity set; registration/discovery does not expand it.
+schema_version: '1.0'
+scope_id: pch-refactor-current-20261014
+baseline_total: 39
+project_ids:
+- actorforge
+- ai-anime-short-factory
+- ai-music-foundry
+- audio-clone
+- cognitive-asset-library
+- computer-study-plan
+- dance-motion-library
+- desktop-downloads-scripts
+- desktop-jav-tools
+- desktop-magnet
+- desktop-tool
+- emotion-shot-atlas
+- feishu-sheets-stat-template
+- film-editing-library
+- hypothesis-lab
+- layered-character-workbench
+- light-novel
+- linux-agent-bootstrap
+- linux-video-workbench
+- local-toolbox
+- lyric-motion
+- minecraft-director-workbench
+- movie-swipe
+- mpv-clip-workbench
+- novel-continuation-agent
+- personal-control-hub
+- personal-control-hub-dreamer
+- pixel-world-asset-forge
+- pycharm-agent-workspace
+- pycharm-misc-project
+- reaper-music-workbench
+- resilient-personal-network
+- skill-lab
+- story-faceless-utopia
+- universal-player
+- video-to-motion
+- wechat-article-scheduler
+- youtube-hq-downloader
+- zarathustra-adaptation
+excluded_project_ids:
+  storage_governance: legacy_noncurrent_root
+  manga-localizer: legacy_noncurrent_root
+  game-removed-local: removed_local_no_probe
+  manga-removed-local: removed_local_no_probe

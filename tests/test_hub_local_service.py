@@ -39,6 +39,10 @@ class ProjectSpy:
         self.calls.append(("refresh", command))
         return {"outcome": "COMMITTED", "request_id": command["request_id"]}
 
+    def sync_status(self):
+        self.calls.append(("sync_status",))
+        return {"scope_total": 39, "counts": {"scope": 39}, "head": None}
+
 
 class DesignSpy:
     store = SimpleNamespace(fixture=True)
@@ -170,6 +174,19 @@ class LocalHTTPTests(unittest.TestCase):
         status, _, data = self.call()
         self.assertEqual((status, data["error"]["code"]), (401, "SESSION_REQUIRED"))
         self.assertEqual(self.projects.calls + self.designs.calls, [])
+
+    def test_sync_status_is_session_bound_read_only_and_has_no_query(self):
+        status, _, _ = self.call(path='/api/sync-status')
+        self.assertEqual(status, 401)
+        self.assertEqual(self.projects.calls, [])
+        self.session()
+        status, _, result = self.call(path='/api/sync-status')
+        self.assertEqual(status, 200)
+        self.assertEqual(result['data']['scope_total'], 39)
+        self.assertEqual(self.projects.calls, [('sync_status',)])
+        status, _, _ = self.call(path='/api/sync-status?limit=1')
+        self.assertEqual(status, 400)
+        self.assertEqual(self.projects.calls, [('sync_status',)])
 
     def test_hostile_origins_and_fetch_metadata_cannot_bootstrap_or_read(self):
         self.session()

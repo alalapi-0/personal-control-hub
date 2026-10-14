@@ -12,6 +12,7 @@ from hub.connections import parse_source
 from hub.paths import PROJECT_ROOT
 from hub.project_service import project_snapshot
 from hub.services.integration_service import feishu_preview, markdown_preview
+from hub.service_contract import ServiceError
 
 
 PUBLIC_ERROR_MESSAGES = {
@@ -127,6 +128,12 @@ def main(argv: list[str] | None = None) -> int:
     declaration = commands.add_parser("validate-declaration")
     declaration.add_argument("path", help="Relative Hub template path (does not visit project roots)")
     commands.add_parser("validate")
+    commands.add_parser("discover")
+    sync = commands.add_parser("sync")
+    identity = sync.add_mutually_exclusive_group(required=True)
+    identity.add_argument("--request-id", help="Reuse to resume; choose a fresh ID to read again")
+    identity.add_argument("--daily", action="store_true", help="One scope request per Asia/Tokyo day")
+    sync.add_argument("--project-id", action="append", dest="projects")
     history = commands.add_parser("history")
     history.add_argument("--request-id")
     commands.add_parser("rebuild")
@@ -160,6 +167,24 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(result, ensure_ascii=False, indent=2))
             return 0
         resolver = SourceResolver(root)
+        if args.command in {"discover", "sync"}:
+            from hub.connection_sync import daily_request_id, scope_plan, sync_request
+            plan = scope_plan(root, resolver)
+            if args.command == "discover":
+                print(json.dumps(plan, ensure_ascii=False, indent=2))
+                return 0
+            require(not args.daily or args.projects is None, "daily sync cannot select a subset")
+            request_id = daily_request_id(plan["scope_id"]) if args.daily else args.request_id
+            # Validate selection before creating or opening a writable ledger.
+            if args.projects is not None:
+                require(len(args.projects) == len(set(args.projects))
+                        and set(args.projects) <= set(plan["eligible_project_ids"]),
+                        "sync projects must be eligible scope members")
+            ledger = RefreshLedger(root, path, result_validator=validate_result)
+            payload, code = sync_request(root, resolver, ledger, request_id,
+                                         project_ids=args.projects, plan=plan)
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+            return code
         if args.command == "refresh":
             ids = args.projects or list(resolver.projects)
             require(set(ids) <= set(resolver.projects), "unknown project ID")
@@ -211,6 +236,6 @@ def main(argv: list[str] | None = None) -> int:
         print(markdown_preview(snapshot) if args.format == "markdown" else
               json.dumps(feishu_preview(snapshot) if args.format == "feishu" else snapshot, ensure_ascii=False, indent=2))
         return 0
-    except (RecordError, RefreshLedgerError, OSError) as exc:
+    except (RecordError, RefreshLedgerError, ServiceError, OSError) as exc:
         print(json.dumps(_error_payload(exc), ensure_ascii=False))
         return 2

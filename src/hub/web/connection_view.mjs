@@ -125,3 +125,54 @@ export async function loadProjectDirectory(request) {
   }
   invalid();
 }
+
+// Scope totals come only from the server's frozen scope, never a filter/page.
+export function validateSyncStatus(directory, value) {
+  const invalid=()=>{const error=new Error('SYNC_STATUS_INCONSISTENT');error.code=error.message;throw error;};
+  const integer=v=>Number.isSafeInteger(v)&&v>=0;
+  const head=h=>h===null || (integer(h?.sequence)&&/^[a-f0-9]{64}$/.test(h?.hash));
+  const same=(a,b)=>head(a)&&head(b)&&(a===null||b===null?a===b:a.sequence===b.sequence&&a.hash===b.hash);
+  if(!Array.isArray(directory?.projects))invalid();
+  const ids=new Map(directory.projects.map(p=>[p?.project_id,p]));
+  const counts=value?.counts;
+  if(value?.schema_version!=='1.0'||typeof value.scope_id!=='string'||!value.scope_id
+    ||!integer(value.scope_total)||!same(value.head,directory?.head)
+    ||!integer(directory?.total)||directory.total!==ids.size||directory.projects.length!==ids.size
+    ||!directory.projects.every(p=>typeof p?.project_id==='string'&&p.project_id.length>0&&same(directory.head,p?.provenance?.ledger_head))
+    ||!counts||!['registered','scope','eligible','excluded','ineligible','complete','partial','failed','stale','unread'].every(k=>integer(counts[k]))
+    ||counts.registered!==directory.total||counts.scope!==value.scope_total
+    ||counts.eligible>counts.scope||counts.ineligible!==counts.scope-counts.eligible
+    ||['complete','partial','failed','stale','unread'].reduce((sum,k)=>sum+counts[k],0)!==counts.scope
+    ||!Array.isArray(value.eligible_project_ids)||value.eligible_project_ids.length!==counts.eligible
+    ||new Set(value.eligible_project_ids).size!==counts.eligible
+    ||!value.eligible_project_ids.every(id=>typeof id==='string'&&ids.has(id)&&refreshable(ids.get(id)))
+    ||!Array.isArray(value.excluded)||value.excluded.length!==counts.excluded
+    ||new Set(value.excluded.map(row=>row?.project_id)).size!==counts.excluded
+    ||!value.excluded.every(row=>typeof row?.project_id==='string'&&row.project_id.length>0&&!value.eligible_project_ids.includes(row.project_id)
+      &&typeof row.reason==='string'&&row.reason.length>0)
+    ||value.discovery?.mode!=='registered_scope_only'||value.discovery.registered_candidates!==value.scope_total
+    ||value.discovery.unregistered_count!==null
+    ||!value.failure_codes||typeof value.failure_codes!=='object'||Array.isArray(value.failure_codes)
+    ||!Object.entries(value.failure_codes).every(([code,count])=>code.length>0&&integer(count))
+    ||!value.core_field_gaps||typeof value.core_field_gaps!=='object'||Array.isArray(value.core_field_gaps)
+    ||!Object.entries(value.core_field_gaps).every(([field,count])=>field.length>0&&integer(count)))invalid();
+  if(value.last_request!==null){
+    const request=value.last_request;
+    if(typeof request?.request_id!=='string'||!request.request_id||typeof request.status!=='string'||!request.status
+      ||!['completed','remaining','failed'].every(k=>integer(request[k]))||request.failed>request.completed||typeof request.authority_drift!=='boolean')invalid();
+  }
+  return value;
+}
+
+export async function loadSyncStatus(request, directory) {
+  return validateSyncStatus(directory,await request('/api/sync-status'));
+}
+
+export function coreGapSummary(status){
+  const labels=new Map(factGroups.flatMap(([, ...fields])=>fields));
+  labels.set('current_work.phase|current_work.objective','项目阶段或目标');
+  labels.set('current_work.next_action|blockers','下一步或阻塞说明');
+  labels.set('source.current_observation','当前来源观察');
+  labels.set('declared.connection_read_allowed','来源读取资格');
+  return Object.entries(status.core_field_gaps).map(([field,count])=>`${labels.get(field)||'其他核心字段'} ${count} 项`).join(' · ');
+}

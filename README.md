@@ -41,6 +41,10 @@ python -m pytest tests -q
 
 工作流保留 unittest 回归，并执行完整 pytest 集合以覆盖函数式测试；Node 检查使用 Node 24。仓库、状态一致性、登记与模板检查的精确命令见 `.github/workflows/ci.yml`。
 
+本地来源刷新使用 `python scripts/hub_sync.py discover` 核对固定集合，再用 `python scripts/hub_sync.py sync --request-id UNIQUE_ID` 显式读取；加 `--project-id ID` 可读取其中一项。固定集合与排除原因在 `data/connections/sync_scope.yaml`，发现不会自动登记项目或扩大读取范围。同请求只续接未提交项目，新请求才重新读取；来源失败保留错误并返回非零码，业务字段不足保留 partial。
+
+每日入口为 `sync --daily`，无需浏览器、Agent 或模型。独立 user timer 默认每天 09:00 Asia/Tokyo，启用 `Persistent`；安装、暂停、恢复与真实到点/注销验收的区别见 [本地每日刷新](docs/12_project_connections.md#本地每日刷新)。旧 prompt 准备调度保持停用。
+
 首次从 Git 检出后运行 `python3 scripts/bootstrap.py`，创建 Git 不保存的空目录；它不会覆盖已有文件。随后运行相关检查：
 
 ```bash

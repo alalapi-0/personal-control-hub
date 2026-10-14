@@ -437,6 +437,10 @@ class HubRequestHandler(BaseHTTPRequestHandler):
             result = (self.server.host_observer.snapshot() if self.server.host_observer else
                       {'available': False, 'metrics': {}, 'reason': 'OBSERVER_NOT_RUNNING',
                        'capacity_recommendation': None})
+        elif path == "/api/sync-status":
+            if query:
+                raise ServiceError("INVALID_QUERY")
+            result = self.server.projects.sync_status()
         elif path == "/api/projects":
             snapshot = self._design_snapshot()
             result = self.server.projects.list_projects(query=query, design_snapshot=snapshot)

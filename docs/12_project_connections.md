@@ -3,6 +3,33 @@
 读者：只从 Personal Control Hub 接手的 Agent，以及负责维护项目状态源的 Agent。
 更新条件：接入契约、读取命令或错误语义变化时更新。业务事实始终在项目自身的权威源中。本阶段提供数值接口，不生成图表。
 
+## 本地每日刷新
+
+当前单状态来源刷新复用 `SourceResolver → RefreshLedger → ProjectService/API → 项目页面`，不执行下面旧数值指标入口的 exporter。`data/connections/sync_scope.yaml` 是静态资格集合：固定 39 个身份及显式排除，读取前再核对当前登记权限；缺登记、撤销权限、离线、缺声明不会缩小分母。`discover` 只核对这份集合与 Hub 登记元数据，不扫描目录或自动注册新候选。
+
+```sh
+python scripts/hub_sync.py --root "$PCH_ROOT" discover
+python scripts/hub_sync.py --root "$PCH_ROOT" sync --request-id UNIQUE_ID
+python scripts/hub_sync.py --root "$PCH_ROOT" sync --request-id UNIQUE_ID --project-id PROJECT_ID
+python scripts/hub_sync.py --root "$PCH_ROOT" sync --daily
+```
+
+同请求 ID 复试只处理未提交项；已记录的失败也保留，重读需显式新 ID。每日请求 ID 按 Asia/Tokyo 日期稳定生成；资格或来源规则变化导致身份冲突时保留原请求，用历史入口核对后另起明确的新请求，不自动覆盖或换号。输出只有请求状态、数量、错误代码和账本版本，不把业务正文写入 journal；失败返回 2。原详细历史查询仍用 `hub_connections.py history --request-id ID`，只在本地查看。
+
+页面的完整同步统计来自只读 `/api/sync-status`，在与完整分页目录同一账本版本时才启用刷新。完整/partial/失败/过期/未读取五类保留固定集合分母；登记及排除单列，搜索不会改变范围。未登记目录的发现数量保持未知。旧成功仅显示为历史；核心字段缺口单列，技术完成与用户接受互不替代。
+
+每日运行使用已验证版本的独立代码与项目专用 Python 3.12 venv。依赖仍只安装同一 `requirements.txt`；把固定版本的 `src/hub`、`scripts/hub_sync.py` 和运行依赖放在项目已忽略的 `.venv/pch-refresh/` 内，显式 `--root` 指向现有主项目。不要复制 registry、STATE、DB 或凭据到运行副本，不把临时目录作为持久 timer 入口，不覆盖主项目未提交代码。生成新 unit 时指定这些绝对路径：
+
+```sh
+python scripts/install_hub_refresh.py --root "$PCH_ROOT" --code-root "$FIXED_CODE_ROOT" --python "$REFRESH_PYTHON" --unit-dir "$HOME/.config/systemd/user"
+systemd-analyze --user verify "$HOME/.config/systemd/user/personal-control-hub-refresh.service" "$HOME/.config/systemd/user/personal-control-hub-refresh.timer"
+systemd-analyze calendar '*-*-* 09:00:00 Asia/Tokyo'
+systemctl --user daemon-reload
+systemctl --user enable --now personal-control-hub-refresh.timer
+```
+
+`--time HH:MM --timezone Area/Location` 可调整生成的日程；不改主机时区或 linger。生成器拒绝覆盖已有 unit，更新前需核对精确前像及写责。只暂停新 timer：`systemctl --user stop personal-control-hub-refresh.timer`；恢复用 `start`，停用用 `disable --now`。已开始的 oneshot 与现有 Hub 生产服务分开；中断后账本 OPEN 请求可用同 ID 续接。手动启动 service 可验证执行链，但不能证明真实到点。`Persistent=true` 只在 user manager 再次可用时补跑；注销期间持续运行、实际下一次定时 journal 都须真实验证，安装文件不构成这些验收。
+
 ## 程序指标入口（v2 数据前置）
 
 ```sh
