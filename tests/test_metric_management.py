@@ -10,6 +10,7 @@ from hub.metric_management import (
     DIMENSIONS,
     REVIEW_AXES,
     load_management_config,
+    management_contract_schema,
     management_summary,
     query_review_records,
     validate_management_config,
@@ -61,6 +62,19 @@ class MetricManagementTests(unittest.TestCase):
         broken = dict(config, write_back_allowed=True)
         with self.assertRaises(RecordError):
             validate_management_config(broken)
+
+    def test_temporal_contract_and_versioned_config_are_read_only(self):
+        contract = management_contract_schema()
+        self.assertEqual(contract['schema_version'], '1.2')
+        self.assertEqual(contract['config_versions'], ['1.0', '1.1', '1.2'])
+        self.assertIn('Literal planned calendar', contract['temporal_policy'])
+        base, _ = load_management_config(PROJECT_ROOT)
+        for version in ('1.1', '1.2'):
+            candidate = dict(base, schema_version=version, projects={}, revision=0, history=[])
+            self.assertIs(validate_management_config(candidate), candidate)
+            self.assertEqual(management_summary(candidate)['schema_version'], version)
+        unknown = dict(base, schema_version='1.3', revision=0, history=[])
+        with self.assertRaises(RecordError): validate_management_config(unknown)
 
     def test_current_and_history_candidates_are_not_mixed(self):
         cases = [self.case()]

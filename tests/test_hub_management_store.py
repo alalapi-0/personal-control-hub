@@ -271,6 +271,101 @@ class ManagementStoreTests(unittest.TestCase):
         self.assertTrue(projects['a']['relations']['independent'])
         self.assertIsNone(overlay()['relations'])
 
+    def test_temporal_upgrade_preserves_base_legacy_history_and_replay(self):
+        first = self.command(value=overlay(start_date='2026-10-14', watch=True))
+        self.apply(first)
+        legacy = load_management_config(self.root)[0]
+        value = overlay(timezone='Asia/Tokyo', milestones=[
+            {'id': 'release', 'label': 'Release', 'date': '2026-10-15'},
+            {'id': 'unknown', 'label': 'Unknown', 'date': None}])
+        second = self.command('temporal-2', 'b', value)
+        self.apply(second)
+        config = load_management_config(self.root)[0]
+        self.assertEqual(config['schema_version'], '1.2')
+        self.assertEqual(config['history'][:1], legacy['history'])
+        self.assertEqual(config['projects']['a'], legacy['projects']['a'])
+        self.assertEqual(config['projects']['b'], value)
+        for key in self.base:
+            if key not in ('schema_version', 'projects'):
+                self.assertEqual(config[key], self.base[key])
+        before = self.path.read_bytes()
+        for command in (first, second):
+            self.assertTrue(self.apply(command)['replayed'])
+        self.assertEqual(self.path.read_bytes(), before)
+        self.assertEqual(self.store.snapshot()['projects'], config['projects'])
+
+    def test_temporal_config_never_downgrades_after_legacy_set_and_retract(self):
+        self.apply(self.command(value=overlay(timezone=None, milestones=None)))
+        self.apply(self.command('legacy-2', 'b', overlay()))
+        self.apply(self.command('retract-3', operation='retract'))
+        config = load_management_config(self.root)[0]
+        self.assertEqual(config['schema_version'], '1.2')
+        self.assertEqual(config['projects'], {'b': overlay()})
+        self.assertEqual(config['history'][2]['before'], overlay(timezone=None, milestones=None))
+        self.apply(self.command('retract-4', 'b', operation='retract'))
+        self.assertEqual(load_management_config(self.root)[0]['schema_version'], '1.2')
+
+    def test_temporal_null_empty_literal_dates_and_detached_values(self):
+        for milestones in (None, [], [{'id': 'm', 'label': 'M', 'date': None}],
+                           [{'id': 'm', 'label': 'M', 'date': '0001-01-01'}]):
+            value = overlay(start_date='0001-01-01', end_date='9999-12-31', timezone=None, milestones=milestones)
+            checked = validate_overlay(value)
+            self.assertEqual(checked, value)
+            if milestones:
+                checked['milestones'][0]['label'] = 'Changed'
+                self.assertEqual(value['milestones'][0]['label'], 'M')
+        self.apply(self.command(value=overlay(timezone='UTC', milestones=[])))
+        self.assertEqual(self.store.snapshot()['projects']['a']['milestones'], [])
+
+    def test_temporal_invalid_commands_and_capacity_have_no_effect(self):
+        milestone = {'id': 'm', 'label': 'M', 'date': None}
+        invalid = [overlay(timezone='Unknown/Zone', milestones=None),
+                   overlay(timezone='UTC', milestones=[dict(milestone, label='   ')]),
+                   overlay(timezone='/etc/localtime', milestones=None),
+                   overlay(timezone=1, milestones=None), overlay(timezone='UTC'),
+                   overlay(timezone=None, milestones={}),
+                   overlay(timezone=None, milestones=[milestone, milestone]),
+                   overlay(timezone=None, milestones=[dict(milestone, date='2026-02-29')]),
+                   overlay(timezone=None, milestones=[dict(milestone, date='2026-01-01T00:00:00Z')]),
+                   overlay(timezone=None, milestones=[dict(milestone, label='')]),
+                   overlay(timezone=None, milestones=[dict(milestone, actual=True)]),
+                   overlay(timezone=None, milestones=[dict(milestone, id=str(i)) for i in range(1001)])]
+        before = self.path.read_bytes()
+        for value in invalid:
+            with self.subTest(value=value):
+                self.assert_code('MANAGEMENT_INVALID_COMMAND', lambda: self.apply(self.command(value=value)))
+        value = overlay(timezone='Asia/Tokyo', milestones=[milestone])
+        with patch('hub.management_store.MAX_BYTES', self.path.stat().st_size + 1):
+            self.assert_code('MANAGEMENT_CAPACITY', lambda: self.apply(self.command(value=value)))
+        self.assertEqual(self.path.read_bytes(), before)
+        self.assertEqual(list(self.path.parent.iterdir()), [self.path])
+
+    def test_temporal_stale_cas_and_unknown_replay_keep_exact_payload(self):
+        value = overlay(timezone='Asia/Tokyo', milestones=[{'id': 'm', 'label': 'M', 'date': None}])
+        stale = self.command('stale-1', value=value)
+        command = self.command('temporal-2', value=value)
+        def fault(stage):
+            if stage == 'after_replace': raise OSError('durability unavailable')
+        error = self.assert_code('MANAGEMENT_COMMIT_UNCONFIRMED',
+                                lambda: self.apply(command, ManagementStore(self.root, fault=fault)))
+        self.assertEqual(error.outcome, 'UNKNOWN')
+        self.assert_code('MANAGEMENT_CONFLICT', lambda: self.apply(stale))
+        before = self.path.read_bytes()
+        self.assertTrue(self.apply(command)['replayed'])
+        self.assertEqual(self.path.read_bytes(), before)
+        conflict = copy.deepcopy(command); conflict['value']['milestones'] = []
+        self.assert_code('MANAGEMENT_REQUEST_CONFLICT', lambda: self.apply(conflict))
+
+    def test_schema_11_rejects_temporal_history_even_after_retract(self):
+        self.apply(self.command(value=overlay(timezone=None, milestones=[])))
+        self.apply(self.command('retract-2', operation='retract'))
+        good = load_management_config(self.root)[0]
+        bad = copy.deepcopy(good); bad['schema_version'] = '1.1'
+        with self.assertRaises(RecordError): validate_management_state(bad)
+        self.path.write_text(yaml.safe_dump(bad, sort_keys=False))
+        self.assert_code('MANAGEMENT_CONFIG_REJECTED', self.store.snapshot)
+        with self.assertRaises(RecordError): load_management_config(self.root)
+
     def test_history_tampering_and_duplicate_yaml_rejected(self):
         self.apply(self.command()); good = yaml.safe_load(self.path.read_text())
         for mutate in [lambda state: state['history'][0].update(before=overlay()), lambda state: state['history'][0].update(request_hash='f'*64), lambda state: state.update(projects={}), lambda state: state.update(revision=2)]:

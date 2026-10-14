@@ -2,6 +2,7 @@ import {el, button, api, notify, navigate, validRefreshCommand, connectionState,
 import {renderDesigns} from './designs.js';
 import {renderBusinessPlan} from './business_tasks.mjs';
 import {renderManagement} from './management.mjs';
+import {renderTimeline} from './timeline.mjs';
 import {attention, freshness, refreshable, projectFacts, projectTasks, projectSummary, loadProjectDirectory, loadSyncStatus, coreGapSummary, scheduleSummary, requestSummary} from './connection_view.mjs';
 
 const main = document.querySelector('#main');
@@ -206,11 +207,13 @@ async function projectsPage(token){
   projectNames.clear();
   for(const project of lastProjects)projectNames.set(project.project_id,project.name);
   projectDirectoryLoaded=true;
+  const directoryProjects=data.projects;
+  const timeView=el('div',{className:'project-timeline'});
   const list=el('div',{className:'project-list'}), count=el('p',{className:'muted'}), search=el('input',{type:'search',placeholder:'搜索项目…',maxLength:240,id:'search-projects'}), status=el('select',{id:'status-filter','aria-label':'项目状态'},el('option',{value:''},'全部状态'),...Object.entries(statuses).map(([value,label])=>el('option',{value},label)));
   const fresh=el('select',{id:'fresh-filter','aria-label':'来源筛选'},el('option',{value:''},'全部来源'),el('option',{value:'attention'},'需要关注'),el('option',{value:'fresh'},'已更新'));
-  function filter(){const q=search.value.trim().toLocaleLowerCase();const rows=lastProjects.filter(p=>(!q||`${p.name} ${p.project_id}`.toLocaleLowerCase().includes(q))&&(!status.value||p.business.normalized_status===status.value)&&(!fresh.value||(fresh.value==='attention'?attention(p):p.freshness.state==='fresh')));count.textContent=`${rows.length} 个项目 · ${rows.filter(attention).length} 项来源需关注`;list.replaceChildren(...(rows.length?rows.map(projectRow):[el('div',{className:'empty'},el('h2',{},'没有匹配的项目'),el('p',{className:'muted'},'试试其他名称或清除筛选。'),button('清除筛选',()=>{search.value='';status.value='';fresh.value='';filter();}))]));}
+  function filter(){const q=search.value.trim().toLocaleLowerCase();const rows=directoryProjects.filter(p=>(!q||`${p.name} ${p.project_id}`.toLocaleLowerCase().includes(q))&&(!status.value||p.business.normalized_status===status.value)&&(!fresh.value||(fresh.value==='attention'?attention(p):p.freshness.state==='fresh')));count.textContent=`${rows.length} 个项目 · ${rows.filter(attention).length} 项来源需关注`;timeView.replaceChildren(renderTimeline(rows,{total:directoryProjects.length}));list.replaceChildren(...(rows.length?rows.map(projectRow):[el('div',{className:'empty'},el('h2',{},'没有匹配的项目'),el('p',{className:'muted'},'试试其他名称或清除筛选。'),button('清除筛选',()=>{search.value='';status.value='';fresh.value='';filter();}))]));}
   search.addEventListener('input',filter);status.addEventListener('change',filter);fresh.addEventListener('change',filter);
-  main.replaceChildren(el('section',{className:'stack'},el('h1',{},'项目'),syncOverview(),count,el('div',{className:'filters'},el('label',{className:'field search',htmlFor:'search-projects'},el('span',{className:'caption'},'搜索'),search),el('label',{className:'field',htmlFor:'status-filter'},el('span',{className:'caption'},'项目状态'),status),refreshButton(lastProjects,true)),el('div',{className:'row'},el('label',{className:'field',htmlFor:'fresh-filter'},el('span',{className:'caption'},'来源筛选'),fresh)),list));filter();
+  main.replaceChildren(el('section',{className:'stack'},el('h1',{},'项目'),syncOverview(),count,el('div',{className:'filters'},el('label',{className:'field search',htmlFor:'search-projects'},el('span',{className:'caption'},'搜索'),search),el('label',{className:'field',htmlFor:'status-filter'},el('span',{className:'caption'},'项目状态'),status),refreshButton(lastProjects,true)),el('div',{className:'row'},el('label',{className:'field',htmlFor:'fresh-filter'},el('span',{className:'caption'},'来源筛选'),fresh)),timeView,list));filter();
 }
 async function projectDetail(id,token){
   const p=await api(`/api/projects/${encodeURIComponent(id)}`);if(token!==generation)return;
@@ -233,10 +236,11 @@ async function projectDetail(id,token){
   const managed = p.management;
   const identity = await api('/api/identity');
   if(token!==generation)return;
+  const timeView=el('div',{className:'project-timeline'},renderTimeline([p],{total:1,context:'project'}));
   const managementPanel=renderManagement(managed,{projectId:id,owner:identity.owner_authenticated===true,
     save:command=>api('/api/management/project',command),
     reload:()=>api('/api/management?project_id='+encodeURIComponent(id)),
-    onSaved:()=>notify('Hub 管理配置已保存。','success')});
+    onSaved:view=>{p.management=view;timeView.replaceChildren(renderTimeline([p],{total:1,context:'project'}));notify('Hub 管理配置已保存。','success');}});
   const sources=el('section',{className:'panel stack'},el('h2',{},'状态来源'),el('p',{className:'caption'},`最近观察：${time(p.source.observed_at)}`),el('p',{className:attention(p)?'warning':'success'},freshness(p)));
   const operationalNotice=operationalSourceNotice(p);if(operationalNotice)sources.append(operationalNotice);
   if(p.operational?.last_success && p.freshness.state!=='fresh' && p.declared.connection_read_allowed===true && p.freshness.local_presence!=='removed_local')sources.append(el('details',{},el('summary',{},'历史成功快照 · '+time(p.operational.last_success.observed_at)),el('p',{className:'warning'},'这是过去的项目记录，不能替代当前失败或未知。'),factsView(p,true),renderBusinessPlan(p,{history:true})));
@@ -248,7 +252,7 @@ async function projectDetail(id,token){
   const designCount=p.design.references.filter(x=>x.kind==='candidate').length;
   const design=el('section',{className:'panel stack'},el('h2',{},'界面设计'),el('p',{className:'muted'},designCount?`${designCount} 个设计版本可查看`:'尚未登记设计候选'),el('a',{className:'button',href:`#designs/${encodeURIComponent(id)}`},designCount?'进入设计审核':'查看设计入口'));
   const exception=p.declared.hub_connection_exception;
-  main.replaceChildren(el('section',{className:'stack'},el('a',{href:'#projects'},'← 所有项目'),el('h1',{},p.name),el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},refreshButton([p]),(!refreshable(p)||!syncStatus?.eligible_project_ids.includes(p.project_id))?el('p',{className:'caption'},syncStatus?'此项目不在符合资格的刷新范围内。':'刷新范围暂不可用，请回到项目列表重新核对。'):null),exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,el('section',{className:'panel stack'},el('h2',{},'项目权威状态'),summaryView(p),el('p',{className:'caption'},'仅显示项目登记来源明确提供的事实。缺值和过期记录保留为未知。'),fields),renderBusinessPlan(p),managementPanel,taskPanel,el('a',{className:'button',href:'#host'},'查看 Linux 主机观测'),el('div',{className:'details-grid'},el('div',{className:'stack'},sources,relations),design),diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields,quality:p.business.quality})));
+  main.replaceChildren(el('section',{className:'stack'},el('a',{href:'#projects'},'← 所有项目'),el('h1',{},p.name),el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},refreshButton([p]),(!refreshable(p)||!syncStatus?.eligible_project_ids.includes(p.project_id))?el('p',{className:'caption'},syncStatus?'此项目不在符合资格的刷新范围内。':'刷新范围暂不可用，请回到项目列表重新核对。'):null),exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,el('section',{className:'panel stack'},el('h2',{},'项目权威状态'),summaryView(p),el('p',{className:'caption'},'仅显示项目登记来源明确提供的事实。缺值和过期记录保留为未知。'),fields),renderBusinessPlan(p),timeView,managementPanel,taskPanel,el('a',{className:'button',href:'#host'},'查看 Linux 主机观测'),el('div',{className:'details-grid'},el('div',{className:'stack'},sources,relations),design),diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields,quality:p.business.quality})));
 }
 async function route(focus=true){
   const token=++generation;const parts=location.hash.slice(1).split('/').map(p=>{try{return decodeURIComponent(p);}catch{return '';}});const kind=parts[0]||'projects';

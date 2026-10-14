@@ -176,3 +176,27 @@ details[open]>summary {margin-bottom:16px}
 @media(max-width:600px){.management-panel{padding:18px}.management-fields{grid-template-columns:1fr}}
 .business-task-children{margin-left:12px;padding-left:12px;border-left:1px solid var(--border)}
 @media(max-width:600px){.business-task-children{margin-left:4px;padding-left:8px}.business-task-summary{padding-inline:8px}}
+
+/* Timeline uses bounded native SVG coordinates and a complete text equivalent. */
+.timeline,.timeline-project,.timeline-rows,.project-timeline{min-width:0;max-width:100%}
+.timeline-controls{display:flex;flex-wrap:wrap;align-items:end;gap:12px}
+.timeline-controls label{display:flex;flex-direction:column;gap:8px;min-width:0}
+.timeline-controls input,.timeline-controls select,.timeline button{min-height:44px;box-sizing:border-box;max-width:100%}
+.timeline-project{padding:18px;border:1px solid var(--border);border-radius:12px}
+.timeline-project p,.timeline-project li,.timeline-project summary,.timeline-project h3,.timeline-point{overflow-wrap:anywhere}
+.timeline-scroll,.timeline-axis{min-width:0;max-width:100%;overflow-x:auto}
+.timeline-chart{display:block;width:100%;max-width:640px;height:auto;overflow:visible}
+.timeline-chart text{fill:var(--text);font-size:12px}
+.timeline-lane{stroke:var(--border);stroke-width:1}
+.timeline-bar,.timeline-marker{stroke:var(--border);stroke-width:1}
+.timeline-planned{fill:var(--accent)}
+.timeline-actual{fill:var(--success)}
+.timeline-stage{fill:var(--muted)}
+.timeline-date-text{margin-block:12px}
+.timeline-point{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.timeline-lane-text{font-weight:600}
+.management-milestones{grid-column:1/-1;min-width:0}
+.management-milestone-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:12px;margin-top:12px;min-width:0}
+.management-milestone-row label,.management-milestone-row p{overflow-wrap:anywhere}
+.management-milestone-row button,.management-milestone-add{min-height:44px}
+@media(max-width:600px){.timeline-project{padding:14px}.timeline-controls{align-items:stretch}.timeline-controls label{flex:1 1 130px}.timeline-controls button{flex:1 1 auto}.management-milestone-row{grid-template-columns:1fr}}

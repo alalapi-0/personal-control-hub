@@ -13,11 +13,13 @@ from .connection_records import (RecordError, content_hash, exact, fingerprint, 
                                  require, string, timestamp, validate_selector)
 
 VERSION = "1.0"
-SUPPORTED_VERSIONS = {"1.0", "1.1"}
+SUPPORTED_VERSIONS = {"1.0", "1.1", "1.2"}
 DOMAINS = {"fact", "managed", "derived", "proposed"}
 FACT_FIELDS = {"task_nodes", "usable_versions", "core_capabilities", "fact_updated_at",
                "has_ui", "plan_version", "unit", "counting_basis", "progress_counts"}
 TASK_PLAN_FIELDS = FACT_FIELDS | {"task_plan"}
+TIMELINE_FIELDS = TASK_PLAN_FIELDS | {"task_timeline"}
+VERSION_FIELDS = {"1.0": FACT_FIELDS, "1.1": TASK_PLAN_FIELDS, "1.2": TIMELINE_FIELDS}
 MANAGED_FIELDS = {"planned_start", "planned_end", "priority", "watch", "order", "layout"}
 COUNTS = {"total", "implemented", "verified", "human", "not_started", "active", "blocked"}
 METADATA = {"unit", "plan_version", "counting_basis", "baseline_denominator"}
@@ -127,8 +129,11 @@ def _versions(value: Any) -> None:
             string(proof["ref"], "version evidence ref")
 
 
-def _fact_value(key: str, value: Any) -> None:
-    if key == "task_plan":
+def _fact_value(key: str, value: Any, *, task_plan=None) -> None:
+    if key == "task_timeline":
+        from .time_semantics import validate_task_timeline
+        validate_task_timeline(value, task_plan=task_plan)
+    elif key == "task_plan":
         from .business_tasks import validate_task_plan
         validate_task_plan(value)
     elif key == "task_nodes":
@@ -184,8 +189,10 @@ def _validate_extensions(envelope: Any, *, source_context: dict | None,
     for name in DOMAINS:
         require(type(envelope[name]) is dict, "extension domain: object required")
     require(domain != "source" or not any(envelope[x] for x in DOMAINS - {"fact"}), "source cannot supply managed/derived/proposed authority")
-    allowed = TASK_PLAN_FIELDS if envelope["schema_version"] == "1.1" else FACT_FIELDS
+    allowed = VERSION_FIELDS[envelope["schema_version"]]
     require(set(envelope["fact"]) <= allowed, "extension: unknown fact field")
+    plan_field = envelope["fact"].get("task_plan")
+    plan_value = plan_field.get("value") if type(plan_field) is dict else None
     for key, field in envelope["fact"].items():
         exact(field, {"value", "proof", "unknown_reason"}, "fact field")
         if field["value"] is None:
@@ -193,7 +200,7 @@ def _validate_extensions(envelope: Any, *, source_context: dict | None,
             require(field["proof"] is None, "unknown fact cannot have value proof")
             continue
         require(field["unknown_reason"] is None, "known fact cannot have unknown reason")
-        _fact_value(key, field["value"])
+        _fact_value(key, field["value"], task_plan=plan_value)
         proof = field["proof"]
         exact(proof, {"source_ref", "selector", "sha256", "observed_at"}, "fact proof")
         identifier(proof["source_ref"], "source")
@@ -268,7 +275,7 @@ def validate_extension_declaration(config: Any, source: dict) -> dict:
     exact(config, {"schema_version", "fact_mapping", "unknown_fields"}, "extension declaration")
     require(config["schema_version"] in SUPPORTED_VERSIONS, "unsupported extension declaration")
     mapping, reasons = config["fact_mapping"], config["unknown_fields"]
-    allowed = TASK_PLAN_FIELDS if config["schema_version"] == "1.1" else FACT_FIELDS
+    allowed = VERSION_FIELDS[config["schema_version"]]
     require(type(mapping) is dict and type(reasons) is dict and set(mapping) <= allowed
             and set(reasons) == set(mapping), "extension mappings/reasons invalid")
     for reason in reasons.values():

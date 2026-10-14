@@ -580,6 +580,24 @@ class ProjectService:
                 "known_leaf_count": sum(node["kind"] == "leaf" for node in plan["nodes"]),
                 "progress": task_plan_progress(plan), "proof": copy.deepcopy(fact["proof"])}
 
+    @staticmethod
+    def _timeline_view(record: dict | None, freshness: dict, read_allowed: bool) -> dict:
+        view = {"available": False, "reason": "TIMELINE_NOT_DECLARED", "role": "current",
+                "value": None, "proof": None}
+        if not read_allowed:
+            return {**view, "reason": "READ_DISABLED"}
+        if not record or not record["success"]:
+            return {**view, "reason": "SOURCE_UNAVAILABLE"}
+        if freshness["state"] != "fresh" or freshness["authority_drift"]:
+            return {**view, "reason": "SOURCE_STALE"}
+        fact = (record.get("extensions") or {}).get("fact", {}).get("task_timeline")
+        if fact is None:
+            return view
+        if fact["value"] is None:
+            return {**view, "reason": fact["unknown_reason"]}
+        return {"available": True, "reason": None, "role": "current",
+                "value": copy.deepcopy(fact["value"]), "proof": copy.deepcopy(fact["proof"])}
+
     def _dto(self, declared: dict, snapshot: dict, row: dict, relation: dict,
              design_snapshot: dict | None) -> dict:
         latest, previous = row["latest_attempt"], row["last_success"]
@@ -620,6 +638,7 @@ class ProjectService:
         business = self._legacy_business(latest, row["freshness"])
         business["quality"] = self._quality(latest, row["freshness"], connection_read_allowed)
         business["task_plan"] = self._task_plan_view(latest, row["freshness"], connection_read_allowed)
+        business["timeline"] = self._timeline_view(latest, row["freshness"], connection_read_allowed)
         return {"schema_version": "1.0", "project_id": row["project_id"],
                 "name": row["name"], "declared": declared_view,
                 "business": business,
