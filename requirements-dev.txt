@@ -1,0 +1,3 @@
+# Test tooling uses the same runtime dependency source.
+-r requirements.txt
+pytest==9.0.2

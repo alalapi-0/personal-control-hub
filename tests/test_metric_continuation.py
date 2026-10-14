@@ -6,6 +6,8 @@ from pathlib import Path
 import tempfile
 import unittest
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from hub.metric_continuation import collect_continuation
@@ -34,6 +36,11 @@ def source(tmp_path):
         write(tmp_path, jp+'/job.json', dict(schema_version='real_api_reverse_job_v1', job_id=jid, universe_id=uid, request=req, requested_chapters=[1,2], committed_chapters=[1], status='stopped', attempt_ids=['a1'], current_attempt_id='a1'))
         write(tmp_path, jp+'/attempts/a1/attempt.json', dict(schema_version='real_api_reverse_attempt_v1', job_id=jid, attempt_id='a1', status='stopped', error='finish_reason_hard_stop:length', finished_at='2026-07-18T00:00:00Z'))
     return tmp_path
+
+
+@pytest.fixture(name="source")
+def source_fixture(tmp_path):
+    return source(tmp_path)
 
 
 def collect(root):

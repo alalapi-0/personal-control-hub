@@ -27,6 +27,20 @@ Hub 不从注册表获得业务项目写权限。当前建设范围、设计选�
 
 ## 验证
 
+本地开发与 CI 共同使用 `requirements-dev.txt`，其中包含 `requirements.txt` 的运行依赖。仅运行程序时安装 `requirements.txt`；测试额外使用 pytest。
+
+用与 CI 相同的 Python 3.12 创建隔离环境，不修改全局 Python：
+
+```bash
+python3.12 -m venv .venv
+. .venv/bin/activate
+python -m pip install -r requirements-dev.txt
+python -m unittest discover -s tests -q
+python -m pytest tests -q
+```
+
+工作流保留 unittest 回归，并执行完整 pytest 集合以覆盖函数式测试；Node 检查使用 Node 24。仓库、状态一致性、登记与模板检查的精确命令见 `.github/workflows/ci.yml`。
+
 首次从 Git 检出后运行 `python3 scripts/bootstrap.py`，创建 Git 不保存的空目录；它不会覆盖已有文件。随后运行相关检查：
 
 ```bash

@@ -1,4 +1,6 @@
 import hashlib
+from copy import deepcopy
+import re
 import json
 from pathlib import Path
 import sys
@@ -10,6 +12,9 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
+sys.path.insert(0, str(ROOT / 'src'))
+from hub.services.project_registry_service import validate_registry
+from hub.connection_sources import SourceResolver
 import governance_scope as scope
 import agent_gate
 import auto_advance_runner as runner
@@ -126,7 +131,35 @@ def test_storage_governance_registry_is_portable_and_pointer_only():
 def test_registry_identity_reflects_subplz_removal_and_mpv_registration():
     registry = load_yaml("data/registry/external_projects.yaml")
     project_by_id = {item["id"]: item for item in registry["projects"]}
-    assert len(project_by_id) == len(registry["projects"]) == 24
+    assert len(project_by_id) == len(registry["projects"])
+    removed_ids = {p["id"] for p in registry["projects"]
+                   if p["current_state_status"] == "removed_local"}
+    assert removed_ids == {"game-removed-local", "manga-removed-local"}
+    # The closed storage epoch contained SubPlz; it is absent from today's
+    # identity registry. Later local-removal records remain identities only.
+    storage = load_yaml("governance/programs/storage_governance/STATE.yaml")
+    assert storage["closure"]["removed_projects"] == ["subplz"]
+    assert len(project_by_id.keys() - removed_ids) == (
+        storage["inventory_epoch"]["frozen_project_record_count"]
+        - len(storage["closure"]["removed_projects"])
+    )
+    with patch.object(Path, "exists", side_effect=AssertionError("identity check probed external paths")):
+        result = validate_registry(registry, check_paths=False)
+    assert result["valid"], result["hard_blockers"]
+    assert result["path_availability_checked"] is False
+    duplicate = deepcopy(registry)
+    duplicate["projects"].append(deepcopy(duplicate["projects"][0]))
+    assert not validate_registry(duplicate, check_paths=False)["valid"]
+    for removed_id in removed_ids:
+        removed = project_by_id[removed_id]
+        assert removed["local_presence"]["retry_allowed"] is False
+        assert all(removed[f] is False for f in
+                   ("enabled", "scan_enabled", "profile_enabled", "external_write_allowed"))
+        assert all(removed[f] == [] for f in
+                   ("watch_paths", "rules_paths", "current_state_paths", "supporting_authority_paths"))
+        unsafe = deepcopy(registry)
+        next(p for p in unsafe["projects"] if p["id"] == removed_id)["scan_enabled"] = True
+        assert not validate_registry(unsafe, check_paths=False)["valid"]
 
     expected_git_projects = {
         "audio-clone",
@@ -192,7 +225,16 @@ def test_registry_registers_rules_and_current_state_for_every_frozen_record():
 
     manga = project_by_id["manga-localizer"]
     assert manga["rules_paths"] == []
-    assert manga["current_state_paths"] == []
+    # A later owner-authorized business route does not lift storage exclusion.
+    assert manga["current_state_paths"] == [".agent/STATE.yaml"]
+    assert manga["current_state_status"] == "owner_authorized_sole_business_state"
+    assert manga["connection_read_allowed"] is True
+    assert "owner authorization; business state only, storage exclusion remains" in manga["connection_authority"]
+    assert manga["storage_governance"]["inspection_allowed"] is False
+    assert manga["storage_governance"]["mutation_allowed"] is False
+    unsafe = deepcopy(registry)
+    next(p for p in unsafe["projects"] if p["id"] == "manga-localizer")["current_state_paths"] = ["other.yaml"]
+    assert not validate_registry(unsafe, check_paths=False)["valid"]
     assert manga["supporting_authority_paths"] == []
 
     contract = registry["storage_governance_contract"]
@@ -201,51 +243,53 @@ def test_registry_registers_rules_and_current_state_for_every_frozen_record():
 
 
 def test_registry_historical_manifest_and_current_hub_epoch_are_distinct_authorities():
+    """Check recorded bindings, not unavailable historical external-drive payloads."""
     registry = load_yaml("data/registry/external_projects.yaml")
     hub_state = load_yaml("STATE.yaml")
-    storage_state = yaml.safe_load(
-        Path("~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STATE.yaml").expanduser().read_text(encoding="utf-8")
+    storage_state = load_yaml("governance/programs/storage_governance/STATE.yaml")
+    registry_contract = registry["storage_governance_contract"]
+    epoch = storage_state["inventory_epoch"]
+    historical_path = Path(registry_contract["frozen_manifest"])
+    closed_path = Path(epoch["project_manifest"])
+    assert historical_path.parent.name == "dev_projects_2026_09_02_r1"
+    assert historical_path.name == "PROJECT_MANIFEST_v2.yaml"
+    assert closed_path.parent.name == epoch["id"] == "dev_projects_2026_09_04_r1"
+    assert closed_path.name == "PROJECT_MANIFEST_v1.yaml"
+    assert historical_path != closed_path
+    historical_sha = registry_contract["frozen_manifest_sha256"]
+    closed_sha = epoch["project_manifest_sha256"]
+    assert historical_sha != closed_sha
+    for digest in (historical_sha, closed_sha,
+                   storage_state["parent_hub"]["project_registry_sha256_current"]):
+        assert re.fullmatch(r"[0-9a-f]{64}", digest)
+    # The program's registry digest binds its closed September epoch; later
+    # identity changes must not masquerade as a live acceptance of that epoch.
+    registry_sha = hashlib.sha256((ROOT / "data/registry/external_projects.yaml").read_bytes()).hexdigest()
+    assert registry_sha != storage_state["parent_hub"]["project_registry_sha256_current"]
+    # Current reads bind the exact current registry bytes, independently of
+    # recorded historical external manifests. Constructor never probes roots.
+    with patch.object(Path, "resolve", side_effect=AssertionError("registry authority probed roots")):
+        current_authority = SourceResolver(ROOT).authority
+    assert current_authority["registry_hash"] == registry_sha
+    assert epoch["state"] == "FROZEN_CLOSED"
+    assert epoch["capture_count"] == epoch["capture_limit"] == 1
+    assert epoch["frozen_project_record_count"] == (
+        epoch["execution_candidate_count"] + epoch["special_record_count"]
     )
-    registry_bytes = (ROOT / "data/registry/external_projects.yaml").read_bytes()
-    assert hashlib.sha256(registry_bytes).hexdigest() == storage_state["parent_hub"][
-        "project_registry_sha256_current"
-    ]
-
-    historical_path = Path(registry["storage_governance_contract"]["frozen_manifest"])
-    historical_manifest = yaml.safe_load(historical_path.read_text(encoding="utf-8"))
-    historical_sha = hashlib.sha256(historical_path.read_bytes()).hexdigest()
-    assert historical_sha == registry["storage_governance_contract"]["frozen_manifest_sha256"]
-    assert historical_manifest["manifest"]["epoch_id"] == "dev_projects_2026_09_02_r1"
-
-    current_path = Path(hub_state["registry"]["frozen_manifest"])
-    current_manifest = yaml.safe_load(current_path.read_text(encoding="utf-8"))
-    current_sha = hashlib.sha256(current_path.read_bytes()).hexdigest()
-    assert current_path != historical_path
-    assert current_sha != historical_sha
-    assert current_sha == hub_state["registry"]["frozen_manifest_sha256"]
-    assert current_sha == storage_state["inventory_epoch"]["project_manifest_sha256"]
-    assert current_manifest["manifest"]["epoch_id"] == storage_state["inventory_epoch"]["id"]
-
-    historical_ids = {record["id"] for record in historical_manifest["records"]}
-    current_epoch_ids = {record["id"] for record in current_manifest["records"]}
-    current_registry_ids = {record["id"] for record in registry["projects"]}
-    assert "subplz" in historical_ids and "mpv-clip-workbench" not in historical_ids
-    assert {"subplz", "mpv-clip-workbench"} <= current_epoch_ids
-    assert "subplz" not in current_registry_ids and "mpv-clip-workbench" in current_registry_ids
-
-    post_path = Path(storage_state["closure"]["final_report"])
-    post = yaml.safe_load(post_path.read_text(encoding="utf-8"))
-    assert post["epoch"] == current_manifest["manifest"]["epoch_id"]
-    assert set(post["removed_projects"]["subplz"].values()) == {"PASS"}
-    assert post["mpv_clip_workbench"]["registry"] == "linked"
-
-    # Hub holds a pointer; only the program state owns execution.
-    assert "compact_execution_summary" not in hub_state["storage_governance"]
+    assert "storage_governance" not in hub_state
+    assert "registry" not in hub_state
+    assert registry_contract["identity_source"] == "this_registry"
+    assert registry_contract["dynamic_disposition_source"] == "frozen_manifest_and_sole_execution_state"
+    assert registry["policy"]["project_registry_is_effect_authority"] is False
+    assert Path(storage_state["closure"]["final_report"]).parent == closed_path.parent
+    assert storage_state["closure"]["removed_projects"] == ["subplz"]
+    assert storage_state["project_accounting"]["existing_external_projects_linked"] == 1
     execution = storage_state["execution_control"]
     assert execution["project_effects_allowed"] is False
     assert execution["control_plane_effects_active"] is False
     assert execution["storage_effects_active"] is False
     assert execution["active_projects"] == execution["active_batches"] == execution["active_writers"] == 0
+
 
 def test_storage_adapter_does_not_copy_or_override_norm():
     adapter = load_yaml("governance/adapters/storage_governance.yaml")
@@ -295,12 +339,21 @@ def test_storage_goal_package_is_single_source_and_not_current_state():
     for forbidden_key in ("current_batch", "progress", "attempt_count", "next_action", "effect_authority_state"):
         assert forbidden_key not in params
 
-    goal_package = state["storage_governance"]["goal_package"]
-    assert goal_package["prompt"] == "prompts/storage_governance_goal_mode.md"
-    assert goal_package["parameters"] == "data/programs/storage_governance_goal.yaml"
-    assert goal_package["project_registry"] == "data/registry/external_projects.yaml"
-    assert set(goal_package) == {"prompt", "parameters", "project_registry"}
-    assert state["storage_governance"]["sole_execution_state"] == "governance/programs/storage_governance/STATE.yaml"
+    # Root STATE no longer duplicates the archived program entry. The adapter
+    # registers the preparation package and the sole execution authority.
+    assert "storage_governance" not in state
+    adapter = load_yaml("governance/adapters/storage_governance.yaml")
+    authority = adapter["authority"]
+    assert authority["activation_prompt"] == "prompts/storage_governance_goal_mode.md"
+    assert authority["stable_parameters"] == "data/programs/storage_governance_goal.yaml"
+    assert authority["project_registry"] == "data/registry/external_projects.yaml"
+    assert authority["parameter_or_registry_is_current_state"] is False
+    registry = load_yaml(authority["project_registry"])
+    program = next(p for p in registry["projects"] if p["id"] == "storage_governance")
+    assert authority["sole_execution_state"] == registry["storage_governance_contract"]["sole_execution_state"]
+    assert program["current_state_paths"] == [authority["sole_execution_state"]]
+    assert Path(authority["sole_execution_state"]).name == "STATE.yaml"
+    assert load_yaml("governance/programs/storage_governance/STATE.yaml")["metadata"]["authority"] == "sole_execution_current_state"
 
 
 def test_release_first_parameters_remove_routine_history_proof_and_backup_gates():
@@ -321,22 +374,51 @@ def test_release_first_parameters_remove_routine_history_proof_and_backup_gates(
 
 
 def test_current_owner_resume_contract_shape_and_hub_pointer_agree():
+    """Closed owner authority is recorded locally; a pointer cannot reactivate it."""
     hub = load_yaml("STATE.yaml")
-    state = yaml.safe_load(
-        Path("~/PycharmProjects/personal-control-hub/governance/programs/storage_governance/STATE.yaml").expanduser().read_text(encoding="utf-8")
-    )
+    state = load_yaml("governance/programs/storage_governance/STATE.yaml")
     binding = state["task_contract"]
+    epoch = state["inventory_epoch"]
     path = Path(binding["path"])
-    assert hashlib.sha256(path.read_bytes()).hexdigest() == binding["sha256"]
-    contract = yaml.safe_load(path.read_text(encoding="utf-8"))
-    assert (ROOT / hub["storage_governance"]["sole_execution_state"]).resolve() == (ROOT / "governance/programs/storage_governance/STATE.yaml").resolve()
-    assert contract["contract"] == binding["version"]
-    assert contract["authority_source"] == state["authorization_scope"]["source"]
-    assert contract["objective"] == (
-        "migrate_all_registered_projects_except_manga_localizer_and_personal_control_hub_to_ai_work_ssd"
-    )
-    assert contract["additional_project"] == "mpv-clip-workbench"
-    assert "access_to_manga_localizer_tree_or_associated_paths" in contract["forbidden"]
-    assert "migration_or_cleanup_of_personal_control_hub_or_storage_governance" in contract["forbidden"]
-    assert binding["status"] == state["execution_control"]["state"] == "COMPLETE_WITH_OWNER_REMOVAL"
+    assert path.name == "OWNER_RESUME_CONTRACT.yaml"
+    assert path.parent == Path(epoch["project_manifest"]).parent
+    assert binding["version"] == "SG-GOV-2026-09-04-ROOT-MIGRATION"
+    assert re.fullmatch(r"[0-9a-f]{64}", binding["sha256"])
+    assert binding["single_contract_no_nested_contracts"] is True
+    assert "storage_governance" not in hub
+    adapter = load_yaml("governance/adapters/storage_governance.yaml")
+    registry = load_yaml("data/registry/external_projects.yaml")
+    program = next(p for p in registry["projects"] if p["id"] == "storage_governance")
+    assert program["current_state_paths"] == [adapter["authority"]["sole_execution_state"]]
+    assert registry["storage_governance_contract"]["sole_execution_state"] == program["current_state_paths"][0]
+    assert binding["status"] == state["execution_control"]["state"] == state["closure"]["state"] == "COMPLETE_WITH_OWNER_REMOVAL"
     assert state["execution_control"]["project_effects_allowed"] is False
+    assert state["execution_control"]["auto_resume"] is False
+    authorization = state["authorization_scope"]
+    assert authorization["state"] == "closed"
+    assert authorization["epoch"] == epoch["id"]
+    assert authorization["source"] == "owner_resume_" + state["metadata"]["activation_entry"]["native_goal_thread_id"]
+    assert authorization["allowed_effects"] == []
+    assert authorization["prior_authority_reusable"] is False
+    assert state["metadata"]["activation_entry"]["prior_authority_reusable"] is False
+    assert set(state["authorities"].values()) == {"closed"}
+    assert adapter["boundaries"]["consumed_authority_reuse"] == "forbidden"
+    assert state["special_records"]["manga_localizer"]["current_goal_verified"] is False
+    assert state["special_records"]["manga_localizer"]["current_goal_mutated"] is False
+    for project_id in ("personal_control_hub", "storage_governance"):
+        assert state["special_records"][project_id]["migration"] == "forbidden"
+        assert state["special_records"][project_id]["cleanup"] == "forbidden"
+    assert state["goal"]["objective"] == (
+        "migrate_all_registered_projects_except_manga_localizer_and_personal_control_hub_and_register_mpv_clip_workbench"
+    )
+    assert state["closure"]["unconsumed_effect_authority"] == "none"
+    # Current metadata must reject attempts to turn the pointer into permission.
+    unsafe = deepcopy(registry)
+    unsafe["policy"]["project_registry_is_effect_authority"] = True
+    assert not validate_registry(unsafe, check_paths=False)["valid"]
+    for project_id, field in (("manga-localizer", "inspection_allowed"),
+                              ("personal-control-hub", "migration_allowed"),
+                              ("storage_governance", "cleanup_allowed")):
+        unsafe = deepcopy(registry)
+        next(p for p in unsafe["projects"] if p["id"] == project_id)["storage_governance"][field] = True
+        assert not validate_registry(unsafe, check_paths=False)["valid"]
