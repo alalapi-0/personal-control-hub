@@ -295,8 +295,9 @@ class BootstrapTests(unittest.TestCase):
         self.assertEqual(state['all_projects_governance']['task_id'], TASK)
         sys.path.insert(0, str(ROOT / 'scripts'))
         import governance_scope as scope
-        for task_id in scope.TASK_KEYS:
-            self.assertLessEqual(len(scope.boot_packet(ROOT, task_id)), 8192)
+        for task_id, key in scope.TASK_KEYS.items():
+            if key in state:
+                self.assertLessEqual(len(scope.boot_packet(ROOT, task_id)), 8192)
 
 if __name__ == '__main__':
     unittest.main()

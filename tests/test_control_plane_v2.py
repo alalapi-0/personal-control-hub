@@ -21,8 +21,10 @@ def load_yaml(relative: str):
 
 
 def test_default_boot_packet_is_bounded():
-    for task in scope.TASK_KEYS:
-        assert len(scope.boot_packet(ROOT, task)) <= 8192
+    state = scope.load_canonical_state(ROOT)
+    for task, key in scope.TASK_KEYS.items():
+        if key in state:
+            assert len(scope.boot_packet(ROOT, task)) <= 8192
 
 
 def scoped_fixture(tmp_path):

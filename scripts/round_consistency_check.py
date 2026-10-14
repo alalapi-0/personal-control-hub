@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from governance_scope import add_scope_argument, activate_scope, selected_task, excluded_path
-from governance_scope import load_canonical_state, task_entry, candidate_paths, WORKBENCH_TASK_ID
+from governance_scope import load_canonical_state, task_entry, candidate_paths, WORKBENCH_TASK_ID, PCH_REFACTOR_TASK_ID
 
 import argparse
 import json
@@ -89,6 +89,14 @@ def run_check() -> dict[str, Any]:
         except ValueError as exc:
             hard_blockers.append(str(exc))
             task = {}
+        if selected_task() == PCH_REFACTOR_TASK_ID:
+            for field in ('execution_document', 'task_catalog'):
+                path = task.get(field)
+                if not isinstance(path, str) or not (ROOT / path).is_file():
+                    hard_blockers.append('Selected refactor authority document is missing')
+            return {'result': 'fail' if hard_blockers else 'ok',
+                    'current_round': task.get('round'), 'next_round': None,
+                    'current_phase': task.get('phase'), 'warnings': [], 'hard_blockers': hard_blockers}
         if selected_task() == WORKBENCH_TASK_ID:
             for field in ('plan', 'round_cards', 'acceptance_contract'):
                 path = task.get(field)

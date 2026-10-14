@@ -172,6 +172,14 @@ task_state_policy:
 
 # Applies only after the current owner activates the named task. Selection is not authorization.
 task_overrides:
+  PCH-REFACTOR-20261014:
+    activation: current_owner_prompt_required
+    governance_subject: project
+    editor_dependency: none
+    runner_grants_authority: false
+    force_push: false
+    bypass_protection: false
+    real_feishu: disabled
   ALL-PROJECTS-CODEX-GOVERNANCE-V1:
     activation: current_owner_prompt_required
     execution_document: docs/all_projects_governance_execution.md

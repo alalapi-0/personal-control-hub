@@ -7,7 +7,9 @@ import yaml
 
 TASK_ID = 'ALL-PROJECTS-CODEX-GOVERNANCE-V1'
 WORKBENCH_TASK_ID = 'HUB-LINUX-VISUAL-WORKBENCH-V1'
-TASK_KEYS = {TASK_ID: 'all_projects_governance', WORKBENCH_TASK_ID: 'linux_visual_workbench'}
+PCH_REFACTOR_TASK_ID = 'PCH-REFACTOR-20261014'
+TASK_KEYS = {TASK_ID: 'all_projects_governance', WORKBENCH_TASK_ID: 'linux_visual_workbench',
+             PCH_REFACTOR_TASK_ID: 'pch_refactor'}
 ENV_NAME = 'HUB_GOVERNANCE_TASK'
 BOOT_CONTRACT_VERSION = 2
 
@@ -48,6 +50,8 @@ def task_entry(state: dict, task_id: str | None = None) -> dict:
     required = {'task_id', 'status', 'next_action', 'candidate_paths'}
     if task_id == WORKBENCH_TASK_ID:
         required |= {'current_round', 'next_round', 'stage', 'plan', 'round_cards', 'acceptance_contract', 'authorization'}
+    elif task_id == PCH_REFACTOR_TASK_ID:
+        required |= {'phase', 'round', 'plan_version', 'execution_document', 'task_catalog', 'delivery'}
     else:
         required |= {'unit', 'execution_document', 'delivery'}
     if (not isinstance(task, dict) or not required <= task.keys()
@@ -59,6 +63,10 @@ def task_entry(state: dict, task_id: str | None = None) -> dict:
                 or any(not isinstance(task[k], str) or not task[k] for k in
                        ('current_round', 'next_round', 'plan', 'round_cards', 'acceptance_contract'))):
             raise ValueError('Selected workbench task fields are malformed')
+    if task_id == PCH_REFACTOR_TASK_ID:
+        if any(not isinstance(task[k], str) or not task[k].strip() for k in
+               ('phase', 'round', 'plan_version', 'execution_document', 'task_catalog')):
+            raise ValueError('Selected refactor task fields are malformed')
     return task
 
 
@@ -95,6 +103,11 @@ def boot_packet(root: Path, task_id: str | None = None) -> bytes:
         fields = ('task_id', 'status', 'implementation_status', 'stage', 'current_round', 'next_round',
                   'next_action', 'lane', 'owned_repository', 'scope', 'plan', 'round_cards',
                   'acceptance_contract', 'authorization', 'blockers', 'evidence_index')
+        task = {k: task[k] for k in fields if k in task}
+    elif task_id == PCH_REFACTOR_TASK_ID:
+        fields = ('task_id', 'status', 'phase', 'round', 'active_task_id', 'plan_version',
+                  'execution_document', 'task_catalog', 'native_execution_chat_id', 'activation',
+                  'risk_lane', 'authorization', 'blockers', 'next_action')
         task = {k: task[k] for k in fields if k in task}
     projection = {'boot_contract_version': BOOT_CONTRACT_VERSION,
                   'metadata': state['metadata'], TASK_KEYS[task_id]: task}

@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from governance_scope import add_scope_argument, activate_scope, selected_task, excluded_path
-from governance_scope import load_canonical_state, task_entry, candidate_paths, WORKBENCH_TASK_ID
+from governance_scope import load_canonical_state, task_entry, candidate_paths, WORKBENCH_TASK_ID, PCH_REFACTOR_TASK_ID
 
 import argparse
 import json
@@ -82,6 +82,11 @@ def _get_round_context() -> dict[str, Any]:
     task = task_entry(state) if selected_task() else {}
     work = task or (state.get("current_work", {}) if isinstance(state, dict) else {})
     work = work if isinstance(work, dict) else {}
+    if selected_task() == PCH_REFACTOR_TASK_ID:
+        return {"task_id": selected_task(), "task_unit": task.get('active_task_id'),
+                "task_next_action": task.get('next_action'), "work_status": task.get('status'),
+                "current_round": task.get('round'), "current_round_name": None,
+                "next_round": None, "current_phase": task.get('phase')}
     return {
         "task_id": selected_task(),
         "task_unit": task.get("unit"),
