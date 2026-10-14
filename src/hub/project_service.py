@@ -488,6 +488,28 @@ class ProjectService:
         return {"fact_updated_at": value, "fact_time_state": "known" if value else "unknown",
                 "fact_time_unknown_reason": None if value else "No current source fact timestamp is recorded."}
 
+    @staticmethod
+    def _task_plan_view(record: dict | None, freshness: dict, read_allowed: bool) -> dict:
+        view = {"available": False, "reason": "TASK_PLAN_NOT_DECLARED", "view_role": "unavailable",
+                "plan_version": None, "known_leaf_count": None, "progress": None, "proof": None}
+        if not read_allowed:
+            return {**view, "reason": "READ_DISABLED"}
+        if not record or not record["success"]:
+            return {**view, "reason": "SOURCE_UNAVAILABLE"}
+        if freshness["state"] != "fresh":
+            return {**view, "reason": "SOURCE_STALE"}
+        fact = (record.get("extensions") or {}).get("fact", {}).get("task_plan")
+        if fact is None:
+            return view
+        if fact["value"] is None:
+            return {**view, "reason": fact["unknown_reason"]}
+        from .business_tasks import task_plan_progress
+        plan = fact["value"]
+        return {"available": True, "reason": None, "view_role": "current",
+                "plan_version": plan["plan_version"],
+                "known_leaf_count": sum(node["kind"] == "leaf" for node in plan["nodes"]),
+                "progress": task_plan_progress(plan), "proof": copy.deepcopy(fact["proof"])}
+
     def _dto(self, declared: dict, snapshot: dict, row: dict, relation: dict,
              design_snapshot: dict | None) -> dict:
         latest, previous = row["latest_attempt"], row["last_success"]
@@ -527,6 +549,7 @@ class ProjectService:
         }
         business = self._legacy_business(latest, row["freshness"])
         business["quality"] = self._quality(latest, row["freshness"], connection_read_allowed)
+        business["task_plan"] = self._task_plan_view(latest, row["freshness"], connection_read_allowed)
         return {"schema_version": "1.0", "project_id": row["project_id"],
                 "name": row["name"], "declared": declared_view,
                 "business": business,

@@ -211,10 +211,7 @@ def validate_metric_export(value: Any) -> dict:
 def validate_declaration(value: Any, project_id: str | None = None) -> dict:
     require(
         type(value) is dict
-        and frozenset(value) in {
-            frozenset(DECLARATION_FIELDS),
-            frozenset(DECLARATION_FIELDS | {"metric_export"}),
-        },
+        and DECLARATION_FIELDS <= set(value) <= DECLARATION_FIELDS | {"metric_export", "extensions"},
         "declaration: missing or unknown fields",
     )
     require(value["schema_version"] == VERSION, "unsupported declaration schema")
@@ -251,6 +248,9 @@ def validate_declaration(value: Any, project_id: str | None = None) -> dict:
             "read age must be 60..604800 seconds")
     if "metric_export" in value:
         validate_metric_export(value["metric_export"])
+    if "extensions" in value:
+        from .connection_extensions import validate_extension_declaration
+        validate_extension_declaration(value["extensions"], sources[0])
     return value
 
 
@@ -297,6 +297,10 @@ def record_schema() -> dict:
                 "entry_rule": "safe relative Python file; never a shell command",
                 "snapshot": METRIC_SNAPSHOT_PATH,
             },
+            "optional_extensions": {"versions": ["1.0", "1.1"],
+                                    "ingestion": "Literal selector and actual source hash/observation/value equality; no managed/derived/proposed source authority",
+                                    "task_plan": "1.1 business hierarchy/leaf acceptance and versioned denominator history; provider tasks excluded",
+                                    "legacy": "Absent extension preserves source2.0 fields/update identity; old optional1.0 remains readable"},
             "permission_rule": "explicit connection_read_allowed=false denies before root access; absent field falls back to enabled",
             "protected_sources": "no control/environment/credential path components in roots or sources; aliases are rechecked",
             "output_shell": "exact snapshot/row/authority/head/coverage/freshness fields; valid project IDs, nonempty names, strict numeric/boolean types",
@@ -312,9 +316,11 @@ def record_schema() -> dict:
 
 
 def validate_result(value: Any) -> dict:
-    exact(value, {"schema_version", "kind", "project_id", "name", "observed_at", "success", "disposition",
+    fields = {"schema_version", "kind", "project_id", "name", "observed_at", "success", "disposition",
                   "authority", "business", "sources", "declaration", "field_provenance", "unknown_fields",
-                  "validation_entry", "freshness", "errors", "update_key"}, "normalized result")
+                  "validation_entry", "freshness", "errors", "update_key"}
+    require(type(value) is dict and fields <= set(value) <= fields | {"extensions"},
+            "normalized result: missing or unknown fields")
     require(value["schema_version"] == VERSION and value["kind"] == "source_resolution", "unsupported result schema/kind")
     identifier(value["project_id"], "result project")
     string(value["name"], "project name")
@@ -353,6 +359,13 @@ def validate_result(value: Any) -> dict:
         require(value["declaration"] is not None and len(value["sources"]) == 1, "successful read needs declaration/source evidence")
     else:
         require(not value["field_provenance"] and value["business"] == empty_business(), "failed read cannot publish business facts")
+        require(value.get("extensions") is None, "failed read cannot publish extension facts")
+    if value.get("extensions") is not None:
+        from .connection_extensions import validate_record_extensions
+        extension = validate_record_extensions(value["extensions"], value["sources"], value["observed_at"])
+        require(not SECRET.search(json.dumps(extension, ensure_ascii=False)), "sensitive extension evidence")
+        plan = extension["fact"].get("task_plan", {}).get("value")
+        require(plan is None or plan["project_id"] == value["project_id"], "task plan project mismatch")
     for field, kind in FIELDS.items():
         actual = get_field(value["business"], field)
         if actual is None:
@@ -409,6 +422,14 @@ def validate_result(value: Any) -> dict:
 
 def update_key(value: dict) -> str:
     """Stable business update identity; read time and other projects cannot affect it."""
-    return content_hash({**{key: value[key] for key in ("project_id", "name", "business", "sources", "declaration",
+    identity = {**{key: value[key] for key in ("project_id", "name", "business", "sources", "declaration",
                                                        "disposition", "errors", "unknown_fields", "field_provenance")},
-                         "root_binding": value["freshness"]["root_binding"]})
+                "root_binding": value["freshness"]["root_binding"]}
+    if value.get("extensions") is not None:
+        from copy import deepcopy
+        extension = deepcopy(value["extensions"])
+        for field in extension["fact"].values():
+            if field["proof"] is not None:
+                field["proof"].pop("observed_at", None)
+        identity["extensions"] = extension
+    return content_hash(identity)

@@ -158,3 +158,9 @@ details[open]>summary {margin-bottom:16px}
 .project-row>.project-summary{margin-top:8px}
 .project-row h2{font-size:1.142857rem;line-height:1.714286rem}
 @media(max-width:700px){.summary-grid{grid-template-columns:1fr;gap:8px}}
+
+/* Business leaves keep the existing tokens and native disclosure controls. */
+.business-task-node{min-width:0}
+.business-task-summary,.business-task-node p,.business-task-node li{overflow-wrap:anywhere}
+.business-task-children{margin-left:12px;padding-left:12px;border-left:1px solid var(--border)}
+@media(max-width:600px){.business-task-children{margin-left:4px;padding-left:8px}.business-task-summary{padding-inline:8px}}

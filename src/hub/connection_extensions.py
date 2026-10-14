@@ -13,9 +13,11 @@ from .connection_records import (RecordError, content_hash, exact, fingerprint, 
                                  require, string, timestamp, validate_selector)
 
 VERSION = "1.0"
+SUPPORTED_VERSIONS = {"1.0", "1.1"}
 DOMAINS = {"fact", "managed", "derived", "proposed"}
 FACT_FIELDS = {"task_nodes", "usable_versions", "core_capabilities", "fact_updated_at",
                "has_ui", "plan_version", "unit", "counting_basis", "progress_counts"}
+TASK_PLAN_FIELDS = FACT_FIELDS | {"task_plan"}
 MANAGED_FIELDS = {"planned_start", "planned_end", "priority", "watch", "order", "layout"}
 COUNTS = {"total", "implemented", "verified", "human", "not_started", "active", "blocked"}
 METADATA = {"unit", "plan_version", "counting_basis", "baseline_denominator"}
@@ -126,7 +128,10 @@ def _versions(value: Any) -> None:
 
 
 def _fact_value(key: str, value: Any) -> None:
-    if key == "task_nodes":
+    if key == "task_plan":
+        from .business_tasks import validate_task_plan
+        validate_task_plan(value)
+    elif key == "task_nodes":
         validate_task_nodes(value)
     elif key in {"usable_versions", "core_capabilities"}:
         _versions(value)
@@ -161,7 +166,8 @@ def _managed_value(key: str, value: Any) -> None:
         require(type(value) is dict, "layout: object required")
 
 
-def validate_extensions(envelope: Any, *, source_context: dict | None = None, domain: str = "source") -> dict | None:
+def _validate_extensions(envelope: Any, *, source_context: dict | None,
+                         domain: str, selected_values: bool) -> dict | None:
     """Validate optional domain-separated data and return a detached copy.
 
     None means no extensions. Source context maps source_ref to
@@ -174,11 +180,12 @@ def validate_extensions(envelope: Any, *, source_context: dict | None = None, do
     if envelope is None:
         return None
     exact(envelope, {"schema_version", *DOMAINS}, "extensions")
-    require(envelope["schema_version"] == VERSION, "unsupported extension schema")
+    require(envelope["schema_version"] in SUPPORTED_VERSIONS, "unsupported extension schema")
     for name in DOMAINS:
         require(type(envelope[name]) is dict, "extension domain: object required")
     require(domain != "source" or not any(envelope[x] for x in DOMAINS - {"fact"}), "source cannot supply managed/derived/proposed authority")
-    require(set(envelope["fact"]) <= FACT_FIELDS, "extension: unknown fact field")
+    allowed = TASK_PLAN_FIELDS if envelope["schema_version"] == "1.1" else FACT_FIELDS
+    require(set(envelope["fact"]) <= allowed, "extension: unknown fact field")
     for key, field in envelope["fact"].items():
         exact(field, {"value", "proof", "unknown_reason"}, "fact field")
         if field["value"] is None:
@@ -197,13 +204,14 @@ def validate_extensions(envelope: Any, *, source_context: dict | None = None, do
         require(type(context) is dict and context.get("sha256") == proof["sha256"] and context.get("observed_at") == proof["observed_at"], "fact proof: observed source mismatch")
         require(context.get("format") in {"yaml", "json", "markdown"}, "fact proof: source format required")
         require(("path" in proof["selector"]) == (context["format"] != "markdown"), "fact proof: selector format mismatch")
-        require("data" in context, "fact proof: parsed observed source required")
-        observed_value = select_value(context["data"], proof["selector"])
-        try:
-            matches = content_hash(observed_value) == content_hash(field["value"])
-        except (TypeError, ValueError, RecursionError) as exc:
-            raise RecordError("fact proof: source value is not canonical JSON") from exc
-        require(matches, "fact proof: selected source value mismatch")
+        if selected_values:
+            require("data" in context, "fact proof: parsed observed source required")
+            observed_value = select_value(context["data"], proof["selector"])
+            try:
+                matches = content_hash(observed_value) == content_hash(field["value"])
+            except (TypeError, ValueError, RecursionError) as exc:
+                raise RecordError("fact proof: source value is not canonical JSON") from exc
+            require(matches, "fact proof: selected source value mismatch")
     facts = envelope["fact"]
     if "progress_counts" in facts and facts["progress_counts"]["value"] is not None:
         counted = facts["progress_counts"]["value"]["counted_node_ids"]
@@ -231,3 +239,44 @@ def validate_extensions(envelope: Any, *, source_context: dict | None = None, do
             string(proposal["reason"], "proposal reason")
             _managed_value(key, proposal["value"])
     return deepcopy(envelope)
+
+
+def validate_extensions(envelope: Any, *, source_context: dict | None = None,
+                        domain: str = "source") -> dict | None:
+    """Prove literal values against the caller's actually read parsed source.
+
+    Optional 1.1 adds task_plan; existing optional 1.0 remains unchanged.
+    """
+    return _validate_extensions(envelope, source_context=source_context,
+                                domain=domain, selected_values=True)
+
+
+def validate_record_extensions(envelope: Any, sources: list, observed_at: str) -> dict | None:
+    """Offline structural/proof-binding validation of an immutable record.
+
+    SourceResolver proved literal value equality before publication. History
+    reads do not reopen source files or recreate source data from the envelope.
+    """
+    context = {source["id"]: {"sha256": source["sha256"], "format": source["format"],
+                               "observed_at": observed_at} for source in sources}
+    return _validate_extensions(envelope, source_context=context,
+                                domain="source", selected_values=False)
+
+
+def validate_extension_declaration(config: Any, source: dict) -> dict:
+    """Only literal selectors into the already registered sole source."""
+    exact(config, {"schema_version", "fact_mapping", "unknown_fields"}, "extension declaration")
+    require(config["schema_version"] in SUPPORTED_VERSIONS, "unsupported extension declaration")
+    mapping, reasons = config["fact_mapping"], config["unknown_fields"]
+    allowed = TASK_PLAN_FIELDS if config["schema_version"] == "1.1" else FACT_FIELDS
+    require(type(mapping) is dict and type(reasons) is dict and set(mapping) <= allowed
+            and set(reasons) == set(mapping), "extension mappings/reasons invalid")
+    for reason in reasons.values():
+        string(reason, "extension unknown reason")
+    for rule in mapping.values():
+        exact(rule, {"source_ref", "selector"}, "extension mapping")
+        require(rule["source_ref"] == source["id"], "extension cannot widen source identity")
+        validate_selector(rule["selector"])
+        require(("path" in rule["selector"]) == (source["format"] != "markdown"),
+                "extension selector/format mismatch")
+    return config

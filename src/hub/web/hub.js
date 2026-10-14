@@ -1,5 +1,6 @@
 import {el, button, api, notify, navigate, validRefreshCommand, connectionState, ownerLogin, ownerLogout} from './common.js';
 import {renderDesigns} from './designs.js';
+import {renderBusinessPlan} from './business_tasks.mjs';
 import {attention, freshness, refreshable, projectFacts, projectTasks, projectSummary, loadProjectDirectory, loadSyncStatus, coreGapSummary, scheduleSummary, requestSummary} from './connection_view.mjs';
 
 const main = document.querySelector('#main');
@@ -229,7 +230,7 @@ async function projectDetail(id,token){
   const fields=factsView(p),taskPanel=await projectTaskPanel(p,token);if(token!==generation)return;
   const sources=el('section',{className:'panel stack'},el('h2',{},'状态来源'),el('p',{className:'caption'},`最近观察：${time(p.source.observed_at)}`),el('p',{className:attention(p)?'warning':'success'},freshness(p)));
   const operationalNotice=operationalSourceNotice(p);if(operationalNotice)sources.append(operationalNotice);
-  if(p.operational?.last_success && p.freshness.state!=='fresh' && p.declared.connection_read_allowed===true && p.freshness.local_presence!=='removed_local')sources.append(el('details',{},el('summary',{},'历史成功快照 · '+time(p.operational.last_success.observed_at)),el('p',{className:'warning'},'这是过去的项目记录，不能替代当前失败或未知。'),factsView(p,true)));
+  if(p.operational?.last_success && p.freshness.state!=='fresh' && p.declared.connection_read_allowed===true && p.freshness.local_presence!=='removed_local')sources.append(el('details',{},el('summary',{},'历史成功快照 · '+time(p.operational.last_success.observed_at)),el('p',{className:'warning'},'这是过去的项目记录，不能替代当前失败或未知。'),factsView(p,true),renderBusinessPlan(p,{history:true})));
   for(const path of p.source.entrypoints||[]){const copy=button('复制来源位置',async()=>{try{await navigator.clipboard.writeText(path);notify('来源位置已复制。','success');}catch{notify('无法访问剪贴板，可选中来源位置复制。','warning');}});sources.append(el('p',{},path),copy);}
   if(!p.source.entrypoints?.length)sources.append(el('p',{className:'muted'},p.declared.hub_connection_exception?'此项目已登记管理读取例外。':'来源未提供可打开的位置。'));
   const relations=el('section',{className:'panel stack'},el('h2',{},'项目关联'));
@@ -238,7 +239,7 @@ async function projectDetail(id,token){
   const designCount=p.design.references.filter(x=>x.kind==='candidate').length;
   const design=el('section',{className:'panel stack'},el('h2',{},'界面设计'),el('p',{className:'muted'},designCount?`${designCount} 个设计版本可查看`:'尚未登记设计候选'),el('a',{className:'button',href:`#designs/${encodeURIComponent(id)}`},designCount?'进入设计审核':'查看设计入口'));
   const exception=p.declared.hub_connection_exception;
-  main.replaceChildren(el('section',{className:'stack'},el('a',{href:'#projects'},'← 所有项目'),el('h1',{},p.name),el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},refreshButton([p]),(!refreshable(p)||!syncStatus?.eligible_project_ids.includes(p.project_id))?el('p',{className:'caption'},syncStatus?'此项目不在符合资格的刷新范围内。':'刷新范围暂不可用，请回到项目列表重新核对。'):null),exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,el('section',{className:'panel stack'},el('h2',{},'项目权威状态'),summaryView(p),el('p',{className:'caption'},'仅显示项目登记来源明确提供的事实。缺值和过期记录保留为未知。'),fields),taskPanel,el('a',{className:'button',href:'#host'},'查看 Linux 主机观测'),el('div',{className:'details-grid'},el('div',{className:'stack'},sources,relations),design),diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields,quality:p.business.quality})));
+  main.replaceChildren(el('section',{className:'stack'},el('a',{href:'#projects'},'← 所有项目'),el('h1',{},p.name),el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},refreshButton([p]),(!refreshable(p)||!syncStatus?.eligible_project_ids.includes(p.project_id))?el('p',{className:'caption'},syncStatus?'此项目不在符合资格的刷新范围内。':'刷新范围暂不可用，请回到项目列表重新核对。'):null),exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,el('section',{className:'panel stack'},el('h2',{},'项目权威状态'),summaryView(p),el('p',{className:'caption'},'仅显示项目登记来源明确提供的事实。缺值和过期记录保留为未知。'),fields),renderBusinessPlan(p),taskPanel,el('a',{className:'button',href:'#host'},'查看 Linux 主机观测'),el('div',{className:'details-grid'},el('div',{className:'stack'},sources,relations),design),diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields,quality:p.business.quality})));
 }
 async function route(focus=true){
   const token=++generation;const parts=location.hash.slice(1).split('/').map(p=>{try{return decodeURIComponent(p);}catch{return '';}});const kind=parts[0]||'projects';

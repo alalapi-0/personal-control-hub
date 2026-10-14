@@ -65,6 +65,15 @@
     "entry_rule": "safe relative Python file; never a shell command",
     "snapshot": ".hub/status.json"
   },
+  "optional_extensions": {
+    "versions": [
+      "1.0",
+      "1.1"
+    ],
+    "ingestion": "Literal selector and actual source hash/observation/value equality; no managed/derived/proposed source authority",
+    "task_plan": "1.1 business hierarchy/leaf acceptance and versioned denominator history; provider tasks excluded",
+    "legacy": "Absent extension preserves source2.0 fields/update identity; old optional1.0 remains readable"
+  },
   "permission_rule": "explicit connection_read_allowed=false denies before root access; absent field falls back to enabled",
   "protected_sources": "no control/environment/credential path components in roots or sources; aliases are rechecked",
   "output_shell": "exact snapshot/row/authority/head/coverage/freshness fields; valid project IDs, nonempty names, strict numeric/boolean types",

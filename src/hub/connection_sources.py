@@ -217,6 +217,25 @@ class SourceResolver:
                 result["field_provenance"][field] = {"source_ref": source["id"], "sha256": metadata["sha256"],
                                                      "selector": rule["selector"], "value_map": rule["value_map"], "raw_value": raw}
                 del result["unknown_fields"][field]
+            if "extensions" in declaration:
+                from .connection_extensions import validate_extensions
+                config = declaration["extensions"]
+                envelope = {"schema_version": config["schema_version"],
+                            "fact": {}, "managed": {}, "derived": {}, "proposed": {}}
+                for field, rule in config["fact_mapping"].items():
+                    raw = select_value(parsed, rule["selector"])
+                    envelope["fact"][field] = {
+                        "value": raw, "unknown_reason": config["unknown_fields"][field] if raw is None else None,
+                        "proof": None if raw is None else {"source_ref": source["id"],
+                            "selector": rule["selector"], "sha256": metadata["sha256"],
+                            "observed_at": result["observed_at"]}}
+                    if (field == "task_plan" and raw is not None and project_id == "personal-control-hub"
+                            and root == self.root.resolve(strict=True) and source["path"] == "STATE.yaml"):
+                        from .task_view_projection import validate_refactor_task_view
+                        validate_refactor_task_view(parsed["pch_refactor"], raw)
+                result["extensions"] = validate_extensions(envelope, source_context={source["id"]: {
+                    "sha256": metadata["sha256"], "observed_at": result["observed_at"],
+                    "format": source["format"], "data": parsed}})
             # Keep normalization bound to a stable source version, then verify
             # that the declaration used for its mapping still agrees.
             _, source_metadata = _safe_relative_read(root, source["path"], authority_check=check)
@@ -242,6 +261,7 @@ class SourceResolver:
         except (RecordError, TypeError, ValueError, KeyError):
             code, message = "invalid", "Declaration, source or typed mapping failed validation; inspect the registered source."
         # Never retain partial business data from an invalid read in a success-shaped row.
+        result.pop("extensions", None)
         result.update(success=False, disposition=code, business=empty_business(), field_provenance={},
                       unknown_fields={key: message for key in FIELDS}, errors=[{"code": code, "message": message}])
         result["freshness"].update(read_status=code, stale=True, reason=message)
