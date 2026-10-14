@@ -204,3 +204,7 @@ hub_field_mapping:
 原 `hub.connection.yaml` 仍先校验并保留准确哈希，读取后再次核对；规范记录的 field_provenance 保存实际 selector、raw_value 和 value_map。完整 registry 哈希绑定 Hub 映射/来源配置，配置变化需要重新同步，不能用旧成功冒充当前。坏映射只使对应项目刷新失败，其余项目仍可处理；移除或禁读项目仍在任何根探测之前拒绝。
 
 不同范围的工程验收、创作决定、用户接受和运行门禁分别保留。不能把历史工程 12/12、运行测试或规划总量改称当前创作业务分母；来源没有当前分母时保持未知。
+
+Markdown 来源还可明确选择唯一标题下的两列表格单元或编号项：`selector: {heading: Snapshot, table_label: Phase}`、`selector: {heading: Next, ordered_item: 1}`。表格必须是明确的两列结构，目标标签或编号只能出现一次；读取值保留原 Markdown 文本。代码围栏、标题范围外和嵌套/续行内容不提供目标事实，缺失、歧义与不支持的结构会失败。既有 `heading + label` 与 JSON/YAML typed path 保持兼容。
+
+状态枚举转换仍须显式 `value_map`，保存原值与转换规则；等待人类审核不会变成审核通过。Markdown 表格或列表读取不生成日期、分母、用户接受或业务事实，也不执行来源中的命令、链接和代码。
