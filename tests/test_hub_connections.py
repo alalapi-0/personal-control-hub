@@ -3,6 +3,8 @@ import json
 import unittest
 from pathlib import Path
 
+import yaml
+
 from connection_fixtures import Fixture
 from hub.connection_records import RecordError, record_schema, update_key, validate_declaration, validate_result
 from hub.connections import parse_source, select_value
@@ -91,6 +93,80 @@ class ConnectionContractTests(unittest.TestCase):
         for source in ("# Current\nStatus: active\nStatus: complete", "# Current\nStatus: active\n# Current\nStatus: complete"):
             with self.assertRaises(RecordError):
                 select_value(source, selector)
+
+    def test_explicit_null_subtrees_select_unknown_in_json_and_yaml(self):
+        for data, format_name in ((b'{"governed_round":null}', "json"),
+                                  (b"governed_round: null\n", "yaml")):
+            with self.subTest(format_name=format_name):
+                source = parse_source(data, format_name)
+                for path in (["governed_round", "contract_id"],
+                             ["governed_round", "status"], ["governed_round", 0, "status"]):
+                    self.assertIsNone(select_value(source, {"path": path}))
+        for source, path in (({}, ["governed_round", "status"]),
+                             ({"governed_round": {}}, ["governed_round", "status"]),
+                             ({"governed_round": False}, ["governed_round", "status"]),
+                             ({"governed_round": 0}, ["governed_round", "status"]),
+                             ({"governed_round": []}, ["governed_round", "status"]),
+                             ({"governed_round": []}, ["governed_round", 0]),
+                             ({"governed_round": [None]}, ["governed_round", 1])):
+            with self.subTest(source=source, path=path):
+                with self.assertRaises(RecordError):
+                    select_value(source, {"path": path})
+
+    def test_null_governed_round_resolves_unknown_and_recovers_typed_values(self):
+        # Registered agent-state shape; no real project state is read or changed.
+        source_path = ".agent_runtime/agent-state.json"
+        self.declaration["source_refs"][0].update(path=source_path, format="json")
+        self.declaration["mapping"] = {
+            field: {"source_ref": "state", "selector": {"path": path}, "value_map": None}
+            for field, path in {
+                "current_work.round": ["governed_round", "contract_id"],
+                "current_work.status": ["governed_round", "status"],
+                "current_work.accepted": ["accepted"],
+                "progress.completed": ["completed"],
+                "progress.counting_basis": ["counting_basis"],
+                "blockers": ["blockers"],
+            }.items()
+        }
+        (self.root / "hub.connection.yaml").write_text(yaml.safe_dump(self.declaration))
+        self.fixture.projects[0]["current_state_paths"] = [source_path]
+        self.fixture.save_registry()
+        source_file = self.root / source_path
+        source_file.parent.mkdir()
+        source = {"governed_round": None, "accepted": False, "completed": 0, "blockers": [],
+                  "counting_basis": "Registered completed items"}
+        source_file.write_text(json.dumps(source))
+        result = self.fixture.resolver().refresh("a")
+        self.assertTrue(result["success"])
+        self.assertEqual("resolved", result["disposition"])
+        self.assertEqual([], result["errors"])
+        for field in ("current_work.round", "current_work.status"):
+            self.assertEqual(self.declaration["unknown_fields"][field], result["unknown_fields"][field])
+            self.assertNotIn(field, result["field_provenance"])
+        self.assertIsNone(result["business"]["current_work"]["round"])
+        self.assertIsNone(result["business"]["current_work"]["status"])
+        for field, expected in (("current_work.accepted", False), ("progress.completed", 0), ("blockers", [])):
+            self.assertNotIn(field, result["unknown_fields"])
+            self.assertEqual(expected, result["field_provenance"][field]["raw_value"])
+        for subtree in ({}, False, "active", []):
+            with self.subTest(subtree=subtree):
+                source["governed_round"] = subtree
+                source_file.write_text(json.dumps(source))
+                invalid = self.fixture.resolver().refresh("a")
+                self.assertFalse(invalid["success"])
+                self.assertEqual("invalid", invalid["disposition"])
+                self.assertEqual({}, invalid["field_provenance"])
+        del source["governed_round"]
+        source_file.write_text(json.dumps(source))
+        self.assertFalse(self.fixture.resolver().refresh("a")["success"])
+        source["governed_round"] = {"contract_id": "R2.1", "status": "active"}
+        source_file.write_text(json.dumps(source))
+        recovered = self.fixture.resolver().refresh("a")
+        self.assertTrue(recovered["success"])
+        for field, expected in (("round", "R2.1"), ("status", "active")):
+            self.assertEqual(expected, recovered["business"]["current_work"][field])
+            self.assertNotIn("current_work." + field, recovered["unknown_fields"])
+            self.assertEqual(expected, recovered["field_provenance"]["current_work." + field]["raw_value"])
 
     def test_offline_record_validator_rejects_impossible_or_forged_field_evidence(self):
         result = self.fixture.resolver().refresh("a")

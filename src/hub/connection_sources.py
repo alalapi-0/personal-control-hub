@@ -140,6 +140,22 @@ class SourceResolver:
             data, metadata = _safe_relative_read(root, DECLARATION_PATH, authority_check=check)
             declaration = validate_declaration(parse_source(data, "yaml"), project_id)
             result["declaration"] = {"path": DECLARATION_PATH, "sha256": metadata["sha256"], "schema_version": VERSION}
+            if "hub_field_mapping" in project or "hub_source_ref" in project:
+                # Registry authority may bind a registered route and replace field
+                # selection, but cannot change the declaration's source identity.
+                effective = dict(declaration)
+                if "hub_source_ref" in project:
+                    bound_source = project["hub_source_ref"]
+                    original_source = declaration["source_refs"][0]
+                    require(type(bound_source) is dict
+                            and bound_source.get("id") == original_source["id"]
+                            and bound_source.get("role") == original_source["role"],
+                            "registry source binding must preserve source identity and role")
+                    effective["source_refs"] = [bound_source]
+                if "hub_field_mapping" in project:
+                    effective["mapping"] = project["hub_field_mapping"]
+                # Keep malformed overlays local to this project's refresh.
+                declaration = validate_declaration(effective, project_id)
             result["validation_entry"] = declaration["validation_entry"]
             result["freshness"]["max_read_age_seconds"] = declaration["max_read_age_seconds"]
             source = declaration["source_refs"][0]

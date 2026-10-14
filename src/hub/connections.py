@@ -94,6 +94,9 @@ def select_value(source: Any, selector: dict) -> Any:
     if "path" in selector:
         current = source
         for part in selector["path"]:
+            # An explicit null subtree publishes no fact at any deeper path.
+            if current is None:
+                return None
             if type(part) is str:
                 require(type(current) is dict and part in current, "mapped key is absent")
             else:

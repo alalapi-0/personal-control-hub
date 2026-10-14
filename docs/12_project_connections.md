@@ -160,7 +160,7 @@ python3 scripts/hub_connections.py validate-declaration data/connections/hub.con
 `source_refs` 当前只接受一个 sole current-state 源。`mapping` 的可用字段和类型由 Schema 列出。
 YAML/JSON 使用 `selector: {path: [current_work, status]}`；键为字符串，数组索引为非负整数，不允许执行表达式。
 Markdown 使用 `selector: {heading: Current, label: Status}` 精确读取该唯一标题下 `Status: ...` 或 `- Status: ...` 的单行值。
-同名标题、重复标签、重复 YAML/JSON 键、YAML alias/anchor、越界路径及类型错误都会失败；不做模糊猜测。
+同名标题、重复标签、重复 YAML/JSON 键、外部来源的 YAML alias/anchor、越界路径及类型错误都会失败；不做模糊猜测。
 Markdown 的布尔或状态文本必须通过显式 `value_map` 转换，例如 `{"yes": true, "no": false}`，不能按非空字符串猜真值。
 未映射字段，以及映射结果为 null 的字段，都使用声明中该字段的 unknown 原因。
 `validation_entry` 只展示项目原有验证命令，不由 reader 执行。
@@ -178,3 +178,29 @@ Markdown 每项含可读摘要及一份完整规范 JSON 记录，可逐字段�
 本轮交付的是字段映射和本地演示；真实发送器、目标映射和平台消息大小处理需在明确授权的接入单元另行验证。
 
 回归入口：`python3 -m unittest discover -s tests -p 'test_hub_*.py' -q`。
+
+## Hub 拥有的确定性映射与来源绑定
+
+来源项目保持只读时，可以在它的既有 registry 条目中明确配置 `hub_field_mapping`。它使用现有声明的 mapping 规则格式，整体替换字段选择，不合并旧规则；未映射或遇到明确 null 子树的字段仍保持 unknown。缺键、错误的非 null 类型、越界索引与歧义仍失败，false、0、空列表不被当成缺值。不得在映射中填写业务事实或推断完成率。
+
+可选 `hub_source_ref` 使用现有 source_ref 结构，只绑定一个明确登记的相对来源路径及格式。它必须保持来源声明原有的 id 和 role；路径必须已列入该项目的 `current_state_paths`，并通过现有根资格、保护路径、无跟随文件读取和类型检查。不自动跟随 README 链接，不扩大权限、根、来源数量、exporter、验证命令或 TTL。
+
+以下仅展示既有登记条目的局部配置，示例字段必须来自实际当前源：
+
+```yaml
+current_state_paths: [STATE.json]
+hub_source_ref:
+  id: state
+  path: STATE.json
+  format: json
+  role: current_state
+hub_field_mapping:
+  current_work.status:
+    source_ref: state
+    selector: {path: [status]}
+    value_map: {active: active, blocked: blocked}
+```
+
+原 `hub.connection.yaml` 仍先校验并保留准确哈希，读取后再次核对；规范记录的 field_provenance 保存实际 selector、raw_value 和 value_map。完整 registry 哈希绑定 Hub 映射/来源配置，配置变化需要重新同步，不能用旧成功冒充当前。坏映射只使对应项目刷新失败，其余项目仍可处理；移除或禁读项目仍在任何根探测之前拒绝。
+
+不同范围的工程验收、创作决定、用户接受和运行门禁分别保留。不能把历史工程 12/12、运行测试或规划总量改称当前创作业务分母；来源没有当前分母时保持未知。
