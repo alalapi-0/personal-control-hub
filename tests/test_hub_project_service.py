@@ -283,7 +283,10 @@ class ProjectServiceFacadeTests(unittest.TestCase):
         self.assertEqual(project_facts(detail), project_facts(listing["projects"][0]))
         self.assertEqual({"schema_version", "project_id", "name", "declared", "business",
                           "operational", "freshness", "source", "errors", "relations",
-                          "design", "provenance"}, set(detail))
+                          "design", "provenance", "management"}, set(detail))
+        self.assertFalse(detail["management"]["available"])
+        self.assertEqual("MANAGEMENT_NOT_INITIALIZED", detail["management"]["reason"])
+        self.assertIsNone(detail["management"]["overlay"])
         self.assertIsNone(detail["declared"]["hub_connection_exception"])
         self.assertEqual("visible exception",
                          detail["declared"]["legacy_hub_connection_exception"]["reason"])

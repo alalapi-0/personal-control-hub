@@ -208,6 +208,76 @@ class ProjectService:
         except (RecordError, OSError, TypeError, ValueError) as exc:
             raise _error("PROJECT_REGISTRY_UNAVAILABLE", status=503) from exc
 
+    def _management_context(self, resolver=None):
+        """Hub metadata only; no root probes, source refreshes or config writes."""
+        resolver = resolver or self._resolver()
+        eligible = set(resolver.projects)
+        scope = self.root / "data/connections/sync_scope.yaml"
+        if scope.exists() or scope.is_symlink():
+            from .connection_sync import scope_plan
+            try:
+                eligible &= set(scope_plan(self.root, resolver)["eligible_project_ids"])
+            except (OSError, RecordError) as exc:
+                raise _error("MANAGEMENT_SCOPE_UNAVAILABLE", status=503) from exc
+        for project_id, row in resolver.projects.items():
+            presence = row.get("local_presence", {})
+            if (row.get("enabled") is not True
+                    or row.get("connection_read_allowed", row.get("enabled")) is not True
+                    or row.get("access_profile") == "no_current_goal_access"
+                    or row.get("current_state_status") == "removed_local"
+                    or type(presence) is not dict or presence.get("status") == "removed_local"
+                    or row.get("project_type") in {"cloud", "cloud_project"}):
+                eligible.discard(project_id)
+        options = [{"id": ident, "name": resolver.projects[ident]["name"]}
+                   for ident in sorted(eligible)]
+        return eligible, options
+
+    @staticmethod
+    def _management_view(state, project_id, eligible, options):
+        from .management_store import relation_warnings
+        overlay = state["projects"].get(project_id)
+        warnings = relation_warnings(state["projects"], project_id) if state["available"] else []
+        relations = (overlay or {}).get("relations")
+        if relations:
+            refs = set(relations["depends_on"] + relations["related_to"])
+            if relations["belongs_to"] is not None:
+                refs.add(relations["belongs_to"])
+            if refs - eligible:
+                warnings.append("MANAGEMENT_ORPHAN_REFERENCE")
+        return {**{key: state[key] for key in ("available", "reason", "revision", "config_hash", "source_sha256")},
+                "overlay": copy.deepcopy(overlay),
+                "relation_state": "owner_confirmed" if relations is not None else "unconfigured",
+                "warnings": warnings, "project_options": copy.deepcopy(options),
+                "editable": bool(state["available"] and project_id in eligible)}
+
+    def get_management(self, project_id):
+        identifier(project_id, "management project")
+        resolver = self._resolver()
+        if project_id not in resolver.projects:
+            raise _error("PROJECT_NOT_FOUND", status=404)
+        eligible, options = self._management_context(resolver)
+        from .management_store import ManagementStore
+        return self._management_view(ManagementStore(self.root).snapshot(), project_id, eligible, options)
+
+    def save_management(self, command, *, authorize):
+        resolver = self._resolver()
+        eligible, _ = self._management_context(resolver)
+        authority = copy.deepcopy(resolver.authority)
+        from .management_store import ManagementStore
+        def check():
+            authorize()
+            current = self._resolver()
+            if current.authority != authority or self._management_context(current)[0] != eligible:
+                raise _error("MANAGEMENT_SCOPE_CHANGED", status=409)
+        receipt = ManagementStore(self.root).apply(command, project_ids=eligible, authorize=check)
+        try:
+            view = self.get_management(receipt["project_id"])
+        except ServiceError as exc:
+            return {"receipt": receipt, "view": None, "view_error": {"code": exc.code}}
+        if view["available"] and view["revision"] >= receipt["revision"]:
+            receipt = {**receipt, "revision": view["revision"], "config_hash": view["config_hash"]}
+        return {"receipt": receipt, "view": view}
+
     def _ledger_candidate(self) -> Path:
         raw = (Path("data/connections/connection_refresh.sqlite3")
                if self.ledger_path is None else Path(self.ledger_path))
@@ -625,6 +695,17 @@ class ProjectService:
         rows = [self._dto(declared[row["project_id"]], snapshot, row,
                           relations[row["project_id"]], design_snapshot)
                 for row in snapshot["projects"]]
+        try:
+            from .management_store import ManagementStore
+            eligible, options = self._management_context(resolver)
+            management = ManagementStore(self.root).snapshot()
+            for row in rows:
+                row["management"] = self._management_view(management, row["project_id"], eligible, options)
+        except ServiceError as exc:
+            for row in rows:
+                row["management"] = {"available": False, "reason": exc.code, "revision": None,
+                    "config_hash": None, "source_sha256": None, "overlay": None,
+                    "relation_state": "unconfigured", "warnings": [], "project_options": [], "editable": False}
         return rows, snapshot
 
     def list_projects(self, query: dict[str, str] | None = None,

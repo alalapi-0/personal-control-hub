@@ -162,5 +162,17 @@ details[open]>summary {margin-bottom:16px}
 /* Business leaves keep the existing tokens and native disclosure controls. */
 .business-task-node{min-width:0}
 .business-task-summary,.business-task-node p,.business-task-node li{overflow-wrap:anywhere}
+.management-panel{min-width:0;padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:16px}
+.management-panel p,.management-panel li{overflow-wrap:anywhere}
+.management-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;border:0;padding:0;margin:16px 0;min-width:0}
+.management-field{display:flex;flex-direction:column;gap:8px;min-width:0}
+.management-field input,.management-field select{max-width:100%;width:100%;box-sizing:border-box;min-height:44px}
+.management-field select[multiple]{min-height:110px}
+.management-note,.management-layout{grid-column:1/-1}
+.management-layout{display:block;width:100%;height:auto;max-height:180px;border:1px solid var(--border);border-radius:12px;background:var(--surface);touch-action:none}
+.management-layout-point{fill:var(--accent)}
+.management-actions{display:flex;flex-wrap:wrap;gap:12px}
+.management-status{min-height:1.5em}
+@media(max-width:600px){.management-panel{padding:18px}.management-fields{grid-template-columns:1fr}}
 .business-task-children{margin-left:12px;padding-left:12px;border-left:1px solid var(--border)}
 @media(max-width:600px){.business-task-children{margin-left:4px;padding-left:8px}.business-task-summary{padding-inline:8px}}

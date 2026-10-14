@@ -34,6 +34,7 @@ WEB_ASSETS = {
     "/assets/common.js": ("common.js", "text/javascript; charset=utf-8"),
     "/assets/connection_view.mjs": ("connection_view.mjs", "text/javascript; charset=utf-8"),
     "/assets/business_tasks.mjs": ("business_tasks.mjs", "text/javascript; charset=utf-8"),
+    "/assets/management.mjs": ("management.mjs", "text/javascript; charset=utf-8"),
     "/assets/designs.js": ("designs.js", "text/javascript; charset=utf-8"),
     "/assets/host.js": ("host.js", "text/javascript; charset=utf-8"),
     "/assets/workbench.js": ("workbench.js", "text/javascript; charset=utf-8"),
@@ -438,6 +439,10 @@ class HubRequestHandler(BaseHTTPRequestHandler):
             result = (self.server.host_observer.snapshot() if self.server.host_observer else
                       {'available': False, 'metrics': {}, 'reason': 'OBSERVER_NOT_RUNNING',
                        'capacity_recommendation': None})
+        elif path == "/api/management":
+            if set(query) != {"project_id"}:
+                raise ServiceError("INVALID_QUERY")
+            result = self.server.projects.get_management(query["project_id"])
         elif path == "/api/sync-status":
             if query:
                 raise ServiceError("INVALID_QUERY")
@@ -519,7 +524,7 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                 self.server.sessions.revoke(self._one_header('Cookie'))
                 self._success({'owner_authenticated': False})
                 return
-            if path not in {"/api/refresh", "/api/designs/decisions", "/api/designs/exports", '/api/annotations', '/api/tasks'} and not (path.startswith('/api/tasks/')and path.endswith(('/cancel','/respond'))):
+            if path not in {"/api/refresh", "/api/designs/decisions", "/api/designs/exports", '/api/annotations', '/api/tasks', '/api/management/project'} and not (path.startswith('/api/tasks/')and path.endswith(('/cancel','/respond'))):
                 raise ServiceError("NOT_FOUND", status=404)
             if not self.server.owner_auth.configured:
                 raise ServiceError('OWNER_AUTH_UNAVAILABLE', status=503)
@@ -538,6 +543,14 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                 else:
                     if command:raise ServiceError('INVALID_TASK_REQUEST')
                     result=self.server.tasks.cancel(path[len('/api/tasks/'):-len('/cancel')])
+            elif path == '/api/management/project':
+                version = self.server.owner_auth.version
+                def authorize_management():
+                    self.server.sessions.validate(self._one_header('Cookie'), token, require_owner=True,
+                                                  credential_version=self.server.owner_auth.version)
+                    if self.server.owner_auth.version != version:
+                        raise ServiceError('OWNER_AUTH_FAILED', status=401)
+                result = self.server.projects.save_management(command, authorize=authorize_management)
             elif path == '/api/annotations':
                 if self.server.previews is None: raise ServiceError('WORKBENCH_UNAVAILABLE', status=503)
                 def authorize_annotation():

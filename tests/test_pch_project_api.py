@@ -106,7 +106,9 @@ class ProjectAPITests(unittest.TestCase):
         self.commit()
         dto = self.service.get_project("a")
         self.assertEqual(set(dto), {"schema_version", "project_id", "name", "declared", "business",
-                                    "operational", "freshness", "source", "errors", "relations", "design", "provenance"})
+                                    "operational", "freshness", "source", "errors", "relations", "design", "provenance", "management"})
+        self.assertFalse(dto["management"]["available"])
+        self.assertIsNone(dto["management"]["overlay"])
         quality = dto["business"]["quality"]
         self.assertEqual(quality["schema_version"], "1.0")
         for key in ("structure_coverage", "value_coverage", "evidence_coverage", "current_coverage"):

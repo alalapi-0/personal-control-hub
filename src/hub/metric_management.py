@@ -1,4 +1,4 @@
-"""Hub management config and separate review-axis queries. No charts or UI."""
+"""Hub management config and separate source-independent review-axis queries."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -26,7 +26,7 @@ FRESHNESS_FIELDS = {"max_age_seconds", "labels"}
 
 def management_contract_schema():
     return {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "config_path": CONFIG_RELATIVE,
         "config_validator": "hub.metric_management.validate_management_config",
         "review_query": "hub.metric_management.query_review_records",
@@ -35,7 +35,9 @@ def management_contract_schema():
         "dimensions": list(DIMENSIONS),
         "history_rule": "current and historical candidates are queried separately; missing history is an empty page",
         "write_back_allowed": False,
-        "ui_rule": "machine-readable pages only; no chart or UI implementation",
+        "config_versions": ["1.0", "1.1"],
+        "owner_overlays": "Hub-only priority/calendar dates/layout/confirmed relations; revision CAS, no source or provider authority",
+        "ui_rule": "Existing local UI reads separate managed values; source imports never overwrite them",
     }
 
 
@@ -47,8 +49,10 @@ def load_management_config(root):
 
 
 def validate_management_config(value):
-    exact(value, CONFIG_FIELDS, "management config")
-    require(value["schema_version"] == "1.0" and value["kind"] == "hub_management_config",
+    require(type(value) is dict, "management config object required")
+    version = value.get("schema_version")
+    exact(value, CONFIG_FIELDS if version == "1.0" else CONFIG_FIELDS | {"revision", "history"}, "management config")
+    require(version in {"1.0", "1.1"} and value["kind"] == "hub_management_config",
             "unsupported management config")
     require(value["write_back_allowed"] is False, "management config write-back is disabled")
     freshness = value["freshness"]
@@ -84,8 +88,12 @@ def validate_management_config(value):
             exact(threshold, {"kind", "value"}, "watch threshold")
             require(threshold["kind"] == "max_age_seconds" and type(threshold["value"]) is int
                     and threshold["value"] > 0, "unsupported watch threshold")
-    require(type(value["projects"]) is dict and value["projects"] == {},
-            "project overlays stay empty until an explicit source is registered")
+    if version == "1.0":
+        require(type(value["projects"]) is dict and value["projects"] == {},
+                "project overlays stay empty until an explicit source is registered")
+    else:
+        from .management_store import validate_management_state
+        validate_management_state(value)
     return value
 
 
@@ -197,6 +205,6 @@ def management_summary(config, *, after=0, limit=10):
             "axes": len(config["axes"]),
             "dimensions": len(names),
             "watch": len(config["watch"]),
-            "projects": 0,
+            "projects": len(config["projects"]),
         },
     }
