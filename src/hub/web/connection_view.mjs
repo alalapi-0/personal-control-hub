@@ -161,7 +161,32 @@ export function validateSyncStatus(directory, value) {
     if(typeof request?.request_id!=='string'||!request.request_id||typeof request.status!=='string'||!request.status
       ||!['completed','remaining','failed'].every(k=>integer(request[k]))||request.failed>request.completed||typeof request.authority_drift!=='boolean')invalid();
   }
+  if(value.projects!==undefined){
+    const rows=value.projects,r=value.reconciliation;
+    if(!Array.isArray(rows)||rows.length!==counts.scope||new Set(rows.map(p=>p?.project_id)).size!==counts.scope
+      ||!r||!/^[a-f0-9]{64}$/.test(r.scope_sha256)||!/^[a-f0-9]{64}$/.test(r.registry_sha256)
+      ||!Array.isArray(r.baseline_project_ids)||r.baseline_project_ids.length!==counts.scope
+      ||new Set(r.baseline_project_ids).size!==counts.scope
+      ||!rows.every(p=>typeof p.project_id==='string'&&r.baseline_project_ids.includes(p.project_id)
+        &&['complete','partial','failed','stale','unread'].includes(p.category)
+        &&p.eligible===value.eligible_project_ids.includes(p.project_id)&&Array.isArray(p.core_missing)
+        &&p.core_missing.every(x=>typeof x==='string')&&Array.isArray(p.sources)
+        &&p.sources.every(s=>typeof s.id==='string'&&/^[a-f0-9]{64}$/.test(s.sha256)))
+      ||!['complete','partial','failed','stale','unread'].every(k=>rows.filter(p=>p.category===k).length===counts[k]))invalid();
+  }
   return value;
+}
+
+export function scheduleSummary(schedule){
+  if(!schedule?.available)return '自动刷新状态暂不可用；无法确认计时器、错过触发或补跑情况。';
+  const timer=schedule.timer,service=schedule.service;
+  const state=({active:'当前运行',paused:'当前暂停',unavailable:'当前状态不可用'})[schedule.status]||'当前状态未知';
+  return `自动刷新：${state}；开机登录后启用状态：${timer.UnitFileState}；最近触发记录：${timer.LastTriggerUSec||'未知'}；下次计划：${timer.NextElapseUSecRealtime||'未知'}。最近服务结果：${service.Result}，退出码 ${service.ExecMainStatus}。日历真实触发、退出登录后恢复和错过补跑尚未验收；计划时间不代表已经执行。`;
+}
+
+export function requestSummary(request){
+  if(!request)return '尚无记录';
+  return `${request.request_id}；开始 ${request.started_at}；结束 ${request.finished_at||'尚未结束'}；已记录 ${request.completed}；失败 ${request.failed}；剩余 ${request.remaining_project_ids.length}。${request.authority_drift?'规则版本已变化，原请求不能直接续接。':''}`;
 }
 
 export async function loadSyncStatus(request, directory) {

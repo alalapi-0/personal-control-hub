@@ -1,6 +1,12 @@
 # 项目状态统一入口
 
 读者：只从 Personal Control Hub 接手的 Agent，以及负责维护项目状态源的 Agent。
+
+固定范围的质量报告使用 `python3 scripts/hub_connections.py status`，与本地页面的 `/api/sync-status` 共用 ProjectService 和现有账本。报告逐 ID 保留 complete/partial/failed/stale/unread、核心缺口、来源 SHA、观察时间及相同账本 head；范围与登记 SHA 绑定原始身份集合、当前读取资格、遗漏和范围外条目。历史请求保存的是当时选中的 ID 和 authority hash，不是完整权限快照。最近成功读取、最近失败和 OPEN 请求分别展示；读取成功不代表业务或人类验收。只读 systemd 查询限定两条 refresh unit；查询失败显示不可用。计划时间、LastTrigger 元数据和模拟时钟不能代替 R6.4 真实日历 journal 或退出登录后的恢复验收。
+
+新增非 Git 项目也沿用唯一 `data/registry/external_projects.yaml`。先在 Hub 的 `data/registry/` 下准备**完整单条**登记 YAML，沿用该表的 required_project_fields 和存储约束，明确绝对 root_path、稳定 id、唯一 current_state_paths、`connection_read_allowed`，并保持 `scan_enabled: false`、`external_write_allowed: false`。业务声明不由登记器创建。执行 `sha256sum data/registry/external_projects.yaml` 后，运行 `python3 scripts/hub_connections.py register --entry data/registry/candidate.yaml --expected-registry-sha256 <该SHA>`；默认只检查。审阅单条差异和身份 warning 后，以同一 SHA 加 `--apply` 才写本 Hub 的登记表。此入口不运行项目命令、不启动 Agent、不复制仓库，也不改变固定同步范围；登记不等于执行授权。新项目随后可在目录出现，缺声明仍是 missing_declaration。
+
+迁移路径时提交同一 id 的完整新登记，保留原账本，不改成第二个 id；旧投影因 authority 变化保持 stale，明确重新读取后才更新。不同 ID 的同规范路径或已获读取资格的同物理根会被拒绝；禁读、removed、legacy 条目零探测，不能确认物理身份的 warning 保留为未验证。嵌套根需要先解决身份决定，本入口拒绝直接应用。所有检查及 apply 使用预期登记 SHA、文件身份、现有目录 advisory lock 和原子替换；该锁仅协调遵守此入口的写者，不能替代跨任务文件写责。回退仅恢复本次单条登记的精确前像，且须核对当前 SHA，不能覆盖后来的手工修改或删除账本历史。
 更新条件：接入契约、读取命令或错误语义变化时更新。业务事实始终在项目自身的权威源中。本阶段提供数值接口，不生成图表。
 
 ## 本地每日刷新

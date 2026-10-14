@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {attention, freshness, refreshable, projectFacts, projectTasks, projectSummary, loadProjectDirectory, validateSyncStatus, loadSyncStatus, coreGapSummary} from '../src/hub/web/connection_view.mjs';
+import {attention, freshness, refreshable, projectFacts, projectTasks, projectSummary, loadProjectDirectory, validateSyncStatus, loadSyncStatus, coreGapSummary, scheduleSummary, requestSummary} from '../src/hub/web/connection_view.mjs';
 
 function project(overrides = {}) {
   return {
@@ -429,4 +429,30 @@ test('alternative core facts and unavailable observations retain distinct readab
     'declared.connection_read_allowed':2,'current_work.status':19}});
   for(const label of ['项目阶段或目标 17 项','下一步或阻塞说明 18 项','当前来源观察 1 项','来源读取资格 2 项','工作状态 19 项'])assert.ok(text.includes(label));
   assert.equal(text.includes('其他核心字段'),false);
+});
+
+test('per-project quality report preserves the exact baseline and category counts',()=>{
+  const {directory,status}=syncFixture();
+  status.projects=status.eligible_project_ids.map(project_id=>({project_id,category:'partial',eligible:true,
+    core_missing:['progress.completed'],sources:[{id:'state',sha256:'a'.repeat(64)}]}));
+  status.reconciliation={scope_sha256:'b'.repeat(64),registry_sha256:'c'.repeat(64),
+    baseline_project_ids:[...status.eligible_project_ids]};
+  assert.equal(validateSyncStatus(directory,status).projects.length,39);
+  for(const mutate of [s=>s.projects.pop(),s=>s.projects[0].project_id=s.projects[1].project_id,
+    s=>s.projects[0].category='complete',s=>s.projects[0].eligible=false,
+    s=>s.projects[0].sources[0].sha256='invalid',s=>s.reconciliation.scope_sha256='invalid',
+    s=>s.reconciliation.baseline_project_ids[0]='outside']){
+    const changed=structuredClone(status);mutate(changed);
+    assert.throws(()=>validateSyncStatus(directory,changed),{code:'SYNC_STATUS_INCONSISTENT'});
+  }
+});
+
+test('schedule and recovery text retains failure and unverified real-trigger boundaries',()=>{
+  assert.ok(scheduleSummary({available:false,reason:'query_failed'}).includes('无法确认'));
+  const text=scheduleSummary({available:true,status:'active',timer:{UnitFileState:'disabled',
+    LastTriggerUSec:'',NextElapseUSecRealtime:'tomorrow'},service:{Result:'exit-code',ExecMainStatus:2}});
+  for(const value of ['当前运行','disabled','退出码 2','尚未验收','计划时间不代表已经执行'])assert.ok(text.includes(value));
+  const request=requestSummary({request_id:'same-id',started_at:'2026-10-14T00:00:00Z',finished_at:null,
+    completed:1,failed:1,remaining_project_ids:['b'],authority_drift:true});
+  for(const value of ['same-id','尚未结束','失败 1','剩余 1','原请求不能直接续接'])assert.ok(request.includes(value));
 });

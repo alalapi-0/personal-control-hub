@@ -29,6 +29,13 @@ PUBLIC_ERROR_MESSAGES = {
     "RESULT_VALIDATION_FAILED": "A refresh result failed the Hub record contract.",
     "UNSUPPORTED_LEDGER_SCHEMA": "Hub refresh ledger schema is unsupported or incomplete.",
     "UNSAFE_LEDGER_PATH": "Hub refresh ledger is missing or unavailable at the configured Hub-local path.",
+    "REGISTRY_CONFLICT": "Registry version changed; check the current metadata before retrying.",
+    "REGISTRY_BUSY": "Another registry writer is active; retry after it finishes.",
+    "PROTECTED_REGISTRATION": "This excluded or unqualified registration is protected from this entry point.",
+    "ROOT_ALREADY_REGISTERED": "The project root already has a stable project identity.",
+    "ROOT_IDENTITY_ALREADY_REGISTERED": "This directory alias already belongs to a registered project.",
+    "PERMISSION_EXPANSION_FORBIDDEN": "Registration cannot enable scanning or external project writes.",
+    "NESTED_ROOT_REVIEW_REQUIRED": "Nested project identities need an explicit owner decision before registration.",
 }
 
 
@@ -129,6 +136,11 @@ def main(argv: list[str] | None = None) -> int:
     declaration.add_argument("path", help="Relative Hub template path (does not visit project roots)")
     commands.add_parser("validate")
     commands.add_parser("discover")
+    commands.add_parser("status", help="Read the same scope, quality, recovery and fixed-timer status as the local page")
+    registration = commands.add_parser("register", help="Check one explicit Hub-local registry entry; --apply writes only this Hub registry")
+    registration.add_argument("--entry", required=True, help="Entry YAML under Hub data/registry")
+    registration.add_argument("--expected-registry-sha256", required=True)
+    registration.add_argument("--apply", action="store_true", help="Apply the checked single-entry add or same-ID migration")
     sync = commands.add_parser("sync")
     identity = sync.add_mutually_exclusive_group(required=True)
     identity.add_argument("--request-id", help="Reuse to resume; choose a fresh ID to read again")
@@ -151,6 +163,22 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(record_schema(), ensure_ascii=False, indent=2))
             return 0
         root = args.root.absolute()
+        if args.command == "register":
+            from hub.connection_sources import _safe_relative_read
+            from hub.registration import register_project
+            entry_path = Path(args.entry)
+            require(not entry_path.is_absolute() and ".." not in entry_path.parts
+                    and entry_path.parts[:2] == ("data", "registry"),
+                    "registration entry must be under Hub data/registry")
+            data, _ = _safe_relative_read(root, str(entry_path), authority_check=lambda: None)
+            result = register_project(root, parse_source(data, "yaml"),
+                                      args.expected_registry_sha256, apply=args.apply)
+            # The exact preimage supports Root's local recovery; never emit the
+            # registry body or private paths to stdout or a service journal.
+            public = {key: result[key] for key in ("applied", "change_kind", "id_mapping",
+                                                   "old_registry_hash", "new_registry_hash", "warnings")}
+            print(json.dumps(public, ensure_ascii=False, indent=2))
+            return 0
         if args.command == "validate-declaration":
             path = Path(args.path)
             require(not path.is_absolute() and ".." not in path.parts and path.parts[:2] == ("data", "connections"),
@@ -161,6 +189,13 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps({"valid": True, "schema_version": "2.0"}))
             return 0
         path = _ledger_path(root, args.db)
+        if args.command == "status":
+            from hub.project_service import ProjectService
+            from hub.refresh_schedule import refresh_schedule_status
+            result = ProjectService(root, ledger_path=path).sync_status()
+            result["schedule"] = refresh_schedule_status()
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+            return 0
         if args.command in {"history", "rebuild"}:
             result = _historical_view(root, path, args.command,
                                       getattr(args, "request_id", None))

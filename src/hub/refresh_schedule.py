@@ -1,0 +1,105 @@
+"""Read-only observations of the two fixed user refresh units.
+
+Systemd's observed timestamps are not proof of calendar or logout recovery.
+This module never installs, starts, stops, or changes a unit.
+"""
+from __future__ import annotations
+
+import re
+import subprocess
+import sys
+from datetime import datetime, timezone
+
+_TIMER = 'personal-control-hub-refresh.timer'
+_SERVICE = 'personal-control-hub-refresh.service'
+_TIMER_FIELDS = ('ActiveState', 'UnitFileState', 'LastTriggerUSec',
+                 'NextElapseUSecRealtime', 'Persistent')
+_SERVICE_FIELDS = ('ActiveState', 'Result', 'ExecMainStatus',
+                   'ExecMainStartTimestamp', 'ExecMainExitTimestamp')
+_ACTIVE_STATES = {'active', 'reloading', 'inactive', 'failed', 'activating',
+                  'deactivating', 'maintenance', 'refreshing'}
+_FILE_STATES = {'enabled', 'enabled-runtime', 'linked', 'linked-runtime',
+                'alias', 'masked', 'masked-runtime', 'static', 'disabled',
+                'indirect', 'generated', 'transient'}
+_TIMESTAMP = re.compile(r'(?:|n/a|0|(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun) '
+                        r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)? [A-Za-z0-9_+:/-]+)')
+
+
+def _parse(stdout: str, fields: tuple[str, ...]) -> dict:
+    if type(stdout) is not str or len(stdout) > 16384:
+        raise ValueError('invalid output')
+    values = {}
+    for line in stdout.splitlines():
+        key, separator, value = line.partition('=')
+        if not separator or key not in fields or key in values or len(value) > 256:
+            raise ValueError('invalid output')
+        values[key] = value
+    if set(values) != set(fields) or values['ActiveState'] not in _ACTIVE_STATES:
+        raise ValueError('invalid output')
+    timestamp_fields = ('LastTriggerUSec', 'NextElapseUSecRealtime') if fields == _TIMER_FIELDS else (
+        'ExecMainStartTimestamp', 'ExecMainExitTimestamp')
+    if any(not _TIMESTAMP.fullmatch(values[field]) for field in timestamp_fields):
+        raise ValueError('invalid output')
+    if fields == _TIMER_FIELDS:
+        if values['UnitFileState'] == '' and values['Persistent'] == '':
+            raise LookupError('unit unavailable')
+        if values['UnitFileState'] not in _FILE_STATES or values['Persistent'] not in {'yes', 'no'}:
+            raise ValueError('invalid output')
+    else:
+        if not re.fullmatch(r'[a-z][a-z-]{0,63}', values['Result']):
+            raise ValueError('invalid output')
+        if not re.fullmatch(r'[0-9]{1,3}', values['ExecMainStatus']) or int(values['ExecMainStatus']) > 255:
+            raise ValueError('invalid output')
+        values['ExecMainStatus'] = int(values['ExecMainStatus'])
+    return values
+
+
+def refresh_schedule_status() -> dict:
+    """Observe only the fixed timer/service; never accept a command or unit."""
+    result = {'available': False, 'reason': None,
+              'observed_at': datetime.now(timezone.utc).isoformat(),
+              'status': 'unavailable', 'timer': None, 'service': None,
+              'actual_calendar_verification': 'unverified',
+              'logout_recovery_verification': 'unverified',
+              'missed': None, 'catchup': None}
+    if sys.platform != 'linux':
+        result['reason'] = 'unsupported_platform'
+        return result
+    observations = []
+    for unit, fields in ((_TIMER, _TIMER_FIELDS), (_SERVICE, _SERVICE_FIELDS)):
+        try:
+            completed = subprocess.run(
+                ['systemctl', '--user', 'show', '--no-pager', '--property=' + ','.join(fields), unit],
+                shell=False, timeout=2, capture_output=True, text=True, check=False)
+        except FileNotFoundError:
+            result['reason'] = 'systemctl_unavailable'
+            return result
+        except subprocess.TimeoutExpired:
+            result['reason'] = 'query_timeout'
+            return result
+        except (OSError, UnicodeError):
+            result['reason'] = 'query_failed'
+            return result
+        if completed.returncode != 0:
+            stderr = completed.stderr if type(completed.stderr) is str else ''
+            if any(message in stderr.lower() for message in (
+                    'failed to connect to bus', 'failed to connect to user scope bus', 'no medium found')):
+                result['reason'] = 'user_bus_unavailable'
+            else:
+                result['reason'] = 'unit_unavailable' if completed.returncode == 4 else 'query_failed'
+            return result
+        try:
+            observations.append(_parse(completed.stdout, fields))
+        except LookupError:
+            result['reason'] = 'unit_unavailable'
+            return result
+        except (ValueError, TypeError):
+            result['reason'] = 'invalid_output'
+            return result
+    timer, service = observations
+    result.update(available=True, timer=timer, service=service,
+                  status='active' if timer['ActiveState'] == 'active' else
+                         'paused' if timer['ActiveState'] == 'inactive' else 'unavailable')
+    if result['status'] == 'unavailable':
+        result['reason'] = 'timer_not_ready'
+    return result

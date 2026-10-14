@@ -440,7 +440,8 @@ class HubRequestHandler(BaseHTTPRequestHandler):
         elif path == "/api/sync-status":
             if query:
                 raise ServiceError("INVALID_QUERY")
-            result = self.server.projects.sync_status()
+            from .refresh_schedule import refresh_schedule_status
+            result = {**self.server.projects.sync_status(), "schedule": refresh_schedule_status()}
         elif path == "/api/projects":
             snapshot = self._design_snapshot()
             result = self.server.projects.list_projects(query=query, design_snapshot=snapshot)

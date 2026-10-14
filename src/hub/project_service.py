@@ -642,7 +642,7 @@ class ProjectService:
 
     def sync_status(self) -> dict:
         """Full finite-scope counts, without probing roots or refreshing sources."""
-        from hub.connection_sync import scope_plan
+        from hub.connection_sync import recovery_summary, scope_plan
 
         resolver = self._resolver()
         try:
@@ -658,7 +658,7 @@ class ProjectService:
                   "eligible": len(eligible), "excluded": len(scope["excluded"]),
                   "ineligible": scope["scope_total"] - len(eligible),
                   "complete": 0, "partial": 0, "failed": 0, "stale": 0, "unread": 0}
-        failure_codes, core_field_gaps = {}, {}
+        failure_codes, core_field_gaps, projects = {}, {}, []
         for project_id in scope["project_ids"]:
             row = by_id.get(project_id)
             latest = row["operational"].get("latest_attempt") if row else None
@@ -678,12 +678,24 @@ class ProjectService:
             if row:
                 for field in row["business"]["quality"]["core_missing"]:
                     core_field_gaps[field] = core_field_gaps.get(field, 0) + 1
+            projects.append({"project_id": project_id,
+                             "name": row["name"] if row else project_id,
+                             "category": category, "eligible": project_id in eligible,
+                             "core_missing": row["business"]["quality"]["core_missing"] if row else ["registration"],
+                             "freshness": row["freshness"]["state"] if row else "unknown",
+                             "observed_at": row["source"]["observed_at"] if row else None,
+                             "last_success_at": row["source"]["last_success_at"] if row else None,
+                             "sources": [{key: source[key] for key in ("id", "sha256", "role", "format")}
+                                         for source in (latest.get("sources", []) if latest else [])],
+                             "result_sha256": row["provenance"]["latest_result_hash"] if row else None})
         ledger = self._read_ledger()
         last_request = None
+        recovery = recovery_summary({"requests": [], "results": []}, eligible)
         if ledger:
             history = ledger.history(current_authority=resolver.authority)
             if history["head"] != snapshot["ledger_head"]:
                 raise _error("SYNC_HEAD_CHANGED", status=409, retryable=True)
+            recovery = recovery_summary(history, eligible)
             requests = [request for request in history["requests"]
                         if set(request["project_ids"]) == eligible]
             if requests:
@@ -704,7 +716,16 @@ class ProjectService:
                               "registered_candidates": scope["scope_total"],
                               "unregistered_count": None},
                 "failure_codes": failure_codes, "core_field_gaps": core_field_gaps,
-                "last_request": last_request}
+                "last_request": last_request, "projects": projects,
+                "reconciliation": {"scope_sha256": scope["scope_sha256"],
+                                   "registry_sha256": resolver.authority["registry_hash"],
+                                   "baseline_project_ids": scope["project_ids"],
+                                   "current_eligible_project_ids": scope["eligible_project_ids"],
+                                   "missing_registration_ids": sorted(set(scope["project_ids"]) - set(by_id)),
+                                   "outside_baseline_ids": sorted(set(by_id) - set(scope["project_ids"])),
+                                   "withheld_baseline_ids": sorted(set(scope["project_ids"]) - eligible),
+                                   "duplicate_ids": []},
+                "recovery": recovery}
 
     def _refresh_receipt(self, request_id: str) -> tuple[str, dict[str, Any]]:
         try:

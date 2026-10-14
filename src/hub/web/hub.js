@@ -1,6 +1,6 @@
 import {el, button, api, notify, navigate, validRefreshCommand, connectionState, ownerLogin, ownerLogout} from './common.js';
 import {renderDesigns} from './designs.js';
-import {attention, freshness, refreshable, projectFacts, projectTasks, projectSummary, loadProjectDirectory, loadSyncStatus, coreGapSummary} from './connection_view.mjs';
+import {attention, freshness, refreshable, projectFacts, projectTasks, projectSummary, loadProjectDirectory, loadSyncStatus, coreGapSummary, scheduleSummary, requestSummary} from './connection_view.mjs';
 
 const main = document.querySelector('#main');
 const connection = document.querySelector('#connection');
@@ -134,7 +134,22 @@ function syncOverview(){
     pendingRefresh?el('p',{className:'warning'},pendingRefresh.project_ids.every(id=>syncStatus.eligible_project_ids.includes(id))?'已保存原刷新请求，可按原请求重试；不会扩大范围。':'已保存的原刷新请求包含当前无资格项目，重试已停用。原请求完整保留，请先核对资格。'):null,
     Object.keys(syncStatus.core_field_gaps).length?el('p',{className:'caption'},'当前字段缺口：'+coreGapSummary(syncStatus)):null,
     Object.keys(syncStatus.failure_codes).length?diagnostic(syncStatus.failure_codes,'查看批次失败原因'):null,
-    c.excluded?el('details',{},el('summary',{},'查看排除项及原因'),el('ul',{},...syncStatus.excluded.map(row=>el('li',{},`${projectNames.get(row.project_id)||row.project_id}：${({missing_registration:'缺少当前登记',removed_local:'已从本地移除',removed_local_no_probe:'已从本地移除，禁止探测',disabled:'接入已停用',summary_disabled:'汇总已停用',connection_read_disabled:'当前来源读取未获允许',legacy_noncurrent_root:'历史入口，不属于当前范围'})[row.reason]||row.reason}`)))):null);
+    c.excluded?el('details',{},el('summary',{},'查看排除项及原因'),el('ul',{},...syncStatus.excluded.map(row=>el('li',{},`${projectNames.get(row.project_id)||row.project_id}：${({missing_registration:'缺少当前登记',removed_local:'已从本地移除',removed_local_no_probe:'已从本地移除，禁止探测',disabled:'接入已停用',summary_disabled:'汇总已停用',connection_read_disabled:'当前来源读取未获允许',legacy_noncurrent_root:'历史入口，不属于当前范围'})[row.reason]||row.reason}`)))):null,
+    el('details',{},el('summary',{},'自动刷新与请求恢复'),
+      el('p',{className:'caption'},scheduleSummary(syncStatus.schedule)),
+      el('p',{},'最近成功读取（不代表业务验收）：'+requestSummary(syncStatus.recovery?.last_success)),
+      el('p',{},'最近失败读取：'+requestSummary(syncStatus.recovery?.last_failure)),
+      ...(syncStatus.recovery?.open_requests||[]).map(r=>el('p',{className:'warning'},'未结束请求：'+requestSummary(r)+(r.can_resume?'可用原请求 ID 续接。':'请先核对权限和来源版本。')))),
+    syncStatus.projects?el('details',{},el('summary',{},`查看固定范围逐项质量（${syncStatus.scope_total} 项）`),
+      el('p',{className:'caption'},`范围版本 ${syncStatus.reconciliation.scope_sha256}；登记版本 ${syncStatus.reconciliation.registry_sha256}。登记缺失 ${syncStatus.reconciliation.missing_registration_ids.length} 项；范围外 ${syncStatus.reconciliation.outside_baseline_ids.length} 项。`),
+      el('ul',{className:'source-list'},...syncStatus.projects.map(row=>el('li',{},
+        el('a',{href:'#projects/'+encodeURIComponent(row.project_id)},row.name),
+        el('p',{},`${({complete:'核心完整',partial:'核心不完整',failed:'读取失败',stale:'已过期',unread:'尚未读取'})[row.category]}；读取观察 ${dataTime(row.observed_at)}；最后成功 ${dataTime(row.last_success_at)}`),
+        row.core_missing.length?el('p',{className:'caption'},'核心缺口：'+coreGapSummary({core_field_gaps:Object.fromEntries(row.core_missing.map(k=>[k,1]))})):null,
+        el('p',{className:'caption'},'本次来源版本：'+(row.sources.map(s=>s.id+' '+s.sha256).join('；')||'无成功来源证据')))))):null,
+    el('details',{},el('summary',{},'新增项目或迁移路径'),
+      el('p',{},'先确认稳定项目身份、唯一状态路径和明确读取权限。非 Git 项目也可以登记；同一项目迁移路径沿用原 ID，旧账本历史保留。'),
+      el('p',{className:'caption'},'在本机按接入文档准备单条登记候选，运行 python3 scripts/hub_connections.py register --help。默认只检查；确认登记版本后才显式应用。登记不会创建业务声明、自动运行代码或扩大当前固定范围；缺少声明会如实显示。')));
 }
 function summaryView(project,compact=false){
   const summary=projectSummary(project);

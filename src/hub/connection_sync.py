@@ -17,7 +17,7 @@ SCOPE_PATH = "data/connections/sync_scope.yaml"
 
 def scope_plan(root: Path, resolver) -> dict:
     """Qualify a frozen identity list without probing any registered project root."""
-    data, _ = _safe_relative_read(Path(root), SCOPE_PATH, authority_check=resolver._check_registry)
+    data, meta = _safe_relative_read(Path(root), SCOPE_PATH, authority_check=resolver._check_registry)
     scope = parse_source(data, "yaml")
     require(type(scope) is dict and set(scope) == {
         "schema_version", "scope_id", "baseline_total", "project_ids", "excluded_project_ids"},
@@ -60,9 +60,52 @@ def scope_plan(root: Path, resolver) -> dict:
             excluded.append({"project_id": project_id,
                              "reason": exclusions.get(project_id, "outside_frozen_scope")})
     return {"scope_id": scope["scope_id"], "scope_total": scope["baseline_total"],
+            "scope_sha256": meta["sha256"],
             "project_ids": list(ids), "eligible_project_ids": eligible, "excluded": excluded,
             "registered_count": len(resolver.projects),
             "outside_scope_count": len(set(resolver.projects) - set(ids))}
+
+
+def recovery_summary(history: dict, eligible: set[str]) -> dict:
+    """Derive finite request recovery from the existing immutable ledger only.
+
+    A successful source read says nothing about business or human acceptance.
+    Historical request selections are not historical permission snapshots.
+    """
+    by_request = {}
+    for result in history["results"]:
+        by_request.setdefault(result["request_id"], []).append(result)
+    summaries, versions = [], []
+    for request in history["requests"]:
+        ids = set(request["project_ids"])
+        versions.append({"request_id": request["request_id"],
+                         "project_ids": request["project_ids"],
+                         "registry_sha256": request["authority"]["registry_hash"],
+                         "started_at": request["started_at"],
+                         "authority_drift": request["authority_drift"]})
+        if not ids or not ids <= eligible:
+            continue
+        results = by_request.get(request["request_id"], [])
+        codes = Counter(error["code"] for row in results if not row["success"]
+                        for error in row["result"]["errors"])
+        failed = sum(not row["success"] for row in results)
+        summaries.append({"request_id": request["request_id"],
+                          "status": request["status"],
+                          "started_at": request["started_at"],
+                          "finished_at": request["finished_at"],
+                          "project_ids": request["project_ids"],
+                          "completed": len(request["completed_project_ids"]),
+                          "remaining_project_ids": request["remaining_project_ids"],
+                          "failed": failed, "failure_codes": dict(sorted(codes.items())),
+                          "authority_drift": request["authority_drift"],
+                          "can_resume": request["status"] == "OPEN" and not request["authority_drift"]})
+    success = [row for row in summaries if row["status"] == "FINISHED" and not row["failed"]]
+    failed = [row for row in summaries if row["failed"]]
+    return {"last_success": success[-1] if success else None,
+            "last_failure": failed[-1] if failed else None,
+            "open_requests": [row for row in summaries if row["status"] == "OPEN"],
+            "request_versions": versions,
+            "history_basis": "Recorded request selections and authority hashes; not permission snapshots or timer triggers."}
 
 
 def daily_request_id(scope_id: str, *, instant: datetime | None = None) -> str:
