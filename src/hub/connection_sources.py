@@ -39,7 +39,7 @@ def _root_path_allowed(path: Path) -> None:
 
 def _safe_relative_read(root: Path, relative: str, *, authority_check: Callable[[], None],
                         max_bytes: int = MAX_SOURCE_BYTES) -> tuple[bytes, dict]:
-    """Reused no-follow descriptor walk; fingerprint and mtime share one open."""
+    """No-follow read with stable file metadata and descriptor-to-path bindings."""
     relative_path(relative)
     require(type(max_bytes) is int and 0 < max_bytes <= MAX_SOURCE_BYTES, "invalid read budget")
     authority_check()
@@ -47,7 +47,8 @@ def _safe_relative_read(root: Path, relative: str, *, authority_check: Callable[
     opened = [descriptor]
     file_descriptor = None
     try:
-        for part in (*root.parts[1:], *PurePosixPath(relative).parts[:-1]):
+        directories = (*root.parts[1:], *PurePosixPath(relative).parts[:-1])
+        for part in directories:
             authority_check()
             descriptor = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=descriptor)
             opened.append(descriptor)
@@ -61,8 +62,22 @@ def _safe_relative_read(root: Path, relative: str, *, authority_check: Callable[
             file_descriptor = None
             data = stream.read(max_bytes + 1)
             after = os.fstat(stream.fileno())
-        require(len(data) <= max_bytes and (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns) ==
-                (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns), "source changed during read")
+        def fingerprint(info):
+            return (info.st_dev, info.st_ino, info.st_mode, info.st_nlink,
+                    info.st_size, info.st_mtime_ns, info.st_ctime_ns)
+
+        require(len(data) <= max_bytes and fingerprint(before) == fingerprint(after),
+                "source changed during read")
+        # A still-open descriptor can outlive an atomic file/directory replace.
+        # Check each name against its pinned parent without following aliases.
+        for index, part in enumerate(directories):
+            current = os.stat(part, dir_fd=opened[index], follow_symlinks=False)
+            pinned = os.fstat(opened[index + 1])
+            require(stat.S_ISDIR(current.st_mode)
+                    and (current.st_dev, current.st_ino) == (pinned.st_dev, pinned.st_ino),
+                    "source parent binding changed during read")
+        current = os.stat(PurePosixPath(relative).name, dir_fd=descriptor, follow_symlinks=False)
+        require(fingerprint(current) == fingerprint(after), "source path binding changed during read")
         authority_check()
         return data, {"sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data),
                       "modified_at": datetime.fromtimestamp(before.st_mtime_ns / 1e9, timezone.utc).isoformat()}
@@ -202,7 +217,10 @@ class SourceResolver:
                 result["field_provenance"][field] = {"source_ref": source["id"], "sha256": metadata["sha256"],
                                                      "selector": rule["selector"], "value_map": rule["value_map"], "raw_value": raw}
                 del result["unknown_fields"][field]
-            # A mapping read does not stand after its declaration changes.
+            # Keep normalization bound to a stable source version, then verify
+            # that the declaration used for its mapping still agrees.
+            _, source_metadata = _safe_relative_read(root, source["path"], authority_check=check)
+            require(source_metadata == metadata, "source changed during normalization")
             recheck, _ = _safe_relative_read(root, DECLARATION_PATH, authority_check=check)
             require(hashlib.sha256(recheck).hexdigest() == result["declaration"]["sha256"], "declaration changed during read")
             result["success"] = True

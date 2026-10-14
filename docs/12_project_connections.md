@@ -7,6 +7,8 @@
 
 当前单状态来源刷新复用 `SourceResolver → RefreshLedger → ProjectService/API → 项目页面`，不执行下面旧数值指标入口的 exporter。`data/connections/sync_scope.yaml` 是静态资格集合：固定 39 个身份及显式排除，读取前再核对当前登记权限；缺登记、撤销权限、离线、缺声明不会缩小分母。`discover` 只核对这份集合与 Hub 登记元数据，不扫描目录或自动注册新候选。
 
+来源读取使用 no-follow 描述符，核对文件身份、类型、链接数、大小、mtime/ctime，以及目录和文件名仍绑定到已打开对象。规范化结束前复读同一允许来源，核对内容版本与 mtime，再核对映射声明；期间变化归为当次失败。旧成功保留为历史，其他项目继续采集。业务文件不加锁；这是有版本证据的读取快照，不是跨文件写事务或持续实时观察。
+
 ```sh
 python scripts/hub_sync.py --root "$PCH_ROOT" discover
 python scripts/hub_sync.py --root "$PCH_ROOT" sync --request-id UNIQUE_ID
