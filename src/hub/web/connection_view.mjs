@@ -80,3 +80,48 @@ export function projectFacts(project, {history=false}={}) {
 export function projectTasks(tasks, projectId) {
   return Array.isArray(tasks) ? tasks.filter(task=>task.project===projectId) : [];
 }
+
+// Keep the daily summary on the same field-proof gate as the full detail.
+export function projectSummary(project) {
+  const facts=Object.fromEntries(projectFacts(project).flatMap(group=>group.fields.map(f=>[f.key,f])));
+  const value=key=>facts[key].known ? facts[key].text : '未知';
+  const current=project?.business?.state==='current' && project?.freshness?.state==='fresh'
+    && !removed(project) && project?.declared?.connection_read_allowed===true && !latestFailure(project);
+  const quality=latestFailure(project) ? 'error' : current ? project?.business?.quality?.integration_quality : 'partial';
+  return {
+    fields:[
+      ['项目阶段',value('current_work.phase')], ['当前轮次',value('current_work.round')],
+      ['当前目标',value('current_work.objective')], ['工作状态',value('current_work.status')],
+      ['业务进度 V/N',`${value('progress.completed')} / ${value('progress.total')}`],
+      ['计数依据',value('progress.counting_basis')],
+      ['阻塞与待决定',value('blockers')], ['下一步',value('current_work.next_action')],
+    ],
+    quality:({complete:'日常查看信息完整',partial:'日常查看信息不完整',error:'当前来源读取失败'})[quality] || '可用程度未知',
+    observedAt:project?.source?.observed_at ?? null,
+    factAt:current && project?.freshness?.fact_time_state==='known' ? project.freshness.fact_updated_at : null,
+  };
+}
+
+// Never publish a partial or mixed-version directory to the caller.
+export async function loadProjectDirectory(request) {
+  const projects=[],ids=new Set();let head=null,total=null,initialized=false;
+  const invalid=()=>{const error=new Error('PROJECT_DIRECTORY_INCONSISTENT');error.code=error.message;throw error;};
+  const validHead=h=>h===null || (Number.isSafeInteger(h?.sequence) && h.sequence>=0 && /^[a-f0-9]{64}$/.test(h?.hash));
+  const sameHead=(a,b)=>validHead(a) && validHead(b)
+    && (a===null || b===null ? a===b : a.sequence===b.sequence && a.hash===b.hash);
+  for(let page=0;page<1000;page++){
+    const offset=projects.length;
+    const data=await request(`/api/projects?offset=${offset}&limit=100`);
+    if(!validHead(data?.head) || !Number.isSafeInteger(data.total) || data.total<0
+      || data.total>100000 || data.offset!==offset || data.limit!==100 || !Array.isArray(data.projects))invalid();
+    if(!initialized){head=data.head;total=data.total;initialized=true;}
+    if(!sameHead(head,data.head) || total!==data.total || data.projects.length!==Math.min(100,total-offset))invalid();
+    for(const project of data.projects){
+      if(typeof project?.project_id!=='string' || !project.project_id || ids.has(project.project_id)
+        || !sameHead(head,project?.provenance?.ledger_head))invalid();
+      ids.add(project.project_id);projects.push(project);
+    }
+    if(projects.length===total)return {projects,total,head};
+  }
+  invalid();
+}

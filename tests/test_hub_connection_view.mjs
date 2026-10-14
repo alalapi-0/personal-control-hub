@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {attention, freshness, refreshable, projectFacts, projectTasks} from '../src/hub/web/connection_view.mjs';
+import {attention, freshness, refreshable, projectFacts, projectTasks, projectSummary, loadProjectDirectory} from '../src/hub/web/connection_view.mjs';
 
 function project(overrides = {}) {
   return {
@@ -183,4 +183,150 @@ test('tasks filter exact project identity without deriving phase, progress or ac
   const tasks=[running,{id:'two',project:'aa',status:'checks_complete'}];
   assert.deepEqual(projectTasks(tasks,'a'),[running]);assert.deepEqual(projectTasks(null,'a'),[]);
   assert.equal(JSON.stringify(p),before);assert.equal(facts(p)['current_work.accepted'].text,'尚未接受');
+});
+
+function setFact(p,key,value) {
+  const record=p.business.source_record,parts=key.split('.');let target=record.business;
+  for(const part of parts.slice(0,-1))target=target[part]??={};
+  target[parts.at(-1)]=value;
+  record.field_provenance[key]={source_ref:'state',sha256:'a'.repeat(64),selector:{path:parts}};
+}
+const summaryFields=p=>Object.fromEntries(projectSummary(p).fields);
+
+test('daily summary preserves explicit zero, false and empty values without percentage inference',()=>{
+  const p=authoritative();setFact(p,'progress.completed',0);setFact(p,'progress.total',0);
+  setFact(p,'progress.counting_basis','Declared review units');setFact(p,'blockers',[]);
+  setFact(p,'current_work.completed',false);setFact(p,'current_work.accepted',false);
+  p.business.quality={integration_quality:'complete'};
+  const before=JSON.stringify(p),summary=projectSummary(p),fields=summaryFields(p);
+  assert.equal(fields['业务进度 V/N'],'0 / 0');assert.equal(fields['计数依据'],'Declared review units');
+  assert.equal(fields['阻塞与待决定'],'来源未列出阻塞');
+  assert.equal(facts(p)['current_work.completed'].text,'尚未完成');
+  assert.equal(facts(p)['current_work.accepted'].text,'尚未接受');
+  assert.equal(summary.quality,'日常查看信息完整');assert.equal(summary.factAt,null);
+  assert.equal(JSON.stringify(p),before);
+});
+
+test('known numerator and unknown denominator remain independent and never gain a percentage',()=>{
+  const p=authoritative();setFact(p,'progress.completed',7);
+  const fields=summaryFields(p);assert.equal(fields['业务进度 V/N'],'7 / 未知');
+  assert.equal(fields['计数依据'],'未知');assert.equal(projectSummary(p).quality,'可用程度未知');
+});
+
+test('daily summary separates observation time from current fact time and full next action',()=>{
+  const p=authoritative();p.source={observed_at:'2026-10-14T10:00:00Z'};
+  p.freshness.fact_time_state='known';p.freshness.fact_updated_at='2026-10-10T10:00:00Z';
+  const next='完整下一步'.repeat(60);setFact(p,'current_work.next_action',next);
+  const summary=projectSummary(p);assert.equal(summary.observedAt,p.source.observed_at);
+  assert.equal(summary.factAt,p.freshness.fact_updated_at);
+  assert.equal(summaryFields(p)['下一步'],next);
+});
+
+test('failed and stale summaries suppress history and complete quality while preserving read time',()=>{
+  for(const failed of [false,true]){
+    const p=authoritative();p.business.quality={integration_quality:'complete'};
+    p.source={observed_at:'2026-10-14T10:00:00Z'};
+    p.freshness.fact_time_state='known';p.freshness.fact_updated_at='2026-10-10T10:00:00Z';
+    if(failed)p.operational.latest_attempt={success:false};else p.freshness.state='stale';
+    const summary=projectSummary(p);
+    assert.equal(summary.fields.every(([,text])=>text==='未知'||text==='未知 / 未知'),true);
+    assert.equal(summary.quality,failed?'当前来源读取失败':'日常查看信息不完整');
+    assert.equal(summary.factAt,null);assert.equal(summary.observedAt,p.source.observed_at);
+    assert.equal(facts(p,{history:true})['current_work.phase'].text,'M2');
+  }
+});
+
+test('summary never bypasses mismatched field proof or read denial',()=>{
+  const p=authoritative();p.business.source_record.field_provenance['current_work.phase'].sha256='b'.repeat(64);
+  assert.equal(summaryFields(p)['项目阶段'],'未知');
+  p.declared.connection_read_allowed=false;
+  assert.equal(summaryFields(p)['当前目标'],'未知');
+});
+
+const directoryHead={sequence:9,hash:'c'.repeat(64)};
+function directoryPage(total,offset) {
+  return {head:{...directoryHead},total,offset,limit:100,
+    projects:Array.from({length:Math.min(100,total-offset)},(_,i)=>({
+      project_id:'p'+String(offset+i).padStart(4,'0'),name:'Project '+(offset+i),
+      provenance:{ledger_head:{...directoryHead}},
+    }))};
+}
+
+test('full directory exhausts more than 100 projects exactly once and preserves server order',async()=>{
+  const calls=[],result=await loadProjectDirectory(async url=>{
+    calls.push(url);return directoryPage(243,Number(new URL(url,'http://fixture').searchParams.get('offset')));
+  });
+  assert.deepEqual(calls,['/api/projects?offset=0&limit=100','/api/projects?offset=100&limit=100','/api/projects?offset=200&limit=100']);
+  assert.equal(result.total,243);assert.equal(result.projects.length,243);
+  assert.equal(new Set(result.projects.map(p=>p.project_id)).size,243);
+  assert.deepEqual(result.projects.map(p=>p.project_id),Array.from({length:243},(_,i)=>'p'+String(i).padStart(4,'0')));
+  assert.deepEqual(result.head,directoryHead);
+});
+
+test('empty directory is a valid zero, with no extra read',async()=>{
+  let calls=0;const result=await loadProjectDirectory(async()=>{calls++;return directoryPage(0,0);});
+  assert.equal(calls,1);assert.deepEqual(result.projects,[]);assert.equal(result.total,0);
+});
+
+test('missing, duplicated, mismatched or mixed-head pages refuse the entire directory',async()=>{
+  const changes=[
+    data=>data.projects.pop(),
+    data=>data.projects[0].project_id='p0000',
+    data=>data.head.hash='d'.repeat(64),
+    data=>data.projects[0].provenance.ledger_head.hash='d'.repeat(64),
+    data=>data.total++,
+    data=>data.offset=0,
+    data=>data.limit=99,
+    data=>delete data.head,
+  ];
+  for(const change of changes){
+    let calls=0;
+    await assert.rejects(loadProjectDirectory(async()=>{
+      const data=directoryPage(201,calls++*100);if(calls===2)change(data);return data;
+    }),error=>error.code==='PROJECT_DIRECTORY_INCONSISTENT');
+    assert.equal(calls,2);
+  }
+});
+
+test('directory bound and missing row identities fail without a partial success',async()=>{
+  for(const change of [d=>d.total=100001,d=>d.total=null,d=>d.projects[0].project_id='',
+    d=>delete d.projects[0].provenance]){
+    let calls=0;await assert.rejects(loadProjectDirectory(async()=>{
+      calls++;const data=directoryPage(1,0);change(data);return data;
+    }),error=>error.code==='PROJECT_DIRECTORY_INCONSISTENT');assert.equal(calls,1);
+  }
+});
+
+test('fresh installation without a ledger accepts explicit null heads for empty and full registry pages',async()=>{
+  for(const total of [0,243]){
+    let calls=0;
+    const result=await loadProjectDirectory(async()=>{
+      const data=directoryPage(total,calls++*100);data.head=null;
+      for(const project of data.projects)project.provenance.ledger_head=null;
+      return data;
+    });
+    assert.equal(result.head,null);assert.equal(result.total,total);
+    assert.equal(result.projects.length,total);assert.equal(calls,total===0?1:3);
+    assert.equal(new Set(result.projects.map(p=>p.project_id)).size,total);
+  }
+});
+
+test('null heads cannot hide ledger creation, missing row heads or malformed page heads',async()=>{
+  const changes=[
+    data=>{data.head={...directoryHead};for(const p of data.projects)p.provenance.ledger_head={...directoryHead};},
+    data=>delete data.projects[0].provenance.ledger_head,
+    data=>data.projects[0].provenance.ledger_head={},
+    data=>delete data.head,
+    data=>data.head={},
+  ];
+  for(const change of changes){
+    let calls=0;
+    await assert.rejects(loadProjectDirectory(async()=>{
+      const data=directoryPage(201,calls++*100);data.head=null;
+      for(const project of data.projects)project.provenance.ledger_head=null;
+      if(calls===2)change(data);
+      return data;
+    }),error=>error.code==='PROJECT_DIRECTORY_INCONSISTENT');
+    assert.equal(calls,2);
+  }
 });

@@ -1,6 +1,6 @@
 import {el, button, api, notify, navigate, validRefreshCommand, connectionState, ownerLogin, ownerLogout} from './common.js';
 import {renderDesigns} from './designs.js';
-import {attention, freshness, refreshable, projectFacts, projectTasks} from './connection_view.mjs';
+import {attention, freshness, refreshable, projectFacts, projectTasks, projectSummary, loadProjectDirectory} from './connection_view.mjs';
 
 const main = document.querySelector('#main');
 const connection = document.querySelector('#connection');
@@ -55,7 +55,8 @@ const projectNames=new Map();
 try {pendingRefresh=validRefreshCommand(JSON.parse(localStorage.getItem('hub:refresh-pending')||'null'));} catch {}
 function time(value){if(!value)return '尚未读取';const d=new Date(value);return Number.isNaN(d.valueOf())?'时间未提供':d.toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}
 function human(value){if(value===null||value===undefined)return '来源未提供';if(typeof value==='string')return value;return JSON.stringify(value,null,2);}
-function sourceLine(p){return `${types[p.declared.project_type]||'项目'} · ${time(p.source.observed_at)} · ${freshness(p)}`;}
+function sourceLine(p){return `${types[p.declared.project_type]||'项目'} · ${freshness(p)}`;}
+function dataTime(value){return value ? time(value) : '未知 · 来源未提供';}
 function diagnostic(value,label='查看诊断信息'){return el('details',{className:'diagnostics'},el('summary',{},label),el('pre',{},JSON.stringify(value,null,2)));}
 const relationKinds={pipeline:'流程衔接',shared_review_pattern:'相似审核方式',shared_visual_language:'相似视觉语言'};
 function relationPoints(title,items){return el('div',{},el('h3',{},title),el('ul',{className:'source-list'},...(items||[]).map(item=>el('li',{},item))));}
@@ -82,7 +83,7 @@ function operationalSourceNotice(project){
     diagnostics.length?el('p',{className:'warning'},`另有 ${diagnostics.length} 条来源诊断；完整记录见页面底部诊断信息。`):null,
   );
 }
-function failure(error){const code=error.code||error.message;const map={REFRESH_AUTHORITY_UNAVAILABLE:'项目来源规则已变化，请先核对接入记录。原快照已保留。',REFRESH_HEAD_CONFLICT:'刷新期间其他更新已完成。请重新读取后再刷新。',SESSION_REQUIRED:'本地会话已失效，请重试。',REFRESH_REQUEST_CONFLICT:'该刷新请求与已保存的记录冲突，请核对原请求。'};return map[code]||'暂时无法读取或保存。已保留原有数据，请重试。';}
+function failure(error){const code=error.code||error.message;const map={PROJECT_DIRECTORY_INCONSISTENT:'项目目录在读取期间发生变化或分页不完整。请重新读取完整目录。',REFRESH_AUTHORITY_UNAVAILABLE:'项目来源规则已变化，请先核对接入记录。原快照已保留。',REFRESH_HEAD_CONFLICT:'刷新期间其他更新已完成。请重新读取后再刷新。',SESSION_REQUIRED:'本地会话已失效，请重试。',REFRESH_REQUEST_CONFLICT:'该刷新请求与已保存的记录冲突，请核对原请求。'};return map[code]||'暂时无法读取或保存。已保留原有数据，请重试。';}
 function savePending(value){pendingRefresh=value;try{if(value)localStorage.setItem('hub:refresh-pending',JSON.stringify(value));else localStorage.removeItem('hub:refresh-pending');}catch{notify('浏览器无法保存恢复记录，请保持当前页面打开。','warning');}}
 async function refreshProjects(ids,control){
   if(!ids.length&&!pendingRefresh){notify('当前没有可读取的项目。');return;}
@@ -107,7 +108,18 @@ async function refreshProjects(ids,control){
   }finally{if(control.isConnected){control.disabled=false;control.textContent=label;}}
 }
 function refreshButton(projects){let b=button(pendingRefresh?'重试原刷新':projects.length===1?'刷新此项目':'刷新全部',()=>refreshProjects(projects.filter(refreshable).map(p=>p.project_id),b));b.disabled=!pendingRefresh&&!projects.some(refreshable);return b;}
-function projectRow(p){const full=p.business.next_action||'下一步：来源未提供';const summary=full.length>140?full.slice(0,140)+'…（详情中查看完整下一步）':full;return el('a',{href:`#projects/${encodeURIComponent(p.project_id)}`,className:'project-row'},el('h2',{},p.name),el('p',{},statuses[p.business.normalized_status]||'状态未知'),el('p',{className:'next'},summary),el('p',{className:`caption ${attention(p)?'warning':''}`},sourceLine(p)));}
+function summaryView(project,compact=false){
+  const summary=projectSummary(project);
+  const shorten=text=>compact && text.length>140 ? text.slice(0,140)+'…（详情中查看完整内容）' : text;
+  return el('div',{className:'project-summary'},
+    el('p',{className:attention(project)?'warning':'caption'},'可用程度：'+summary.quality),
+    el('dl',{className:'summary-grid'},...summary.fields.map(([label,text])=>el('div',{},
+      el('dt',{},label),el('dd',{className:text==='未知'?'muted':''},shorten(text))))),
+    el('p',{className:'caption'},'读取观察时间：'+dataTime(summary.observedAt)),
+    el('p',{className:'caption'},'来源事实更新时间：'+dataTime(summary.factAt)));
+}
+function projectRow(p){return el('a',{href:`#projects/${encodeURIComponent(p.project_id)}`,className:'project-row'},
+  el('h2',{},p.name),el('p',{className:`caption ${attention(p)?'warning':''}`},sourceLine(p)),summaryView(p,true));}
 function factsView(project,history=false){
   return el('div',{className:'stack'},...projectFacts(project,{history}).map((group,index)=>el(index<2?'section':'details',{className:'stack'},
     el(index<2?'h3':'summary',{},group.title),el('dl',{},...group.fields.map(f=>el('div',{},el('dt',{},f.label),
@@ -143,7 +155,8 @@ async function projectTaskPanel(project,token){
   return panel;
 }
 async function projectsPage(token){
-  const data=await api('/api/projects');if(token!==generation)return;lastProjects=data.projects;
+  const data=await loadProjectDirectory(api);if(token!==generation)return;lastProjects=data.projects;
+  projectNames.clear();
   for(const project of lastProjects)projectNames.set(project.project_id,project.name);
   projectDirectoryLoaded=true;
   const list=el('div',{className:'project-list'}), count=el('p',{className:'muted'}), search=el('input',{type:'search',placeholder:'搜索项目…',maxLength:240,id:'search-projects'}), status=el('select',{id:'status-filter','aria-label':'项目状态'},el('option',{value:''},'全部状态'),...Object.entries(statuses).map(([value,label])=>el('option',{value},label)));
@@ -157,7 +170,8 @@ async function projectDetail(id,token){
   projectNames.set(p.project_id,p.name);
   const relatedIds=p.relations.relations.flatMap(relation=>relation.project_ids||[]);
   if(relatedIds.some(projectId=>!projectNames.has(projectId))){
-    const directory=await api('/api/projects');if(token!==generation)return;
+    const directory=await loadProjectDirectory(api);if(token!==generation)return;
+    projectNames.clear();
     for(const project of directory.projects)projectNames.set(project.project_id,project.name);
     projectDirectoryLoaded=true;
   }
@@ -175,7 +189,7 @@ async function projectDetail(id,token){
   const designCount=p.design.references.filter(x=>x.kind==='candidate').length;
   const design=el('section',{className:'panel stack'},el('h2',{},'界面设计'),el('p',{className:'muted'},designCount?`${designCount} 个设计版本可查看`:'尚未登记设计候选'),el('a',{className:'button',href:`#designs/${encodeURIComponent(id)}`},designCount?'进入设计审核':'查看设计入口'));
   const exception=p.declared.hub_connection_exception;
-  main.replaceChildren(el('section',{className:'stack'},el('a',{href:'#projects'},'← 所有项目'),el('h1',{},p.name),el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},refreshButton([p]),!refreshable(p)?el('p',{className:'caption'},'按当前读取范围停用刷新。'):null),exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,el('section',{className:'panel stack'},el('h2',{},'项目权威状态'),el('p',{className:'caption'},'仅显示项目登记来源明确提供的事实。缺值和过期记录保留为未知。'),fields),taskPanel,el('a',{className:'button',href:'#host'},'查看 Linux 主机观测'),el('div',{className:'details-grid'},el('div',{className:'stack'},sources,relations),design),diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields})));
+  main.replaceChildren(el('section',{className:'stack'},el('a',{href:'#projects'},'← 所有项目'),el('h1',{},p.name),el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},refreshButton([p]),!refreshable(p)?el('p',{className:'caption'},'按当前读取范围停用刷新。'):null),exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,el('section',{className:'panel stack'},el('h2',{},'项目权威状态'),summaryView(p),el('p',{className:'caption'},'仅显示项目登记来源明确提供的事实。缺值和过期记录保留为未知。'),fields),taskPanel,el('a',{className:'button',href:'#host'},'查看 Linux 主机观测'),el('div',{className:'details-grid'},el('div',{className:'stack'},sources,relations),design),diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields,quality:p.business.quality})));
 }
 async function route(focus=true){
   const token=++generation;const parts=location.hash.slice(1).split('/').map(p=>{try{return decodeURIComponent(p);}catch{return '';}});const kind=parts[0]||'projects';
@@ -200,7 +214,8 @@ async function route(focus=true){
       renderHost(main,data);
     }else if(kind==='designs'){
       if(!projectDirectoryLoaded){
-        const directory=await api('/api/projects');if(token!==generation)return;
+        const directory=await loadProjectDirectory(api);if(token!==generation)return;
+        projectNames.clear();
         for(const project of directory.projects)projectNames.set(project.project_id,project.name);
         projectDirectoryLoaded=true;
       }
