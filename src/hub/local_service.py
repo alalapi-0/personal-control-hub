@@ -345,10 +345,7 @@ class HubRequestHandler(BaseHTTPRequestHandler):
         if path == '/api/identity':
             if query:
                 raise ServiceError('INVALID_QUERY')
-            try:
-                ledger = self.server.projects.list_projects(query={}, design_snapshot={}).get('head')
-            except Exception:
-                ledger = None
+            ledger = self.server.projects.ledger_head()
             snapshot = self._design_snapshot()
             result = {'backend_instance': self.server.backend_instance, 'owner_authenticated': owner and self.server.owner_auth.configured,
                       'owner_configured': self.server.owner_auth.configured, 'execution_enabled': False,

@@ -21,6 +21,13 @@ from hub.service_contract import ServiceError
 from hub.services.integration_service import feishu_preview, markdown_preview
 
 
+
+def project_facts(dto):
+    value = copy.deepcopy(dto)
+    for key in ('read_age_seconds', 'source_mtime_age_seconds', 'projected_at'):
+        value['freshness'].pop(key, None)
+    return value
+
 class SharedProjectionTests(unittest.TestCase):
     def setUp(self):
         self.fixture = Fixture()
@@ -273,7 +280,7 @@ class ProjectServiceFacadeTests(unittest.TestCase):
             listing = self.service.list_projects()
             detail = self.service.get_project("a")
         self.assertEqual(2, listing["total"])
-        self.assertEqual(detail, listing["projects"][0])
+        self.assertEqual(project_facts(detail), project_facts(listing["projects"][0]))
         self.assertEqual({"schema_version", "project_id", "name", "declared", "business",
                           "operational", "freshness", "source", "errors", "relations",
                           "design", "provenance"}, set(detail))
@@ -371,8 +378,8 @@ class ProjectServiceFacadeTests(unittest.TestCase):
                                               "freshness": "fresh", "order": "-name",
                                               "offset": "0", "limit": "1"}, self.design)
         self.assertEqual(1, listing["total"])
-        self.assertEqual(listing["projects"][0],
-                         self.service.get_project("a", self.design))
+        self.assertEqual(project_facts(listing["projects"][0]),
+                         project_facts(self.service.get_project("a", self.design)))
         self.assertEqual(self.fixture.business, listing["projects"][0]["business"]["fields"])
         self.assertEqual(self.fixture.business,
                          listing["projects"][0]["source"]["source_record"]["business"])

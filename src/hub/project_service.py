@@ -256,6 +256,20 @@ class ProjectService:
         except (RefreshLedgerError, OSError) as exc:
             raise _error("LEDGER_UNAVAILABLE", status=503, retryable=True) from exc
 
+    def ledger_head(self) -> dict | None:
+        """Read the verified existing head without registry/design projection or writes."""
+        ledger = self._read_ledger()
+        if ledger is None:
+            return None
+        try:
+            return copy.deepcopy(ledger.head)
+        except (LedgerSchemaError, LedgerCorruptionError, ResultValidationError) as exc:
+            raise _error("LEDGER_CORRUPT", status=503) from exc
+        except LedgerBusyError as exc:
+            raise _error("LEDGER_BUSY", status=503, retryable=True) from exc
+        except (RefreshLedgerError, OSError) as exc:
+            raise _error("LEDGER_UNAVAILABLE", status=503, retryable=True) from exc
+
     @staticmethod
     def _unknown_relation(project_id: str, reason: str = "RELATION_STORE_UNAVAILABLE") -> dict:
         return {"project_id": project_id, "status": "unknown", "reason": reason,
@@ -420,6 +434,60 @@ class ProjectService:
                 "reason": freshness["reason"], "fields": fields,
                 "source_record": copy.deepcopy(source_record)}
 
+    @staticmethod
+    def _quality(record: dict | None, freshness: dict, read_allowed: bool) -> dict:
+        """Separate normalized shape, actual values, evidence and current facts."""
+        fields = list(FIELDS)
+        structured, known, evidenced = [], [], []
+        for field in fields:
+            value = record["business"] if record else None
+            for part in field.split("."):
+                if not isinstance(value, dict) or part not in value:
+                    break
+                value = value[part]
+            else:
+                structured.append(field)
+                # False, zero and an empty list are explicit known values.
+                if value is not None and value != "unknown" and field not in record["unknown_fields"]:
+                    known.append(field)
+                    if field in record["field_provenance"]:
+                        evidenced.append(field)
+        current = evidenced if record and record["success"] and freshness["state"] == "fresh" else []
+
+        def coverage(present: list[str]) -> dict:
+            return {"count": len(present), "total": len(fields), "fields": present,
+                    "missing": [field for field in fields if field not in present]}
+
+        missing = []
+        if not read_allowed:
+            missing.append("declared.connection_read_allowed")
+        if "current_work.status" not in current:
+            missing.append("current_work.status")
+        if not {"current_work.phase", "current_work.objective"}.intersection(current):
+            missing.append("current_work.phase|current_work.objective")
+        if not {"current_work.next_action", "blockers"}.intersection(current):
+            missing.append("current_work.next_action|blockers")
+        if not record or not record["success"] or freshness["state"] != "fresh":
+            missing.append("source.current_observation")
+        if "progress.total" in known:
+            missing.extend(field for field in ("progress.completed", "progress.counting_basis")
+                           if field not in current)
+        complete = not missing
+        return {"schema_version": "1.0", "structure_coverage": coverage(structured),
+                "value_coverage": coverage(known), "evidence_coverage": coverage(evidenced),
+                "current_coverage": coverage(current), "core_complete": complete,
+                "core_missing": missing,
+                "integration_quality": "complete" if complete else
+                "error" if record and not record["success"] else "partial"}
+
+    @staticmethod
+    def _fact_time(record: dict | None, freshness: dict) -> dict:
+        fact = ((record.get("extensions") or {}).get("fact", {}).get("fact_updated_at")
+                if record and record["success"] and freshness["state"] == "fresh" else None)
+        value = fact.get("value") if isinstance(fact, dict) else None
+        return {"fact_updated_at": value, "fact_time_state": "known" if value else "unknown",
+                "fact_time_unknown_reason": None if value else "No current source fact timestamp is recorded."}
+
     def _dto(self, declared: dict, snapshot: dict, row: dict, relation: dict,
              design_snapshot: dict | None) -> dict:
         latest, previous = row["latest_attempt"], row["last_success"]
@@ -456,15 +524,22 @@ class ProjectService:
                                    if latest else None),
             "source_record": source_record,
         }
+        business = self._legacy_business(latest, row["freshness"])
+        business["quality"] = self._quality(latest, row["freshness"], connection_read_allowed)
         return {"schema_version": "1.0", "project_id": row["project_id"],
                 "name": row["name"], "declared": declared_view,
-                "business": self._legacy_business(latest, row["freshness"]),
+                "business": business,
                 "operational": {"facts": [], "latest_attempt": source_record,
                                 "last_success": copy.deepcopy(previous)},
                 "freshness": {"state": row["freshness"]["state"],
                               "stale_reason": row["freshness"]["reason"],
                               "authority_drift": row["freshness"]["authority_drift"],
-                              "local_presence": row["local_presence"]},
+                              "local_presence": row["local_presence"],
+                              "read_age_seconds": row["freshness"]["read_age_seconds"],
+                              "source_mtime_age_seconds": row["freshness"]["source_age_seconds"],
+                              "observed_at": latest["observed_at"] if latest else None,
+                              "projected_at": snapshot["observed_at"],
+                              **self._fact_time(latest, row["freshness"])},
                 "source": source, "errors": copy.deepcopy(latest["errors"] if latest else []),
                 "relations": copy.deepcopy(relation),
                 "design": self._design_for(row["project_id"], design_snapshot),

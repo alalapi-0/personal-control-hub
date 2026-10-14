@@ -55,6 +55,23 @@ def load_registry_at(path: Path) -> dict:
     return validate_registry_value(parse_source(path.read_bytes(), "yaml"))
 
 
+def parse_owned_hub_state(data: bytes) -> dict:
+    """Read Hub's canonical state, whose historical entries may share YAML nodes.
+
+    Only the resolver's own Hub root may use this adapter. External sources keep
+    the ordinary alias prohibition; duplicate keys and unsafe tags still fail.
+    Selected business values are independently bounded and typed before publish.
+    """
+    try:
+        value = yaml.load(data.decode('utf-8'), Loader=UniqueLoader)
+    except (UnicodeError, yaml.YAMLError, RecursionError) as exc:
+        raise RecordError('Hub canonical state structure invalid') from exc
+    require(type(value) is dict and type(value.get('metadata')) is dict
+            and value['metadata'].get('authority') == 'canonical',
+            'Hub state must declare canonical authority')
+    return value
+
+
 def validate_registry_value(value: Any) -> dict:
     require(type(value) is dict and type(value.get("projects")) is list, "registry projects required")
     ids = [row.get("id") for row in value["projects"] if type(row) is dict]

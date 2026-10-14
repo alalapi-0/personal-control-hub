@@ -162,6 +162,7 @@ class HubActivityTests(unittest.TestCase):
         (self.root / 'hub.connection.yaml').write_text(yaml.safe_dump(declaration, sort_keys=False))
         (self.root / declaration['metric_export']['entry']).write_text(script)
         state = {
+            'metadata': {'authority': 'canonical'},
             'schema_version': '1.1',
             'all_projects_governance': {
                 'task_id': 'ALL-PROJECTS-CODEX-GOVERNANCE-V1',

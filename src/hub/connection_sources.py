@@ -13,7 +13,7 @@ from hub.connection_records import (FIELDS, VERSION, RecordError, content_hash,
                                     credential_path_component, empty_business, put_field,
                                     record_schema, relative_path, require, update_key,
                                     validate_declaration, validate_result)
-from hub.connections import parse_source, select_value, validate_registry_value
+from hub.connections import parse_owned_hub_state, parse_source, select_value, validate_registry_value
 
 MAX_SOURCE_BYTES = 1024 * 1024
 DECLARATION_PATH = "hub.connection.yaml"
@@ -168,7 +168,11 @@ class SourceResolver:
             stage = "source"
             data, metadata = _safe_relative_read(root, source["path"], authority_check=check)
             result["sources"] = [{**source, **metadata}]
-            parsed = parse_source(data, source["format"])
+            if (project_id == 'personal-control-hub' and root == self.root.resolve(strict=True)
+                    and source['path'] == 'STATE.yaml' and source['format'] == 'yaml'):
+                parsed = parse_owned_hub_state(data)
+            else:
+                parsed = parse_source(data, source["format"])
             result["unknown_fields"] = dict(declaration["unknown_fields"])
             for field, rule in declaration["mapping"].items():
                 raw = select_value(parsed, rule["selector"])

@@ -23,6 +23,10 @@ class ProjectSpy:
     def __init__(self):
         self.calls = []
 
+    def ledger_head(self):
+        self.calls.append(("head",))
+        return None
+
     def list_projects(self, query=None, design_snapshot=None):
         self.calls.append(("list", query, design_snapshot))
         return {"projects": [{"project_id": "fixture-project", "status": "unknown"}]}
