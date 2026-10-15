@@ -309,5 +309,52 @@ class NativeBusinessTests(unittest.TestCase):
             with self.assertRaises(ServiceError):second.thread(previous='prior-thread')
             call.assert_not_called()
 
+    def test_preturn_recovery_uses_separate_fence_and_preserves_all_prior_events(self):
+        from hub.task_store import TaskStore
+        self.grant['max_turn_seconds']=600;self.wrapper['grant_sha256']=digest(self.grant)
+        authority,events,task,native=self.recovery_fixture()
+        authority.update(reconcile_event_key='business-preturn-reconciled-v1',reason='owner_runtime600_preturn_recovery')
+        event=events[0]['data']
+        event.update(authority={'contract':'PCH-STORY-PRETURN-RECOVERY-v1',
+            'owner_decision_sha256':digest('允许全部改为10 分钟上限')},
+            observation={'turn_history_sha256':digest(native['turns'])})
+        store=TaskStore(self.hub);store.register_storage()
+        store.admit({'request_id':self.grant['task_id'],'project_id':self.grant['project_id'],
+                     'parent_task_id':None,'mode':'new'},task['intent'])
+        store.claim('fixture-worker');store.update(self.grant['task_id'],'fixture-worker',thread_id='prior-thread')
+        for key in ('business-resume-intent','business-runtime-amendment-resume-intent','business-resumed'):
+            store.event(self.grant['task_id'],key,{'old':'preserved'})
+        before=store.events(self.grant['task_id'])
+        store.event(self.grant['task_id'],'business-preturn-reconciled-v1',event)
+        adapter=self.adapter()
+        with patch('hub.task_store.TaskStore',return_value=store), \
+                patch.object(adapter,'call',side_effect=[{'thread':native},{'thread':native}])as call, \
+                patch.object(adapter,'_profile_echo'):
+            self.assertEqual(adapter.thread(previous='prior-thread'),'prior-thread')
+            self.assertEqual(call.call_count,2)
+        recorded=store.events(self.grant['task_id']);self.assertEqual(recorded[:len(before)],before)
+        self.assertEqual(sum(e['key']=='business-preturn-resume-intent'for e in recorded),1)
+        self.assertEqual(sum(e['key']=='business-preturn-resumed'for e in recorded),1)
+        second=self.adapter()
+        with patch('hub.task_store.TaskStore',return_value=store),patch.object(second,'call')as call:
+            with self.assertRaises(ServiceError):second.thread(previous='prior-thread')
+            call.assert_not_called()
+
+    def test_preturn_recovery_refuses_changed_history_before_loading_thread(self):
+        from unittest.mock import Mock
+        self.grant['max_turn_seconds']=600;self.wrapper['grant_sha256']=digest(self.grant)
+        authority,events,task,native=self.recovery_fixture()
+        authority.update(reconcile_event_key='business-preturn-reconciled-v1',reason='owner_runtime600_preturn_recovery')
+        events[0].update(key='business-preturn-reconciled-v1')
+        events[0]['data'].update(authority={'contract':'PCH-STORY-PRETURN-RECOVERY-v1',
+            'owner_decision_sha256':digest('允许全部改为10 分钟上限')},
+            observation={'turn_history_sha256':digest(native['turns'])})
+        native['turns'][-1]['new_item']='changed after trusted observation'
+        store=Mock();store.task.return_value=task;store.events.return_value=events
+        adapter=self.adapter()
+        with patch('hub.task_store.TaskStore',return_value=store),patch.object(adapter,'call',return_value={'thread':native})as call:
+            with self.assertRaises(ServiceError):adapter.thread(previous='prior-thread')
+            self.assertEqual(call.call_count,1)
+
 
 if __name__ == '__main__': unittest.main()

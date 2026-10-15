@@ -694,6 +694,107 @@ class TaskStore:
                 (canonical(payload).decode(),digest(payload),canonical(intent).decode(),digest(intent),ident))
             return {'event_key':key,'grant_version':grant['version'],'thread_id':task['thread_id'],'additional_turn_limit':1}
 
+    def reconcile_business_preturn_rejection(self, ident, *, authority, observation, grant):
+        """Recover one definitively rejected resume without replaying a turn.
+
+        Root supplies fresh same-history/lifecycle evidence. The old rejected
+        dispatch and its one-shot intent stay immutable; this receipt has its
+        own one-shot native fence. No HTTP caller can enroll this operation.
+        """
+        import hashlib
+        from copy import deepcopy
+        from .story_exchange import validate
+        from .story_promotion import source_snapshot
+        key='business-preturn-reconciled-v1'
+        fields={'contract','actor','owner_decision_sha256','task_hash','events_hash','thread_id','turn_history_sha256','additional_turn_limit'}
+        proof_fields={'source','root','thread_id','thread_status','turns','turn_history_sha256','observed_at','lifecycle'}
+        if (type(authority)is not dict or set(authority)!=fields
+            or authority['contract']!='PCH-STORY-PRETURN-RECOVERY-v1'or authority['actor']!='trusted_local_owner'
+            or authority['owner_decision_sha256']!=digest('允许全部改为10 分钟上限')
+            or type(authority['additional_turn_limit'])is not int or authority['additional_turn_limit']!=1
+            or type(authority['turn_history_sha256'])is not str or len(authority['turn_history_sha256'])!=64
+            or any(c not in '0123456789abcdef'for c in authority['turn_history_sha256'])
+            or type(observation)is not dict or set(observation)!=proof_fields
+            or observation['source']!='app_server_stdio.thread/read'or observation['thread_status']not in {'idle','notLoaded'}
+            or observation['thread_id']!=authority['thread_id']or observation['turn_history_sha256']!=authority['turn_history_sha256']
+            or type(observation['observed_at'])not in {int,float}or not 0<=time.time()-observation['observed_at']<30):
+            raise ServiceError('BUSINESS_PRETURN_RECOVERY_REJECTED',status=409)
+        lifecycle=observation['lifecycle']
+        if (type(lifecycle)is not dict or set(lifecycle)!={'method','cycles','same_history','prior_holder'}
+            or lifecycle['method']!='supported_owned_thread_archive_unarchive'or type(lifecycle['cycles'])is not int
+            or lifecycle['cycles']!=1 or lifecycle['same_history']is not True):
+            raise ServiceError('BUSINESS_PRETURN_RECOVERY_REJECTED',status=409)
+        holder=lifecycle['prior_holder']
+        if (type(holder)is not dict or set(holder)!={'pid','start_ticks','fd','device','inode'}
+            or any(type(holder[k])is not int or holder[k]<(1 if k in {'pid','inode'}else 0)for k in ('pid','fd','device','inode'))
+            or type(holder['start_ticks'])is not str or not holder['start_ticks'].isdecimal()):
+            raise ServiceError('BUSINESS_PRETURN_RECOVERY_REJECTED',status=409)
+        try:
+            current=Path('/proc',str(holder['pid']),'stat').read_text().rsplit(')',1)[1].split()[19]
+            fd=Path('/proc',str(holder['pid']),'fd',str(holder['fd'])).stat()
+            if current==holder['start_ticks']and (fd.st_dev,fd.st_ino)==(holder['device'],holder['inode']):
+                raise ServiceError('TASK_OWNER_STILL_ACTIVE',status=409)
+        except FileNotFoundError:pass
+        grant=validate(grant,live=True);source_snapshot(grant,expected=True)
+        output=Path(grant['root'],'output/result.json')
+        if grant['max_turn_seconds']!=600 or observation['root']!=grant['root']or output.exists()or output.is_symlink():
+            raise ServiceError('BUSINESS_PRETURN_RECOVERY_REJECTED',status=409)
+        with self._connection(True)as connection:
+            row=connection.execute('SELECT *FROM tasks WHERE id=?',(stable_id(ident),)).fetchone()
+            task=self._task(row)if row else None
+            events=[{'sequence':r['sequence'],'key':r['event_key'],'received':r['received'],'data':self._decode(r['body'],r['hash'])}
+                    for r in connection.execute('SELECT *FROM events WHERE task_id=?ORDER BY sequence',(ident,))]
+            by_key={e['key']:e for e in events};amend=by_key.get('business-runtime-amendment-v1',{}).get('data',{})
+            consumed=by_key.get('business-runtime-amendment-resume-intent')
+            prior=by_key.get('business-resumed',{}).get('data',{})
+            if (not task or digest(task)!=authority['task_hash']or digest(events)!=authority['events_hash']
+                or task['status']!='failed'or task['cancel']or task['thread_id']!=authority['thread_id']
+                or task['turn_id']is not None or task['provider_status']is not None or task['payload'].get('kind')!='story_exchange'
+                or key in by_key or not consumed or consumed['data'].get('thread_id')!=task['thread_id']
+                or amend.get('original_thread_id')!=task['thread_id']or prior.get('thread_id')!=task['thread_id']
+                or not prior.get('prior_turn_id')or not amend.get('original_turn_id')
+                or amend.get('authority',{}).get('owner_decision_sha256')!=authority['owner_decision_sha256']
+                or observation['turns']!=[{'id':prior['prior_turn_id'],'status':'interrupted'},
+                                          {'id':amend['original_turn_id'],'status':'interrupted'}]
+                or any(e['sequence']>consumed['sequence']and
+                       (e['key'].startswith('turn-intent-')or e['key']in {'business-runtime-amendment-resumed','business-preturn-resumed'})for e in events)):
+                raise ServiceError('BUSINESS_PRETURN_RECOVERY_REJECTED',status=409)
+            result=task['result']or{};details=result.get('details',{})
+            message=('thread '+task['thread_id']+' already has an active writer').encode()
+            if (result.get('error_class')!='CODEX_RPC_REJECTED'or result.get('outcome')=='UNKNOWN'
+                or details.get('method')!='thread/resume'or details.get('rpc_code')!=-32600
+                or details.get('message_sha256')!=hashlib.sha256(message).hexdigest()or details.get('message_bytes')!=len(message)
+                or details.get('raw_message_retained')is not False or result.get('request_denials')
+                or result.get('stream_observation',{}).get('count',0)!=0):
+                raise ServiceError('BUSINESS_PRETURN_RECOVERY_REJECTED',status=409)
+            old=task['intent']['grant'];expected=deepcopy(old)
+            expected.update(version=old['version']+1,expires_at=grant['expires_at'])
+            expected['story_exchange']['registration_sha256']=grant['story_exchange']['registration_sha256']
+            expected['story_exchange']['source_preconditions']['source_state_sha256']=grant['story_exchange']['source_preconditions']['source_state_sha256']
+            registered=connection.execute('SELECT *FROM grants WHERE id=?',(old['grant_id'],)).fetchone()
+            if old['max_turn_seconds']!=600 or grant!=expected or not registered or self._decode(registered['body'],registered['hash'])!=old:
+                raise ServiceError('BUSINESS_RUNTIME_SCOPE_CHANGED',status=409)
+            for event in events:
+                value=event['data'];process=value.get('worker')if event['key'].startswith('dispatch-intent')else value if event['key'].startswith('stdio-child')else None
+                if process:
+                    try:current=Path('/proc',str(process['pid']),'stat').read_text().rsplit(')',1)[1].split()[19]
+                    except FileNotFoundError:continue
+                    if current==process['start_ticks']:raise ServiceError('TASK_OWNER_STILL_ACTIVE',status=409)
+            evidence={'authority':authority,'observation':observation,'original_thread_id':task['thread_id'],
+                'original_turn_id':amend['original_turn_id'],'original_payload':task['payload'],
+                'original_intent':task['intent'],'original_result':task['result'],
+                'action':'same_owned_thread_new_turn_after_verified_interruption','effects_rolled_back':False}
+            self._append_event(connection,ident,key,evidence)
+            payload={**task['payload'],'grant_version':grant['version']}
+            intent={**task['intent'],'grant':grant,'grant_hash':digest(grant),
+                    'source_binding':deepcopy(grant['story_exchange']['source_preconditions']),
+                    'preturn_recovery_authority_sha256':digest(authority)}
+            connection.execute('UPDATE grants SET version=?,body=?,hash=?WHERE id=?',
+                (grant['version'],canonical(grant).decode(),digest(grant),grant['grant_id']))
+            connection.execute("UPDATE tasks SET payload=?,payload_hash=?,intent=?,intent_hash=?,status='queued',owner=NULL,lease_until=NULL,result=NULL,turn_id=NULL,provider_status=NULL WHERE id=?",
+                (canonical(payload).decode(),digest(payload),canonical(intent).decode(),digest(intent),ident))
+            return {'event_key':key,'grant_version':grant['version'],'thread_id':task['thread_id'],'additional_turn_limit':1}
+
     def clear_closed_terminal_owner(self, ident, proof):
         """Root-only terminal fence cleanup; never a lease takeover or HTTP action."""
         versions={'HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v5-REPLACEMENT':'v5',
