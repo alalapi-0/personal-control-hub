@@ -14,6 +14,7 @@ from .service_contract import ServiceError
 from .workbench_store import canonical, digest
 from .design_records import ID_RE
 from .task_storage import StorageGuard, blocked, components
+from .task_approvals import approval_policy
 
 SCHEMA_VERSION = 2
 MAX_TASKS = 128
@@ -402,6 +403,33 @@ class TaskStore:
                     connection.execute("UPDATE tasks SET status='requires_reconcile' WHERE id=?", (row['id'],)); continue
                 if parent and parent['status'] not in TERMINAL: continue
                 if connection.execute("SELECT 1 FROM tasks WHERE project=? AND status IN ('running','validating','waiting_input','waiting_approval','requires_reconcile') LIMIT 1", (row['project'],)).fetchone(): continue
+                # The existing SQLite claim serializes cross-repository effects.
+                # An unresolved task fences its actual workspace, including
+                # differently named projects and shared Git worktrees.
+                active=connection.execute("SELECT * FROM tasks WHERE status IN ('running','validating','waiting_input','waiting_approval','requires_reconcile')").fetchall()
+                if any(other['status']!='requires_reconcile'for other in active):continue
+                if active:
+                    from .writer_handoff import workspace_identity,workspaces_overlap
+                    try:scope=workspace_identity(task['intent']['grant']['root'])
+                    except (ServiceError,OSError):
+                        connection.execute("UPDATE tasks SET status='requires_reconcile' WHERE id=?",(row['id'],));continue
+                    conflict=False
+                    for other in active:
+                        other_root=self._task(other)['intent']['grant']['root']
+                        if other_root==scope['canonical_root']:conflict=True;break
+                        try:other_scope=workspace_identity(other_root)
+                        except FileNotFoundError:
+                            # An absent historical root cannot alias an unrelated
+                            # live root. Its own project remains fenced above.
+                            a,b=Path(other_root),Path(scope['canonical_root'])
+                            if a.is_relative_to(b)or b.is_relative_to(a):conflict=True
+                            continue
+                        except (ServiceError,OSError):
+                            # An existing but aliased/unverifiable workspace
+                            # cannot be treated as an absent historical root.
+                            conflict=True;break
+                        if workspaces_overlap(scope,other_scope):conflict=True;break
+                    if conflict:continue
                 if parent and parent['status'] != 'checks_complete':
                     connection.execute("UPDATE tasks SET status='requires_reconcile' WHERE id=?", (row['id'],)); continue
                 if parent:
@@ -715,7 +743,7 @@ class TaskStore:
     def controls(self, ident):
         with self._connection() as connection:return self._controls(connection,stable_id(ident)) if connection else []
 
-    def open_control(self, ident, owner, *, request_hash, method, thread_id, turn_id, expires_at):
+    def open_control(self, ident, owner, *, request_hash, method, thread_id, turn_id, expires_at, provider_request=None):
         """Worker-only request record. Never retain provider command, form, or path."""
         kinds={'item/commandExecution/requestApproval':'approval','item/fileChange/requestApproval':'approval','item/tool/requestUserInput':'input'}
         if method not in kinds or not isinstance(request_hash,str) or len(request_hash)!=64 or any(c not in '0123456789abcdef' for c in request_hash):raise ServiceError('TASK_CONTROL_REJECTED')
@@ -727,30 +755,42 @@ class TaskStore:
             if not row or row['lease_until']<now or row['cancel'] or row['status']!='running' or row['thread_id']!=thread_id or row['turn_id']!=turn_id:raise ServiceError('TASK_CONTROL_BINDING_REJECTED',status=409)
             task=self._task(row);grant=task['intent']['grant'];current=connection.execute('SELECT hash FROM grants WHERE id=?',(grant['grant_id'],)).fetchone()
             if not current or current['hash']!=task['intent']['grant_hash'] or grant['expires_at']<=now:raise ServiceError('GRANT_VERSION_STALE',status=409)
+            policy={'decisions':['decline'],'reason':'provider_request_unavailable'}
+            if provider_request is not None:
+                try:verified_request=type(provider_request)is dict and digest(provider_request)==request_hash and provider_request.get('method')==method
+                except (TypeError,ValueError,OverflowError):verified_request=False
+                if not verified_request:raise ServiceError('TASK_CONTROL_BINDING_REJECTED',status=409)
+                params=provider_request.get('params')
+                policy=approval_policy(grant,provider_request,thread_id=thread_id,turn_id=turn_id,
+                    item_id=params.get('itemId')if type(params)is dict else None,
+                    request_id=provider_request.get('id'),grant_root=grant['root'],now=now)
             value={'id':control_id,'version':1,'kind':kinds[method],'method':method,'request_digest':request_hash,
                    'thread_id':thread_id,'turn_id':turn_id,'worker_owner':owner,'owner_context':task['intent'].get('owner_context','trusted_local_owner'),
                    'grant_hash':task['intent']['grant_hash'],'expires_at':min(expires_at,grant['expires_at']),
                    'status':'pending','permissions':'unverified_beyond_grant' if kinds[method]=='approval' else 'input_unavailable',
-                   'allowed_decisions':['decline']}
+                   'allowed_decisions':policy['decisions'],'reason':policy['reason']}
+            if 'operation_sha256'in policy:
+                value.update(operation_sha256=policy['operation_sha256'],permissions='exact_registered_command')
             self._append_event(connection,ident,'control-open-'+request_hash,value)
             connection.execute('UPDATE tasks SET status=? WHERE id=?',('waiting_approval' if kinds[method]=='approval' else 'waiting_input',ident))
         return control_id
 
     def respond_control(self, ident, control_id, version, decision, *, owner_context='trusted_local_owner', authorize=None):
-        """Authenticated deny-only CAS. No HTTP decision can expand a grant."""
-        if decision!='decline' or type(version)is not int or version!=1:raise ServiceError('TASK_CONTROL_DECISION_REJECTED',status=409)
+        """Authenticated single-decision CAS against the frozen request policy."""
+        if decision not in ('accept','decline') or type(version)is not int or version!=1:raise ServiceError('TASK_CONTROL_DECISION_REJECTED',status=409)
         if authorize is not None:authorize()
         with self._connection(True,guard=authorize) as connection:
             row=connection.execute('SELECT * FROM tasks WHERE id=?',(stable_id(ident),)).fetchone()
             controls=self._controls(connection,ident);control=next((c for c in controls if c['id']==stable_id(control_id)),None)
             if not row or not control:raise ServiceError('TASK_CONTROL_NOT_FOUND',status=404)
             if control['owner_context']!=owner_context:raise ServiceError('TASK_CONTROL_OWNER_REJECTED',status=403)
+            if decision not in control['allowed_decisions']:raise ServiceError('TASK_CONTROL_DECISION_REJECTED',status=409)
             if control['version']==2:
-                if control.get('decision')=='decline':return True
+                if control.get('decision')==decision:return True
                 raise ServiceError('TASK_CONTROL_VERSION_STALE',status=409)
             now=time.time();task=self._task(row);current=connection.execute('SELECT hash FROM grants WHERE id=?',(task['intent']['grant']['grant_id'],)).fetchone()
-            if row['owner']!=control['worker_owner'] or row['lease_until']<now or row['cancel'] or row['status'] not in {'waiting_input','waiting_approval'} or row['thread_id']!=control['thread_id'] or row['turn_id']!=control['turn_id'] or control['expires_at']<=now or not current or current['hash']!=control['grant_hash']:raise ServiceError('TASK_CONTROL_VERSION_STALE',status=409)
-            self._append_event(connection,ident,'control-decision-'+control['request_digest'],{'id':control_id,'decision':'decline','status':'declined','at':now})
+            if row['owner']!=control['worker_owner'] or row['lease_until']<now or row['cancel'] or row['status'] not in {'waiting_input','waiting_approval'} or row['thread_id']!=control['thread_id'] or row['turn_id']!=control['turn_id'] or control['expires_at']<=now or task['intent']['grant']['expires_at']<=now or task['intent']['grant_hash']!=control['grant_hash'] or not current or current['hash']!=control['grant_hash']:raise ServiceError('TASK_CONTROL_VERSION_STALE',status=409)
+            self._append_event(connection,ident,'control-decision-'+control['request_digest'],{'id':control_id,'decision':decision,'status':'accepted'if decision=='accept'else'declined','at':now})
         if authorize is not None:authorize()
         return False
 

@@ -69,7 +69,7 @@ class TaskWorker:
             remaining=max(0,deadline-time.monotonic()) if deadline is not None else 0
             if remaining<=0:raise ServiceError('TASK_RUNTIME_TIMEOUT',outcome='UNKNOWN')
             control_id=self.store.open_control(ident,self.owner,request_hash=request_hash,method=method,thread_id=thread_id,turn_id=turn_id,
-                expires_at=time.time()+min(self.request_timeout,remaining))
+                expires_at=time.time()+min(self.request_timeout,remaining),provider_request=request)
             while True:
                 if lease_lost.is_set():raise ServiceError('TASK_LEASE_LOST',outcome='UNKNOWN')
                 control=next(c for c in self.store.controls(ident) if c['id']==control_id)
@@ -81,7 +81,14 @@ class TaskWorker:
                     self.store.close_control(ident,self.owner,control_id,reason)
                     control=next(c for c in self.store.controls(ident) if c['id']==control_id);break
                 stop.wait(.1)
-            return {'control_id':control_id,'status':control['status']}
+            # The native callback is resolved only against the durable, exact
+            # request. Recheck revocation/cancellation at the response boundary.
+            current=self.store.task(ident)
+            if (current['cancel'] or lease_lost.is_set() or self.store.grant(grant['grant_id'])!=grant
+                    or time.time()>=control['expires_at'] or current['thread_id']!=thread_id or current['turn_id']!=turn_id):
+                raise ServiceError('TASK_CONTROL_VERSION_STALE',outcome='UNKNOWN')
+            return {'control_id':control_id,'status':control['status'],'decision':control.get('decision','decline'),
+                    'request_digest':request_hash,'operation_sha256':control.get('operation_sha256')}
         try:
             grant=validate_grant(task['intent']['grant'],live=True)
             current=self.store.grant(grant['grant_id'])

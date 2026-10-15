@@ -5,11 +5,13 @@ const lifecycleLabels={queued:'已接收 · 排队中',preparing:'正在核对�
 export const lifecycleLabel=task=>lifecycleLabels[task.lifecycle?.stage]||taskLabels[task.status]||'状态未知';
 const reviewLabels={pending:'待决定',accepted:'已接受此次结果',changes_requested:'需要修改',deferred:'暂缓验收'};
 export function controlState(control,task,owner=true,now=Date.now()/1000){
-  const labels={pending:control.kind==='input'?'等待补充输入':'等待审批',declined:'已拒绝',expired:'已过期',cancelled:'已取消',grant_revoked:'授权已撤销'};
+  const labels={pending:control.kind==='input'?'等待补充输入':'等待审批',accepted:'仅本次已允许',declined:'已拒绝',expired:'已过期',cancelled:'已取消',grant_revoked:'授权已撤销'};
   const active=['waiting_input','waiting_approval'].includes(task.status);
   const pending=control.status==='pending'&&control.expires_at>now;
+  const current=owner&&active&&pending&&control.version===1&&control.thread_id===task.thread_id&&control.turn_id===task.turn_id;
   return {label:control.status==='pending'&&!pending?'已过期':labels[control.status]||'需要对账',
-    canDecline:owner&&active&&pending&&control.version===1&&control.thread_id===task.thread_id&&control.turn_id===task.turn_id&&control.allowed_decisions.includes('decline')};
+    canDecline:current&&control.allowed_decisions.includes('decline'),
+    canAccept:current&&control.kind==='approval'&&control.allowed_decisions.includes('accept')};
 }
 export function feedbackState(status){
   if(status==='cancelled')return {label:'排队意见已取消',detail:'意见记录仍保存在 Linux，这条反馈不会执行。'};
@@ -70,13 +72,21 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true}={}){
   }
   for(const control of data.controls||[]){
     const state=controlState(control,task,owner),label=el('h3',{},state.label),section=el('section',{className:'panel stack'},label,
-      el('p',{},control.kind==='input'?'本适配器尚未验证输入答复能力。可拒绝本次请求，保存的修改意见不会被删除。':'请求权限尚未确认在已有授权内。本入口只允许拒绝，不会扩大项目、命令或网络权限。'),
+      el('p',{},control.kind==='input'?'本适配器尚未验证输入答复能力。可拒绝本次请求，保存的修改意见不会被删除。':control.allowed_decisions.includes('accept')?'本次命令已与既有授权核对。允许只适用于这一次请求；项目、命令和网络权限不会扩大。':'请求权限尚未确认在已有授权内。本入口只允许拒绝，不会扩大项目、命令或网络权限。'),
       el('p',{className:'caption'},'请求版本 '+control.version+' · '+new Date(control.expires_at*1000).toLocaleTimeString()+' 到期'));
+    const controlButtons=[];let responding=false;
+    if(control.kind==='approval'&&control.allowed_decisions.includes('accept')){
+      const accept=button('仅本次允许',async()=>{
+        responding=true;controlButtons.forEach(action=>action.disabled=true);const message=el('p',{role:'status'},'正在保存本次答复…');section.append(message);
+        try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/respond',{control_id:control.id,version:control.version,decision:'accept'});await renderTasks(target,{taskId,isCurrent});if(isCurrent())target.querySelector('button')?.focus();}
+        catch(error){message.textContent='答复结果需要核对：'+(error.code||'连接不可用')+'。请读取原任务，勿重复创建请求。';refresh.focus();}
+      });accept.disabled=!state.canAccept;controlButtons.push(accept);actions.push({button:accept,allowed:()=>!responding&&controlState(control,task,owner).canAccept});section.append(accept);
+    }
     const decline=button('拒绝本次请求',async()=>{
-      decline.disabled=true;const message=el('p',{role:'status'},'正在保存拒绝…');section.append(message);
+      responding=true;controlButtons.forEach(action=>action.disabled=true);const message=el('p',{role:'status'},'正在保存拒绝…');section.append(message);
       try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/respond',{control_id:control.id,version:control.version,decision:'decline'});await renderTasks(target,{taskId,isCurrent});if(isCurrent())target.querySelector('button')?.focus();}
       catch(error){message.textContent='答复结果需要核对：'+(error.code||'连接不可用')+'。请读取原任务，勿重复创建请求。';decline.disabled=true;refresh.focus();}
-    });decline.disabled=!state.canDecline;actions.push({button:decline,allowed:()=>controlState(control,task,owner).canDecline});section.append(decline);root.append(section);
+    });decline.disabled=!state.canDecline;controlButtons.push(decline);actions.push({button:decline,allowed:()=>!responding&&controlState(control,task,owner).canDecline});section.append(decline);root.append(section);
   }
   if(task.result?.transport&&task.result.transport!=='app_server_stdio')root.append(el('p',{className:'warning'},'模拟执行结果 · 验收仅针对这份测试记录。'));
   if(task.result){

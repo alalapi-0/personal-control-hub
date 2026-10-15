@@ -27,7 +27,8 @@ SCHEMA_PINS = {'ThreadStartParams':'80a40a7fac15b4bf70efb7f893fb353acc0a0d30c68f
  'ConfigReadResponse':'4ec77e1a3eed746037149799c3b6bb8fe7b4b593e5930fc9f410e6282de9df50',
  'ThreadResumeParams':'cc5bb3b25f82073d24af5b6c09e4804ac307467f8400ba5f263fa86f9f0349e6',
  'TurnStartParams':'07771223642e1b61bd9aac0069fc0f98143a1c047724ca02c7ceb13653442738',
- 'TurnInterruptParams':'6dff382dae73d1dbc58406ed045605f647e7a49660e2540fbd2c6c24d60c5f2b'}
+ 'TurnInterruptParams':'6dff382dae73d1dbc58406ed045605f647e7a49660e2540fbd2c6c24d60c5f2b',
+ 'CommandExecutionRequestApprovalResponse':'6d0767113e22f311381809b6b236b0dde2b99b01992879c26bf7b1ea0e003cb7'}
 PARAMS = {'initialize':'InitializeParams','thread/start':'ThreadStartParams',
  'config/read':'ConfigReadParams',
  'thread/list':'ThreadListParams',
@@ -50,6 +51,7 @@ REGISTERED_SERVERS=('chrome-devtools','context7','github','node_repl','openaiDev
 REGISTERED_CONFIG_SHA256='eca316513d41a987288204749d1d909295749020565f08cfe576add370acde52'
 PERMISSION_PROFILE='hub_lwb_fixture_v1'
 EVIDENCE_PERMISSION_PROFILE='hub_lwb_evidence_v11'
+APPROVAL_RESPONSE='CommandExecutionRequestApprovalResponse'
 
 
 def profile_arguments(root,*,read_only=False):
@@ -134,6 +136,7 @@ class AppServerAdapter:
         self.inbox = queue.Queue(maxsize=256)
         self.notifications = []
         self.denials = []
+        self.approvals = []
         self.stderr_hash = hashlib.sha256()
         self.stderr_bytes = 0
         self.next_id = 0
@@ -177,7 +180,7 @@ class AppServerAdapter:
             with tempfile.TemporaryDirectory(prefix='hub-protocol-schema-') as directory:
                 run=subprocess.run(['codex','app-server','generate-json-schema','--experimental','--out',directory],capture_output=True,timeout=10,env=env)
                 if run.returncode:raise ServiceError('CODEX_SCHEMA_UNAVAILABLE',status=503)
-                for name in set(PARAMS.values())|set(RESPONSES.values())|set(NOTIFICATIONS.values())|{'ServerNotification','ServerRequest'}:
+                for name in set(PARAMS.values())|set(RESPONSES.values())|set(NOTIFICATIONS.values())|{'ServerNotification','ServerRequest',APPROVAL_RESPONSE}:
                     paths=list(Path(directory).rglob(name+'.json'))
                     if len(paths)!=1:raise ServiceError('CODEX_SCHEMA_UNAVAILABLE',status=503)
                     raw=paths[0].read_bytes()
@@ -266,9 +269,17 @@ class AppServerAdapter:
                 elif self.request_handler is not None:raise ServiceError('CODEX_PROTOCOL_REJECTED',outcome='UNKNOWN')
                 if known and self.request_handler is not None:control=self.request_handler(value)
             except ServiceError as caught:error=caught
-            denial={'method':sanitized(method,120),'digest':hashlib.sha256(canonical(value)).hexdigest(),**control}
-            self.denials.append(denial)
-            if method in {'item/commandExecution/requestApproval','item/fileChange/requestApproval'}:response={'id':value['id'],'result':{'decision':'decline'}}
+            request_digest=hashlib.sha256(canonical(value)).hexdigest()
+            accepted=(error is None and method=='item/commandExecution/requestApproval'
+                      and control.get('decision')=='accept' and control.get('request_digest')==request_digest
+                      and control.get('status')=='accepted' and type(control.get('operation_sha256'))is str
+                      and re.fullmatch('[a-f0-9]{64}',control['operation_sha256']) is not None)
+            if accepted:
+                try:self._validate(APPROVAL_RESPONSE,{'decision':'accept'})
+                except ServiceError as caught:error=caught;accepted=False
+            observation={'method':sanitized(method,120),'digest':request_digest,**control}
+            (self.approvals if accepted else self.denials).append(observation)
+            if method in {'item/commandExecution/requestApproval','item/fileChange/requestApproval'}:response={'id':value['id'],'result':{'decision':'accept'if accepted else'decline'}}
             elif method=='item/tool/requestUserInput':response={'id':value['id'],'result':{'answers':{}}}
             else:response={'id':value['id'],'error':{'code':-32601,'message':'Hub denies unsupported server request'}}
             self._send(response)

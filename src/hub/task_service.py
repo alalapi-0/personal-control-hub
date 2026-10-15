@@ -55,7 +55,19 @@ def fingerprint(root):
 
 def validate_grant(grant, *, live=False):
     css=type(grant)is dict and grant.get('checks')==['csp_css_trial']
-    if type(grant)is not dict or set(grant)!=(GRANT_FIELDS|{'css_trial'}if css else GRANT_FIELDS):raise ServiceError('INVALID_GRANT')
+    extra={'approved_commands'}if type(grant)is dict and 'approved_commands'in grant and not css else set()
+    if type(grant)is not dict or set(grant)!=(GRANT_FIELDS|{'css_trial'}if css else GRANT_FIELDS|extra):raise ServiceError('INVALID_GRANT')
+    if extra:
+        commands=grant['approved_commands']
+        if type(commands)is not list or not 1<=len(commands)<=8:raise ServiceError('INVALID_GRANT')
+        seen=set()
+        for command in commands:
+            if type(command)is not dict or set(command)!={'command','cwd'} or \
+                type(command['command'])is not str or not command['command'].strip() or \
+                len(command['command'])>4096 or '\x00'in command['command'] or \
+                type(command['cwd'])is not str or command['cwd']!=grant['root'] or command['command']in seen:
+                raise ServiceError('INVALID_GRANT')
+            seen.add(command['command'])
     for key in ('grant_id','project_id','task_id'):stable_id(grant[key])
     if grant['mode']not in {'new','idle_continue','busy_feedback'} or (grant['mode']=='new')!=(grant['parent_task_id']is None):raise ServiceError('INVALID_GRANT')
     if grant['parent_task_id']is not None:stable_id(grant['parent_task_id'])
@@ -270,6 +282,7 @@ class TaskService:
     def respond_control(self,ident,command, *, owner_context='trusted_local_owner',authorize=None):
         if not self.test_gate:raise ServiceError('EXECUTION_DISABLED',status=403)
         if type(command)is not dict or set(command)!={'control_id','version','decision'}:raise ServiceError('INVALID_TASK_CONTROL')
+        if type(command['decision'])is not str or command['decision']not in {'accept','decline'}:raise ServiceError('TASK_CONTROL_DECISION_REJECTED',status=409)
         replayed=self.store.respond_control(ident,command['control_id'],command['version'],command['decision'],owner_context=owner_context,authorize=authorize)
         return {**self.get(ident),'replayed':replayed}
 

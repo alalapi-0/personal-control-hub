@@ -245,7 +245,7 @@ test('owner login adopts its rotated CSRF and logout discards it without browser
   globalThis.fetch=async(path,options)=>{
     requests.push({path,options});
     return {ok:true,status:200,json:async()=>({ok:true,data:path==='/api/owner/login'?{csrf_token:'rotated-fixture-csrf'}:
-      path==='/api/session'?{csrf_token:'guest-fixture-csrf'}:{}})};
+      path==='/api/guest'?{csrf_token:'guest-fixture-csrf'}:{}})};
   };
   try {
     await ownerLogin(proof);
@@ -254,7 +254,7 @@ test('owner login adopts its rotated CSRF and logout discards it without browser
     assert.equal(requests.find(r=>r.path==='/api/refresh').options.headers['X-Hub-CSRF'],'rotated-fixture-csrf');
     await ownerLogout();
     await api('/api/identity');
-    assert.equal(requests.at(-2).path,'/api/session');
+    assert.equal(requests.at(-2).path,'/api/guest');
     assert.ok(requests.every(r=>!r.path.includes(proof)));
   } finally {globalThis.fetch=originalFetch;globalThis.localStorage=originalStorage;}
 });

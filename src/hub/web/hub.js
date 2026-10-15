@@ -21,7 +21,8 @@ function loginDialog() {
     if (!proof.reportValidity()) return;
     const transientProof = proof.value; proof.value = ''; submit.disabled = true;
     message.textContent = '正在认证…';
-    try { await ownerLogin(transientProof); dialog.close(); await updateConnection(); }
+    try { await ownerLogin(transientProof); dialog.close(); await updateConnection();
+      if(routeAuthRequired)await route(false); }
     catch(error) { message.textContent = ({OWNER_AUTH_FAILED:'身份未通过，请重新输入。',
       OWNER_AUTH_UNAVAILABLE:'所有者身份尚未配置，请在受保护的后台入口完成配置。',
       OWNER_AUTH_RATE_LIMITED:'认证尝试过多，请稍后再试。',SESSION_REQUIRED:'本次认证会话已失效，请重新打开认证。'})[error.code] || '后端暂时无法连接，请稍后重试。';
@@ -58,7 +59,7 @@ async function updateConnection() {
 }
 const statuses = {active:'进行中',paused:'已暂停',blocked:'受阻',complete:'已完成',unknown:'来源未提供状态'};
 const types = {internal_control_plane:'管理',governance_program:'治理',code:'开发',creative:'创作',document:'文档'};
-let generation=0, lastProjects=[], pendingRefresh=null, projectDirectoryLoaded=false, syncStatus=null, syncStatusError=null;
+let generation=0, lastProjects=[], pendingRefresh=null, projectDirectoryLoaded=false, syncStatus=null, syncStatusError=null, routeAuthRequired=false;
 const projectNames=new Map();
 try {pendingRefresh=validRefreshCommand(JSON.parse(localStorage.getItem('hub:refresh-pending')||'null'));} catch {}
 function time(value){if(!value)return '尚未读取';const d=new Date(value);return Number.isNaN(d.valueOf())?'时间未提供':d.toLocaleString('zh-CN',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}
@@ -282,6 +283,7 @@ async function projectDetail(id,token){
   main.replaceChildren(el('section',{className:'stack'},el('a',{href:'#projects'},'← 所有项目'),el('h1',{},p.name),el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},refreshButton([p]),(!refreshable(p)||!syncStatus?.eligible_project_ids.includes(p.project_id))?el('p',{className:'caption'},syncStatus?'此项目不在符合资格的刷新范围内。':'刷新范围暂不可用，请回到项目列表重新核对。'):null),exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,el('section',{className:'panel stack'},el('h2',{},'项目权威状态'),summaryView(p),el('p',{className:'caption'},'仅显示项目登记来源明确提供的事实。缺值和过期记录保留为未知。'),fields),renderBusinessPlan(p),renderPageInventory(p),renderCaptures(p,captures),timeView,identityNotice,managementPanel,taskPanel,el('a',{className:'button',href:'#host'},'查看 Linux 主机观测'),el('div',{className:'details-grid'},el('div',{className:'stack'},sources,relations),design),diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields,quality:p.business.quality})));
 }
 async function route(focus=true){
+  routeAuthRequired=false;
   const token=++generation;const parts=location.hash.slice(1).split('/').map(p=>{try{return decodeURIComponent(p);}catch{return '';}});const kind=parts[0]||'projects';
   for(const name of ['projects','designs','workbench','materials','host']){const nav=document.querySelector(`#nav-${name}`);if(name===(['tasks','sessions'].includes(kind)?'workbench':kind))nav.setAttribute('aria-current','page');else nav.removeAttribute('aria-current');}
   main.setAttribute('aria-busy','true');main.replaceChildren(el('p',{role:'status'},'正在读取…'));
@@ -317,7 +319,7 @@ async function route(focus=true){
     else await projectsPage(token);
     if(focus&&token===generation)main.focus();
   }
-  catch(error){if(token!==generation)return;main.replaceChildren(el('section',{className:'empty'},el('h1',{},'暂时无法读取'),el('p',{},failure(error)),button('重新读取',()=>route(false)),diagnostic({code:error.code||'NETWORK_UNAVAILABLE',outcome:error.outcome})));}
+  catch(error){if(token!==generation)return;routeAuthRequired=['OWNER_AUTH_REQUIRED','SESSION_REQUIRED'].includes(error.code);main.replaceChildren(el('section',{className:'empty'},el('h1',{},'暂时无法读取'),el('p',{},failure(error)),button('重新读取',()=>route(false)),diagnostic({code:error.code||'NETWORK_UNAVAILABLE',outcome:error.outcome})));}
   finally{if(token===generation){main.removeAttribute('aria-busy');updateConnection();}}
 }
 window.addEventListener('hashchange',()=>route());
