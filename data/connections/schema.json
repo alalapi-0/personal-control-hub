@@ -466,7 +466,7 @@
     }
   },
   "management_contract": {
-    "schema_version": "1.2",
+    "schema_version": "1.3",
     "config_path": "data/connections/management_config.yaml",
     "config_validator": "hub.metric_management.validate_management_config",
     "review_query": "hub.metric_management.query_review_records",
@@ -499,10 +499,12 @@
     "config_versions": [
       "1.0",
       "1.1",
-      "1.2"
+      "1.2",
+      "1.3"
     ],
     "temporal_policy": "Literal planned calendar dates and explicit IANA timezone or null; milestones null means unconfigured, [] means explicitly empty; exact legacy payloads and request hashes remain unchanged",
-    "owner_overlays": "Hub-only priority/calendar dates/timezone/planned milestones/layout/confirmed relations; revision CAS, no source or provider authority",
+    "rolling_estimate_policy": "Forecast windows are uncertain estimates, never deadlines or actual acceptance; explicit as_of/review, evidence hashes, conditions, and separate automatic/human windows with acyclic dependencies; Tokyo timezone is an explicit owner overlay, never inferred",
+    "owner_overlays": "Hub-only priority/calendar dates/timezone/planned milestones/rolling estimates/layout/confirmed relations; revision CAS, no source or provider authority",
     "ui_rule": "Existing local UI reads separate managed values; source imports never overwrite them"
   },
   "lifecycle": "completed, accepted and delivery.status are independent source facts"

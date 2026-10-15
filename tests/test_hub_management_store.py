@@ -271,6 +271,58 @@ class ManagementStoreTests(unittest.TestCase):
         self.assertTrue(projects['a']['relations']['independent'])
         self.assertIsNone(overlay()['relations'])
 
+    def test_rolling_upgrade_preserves_old_history_hashes_and_never_downgrades(self):
+        from test_hub_rolling_plan import rolling_plan
+        first = self.command(value=overlay(priority=2)); self.apply(first)
+        old_history = copy.deepcopy(self.store.snapshot()['history'])
+        value = overlay(timezone='Asia/Tokyo', milestones=None, rolling_plan=rolling_plan())
+        second = self.command('rolling-2', 'b', value); self.apply(second)
+        config, _ = load_management_config(self.root)
+        self.assertEqual(config['schema_version'], '1.3')
+        self.assertEqual(config['history'][:1], old_history)
+        self.assertEqual(config['projects']['b'], value)
+        for field in self.base:
+            if field not in ('schema_version', 'projects'):
+                self.assertEqual(config[field], self.base[field])
+        self.assertTrue(self.apply(first)['replayed'])
+        self.assertTrue(self.apply(second)['replayed'])
+        self.apply(self.command('legacy-3', value=overlay()))
+        self.apply(self.command('retract-4', 'b', operation='retract'))
+        config, _ = load_management_config(self.root)
+        self.assertEqual(config['schema_version'], '1.3')
+        self.assertEqual(config['history'][1]['after'], value)
+        self.assertEqual(config['history'][3]['before'], value)
+
+    def test_rolling_null_and_validation_rejection_leave_exact_file(self):
+        from test_hub_rolling_plan import rolling_plan
+        value = overlay(timezone=None, milestones=None, rolling_plan=None)
+        self.assertEqual(validate_overlay(value), value)
+        self.apply(self.command(value=value))
+        before = self.path.read_bytes()
+        invalid = rolling_plan(); invalid['acceptance_windows'][0]['depends_on'] = ['absent']
+        self.assert_code('MANAGEMENT_INVALID_COMMAND', lambda: self.apply(self.command('bad-2', value=overlay(timezone=None, milestones=None, rolling_plan=invalid))))
+        self.assertEqual(self.path.read_bytes(), before)
+        self.assert_code('MANAGEMENT_INVALID_COMMAND', lambda: self.apply(self.command('bad-3', value=overlay(rolling_plan=None))))
+        self.assertEqual(self.path.read_bytes(), before)
+
+    def test_rolling_stale_cas_unknown_replay_and_old_version_history_rejection(self):
+        from test_hub_rolling_plan import rolling_plan
+        value = overlay(timezone='Asia/Tokyo', milestones=[], rolling_plan=rolling_plan())
+        command = self.command('rolling-1', value=value)
+        stale = self.command('stale-2', value=value)
+        def fault(stage):
+            if stage == 'after_replace': raise OSError('observed failure')
+        error = self.assert_code('MANAGEMENT_COMMIT_UNCONFIRMED', lambda: self.apply(command, ManagementStore(self.root, fault=fault)))
+        self.assertEqual(error.outcome, 'UNKNOWN')
+        self.assertTrue(self.apply(command)['replayed'])
+        self.assert_code('MANAGEMENT_CONFLICT', lambda: self.apply(stale))
+        self.apply(self.command('retract-3', operation='retract'))
+        config, _ = load_management_config(self.root)
+        for old_version in ('1.1', '1.2'):
+            with self.subTest(version=old_version), self.assertRaises(RecordError):
+                validate_management_state(dict(config, schema_version=old_version))
+        self.assertEqual(config['history'][0]['after'], value)
+
     def test_temporal_upgrade_preserves_base_legacy_history_and_replay(self):
         first = self.command(value=overlay(start_date='2026-10-14', watch=True))
         self.apply(first)

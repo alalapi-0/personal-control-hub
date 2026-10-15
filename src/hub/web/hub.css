@@ -200,3 +200,8 @@ details[open]>summary {margin-bottom:16px}
 .management-milestone-row label,.management-milestone-row p{overflow-wrap:anywhere}
 .management-milestone-row button,.management-milestone-add{min-height:44px}
 @media(max-width:600px){.timeline-project{padding:14px}.timeline-controls{align-items:stretch}.timeline-controls label{flex:1 1 130px}.timeline-controls button{flex:1 1 auto}.management-milestone-row{grid-template-columns:1fr}}
+
+.timeline-forecast-summary{border-inline-start:3px dashed var(--accent);padding-inline-start:12px;overflow-wrap:anywhere}
+.timeline-bar.timeline-forecast{fill:var(--accent);fill-opacity:.16;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:5 3}
+.timeline-marker.timeline-forecast{fill:var(--surface);stroke:var(--accent);stroke-width:2}
+.timeline-lane-text.timeline-forecast{border-inline-start:2px dashed var(--accent);padding-inline-start:12px}

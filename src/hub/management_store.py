@@ -20,6 +20,7 @@ from .service_contract import ServiceError
 MAX_BYTES = 1024 * 1024
 OVERLAY_FIELDS = {'priority', 'start_date', 'end_date', 'watch', 'order', 'layout', 'relations'}
 TEMPORAL_OVERLAY_FIELDS = OVERLAY_FIELDS | {'timezone', 'milestones'}
+ROLLING_OVERLAY_FIELDS = TEMPORAL_OVERLAY_FIELDS | {'rolling_plan'}
 HISTORY_FIELDS = {'request_id', 'request_hash', 'revision', 'project_id', 'operation', 'before', 'after', 'created_at'}
 COMMAND_FIELDS = {'request_id', 'expected_revision', 'expected_hash', 'project_id', 'operation', 'value'}
 
@@ -27,12 +28,12 @@ COMMAND_FIELDS = {'request_id', 'expected_revision', 'expected_hash', 'project_i
 def validate_overlay(value, project_id=None):
     from .time_semantics import validate_calendar_date, validate_timezone
 
-    require(type(value) is dict and set(value) in (OVERLAY_FIELDS, TEMPORAL_OVERLAY_FIELDS), 'invalid management overlay fields')
+    require(type(value) is dict and set(value) in (OVERLAY_FIELDS, TEMPORAL_OVERLAY_FIELDS, ROLLING_OVERLAY_FIELDS), 'invalid management overlay fields')
     for key in ('priority', 'order'):
         require(value[key] is None or (type(value[key]) is int and value[key] >= 0), 'invalid ' + key)
     for key in ('start_date', 'end_date'):
         validate_calendar_date(value[key])
-    if set(value) == TEMPORAL_OVERLAY_FIELDS:
+    if set(value) in (TEMPORAL_OVERLAY_FIELDS, ROLLING_OVERLAY_FIELDS):
         validate_timezone(value['timezone'])
         milestones = value['milestones']
         if milestones is not None:
@@ -45,6 +46,9 @@ def validate_overlay(value, project_id=None):
                 seen.add(milestone['id'])
                 require(type(milestone['label']) is str and 0 < len(milestone['label']) <= 200 and bool(milestone['label'].strip()), 'invalid planned milestone label')
                 validate_calendar_date(milestone['date'])
+    if set(value) == ROLLING_OVERLAY_FIELDS:
+        from .rolling_plan import validate_rolling_plan
+        validate_rolling_plan(value['rolling_plan'])
     if value['start_date'] is not None and value['end_date'] is not None:
         require(value['start_date'] <= value['end_date'], 'date range reversed')
     require(value['watch'] is None or type(value['watch']) is bool, 'invalid watch')
@@ -68,10 +72,11 @@ def validate_overlay(value, project_id=None):
     return copy.deepcopy(value)
 
 
-def _validate_projects(projects, *, version="1.2"):
+def _validate_projects(projects, *, version="1.3"):
     require(type(projects) is dict and len(projects) <= 10000, 'invalid overlays')
     for project_id, overlay in projects.items():
         identifier(project_id, 'project'); validate_overlay(overlay, project_id)
+        require(version == '1.3' or set(overlay) != ROLLING_OVERLAY_FIELDS, 'rolling overlay requires management 1.3')
         require(version != '1.1' or set(overlay) == OVERLAY_FIELDS, 'temporal overlay requires management 1.2')
     done = set()
     for start in projects:
@@ -91,7 +96,7 @@ def _request_hash(request_id, project_id, operation, value):
 def validate_management_state(config):
     """Replay exact versioned overlay payloads without normalizing historical values."""
     version = config['schema_version']
-    require(version in ('1.1', '1.2'), 'unsupported management history version')
+    require(version in ('1.1', '1.2', '1.3'), 'unsupported management history version')
     require(type(config['revision']) is int and config['revision'] >= 0, 'invalid management revision')
     history = config['history']
     require(type(history) is list and len(history) == config['revision'], 'invalid management history')
@@ -187,7 +192,7 @@ class ManagementStore:
             value = parse_source(raw, "yaml")
             from .metric_management import validate_management_config
             value = validate_management_config(value)
-            if value['schema_version'] in ('1.1', '1.2'): validate_management_state(value)
+            if value['schema_version'] in ('1.1', '1.2', '1.3'): validate_management_state(value)
             return value, raw, before
         finally:
             if fd is not None: os.close(fd)
@@ -244,7 +249,9 @@ class ManagementStore:
                     return self._receipt(config, row, True)
             if config.get('revision', 0) != command['expected_revision'] or content_hash(config) != command['expected_hash']:
                 raise ServiceError('MANAGEMENT_CONFLICT', status=409)
-            version = '1.2' if config['schema_version'] == '1.2' or (command['operation'] == 'set' and set(command['value']) == TEMPORAL_OVERLAY_FIELDS) else '1.1'
+            requested_version = ({7: '1.1', 9: '1.2', 10: '1.3'}[len(command['value'])]
+                                 if command['operation'] == 'set' else '1.1')
+            version = max(config['schema_version'], requested_version)
             next_config = copy.deepcopy(config); next_config.update(schema_version=version, revision=config.get('revision', 0) + 1)
             row = {'request_id': command['request_id'], 'request_hash': request_hash, 'revision': next_config['revision'],
                    'project_id': command['project_id'], 'operation': command['operation'], 'before': copy.deepcopy(config['projects'].get(command['project_id'])),
