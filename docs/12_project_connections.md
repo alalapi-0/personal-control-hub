@@ -38,6 +38,20 @@ systemctl --user enable --now personal-control-hub-refresh.timer
 
 `--time HH:MM --timezone Area/Location` 可调整生成的日程；不改主机时区或 linger。生成器拒绝覆盖已有 unit，更新前需核对精确前像及写责。只暂停新 timer：`systemctl --user stop personal-control-hub-refresh.timer`；恢复用 `start`，停用用 `disable --now`。已开始的 oneshot 与现有 Hub 生产服务分开；中断后账本 OPEN 请求可用同 ID 续接。手动启动 service 可验证执行链，但不能证明真实到点。`Persistent=true` 只在 user manager 再次可用时补跑；注销期间持续运行、实际下一次定时 journal 都须真实验证，安装文件不构成这些验收。
 
+## 离线备份中的任务库恢复
+
+先停止恢复副本的全部使用者，并保留一致性备份。任务库与外部注册文件共同绑定原物理目录和文件身份，因此直接复制后保持 blocked 是预期行为；普通服务启动、HTTP、授权登记和 worker 都不会自动接管它。只有确认独占的离线副本才能显式执行：
+
+```sh
+python scripts/restore_task_storage.py --root "$RESTORED_PCH_ROOT" \
+  --database-sha256 DATABASE_SHA256 --registration-sha256 REGISTRATION_SHA256 \
+  --confirm-offline
+```
+
+两个 SHA 必须分别来自该副本 `data/workbench/tasks.sqlite3` 和 `storage-registration.json` 的精确字节。操作只接受已知 schema 2、无 SQLite sidecar、完整有效哈希以及全为终态的任务；健康存储、排队／运行／未知状态和不安全文件均拒绝。`--confirm-offline` 是调用者对已完成停用与写责核对的确认，本身不能证明没有其他进程。已有 `requires_reconcile`、provider 标识、任务、授权、事件和自增序号全部保留，仅显式重绑存储 profile 与文件身份；它不重建空库、不改变授权范围，也不启动任务。
+
+数据库和注册文件没有跨文件原子事务。发布先写不可用的 pending 注册，再替换已验证的暂存库，最后写 ready 注册。中断或结果未知时先检查实际状态；pending 保持 blocked，新进程不自动补完。只有对照保留备份、核实精确当前文件与独占写责后，才可恢复本次拥有的副本并重新显式操作；不要删除注册文件、静默重新初始化、盲目重试旧 SHA 或覆盖后来的改动。原始备份及源项目保持不变；其他工作台数据和图片仍需各自的一致性备份与恢复核对。
+
 ## 程序指标入口（v2 数据前置）
 
 ```sh

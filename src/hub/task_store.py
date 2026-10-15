@@ -165,6 +165,13 @@ class TaskStore:
         except ServiceError as error:
             return {'state':'blocked','profile_version':None,'reason_code':error.details.get('reason_code',error.code)}
 
+    def restore_storage(self, *, database_sha256, registration_sha256, confirm_offline=False):
+        """Explicit owner-only rebind of a pinned offline copy; never a startup repair."""
+        from .task_storage_restore import restore_storage
+        return restore_storage(self, database_sha256=database_sha256,
+                               registration_sha256=registration_sha256,
+                               confirm_offline=confirm_offline)
+
     def _location(self, create=False):
         current = Path(self.root.anchor)
         for part in self.path.parent.parts[1:]:

@@ -68,7 +68,11 @@ class StorageGuard:
 
     @classmethod
     def register_internal(cls, root, *, mount=mount_identity, space=os.statvfs):
-        """Trusted startup registration for a new ledger, never a replacement pin."""
+        """Build a current physical profile for explicit initialization or offline restore.
+
+        This only observes storage; it never replaces a ledger or registration.
+        Ordinary startup must not use it to adopt a changed identity.
+        """
         root = Path(root)
         info,parents = components(root,with_parents=True)
         profile = {'version': PROFILE_VERSION, 'root': str(root), 'device': info.st_dev,
