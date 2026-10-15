@@ -125,3 +125,13 @@ test('engineering verification requires current proof and never turns generic ac
  assert.equal(timelineRows([p])[0].verification,'checks_passed');let n=mount([p]);assert.match(n.textContent,/来源自动／工程核验状态：checks_passed/);assert.match(n.textContent,/实际自动验收日期：未知/);assert.match(n.textContent,/本人实际验收状态及日期：未知/);assert.doesNotMatch(n.textContent,/本人已通过。?$/);
  for(const mutate of [p=>p.freshness.state='stale',p=>p.declared.connection_read_allowed=false,p=>p.operational.latest_attempt.success=false,p=>p.operational.latest_attempt.field_provenance['verification.status'].sha256='b'.repeat(64),p=>p.operational.latest_attempt.business.verification.status='failed']){const q=structuredClone(p);mutate(q);assert.equal(timelineRows([q])[0].verification,null);}
 });
+
+test('optional1.3 retains literal actual timeline and source task stages without bypassing proof',()=>{
+ for(const version of ['1.2','1.3']){
+  const p=plan(fixture());p.operational.latest_attempt.extensions.schema_version=version;
+  let row=timelineRows([p])[0];assert.equal(row.actual.start.value,'2026-10-14');assert.equal(row.stages.length,2);
+  p.operational.latest_attempt.extensions.fact.task_timeline.proof={...p.business.timeline.proof,sha256:'b'.repeat(64)};
+  row=timelineRows([p])[0];assert.equal(row.actual.start,null);assert.equal(row.actual.end,null);
+ }
+ const p=fixture();p.operational.latest_attempt.extensions.schema_version='1.1';assert.equal(timelineRows([p])[0].actual.start,null);
+});

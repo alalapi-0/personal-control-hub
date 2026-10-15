@@ -13,13 +13,15 @@ from .connection_records import (RecordError, content_hash, exact, fingerprint, 
                                  require, string, timestamp, validate_selector)
 
 VERSION = "1.0"
-SUPPORTED_VERSIONS = {"1.0", "1.1", "1.2"}
+SUPPORTED_VERSIONS = {"1.0", "1.1", "1.2", "1.3"}
 DOMAINS = {"fact", "managed", "derived", "proposed"}
 FACT_FIELDS = {"task_nodes", "usable_versions", "core_capabilities", "fact_updated_at",
                "has_ui", "plan_version", "unit", "counting_basis", "progress_counts"}
 TASK_PLAN_FIELDS = FACT_FIELDS | {"task_plan"}
 TIMELINE_FIELDS = TASK_PLAN_FIELDS | {"task_timeline"}
-VERSION_FIELDS = {"1.0": FACT_FIELDS, "1.1": TASK_PLAN_FIELDS, "1.2": TIMELINE_FIELDS}
+PAGE_INVENTORY_FIELDS = TIMELINE_FIELDS | {"page_inventory"}
+VERSION_FIELDS = {"1.0": FACT_FIELDS, "1.1": TASK_PLAN_FIELDS, "1.2": TIMELINE_FIELDS,
+                  "1.3": PAGE_INVENTORY_FIELDS}
 MANAGED_FIELDS = {"planned_start", "planned_end", "priority", "watch", "order", "layout"}
 COUNTS = {"total", "implemented", "verified", "human", "not_started", "active", "blocked"}
 METADATA = {"unit", "plan_version", "counting_basis", "baseline_denominator"}
@@ -130,7 +132,10 @@ def _versions(value: Any) -> None:
 
 
 def _fact_value(key: str, value: Any, *, task_plan=None) -> None:
-    if key == "task_timeline":
+    if key == "page_inventory":
+        from .page_inventory import validate_page_inventory
+        validate_page_inventory(value)
+    elif key == "task_timeline":
         from .time_semantics import validate_task_timeline
         validate_task_timeline(value, task_plan=task_plan)
     elif key == "task_plan":
@@ -252,7 +257,8 @@ def validate_extensions(envelope: Any, *, source_context: dict | None = None,
                         domain: str = "source") -> dict | None:
     """Prove literal values against the caller's actually read parsed source.
 
-    Optional 1.1 adds task_plan; existing optional 1.0 remains unchanged.
+    Versions add task_plan (1.1), task_timeline (1.2), and page_inventory
+    (1.3); earlier versions retain their exact allowed fields.
     """
     return _validate_extensions(envelope, source_context=source_context,
                                 domain=domain, selected_values=True)

@@ -297,10 +297,11 @@ def record_schema() -> dict:
                 "entry_rule": "safe relative Python file; never a shell command",
                 "snapshot": METRIC_SNAPSHOT_PATH,
             },
-            "optional_extensions": {"versions": ["1.0", "1.1", "1.2"],
+            "optional_extensions": {"versions": ["1.0", "1.1", "1.2", "1.3"],
                                     "ingestion": "Literal selector and actual source hash/observation/value equality; no managed/derived/proposed source authority",
                                     "task_plan": "1.1 business hierarchy/leaf acceptance and versioned denominator history; provider tasks excluded",
                                     "task_timeline": "1.2 literal actual calendar/offset times and milestones, bound to project/current plan/task IDs; unknown dates and named timezones remain null; Hub management plans are separate",
+                                    "page_inventory": "1.3 literal implementation/design page units and at most three representative preview references, bound to project/source proof; version binding is metadata only, not runtime, capture or human acceptance",
                                     "legacy": "Absent extension preserves source2.0 fields/update identity; old optional1.0 remains readable"},
             "permission_rule": "explicit connection_read_allowed=false denies before root access; absent field falls back to enabled",
             "protected_sources": "no control/environment/credential path components in roots or sources; aliases are rechecked",
@@ -369,6 +370,8 @@ def validate_result(value: Any) -> dict:
         require(plan is None or plan["project_id"] == value["project_id"], "task plan project mismatch")
         timeline = extension["fact"].get("task_timeline", {}).get("value")
         require(timeline is None or timeline["project_id"] == value["project_id"], "task timeline project mismatch")
+        inventory = extension["fact"].get("page_inventory", {}).get("value")
+        require(inventory is None or inventory["project_id"] == value["project_id"], "page inventory project mismatch")
     for field, kind in FIELDS.items():
         actual = get_field(value["business"], field)
         if actual is None:

@@ -31,7 +31,7 @@ function actual(project){
   if(project?.freshness?.state!=='fresh'||project?.freshness?.authority_drift===true)return {value:null,reason:'来源过期或当前读取规则已变化'};
   if(dto?.available!==true||dto.role!=='current'||!dto.value)return {value:null,reason:reasonText(dto?.reason)||'来源未提供当前实际日期'};
   const proof=dto.proof,field=record.extensions?.fact?.task_timeline;
-  if(record.extensions?.schema_version!=='1.2'||!hash(proof?.sha256)||!text(proof.source_ref)||!selector(proof.selector)||proof.observed_at!==record.observed_at||!Array.isArray(record.sources)||record.sources.filter(s=>s.id===proof.source_ref&&s.sha256===proof.sha256&&(s.observed_at===undefined||s.observed_at===record.observed_at)).length!==1||field?.unknown_reason!==null||JSON.stringify(field?.proof)!==JSON.stringify(proof)||JSON.stringify(field?.value)!==JSON.stringify(dto.value))return {value:null,reason:'当前实际日期的来源证据不可核对'};
+  if(!['1.2','1.3'].includes(record.extensions?.schema_version)||!hash(proof?.sha256)||!text(proof.source_ref)||!selector(proof.selector)||proof.observed_at!==record.observed_at||!Array.isArray(record.sources)||record.sources.filter(s=>s.id===proof.source_ref&&s.sha256===proof.sha256&&(s.observed_at===undefined||s.observed_at===record.observed_at)).length!==1||field?.unknown_reason!==null||JSON.stringify(field?.proof)!==JSON.stringify(proof)||JSON.stringify(field?.value)!==JSON.stringify(dto.value))return {value:null,reason:'当前实际日期的来源证据不可核对'};
   const v=dto.value;if(v.schema_version!=='1.0'||v.project_id!==project.project_id||!Array.isArray(v.task_dates)||!Array.isArray(v.milestones))return {value:null,reason:'实际日期格式不可核对'};
   return {value:v,reason:null,proof:structuredClone(proof)};
 }

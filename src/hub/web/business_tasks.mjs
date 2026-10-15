@@ -68,9 +68,9 @@ export function businessPlan(project,{history=false}={}){
   if(!history&&(project?.freshness?.state!=='fresh'||project.freshness.authority_drift===true))return {...result,state:'stale',reason:'来源尚未更新或规则已变化；当前业务计划失效。'};
   if(record?.schema_version!=='2.0'||record.success!==true||record.project_id!==project.project_id||!text(record.observed_at))return result;
   const extension=record.extensions;
-  if(extension!==null&&extension!==undefined&&(!['1.0','1.1','1.2'].includes(extension.schema_version)||!extension.fact||typeof extension.fact!=='object'||Array.isArray(extension.fact)))return result;
+  if(extension!==null&&extension!==undefined&&(!['1.0','1.1','1.2','1.3'].includes(extension.schema_version)||!extension.fact||typeof extension.fact!=='object'||Array.isArray(extension.fact)))return result;
   if(extension===null||extension===undefined||!Object.hasOwn(extension.fact,'task_plan'))return {...result,state:'not_declared',reason:'来源尚未声明业务任务计划；不会从旧进度或执行任务补建任务树。'};
-  if(!['1.1','1.2'].includes(extension.schema_version))return result;
+  if(!['1.1','1.2','1.3'].includes(extension.schema_version))return result;
   const field=extension.fact.task_plan;
   if(field?.value===null)return {...result,reason:text(field.unknown_reason)?field.unknown_reason:'来源未提供业务任务计划。'};
   const proof=field?.proof;

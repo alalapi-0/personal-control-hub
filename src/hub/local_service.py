@@ -34,6 +34,7 @@ WEB_ASSETS = {
     "/assets/common.js": ("common.js", "text/javascript; charset=utf-8"),
     "/assets/connection_view.mjs": ("connection_view.mjs", "text/javascript; charset=utf-8"),
     "/assets/directory.mjs": ("directory.mjs", "text/javascript; charset=utf-8"),
+    "/assets/page_inventory.mjs": ("page_inventory.mjs", "text/javascript; charset=utf-8"),
     "/assets/business_tasks.mjs": ("business_tasks.mjs", "text/javascript; charset=utf-8"),
     "/assets/management.mjs": ("management.mjs", "text/javascript; charset=utf-8"),
     "/assets/timeline.mjs": ("timeline.mjs", "text/javascript; charset=utf-8"),
@@ -346,7 +347,12 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                            headers={"Set-Cookie": cookie})
             return
         owner = self.server.sessions.validate(self._one_header("Cookie"), credential_version=self.server.owner_auth.version)
-        if path == '/api/identity':
+        if path == '/api/page-inventory':
+            if query:
+                raise ServiceError('INVALID_QUERY')
+            from .preview_service import page_catalog
+            result = page_catalog(self.server.projects)
+        elif path == '/api/identity':
             if query:
                 raise ServiceError('INVALID_QUERY')
             ledger = self.server.projects.ledger_head()

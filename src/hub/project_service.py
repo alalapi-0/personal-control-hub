@@ -598,6 +598,27 @@ class ProjectService:
         return {"available": True, "reason": None, "role": "current",
                 "value": copy.deepcopy(fact["value"]), "proof": copy.deepcopy(fact["proof"])}
 
+    @staticmethod
+    def _page_inventory_view(record: dict | None, freshness: dict, read_allowed: bool) -> dict:
+        view = {"available": False, "reason": "PAGE_INVENTORY_NOT_DECLARED",
+                "value": None, "proof": None, "previews": [], "observed_at": None}
+        if not read_allowed:
+            return {**view, "reason": "READ_DISABLED"}
+        if not record or not record["success"]:
+            return {**view, "reason": "SOURCE_UNAVAILABLE"}
+        if freshness["state"] != "fresh" or freshness["authority_drift"]:
+            return {**view, "reason": "SOURCE_STALE"}
+        fact = (record.get("extensions") or {}).get("fact", {}).get("page_inventory")
+        if fact is None:
+            return view
+        if fact["value"] is None:
+            return {**view, "reason": fact["unknown_reason"]}
+        from .page_inventory import inventory_preview_states
+        return {"available": True, "reason": None,
+                "value": copy.deepcopy(fact["value"]), "proof": copy.deepcopy(fact["proof"]),
+                "previews": inventory_preview_states(fact["value"]),
+                "observed_at": record["observed_at"]}
+
     def _dto(self, declared: dict, snapshot: dict, row: dict, relation: dict,
              design_snapshot: dict | None) -> dict:
         latest, previous = row["latest_attempt"], row["last_success"]
@@ -639,6 +660,7 @@ class ProjectService:
         business["quality"] = self._quality(latest, row["freshness"], connection_read_allowed)
         business["task_plan"] = self._task_plan_view(latest, row["freshness"], connection_read_allowed)
         business["timeline"] = self._timeline_view(latest, row["freshness"], connection_read_allowed)
+        business["page_inventory"] = self._page_inventory_view(latest, row["freshness"], connection_read_allowed)
         return {"schema_version": "1.0", "project_id": row["project_id"],
                 "name": row["name"], "declared": declared_view,
                 "business": business,

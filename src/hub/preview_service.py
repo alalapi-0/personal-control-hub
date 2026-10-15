@@ -12,11 +12,29 @@ IMAGE_SUFFIXES = {'.png', '.jpg', '.jpeg', '.webp', '.gif'}
 IMAGE_MIMES = {'image/png', 'image/jpeg', 'image/webp', 'image/gif'}
 
 
+def page_catalog(projects):
+    """Read complete source metadata without opening images or design records.
+
+    Source preview refs are reported metadata, not capture or file-read grants.
+    The existing project snapshot retains permission/freshness/proof gates.
+    """
+    rows, snapshot = projects._all(None)
+    return {'projects': [{'project_id': row['project_id'], 'name': row['name'],
+                          'page_inventory': copy.deepcopy(row['business']['page_inventory'])}
+                         for row in rows],
+            'total': len(rows), 'head': copy.deepcopy(snapshot['ledger_head']),
+            'role': 'declared_source_metadata', 'capture_performed': False,
+            'execution_allowed': False, 'retention': 'local_only'}
+
+
 class PreviewService:
     def __init__(self, projects, designs, store):
         self.projects, self.designs, self.store = projects, designs, store
         self.fixture_bridge = None
         self.readonly_preview = None
+
+    def page_catalog(self):
+        return page_catalog(self.projects)
 
     def design_reference(self, binding):
         snapshot = self.designs.snapshot()
