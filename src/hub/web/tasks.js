@@ -1,4 +1,35 @@
 import {el,button,api,navigate} from './common.js';
+import {renderBusinessPreview} from './business_preview.mjs';
+
+export async function renderBusinessTaskPreview(target,task,{isCurrent=()=>true}={}){
+  if(task.kind!=='story_exchange')return;
+  const panel=el('section',{className:'panel stack','aria-label':'本次写作任务'},el('h2',{},'本次写作任务'));
+  const specification=el('dl',{});
+  for(const [key,label]of [['requirement','写作要求'],['scope','本次范围'],['acceptance','验收标准']]){
+    const value=task.task_spec?.[key];
+    specification.append(el('div',{},el('dt',{},label),el('dd',{},typeof value==='string'&&value.trim()?value:'尚未提供，需核对原任务。')));
+  }
+  panel.append(specification);target.append(panel);
+  const message=el('p',{role:'status','aria-live':'polite'});panel.append(message);
+  if(task.classification!=='real'){
+    message.textContent='当前任务尚未核实为真实业务，不能展示为真实故事产出。';return;
+  }
+  if(task.status!=='checks_complete'||task.result?.source_promoted!==true){
+    message.textContent=task.status==='cancelled'?'本次写作已取消；已有修改仍需核对，此处没有已核实并接入工作台的故事结果。'
+      :['failed','lost','requires_reconcile'].includes(task.status)?'本次写作结果尚未核实；请查看失败或对账记录。'
+      :task.status==='checks_complete'?'检查已结束，但故事结果尚未接入真实工作台。':'故事任务尚未完成检查与工作台接入。';
+    return;
+  }
+  message.textContent='正在读取本次完整故事候选…';
+  try{
+    const preview=await api('/api/tasks/'+encodeURIComponent(task.id)+'/preview');
+    if(!isCurrent())return;
+    panel.replaceChildren(el('h2',{},'本次写作任务'),specification,renderBusinessPreview(preview));
+  }catch{
+    if(!isCurrent())return;
+    message.textContent='暂时无法核实完整故事候选。保留原任务，请重新对账；不会重新执行写作。';
+  }
+}
 
 export const taskLabels={queued:'已接收 · 排队中',running:'Codex 执行中',waiting_input:'等待补充',waiting_approval:'等待审批',validating:'实际检查中',checks_complete:'检查完成 · 待用户验收',failed:'失败',cancelled:'已取消',lost:'执行器失联',requires_reconcile:'结果待对账'};
 const lifecycleLabels={queued:'已接收 · 排队中',preparing:'正在核对执行条件',dispatching:'已准备发送 · 接收结果待确认',accepted:'Agent 已接收 · 尚未确认开始',running:'Agent 正在执行',waiting_input:'等待补充',waiting_approval:'等待审批',validating:'实际检查中',await_owner_review:'检查完成 · 等待验收',failed:'失败',cancelled:'已取消',lost:'执行器失联',requires_reconcile:'结果待对账',unknown:'状态待核对'};
@@ -70,6 +101,8 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true}={}){
       el('p',{className:'caption'},'顺序 '+task.feedback.sequence+' · 绑定前序回合 '+(task.feedback.parent_binding?.turn_id||'尚未确认')),
       task.feedback.writer_status==='unknown'?el('p',{className:'warning'},'外部写者状态未确认；保留意见，禁止启动竞争任务。'):null));
   }
+  await renderBusinessTaskPreview(root,task,{isCurrent});
+  if(!isCurrent())return;
   for(const control of data.controls||[]){
     const state=controlState(control,task,owner),label=el('h3',{},state.label),section=el('section',{className:'panel stack'},label,
       el('p',{},control.kind==='input'?'本适配器尚未验证输入答复能力。可拒绝本次请求，保存的修改意见不会被删除。':control.allowed_decisions.includes('accept')?'本次命令已与既有授权核对。允许只适用于这一次请求；项目、命令和网络权限不会扩大。':'请求权限尚未确认在已有授权内。本入口只允许拒绝，不会扩大项目、命令或网络权限。'),

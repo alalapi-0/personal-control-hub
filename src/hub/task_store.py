@@ -51,6 +51,20 @@ def parent_binding_matches(intent, parent):
             and binding == {'thread_id': parent['thread_id'], 'turn_id': parent['turn_id']})
 
 
+def _local_kind(task):
+    grant=task['intent']['grant']
+    return 'css'if 'css_trial'in grant else'story'if grant.get('kind')=='story_exchange'else None
+
+
+def _local_ready(task):
+    kind=_local_kind(task)
+    return bool(kind and task['result']and task['result'].get('trial_ready'if kind=='css'else'business_ready'))
+
+
+def _effect_root(grant):
+    return grant.get('story_exchange',{}).get('canonical_root',grant['root'])
+
+
 class TaskStore:
     def __init__(self, root, *, fault=None, storage_guard=None):
         self.root = Path(root).absolute()
@@ -410,12 +424,12 @@ class TaskStore:
                 if any(other['status']!='requires_reconcile'for other in active):continue
                 if active:
                     from .writer_handoff import workspace_identity,workspaces_overlap
-                    try:scope=workspace_identity(task['intent']['grant']['root'])
+                    try:scope=workspace_identity(_effect_root(task['intent']['grant']))
                     except (ServiceError,OSError):
                         connection.execute("UPDATE tasks SET status='requires_reconcile' WHERE id=?",(row['id'],));continue
                     conflict=False
                     for other in active:
-                        other_root=self._task(other)['intent']['grant']['root']
+                        other_root=_effect_root(self._task(other)['intent']['grant'])
                         if other_root==scope['canonical_root']:conflict=True;break
                         try:other_scope=workspace_identity(other_root)
                         except FileNotFoundError:
@@ -486,17 +500,19 @@ class TaskStore:
             row=connection.execute('SELECT *FROM tasks WHERE id=?',(stable_id(ident),)).fetchone()
             task=self._task(row)if row else None
             if (not task or task['status']!='validating'or task['owner']is not None or task['cancel']or
-                task['provider_status']!='completed'or 'css_trial'not in task['intent']['grant']or
-                digest(task['result'])!=expected_result_hash or not task['result'].get('trial_ready')):
+                task['provider_status']!='completed'or not _local_ready(task)or
+                digest(task['result'])!=expected_result_hash):
                 raise ServiceError('TASK_LOCAL_PROMOTION_REJECTED',status=409)
             g=connection.execute('SELECT *FROM grants WHERE id=?',(task['intent']['grant']['grant_id'],)).fetchone()
             if not g or self._decode(g['body'],g['hash'])!=task['intent']['grant']:
                 raise ServiceError('CSS_PROMOTION_GRANT_STALE',status=409)
-            if not connection.execute('SELECT 1 FROM events WHERE task_id=?AND event_key=?',(ident,'css-promotion-intent')).fetchone()or \
-                connection.execute('SELECT 1 FROM events WHERE task_id=?AND event_key=?',(ident,'css-promoted')).fetchone():
+            prefix=_local_kind(task)
+            if prefix=='story'and task['intent']['grant']['expires_at']<=time.time():raise ServiceError('GRANT_EXPIRED',status=409)
+            if not connection.execute('SELECT 1 FROM events WHERE task_id=?AND event_key=?',(ident,prefix+'-promotion-intent')).fetchone()or \
+                connection.execute('SELECT 1 FROM events WHERE task_id=?AND event_key=?',(ident,prefix+'-promoted')).fetchone():
                 raise ServiceError('CSS_PROMOTION_REQUIRES_RECONCILE',status=409)
             result=action()
-            self._append_event(connection,ident,'css-promoted',result)
+            self._append_event(connection,ident,prefix+'-promoted',result)
             return result
 
     def handoff_validation(self, ident, owner, expected_result_hash):
@@ -506,8 +522,8 @@ class TaskStore:
             task=self._task(row)if row else None
             if (not task or task['status']!='validating' or task['lease_until']<time.time() or task['cancel'] or
                 task['provider_status']!='completed' or not task['thread_id']or not task['turn_id']or
-                'css_trial'not in task['intent']['grant']or digest(task['result'])!=expected_result_hash or
-                not task['result'].get('trial_ready')or task['result'].get('source_promoted')is not False):
+                not _local_ready(task)or digest(task['result'])!=expected_result_hash or
+                task['result'].get('source_promoted')is not False):
                 raise ServiceError('TASK_VALIDATION_HANDOFF_REJECTED',status=409)
             self._append_event(connection,ident,'local-validation-handoff',{'result_hash':expected_result_hash,
                 'thread_id':task['thread_id'],'turn_id':task['turn_id'],'adapter_closed':True})
@@ -520,11 +536,21 @@ class TaskStore:
             row=connection.execute('SELECT *FROM tasks WHERE id=?',(stable_id(ident),)).fetchone()
             task=self._task(row)if row else None
             if (not task or task['status']!='validating'or task['owner']is not None or task['cancel']or
-                task['provider_status']!='completed'or 'css_trial'not in task['intent']['grant']or
-                digest(task['result'])!=expected_result_hash or not task['result'].get('trial_ready')or
+                task['provider_status']!='completed'or not _local_ready(task)or
+                digest(task['result'])!=expected_result_hash or
                 result.get('source_promoted')is not True or result.get('validation_scope')!='canonical_project' or
                 not result.get('checks')or any(c.get('exit')!=0 for c in result['checks'])):
                 raise ServiceError('TASK_LOCAL_FINALIZATION_REJECTED',status=409)
+            if _local_kind(task)=='story':
+                event=connection.execute('SELECT *FROM events WHERE task_id=?AND event_key=?',(ident,'story-promoted')).fetchone()
+                promoted=self._decode(event['body'],event['hash'])if event else None
+                binding=result.get('source_binding',{});scope=task['intent']['grant']['story_exchange']
+                if (not promoted or binding!={'workspace_revision':promoted['workspace_revision'],
+                        'workspace_sha256':promoted['workspace_sha256'],'request_id':scope['request_id'],
+                        'request_sha256':scope['request_sha256'],'output_sha256':task['result']['output_sha256']}
+                    or result.get('output_refs')!=promoted['output_refs']
+                    or result.get('import_result_sha256')!=promoted['import_result_sha256']):
+                    raise ServiceError('TASK_LOCAL_FINALIZATION_REJECTED',status=409)
             self._append_event(connection,ident,'local-validation-complete',{'before_result_hash':expected_result_hash,
                 'result_hash':digest(result),'human_acceptance':'pending'})
             cursor=connection.execute("UPDATE tasks SET status='checks_complete',result=? WHERE id=? AND status='validating'AND cancel=0 AND owner IS NULL",
@@ -580,8 +606,16 @@ class TaskStore:
                     if current==process['start_ticks']:raise ServiceError('TASK_OWNER_STILL_ACTIVE',status=409)
             from .task_service import fingerprint,root_identity
             grant=task['intent']['grant']
-            if observation['root']!=grant['root'] or root_identity(grant['root'])!=grant['root_identity'] or \
-                fingerprint(grant['root'])!=task['intent']['preimage']:
+            if grant.get('kind')=='story_exchange':
+                from .story_exchange import validate
+                from .story_promotion import source_snapshot
+                validate(grant,live=True);source_snapshot(grant,expected=True)
+                if (unstarted or check_failure or Path(grant['root'],'output/result.json').exists()
+                    or any(e['event_key'].startswith('reconcile-')for e in events)):
+                    raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
+            elif fingerprint(grant['root'])!=task['intent']['preimage']:
+                raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
+            if observation['root']!=grant['root'] or root_identity(grant['root'])!=grant['root_identity']:
                 raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
             evidence={'observation':observation,'original_status':task['status'],'original_result':task['result'],
                 'intent_hash':digest(task['intent']),'original_thread_id':task['thread_id'],'original_turn_id':task['turn_id'],

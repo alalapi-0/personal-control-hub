@@ -91,6 +91,7 @@ class TaskWorker:
                     'request_digest':request_hash,'operation_sha256':control.get('operation_sha256')}
         try:
             grant=validate_grant(task['intent']['grant'],live=True)
+            business=grant.get('kind')=='story_exchange'
             current=self.store.grant(grant['grant_id'])
             if current!=grant or digest(grant)!=task['intent']['grant_hash']:raise ServiceError('GRANT_VERSION_STALE',status=409)
             if not self.writer_check(grant):raise ServiceError('EXTERNAL_WRITER_UNKNOWN',status=409)
@@ -105,7 +106,10 @@ class TaskWorker:
             self.fault('before_dispatch')
             self.store.check_storage()
             css='css_trial'in grant
-            if css and self.adapter_factory is AppServerAdapter:
+            if business and self.adapter_factory is AppServerAdapter:
+                from .native_business import NativeBusinessAdapter
+                adapter=NativeBusinessAdapter(grant['root'],hub_root=self.store.root,grant=grant).open()
+            elif css and self.adapter_factory is AppServerAdapter:
                 from . import css_trial
                 adapter=css_trial.replacement_adapter(self.store,task,self.owner).open()
             else:adapter=self.adapter_factory(Path(grant['root'])).open()
@@ -126,9 +130,19 @@ class TaskWorker:
                 for fact in adapter.drain_baseline(thread_id):self.store.event(ident,'baseline-'+fact['digest'],fact)
             self.fault('after_thread_binding')
             if self.store.task(ident)['cancel']:raise ServiceError('TASK_CANCEL_BEFORE_DISPATCH')
-            annotation=task['intent']['annotation']
             css='css_trial'in grant
-            if css:
+            if business:
+                from .story_exchange import prompt
+                from .story_promotion import source_snapshot
+                source_snapshot(grant,expected=True)
+                if self.adapter_factory is AppServerAdapter:
+                    self.store.event(ident,'business-isolation-proof',adapter.isolation_proof())
+                text=prompt(grant)
+                if hashlib.sha256(text.encode()).hexdigest()!=task['intent']['prompt_sha256']:
+                    raise ServiceError('BUSINESS_PROMPT_VERSION_STALE')
+                if task['thread_id']is not None:text=adapter.recovery_text(text)
+            elif css:
+                annotation=task['intent']['annotation']
                 from . import css_trial
                 css_trial.source_check(grant)
                 suffix='-v7'if getattr(adapter,'css_process_config',False)else'-v6'if getattr(adapter,'css_owned_resume',False)else''
@@ -139,10 +153,10 @@ class TaskWorker:
                 text=css_trial.prompt(annotation)
                 if hashlib.sha256(text.encode()).hexdigest()!=task['intent']['prompt_sha256']:
                     raise ServiceError('CSS_PROMPT_VERSION_STALE')
-            else:text=fixture_prompt(annotation,self.store.root)
+            else:text=fixture_prompt(task['intent']['annotation'],self.store.root)
             self.store.event(ident,'turn-intent-'+self.owner,{'thread_id':thread_id,'input_digest':hashlib.sha256(text.encode()).hexdigest(),'at':time.time()})
             self.fault('before_turn')
-            image=css_trial.HUB_ROOT/grant['css_trial']['image_ref']if css else Path(grant['root'])/grant['image']
+            image=None if business else css_trial.HUB_ROOT/grant['css_trial']['image_ref']if css else Path(grant['root'])/grant['image']
             turn_id=adapter.start(thread_id,text,image)
             self.fault('after_turn_before_binding')
             self.store.update(ident,self.owner,turn_id=turn_id,provider_status='inProgress')
@@ -187,6 +201,17 @@ class TaskWorker:
             if completed!='completed' or self.store.task(ident)['cancel']:
                 self.store.update(ident,self.owner,status='cancelled'if completed=='interrupted'or self.store.task(ident)['cancel']else'failed',result={'provider_status':completed,'approval_denials':adapter.denials});return True
             self.store.update(ident,self.owner,status='validating')
+            if business:
+                from .story_exchange import output_result
+                result={**output_result(grant),'transport':adapter.transport,'usage':usage,
+                    'usage_coverage':'provider notification only'if usage else'unavailable',
+                    'provider_reply':sanitized(message,240),'approval_denials':adapter.denials,
+                    'stream_observation':{**stream,'sha256_chain':stream_hash.hexdigest(),'critical_events':events}}
+                self.store.event(ident,'business-capability-after',adapter.verify_capabilities(thread_id))
+                adapter.close();adapter=None
+                self.store.update(ident,self.owner,status='validating',result=result)
+                self.store.handoff_validation(ident,self.owner,digest(result))
+                return True
             if css:
                 result={**css_trial.trial_result(grant,native_placeholder_proof=getattr(adapter,'css_placeholder_proof',None)),'transport':adapter.transport,
                     'usage':usage,'usage_coverage':'provider notification only'if usage else'unavailable',

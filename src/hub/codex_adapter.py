@@ -168,10 +168,16 @@ class AppServerAdapter:
     def _child_environment(self):
         return child_environment()
 
+    def _profile_arguments(self):
+        return profile_arguments(self.root,read_only=self.read_only)
+
+    def _launch(self):
+        return isolated_launch(self.command,root=self.root,
+            expected_config_sha256=self._configuration_hash(),read_only=self.read_only)
+
     def open(self):
         env=self._child_environment()
-        self.launch_command,self.disabled_servers=isolated_launch(self.command,root=self.root,
-            expected_config_sha256=self._configuration_hash(),read_only=self.read_only)
+        self.launch_command,self.disabled_servers=self._launch()
         if self.schemas is None:
             run = subprocess.run(['codex','--version'],capture_output=True,timeout=5,text=True,env=env)
             if run.returncode or run.stdout.strip()!=VERSION:
@@ -440,7 +446,7 @@ class AppServerAdapter:
             'remote_control_status':'disabled',
             'remote_state_source':'last schema-validated notification, retained independently of polling',
             'local_native_tool_host':flags['code_mode_host'],
-            'permission_profile':self.active_profile,'profile_argv':list(profile_arguments(self.root,read_only=self.read_only)),
+            'permission_profile':self.active_profile,'profile_argv':list(self._profile_arguments()),
             'argv':list(self.launch_command),'source':'native loaded-thread feature and MCP status APIs'}
         self.capability_thread=thread_id
         return self.capability_evidence

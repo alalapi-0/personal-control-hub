@@ -54,6 +54,9 @@ def fingerprint(root):
 
 
 def validate_grant(grant, *, live=False):
+    if type(grant)is dict and grant.get('kind')=='story_exchange':
+        from .story_exchange import validate
+        return validate(grant,live=live)
     css=type(grant)is dict and grant.get('checks')==['csp_css_trial']
     extra={'approved_commands'}if type(grant)is dict and 'approved_commands'in grant and not css else set()
     if type(grant)is not dict or set(grant)!=(GRANT_FIELDS|{'css_trial'}if css else GRANT_FIELDS|extra):raise ServiceError('INVALID_GRANT')
@@ -138,6 +141,52 @@ class TaskService:
             if item['annotation_id']==ident:return {'draft':item}
         raise ServiceError('TASK_DRAFT_NOT_FOUND',status=404)
 
+    def submit_registered_business(self,payload,*,registration_sha256,owner_context='trusted_local_owner',authorize=None):
+        """Trusted local enrollment only; the HTTP submit route cannot call this.
+
+        A source-based writing task has no fabricated image or annotation. Its
+        frozen Root registration and real source inputs replace those bindings.
+        """
+        fields={'kind','request_id','project_id','grant_id','grant_version','mode','parent_task_id','specification_sha256'}
+        if type(payload)is not dict or set(payload)!=fields or payload['kind']!='story_exchange':
+            raise ServiceError('INVALID_BUSINESS_TASK_REQUEST')
+        for key in ('request_id','project_id','grant_id'):stable_id(payload[key])
+        if type(payload['grant_version'])is not int or payload['grant_version']<1 or payload['mode']!='new' or payload['parent_task_id']is not None:
+            raise ServiceError('INVALID_BUSINESS_TASK_REQUEST')
+        if authorize is not None:authorize()
+        existing=self.store.task(payload['request_id'])
+        if existing:
+            if existing['payload']!=payload:raise ServiceError('TASK_REQUEST_CONFLICT',status=409)
+            return {'task':self.public(existing),'replayed':True}
+        resolver=self.projects._resolver();resolver._check_registry()
+        project=resolver.projects.get(payload['project_id'])
+        if not project or not PreviewService._eligible(project):raise ServiceError('TASK_PROJECT_REJECTED',status=403)
+        value=self.store.grant(payload['grant_id'])
+        grant=validate_grant(value,live=True)
+        if grant.get('kind')!='story_exchange':raise ServiceError('GRANT_BINDING_REJECTED',status=403)
+        scope=grant['story_exchange']
+        if (grant['task_id']!=payload['request_id']or grant['project_id']!=payload['project_id']or grant['version']!=payload['grant_version']
+                or scope['canonical_root']!=project['root_path']or scope['registry_hash']!=resolver.authority['registry_hash']
+                or scope['specification_sha256']!=payload['specification_sha256']or scope['registration_sha256']!=registration_sha256):
+            raise ServiceError('GRANT_BINDING_REJECTED',status=403)
+        from .native_business import NativeBusinessAdapter
+        from .story_exchange import prompt
+        from .story_promotion import source_snapshot
+        NativeBusinessAdapter(grant['root'],hub_root=self.store.root,grant=grant)  # No process or model.
+        source_snapshot(grant,expected=True)
+        writer=self.writer_check(grant)
+        if not writer:raise ServiceError('EXTERNAL_WRITER_UNKNOWN',status=409)
+        text=prompt(grant)
+        intent={'grant':grant,'grant_hash':digest(grant),'registry_hash':scope['registry_hash'],
+                'task_spec':copy.deepcopy(grant['task_spec']),'source_binding':copy.deepcopy(scope['source_preconditions']),
+                'checks':grant['checks'],'thread_source':'hub_owned_app_server','previous_thread':None,
+                'owner_context':owner_context,'writer_status':'verified','prompt_sha256':hashlib.sha256(text.encode()).hexdigest()}
+        if type(writer)is dict:intent['writer_evidence']=copy.deepcopy(writer)
+        resolver._check_registry()
+        if authorize is not None:authorize()
+        task,replayed=self.store.admit(copy.deepcopy(payload),intent,authorize=authorize)
+        return {'task':self.public(task),'replayed':replayed}
+
     def submit(self,payload, *, owner_context='trusted_local_owner', authorize=None):
         if type(payload)is not dict or set(payload)!=REQUEST_FIELDS:raise ServiceError('INVALID_TASK_REQUEST')
         for key in ('request_id','project_id','annotation_id','grant_id'):stable_id(payload[key])
@@ -159,6 +208,7 @@ class TaskService:
         grant=self.store.grant(payload['grant_id'])
         if grant is None:raise ServiceError('PROJECT_GRANT_REQUIRED',status=403)
         grant=validate_grant(grant,live=True)
+        if grant.get('kind')=='story_exchange':raise ServiceError('BUSINESS_TASK_BACKEND_ONLY',status=403)
         mapped_root=grant.get('css_trial',{}).get('canonical_root',grant['root'])
         if grant['version']!=payload['grant_version'] or grant['task_id']!=payload['request_id'] or grant['project_id']!=payload['project_id'] or grant['mode']!=payload['mode'] or grant['parent_task_id']!=payload['parent_task_id'] or mapped_root!=project.get('root_path'):
             raise ServiceError('GRANT_BINDING_REJECTED',status=403)
@@ -201,7 +251,9 @@ class TaskService:
     def public(self,task):
         # Paths, grants, process/control tokens and request configuration stay server-side.
         result={key:task[key]for key in ('id','sequence','project','parent','status','thread_id','turn_id','provider_status','cancel','result','human_acceptance')}
-        result.update(mode=task['payload']['mode'],annotation_id=task['payload']['annotation_id'],annotation_revision=task['payload']['annotation_revision'])
+        result.update(mode=task['payload']['mode'],annotation_id=task['payload'].get('annotation_id'),annotation_revision=task['payload'].get('annotation_revision'))
+        if task['payload'].get('kind')=='story_exchange':
+            result.update(kind='story_exchange',task_spec=copy.deepcopy(task['intent']['task_spec']),classification='real')
         from .task_lifecycle import lifecycle
         facts=self.store.events(task['id'])
         result['lifecycle']=lifecycle(task,facts)
@@ -217,6 +269,26 @@ class TaskService:
                                 'sequence':task['sequence'],'expires_at':task['intent']['grant']['expires_at'],'writer_status':task['intent'].get('writer_status','unknown')}
         if result['result']is not None:result['result']={k:v for k,v in result['result'].items()if k!='fingerprint'}
         return result
+
+    def business_preview(self,ident):
+        task=self.store.task(stable_id(ident))
+        if not task or task['payload'].get('kind')!='story_exchange' or task['status']!='checks_complete' or not task['result'].get('source_promoted'):
+            raise ServiceError('BUSINESS_PREVIEW_UNAVAILABLE',status=404)
+        resolver=self.projects._resolver();resolver._check_registry();project=resolver.projects.get(task['project'])
+        grant=task['intent']['grant'];scope=grant['story_exchange']
+        if (not project or not PreviewService._eligible(project)or project['root_path']!=scope['canonical_root']
+                or resolver.authority['registry_hash']!=scope['registry_hash']):raise ServiceError('TASK_PROJECT_REJECTED',status=403)
+        from .story_exchange import read_result, _read
+        from .story_promotion import source_snapshot
+        output=read_result(grant)
+        raw=_read(grant['root'],scope['output_path'],262144)
+        if hashlib.sha256(raw).hexdigest()!=task['result']['output_sha256']:raise ServiceError('BUSINESS_PREVIEW_VERSION_STALE',status=409)
+        snapshot=source_snapshot(grant,expected=False)
+        binding=task['result']['source_binding']
+        cards=[{'id':item['id'],**{key:item['data'][key]for key in ('title','goal','obstacle','action','choice','consequence','difference','strength','weakness')}}for item in output['objects']]
+        resolver._check_registry()
+        return {'kind':'story_exchange','classification':'real','binding':copy.deepcopy(binding),'cards':cards,
+                'current':snapshot['workspace_sha256']==binding['workspace_sha256']and snapshot['workspace_revision']==binding['workspace_revision']}
 
     def options(self,annotation_id):
         stable_id(annotation_id);choices=[]

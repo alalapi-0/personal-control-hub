@@ -37,6 +37,7 @@ WEB_ASSETS = {
     "/assets/captures.mjs": ("captures.mjs", "text/javascript; charset=utf-8"),
     "/assets/page_inventory.mjs": ("page_inventory.mjs", "text/javascript; charset=utf-8"),
     "/assets/business_tasks.mjs": ("business_tasks.mjs", "text/javascript; charset=utf-8"),
+    "/assets/business_preview.mjs": ("business_preview.mjs", "text/javascript; charset=utf-8"),
     "/assets/management.mjs": ("management.mjs", "text/javascript; charset=utf-8"),
     "/assets/timeline.mjs": ("timeline.mjs", "text/javascript; charset=utf-8"),
     "/assets/designs.js": ("designs.js", "text/javascript; charset=utf-8"),
@@ -396,7 +397,9 @@ class HubRequestHandler(BaseHTTPRequestHandler):
             if self.server.tasks is None:raise ServiceError('TASK_RUNTIME_UNAVAILABLE',status=503)
             if path=='/api/tasks':result=self.server.tasks.list()
             elif path.startswith('/api/tasks/options/'):result=self.server.tasks.options(path[len('/api/tasks/options/'):])
+            elif path.endswith('/preview'):result=self.server.tasks.business_preview(path[len('/api/tasks/'):-len('/preview')])
             else:result=self.server.tasks.get(path[len('/api/tasks/'):])
+            self.server.sessions.validate(self._one_header('Cookie'),require_owner=True,credential_version=self.server.owner_auth.version)
         elif path == '/api/materials' or path.startswith('/api/materials/'):
             def authorize():
                 if not self.server.owner_auth.configured: raise ServiceError('OWNER_AUTH_UNAVAILABLE', status=503)
