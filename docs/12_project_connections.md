@@ -7,7 +7,79 @@
 新增非 Git 项目也沿用唯一 `data/registry/external_projects.yaml`。先在 Hub 的 `data/registry/` 下准备**完整单条**登记 YAML，沿用该表的 required_project_fields 和存储约束，明确绝对 root_path、稳定 id、唯一 current_state_paths、`connection_read_allowed`，并保持 `scan_enabled: false`、`external_write_allowed: false`。业务声明不由登记器创建。执行 `sha256sum data/registry/external_projects.yaml` 后，运行 `python3 scripts/hub_connections.py register --entry data/registry/candidate.yaml --expected-registry-sha256 <该SHA>`；默认只检查。审阅单条差异和身份 warning 后，以同一 SHA 加 `--apply` 才写本 Hub 的登记表。此入口不运行项目命令、不启动 Agent、不复制仓库，也不改变固定同步范围；登记不等于执行授权。新项目随后可在目录出现，缺声明仍是 missing_declaration。
 
 迁移路径时提交同一 id 的完整新登记，保留原账本，不改成第二个 id；旧投影因 authority 变化保持 stale，明确重新读取后才更新。不同 ID 的同规范路径或已获读取资格的同物理根会被拒绝；禁读、removed、legacy 条目零探测，不能确认物理身份的 warning 保留为未验证。嵌套根需要先解决身份决定，本入口拒绝直接应用。所有检查及 apply 使用预期登记 SHA、文件身份、现有目录 advisory lock 和原子替换；该锁仅协调遵守此入口的写者，不能替代跨任务文件写责。回退仅恢复本次单条登记的精确前像，且须核对当前 SHA，不能覆盖后来的手工修改或删除账本历史。
-更新条件：接入契约、读取命令或错误语义变化时更新。业务事实始终在项目自身的权威源中。本阶段提供数值接口，不生成图表。
+更新条件：接入契约、读取命令或错误语义变化时更新。业务事实始终在项目自身的权威源中。现有目录、业务树与甘特沿这些确定性接口展示事实和独立管理计划。
+
+## 日常操作与恢复
+
+先在代码目录选择现有数据根 `PCH_ROOT`。日常入口见 [README](../README.md#日常使用)；固定代码启动时仍须显式传 `--root`。以下操作共用当前注册表与原账本，不调用模型、不启动业务项目。
+
+1. 查询：`python scripts/hub_connections.py --root "$PCH_ROOT" status` 查看完整质量／失败／恢复状态；`current` 查看目录，`history --request-id ID` 核对某次原始结果，`validate` 验证完整账本，`rebuild` 只读重建投影。这些详细输出可能包含私人来源，只在本地保存。
+2. 刷新：先 `python scripts/hub_sync.py --root "$PCH_ROOT" discover`，再用新请求 ID 执行 `sync --request-id ID`；原请求 ID 只续接未提交项。失败或 partial 保留原分母与历史；修正来源后用新 ID 重读受影响项目，不删除失败或伪造完整字段。
+3. 管理计划：所有者在页面编辑优先级、关系、日期及滚动估计，保存的是 Hub 管理层。导入只更新来源事实。预估到期与本人实际接受分别记录；没有本人回执时仍待验收。
+4. 新项目：按本文开头准备完整单条登记，使用 `register` 和预期 registry SHA 先检查，再在准确写责下显式 `--apply`。它不会生成业务声明、自动加入固定刷新集合或授予业务执行权。
+5. 日志：`journalctl --user -u personal-control-hub-refresh.service -n 30` 与 `systemctl --user status personal-control-hub-refresh.timer` 分别核对执行和调度。退出码 2 需要查看原请求错误；timer active、service 启动或 HTTP 200 均不等于全部业务成功。注销／漏跑边界见 [本地每日刷新](#本地每日刷新)。
+
+数据备份前先核对并停止该备份范围的写者，保持刷新、任务、管理编辑和采集静止；不要停止其他人的任务。SQLite 使用标准库的 `Connection.backup`，同时保存匹配版本的注册文件、管理配置、唯一 STATE 与已保存图片。下面片段只接受全新的私有备份目录，不读取浏览器会话或环境凭据；它本身不会建立独占写责。代码及未提交工作树成果另行保留。
+
+```sh
+python - "$PCH_ROOT" "$NEW_BACKUP_DIR" <<'PY'
+from pathlib import Path, PurePosixPath
+import hashlib, json, shutil, sqlite3, sys
+root, target = map(Path, sys.argv[1:])
+if not root.is_absolute() or '..' in root.parts:
+    raise RuntimeError('Select an absolute data root')
+def local_path(name):
+    path = PurePosixPath(name)
+    if path.is_absolute() or '..' in path.parts:
+        return None
+    current = Path(root.anchor)
+    for part in (*root.parts[1:], *path.parts):
+        current /= part
+        if current.is_symlink():
+            return None
+    return current
+target.mkdir(mode=0o700)
+names = ['STATE.yaml', 'hub.connection.yaml', 'data/registry/external_projects.yaml',
+ 'data/connections/sync_scope.yaml', 'data/connections/management_config.yaml',
+ 'data/connections/connection_refresh.sqlite3', 'data/design_governance/design-store.json',
+ 'data/design_governance/connection_refresh.sqlite3', 'data/workbench/tasks.sqlite3',
+ 'data/workbench/storage-registration.json', 'data/workbench/workbench-store.json']
+names += [str(p.relative_to(root)) for p in (root/'data/previews').rglob('*') if p.is_file()]
+exclusions = []
+design = local_path('data/design_governance/design-store.json')
+if design is None:
+    raise RuntimeError('Inspect data-root aliases before backup')
+if design.is_file():
+    for fact in json.loads(design.read_text()).get('facts', []):
+        location = fact.get('location', {})
+        if fact.get('kind') == 'artifact_ref' and location.get('kind') == 'hub_relative':
+            name = location['value']
+            path = local_path(name)
+            if path is not None and path.is_file():
+                names.append(name)
+            else:
+                exclusions.append({'id': fact['id'], 'reason': 'nonlocal_alias_or_missing'})
+manifest = {}
+for name in sorted(set(names)):
+    source, dest = local_path(name), target/name
+    if source is None:
+        raise RuntimeError('Inspect symbolic link before backup')
+    if not source.exists():
+        continue
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if source.suffix == '.sqlite3':
+        with sqlite3.connect(source.as_uri()+'?mode=ro', uri=True) as src, sqlite3.connect(dest) as dst:
+            src.backup(dst)
+    else:
+        shutil.copyfile(source, dest)
+    dest.chmod(0o600)
+    manifest[name] = hashlib.sha256(dest.read_bytes()).hexdigest()
+(target/'backup-manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
+(target/'backup-exclusions.json').write_text(json.dumps(exclusions, indent=2)+'\n')
+PY
+```
+
+只在新的、独占恢复目录中按清单核对 SHA 后复制这些文件，并用同一已验证代码版本启动 `hub_server.py --root "$RESTORED_PCH_ROOT" --host 127.0.0.1 --port 0`。核对完整账本 head／history、管理值、任务状态及保存图片；外部资产引用不代表资产字节已备份，业务项目原始资料仍由各项目保管。任务库的物理身份需要下节的显式离线恢复，不能靠新建空库解决。恢复演练通过之前不要覆盖当前运行目录；回退仅针对本次拥有且当前 SHA 未变化的文件。
 
 ## 本地每日刷新
 
@@ -105,7 +177,7 @@ python3 hub.py sync --request-id UNIQUE_ID --project-id light-novel
 
 账本只新增语义变化，重复刷新更新观察时间；失败前的成功仍在历史中保留原时间。当前登记撤销读取或改变绑定后，查询将旧值标为历史，不能作为当前成功。`metrics prune --before ISO_TIMESTAMP`是显式本地历史保留操作，保留当前值及计算变化所需前驱；不会删除项目原始数据。飞书输出固定enabled=false、write_back_allowed=false，仅本地映射。
 
-以下为仍供原服务使用的单状态连接接口，与数值指标共享登记和账本。
+以下为当前确定性单状态连接接口，与数值指标共享登记和账本。
 
 先读 Hub 的 `AGENTS.md`、`STATE.yaml`。运行以下只读命令取得所有登记项：
 
@@ -138,7 +210,7 @@ python3 scripts/hub_connections.py current --format feishu
 
 每个预览引用精确绑定项目、页面域、页面 ID、源／构建哈希与可空采集时间；已知版本不一致标历史，必要版本缺失保持无法绑定。当前绑定仅表示来源元数据一致，图片字节、真实运行和本人验收仍独立。`GET /api/page-inventory` 返回完整登记目录与同一账本 head 的只读清单，不读取图片、不依赖设计记录、不触发采集或 Agent；项目详情显示同源信息，旧来源没有声明时显示未知。
 
-预览引用不授予采集权限。受信 Hub 所有者须另给项目与精确 loopback URL／本地图片路径允许清单；默认没有捕获地址，重定向一律拒绝，凭据／会话字段不进入政策或仓库。图片读取限定 `data/previews/`，逐层 no-follow、正规单链接文件、体积／哈希及读取前后身份校验；仅本地保留。本轮索引只展示元数据，实际独立截图 worker 按后续阶段验收。来源 1.3 与 Hub 管理配置 1.3 是两个独立契约。
+预览引用不授予采集权限。受信 Hub 所有者须另给项目与精确 loopback URL／本地图片路径允许清单；默认没有捕获地址，重定向一律拒绝，凭据／会话字段不进入政策或仓库。图片读取限定 `data/previews/`，逐层 no-follow、正规单链接文件、体积／哈希及读取前后身份校验；仅本地保留。索引查询不触发采集；独立截图 worker 与已有桌面图片导入见下文，各候选的真实运行／图像验收仍看唯一 STATE。来源 1.3 与 Hub 管理配置 1.3 是两个独立契约。
 
 ## Hub 管理配置
 
