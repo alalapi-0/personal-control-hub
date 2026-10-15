@@ -15,6 +15,10 @@ export function rectangle(a,b){
 }
 const stable=value=>JSON.stringify(value&&typeof value==='object'?Array.isArray(value)?value.map(v=>JSON.parse(stable(v))):Object.fromEntries(Object.keys(value).sort().map(k=>[k,JSON.parse(stable(value[k]))])):value);
 export const sameBinding=(a,b)=>stable(a)===stable(b);
+export function taskSpec(requirements,scope,acceptance){
+  const value={requirements,scope,acceptance};
+  return Object.values(value).every(text=>typeof text==='string'&&text.trim()&&text.length<=2000)?value:null;
+}
 export function validPending(value){
   return value&&typeof value.request_id==='string'&&/^annotation-[a-zA-Z0-9-]{1,100}$/.test(value.request_id)
     &&Number.isInteger(value.expected_revision)&&value.expected_revision>=0
@@ -70,10 +74,12 @@ export async function renderWorkbench(target,{previewId=null,isCurrent=()=>true}
   const message=el('p',{role:'status','aria-live':'polite',className:'caption'});
   const change=el('textarea',{id:'annotation-change',maxLength:2000,rows:5,required:true});
   const preserve=el('textarea',{id:'annotation-preserve',maxLength:2000,rows:4,required:true});
+  const acceptance=el('textarea',{id:'task-acceptance',maxLength:2000,rows:4});
   const kind=el('select',{id:'annotation-kind'},el('option',{value:'whole'},'整版意见'),el('option',{value:'region'},'区域意见'));
   if(draft&&sameBinding(draft.binding,binding)){
     if(typeof draft.requested_change==='string'&&draft.requested_change.length<=2000)change.value=draft.requested_change;
     if(typeof draft.preserve_scope==='string'&&draft.preserve_scope.length<=2000)preserve.value=draft.preserve_scope;
+    if(typeof draft.acceptance==='string'&&draft.acceptance.length<=2000)acceptance.value=draft.acceptance;
     if(['whole','region'].includes(draft.kind))kind.value=draft.kind;
     if(draft.region)region=rectangle({x:draft.region.x1,y:draft.region.y1},{x:draft.region.x2,y:draft.region.y2});
   }
@@ -81,6 +87,7 @@ export async function renderWorkbench(target,{previewId=null,isCurrent=()=>true}
   const reset=button('清除选区',()=>{region=start=null;paint();saveDraft();if(mode==='annotate')overlay.focus();});
   const save=button(pending?'核对原请求':'保存到 Linux',()=>pending?reconcile():submit(),{className:'primary'});
   const retry=button('重试原请求',()=>submit(pending),{hidden:true});
+  const saveTask=button('保存任务草稿',()=>submit(null,true));
   const shared=el('section',{className:'panel stack'},el('h2',{},'Linux 共享意见'));
   const elementPanel=el('section',{className:'panel stack'},el('h2',{},preview.capture?'只读页面与截图批注':'受控元素提示'),
     el('p',{className:'caption'},preview.capture?'区域批注使用固定截图；没有元素语义或源码位置映射。':'元素位置只作为修改线索；源码映射未知。此测试预览不提供执行权限。'));
@@ -101,8 +108,10 @@ export async function renderWorkbench(target,{previewId=null,isCurrent=()=>true}
     el('div',{className:'row'},modeButton,reset),
     el('p',{className:'caption'},'区域模式只操作批注层。空格创建选区，方向键移动，Shift 调整大小，Esc 退出。'),
     el('label',{className:'field',htmlFor:'annotation-change'},'希望改成什么',change),
-    el('label',{className:'field',htmlFor:'annotation-preserve'},'哪些范围不改',preserve),message,
-    el('div',{className:'row'},save,retry),el('p',{className:'caption'},'保存意见不授予子项目写入权限，也不代表接受设计。'));
+    el('label',{className:'field',htmlFor:'annotation-preserve'},'哪些范围不改',preserve),
+    el('label',{className:'field',htmlFor:'task-acceptance'},'怎样确认完成（任务草稿必填）',acceptance),
+    el('p',{className:'caption'},'任务草稿绑定当前项目和页面版本。保存后不会自动执行；执行时仍须核对项目授权。'),message,
+    el('div',{className:'row'},save,saveTask,retry),el('p',{className:'caption'},'保存意见不授予子项目写入权限，也不代表接受设计。'));
   root.append(el('a',{href:'#workbench'},'← 所有方案'),el('h2',{},preview.project_name),
     el('p',{className:'caption'},`${labels[binding.classification]} · 注册方案图 · ${binding.candidate_id} v${binding.candidate_revision} · 页面范围 ${binding.pages.join('、')}`),
     el('details',{className:'artifact-provenance'},el('summary',{},'版本与来源'),
@@ -115,7 +124,8 @@ export async function renderWorkbench(target,{previewId=null,isCurrent=()=>true}
     modeButton.disabled=!loaded||Boolean(pending);reset.disabled=!loaded||Boolean(pending);
     save.disabled=Boolean(pending)?false:!owner||!loaded||(kind.value==='element'&&!elementHint);
     retry.hidden=!pending||!canRetry;retry.disabled=!owner;
-    for(const field of [kind,change,preserve])field.disabled=Boolean(pending);
+    saveTask.disabled=Boolean(pending)||!owner||!loaded||(kind.value==='element'&&!elementHint);
+    for(const field of [kind,change,preserve,acceptance])field.disabled=Boolean(pending);
   }
   function paint(){
     box.hidden=!region;
@@ -126,7 +136,7 @@ export async function renderWorkbench(target,{previewId=null,isCurrent=()=>true}
     if(!loaded)return;mode=next;live?.setMode(next);start=null;if(next==='annotate'){kind.value='region';elementHint=null;bridge?.leave();overlay.hidden=false;overlay.focus();}else modeButton.focus();paint();controls();saveDraft();
   }
   function saveDraft(){
-    const value={binding,kind:kind.value,region,requested_change:change.value,preserve_scope:preserve.value,design_reference:designReference};
+    const value={binding,kind:kind.value,region,requested_change:change.value,preserve_scope:preserve.value,acceptance:acceptance.value,design_reference:designReference};
     const durable=writeLocal(draftKey,value);
     message.textContent=durable?'本地草稿 · 尚未保存到 Linux':'当前浏览器内存草稿 · 本地存储不可用';
   }
@@ -145,6 +155,7 @@ export async function renderWorkbench(target,{previewId=null,isCurrent=()=>true}
     for(const row of rows){const a=row.record.annotation;
       shared.append(el('article',{className:'stack'},el('p',{className:row.material_state==='stale'?'warning':'caption'},`${row.request_id} · revision ${row.revision} · ${row.material_state==='stale'?'素材或关联版本已变化':'当前注册版本'} · ${{whole:'整版',region:'区域',element:'元素'}[a.kind]}意见`),
         el('p',{},a.requested_change),el('p',{},'保留范围：'+a.preserve_scope),
+        a.task_spec?el('section',{className:'stack'},el('p',{},'任务草稿 · 不会自动执行'),el('p',{},'验收标准：'+a.task_spec.acceptance)):null,
         a.design_reference?el('p',{className:'caption'},'关联整版决定：'+({select:'选择',request_changes:'请求修改',defer:'暂缓'}[a.design_reference.action]||'待核对')):null,
         a.element_hint?el('p',{className:'caption'},'元素：'+a.element_hint.element_id+' · 源码映射未知'):null,
         button('发送给 Codex',()=>sendAnnotation(row.request_id,message),{disabled:!owner||row.material_state==='stale'})));
@@ -163,22 +174,25 @@ export async function renderWorkbench(target,{previewId=null,isCurrent=()=>true}
     catch(error){canRetry=error.status===404;message.textContent=canRetry?'尚未找到原请求回执。可继续核对，或以同一 ID 重试原请求。':'无法确认原请求结果；意见已保留，请重连后核对。';}
     finally{if(root.isConnected){controls();save.focus();}}
   }
-  async function submit(original=null){
+  async function submit(original=null,asTask=false){
     if(!owner||!loaded||!root.isConnected)return;
     if(!original){
       if(!change.reportValidity()||!preserve.reportValidity())return;
       if(!change.value.trim()||!preserve.value.trim()){message.textContent='请填写修改要求与保留范围。';return;}
+      const spec=asTask?taskSpec(change.value,preserve.value,acceptance.value):null;
+      if(asTask&&!spec){message.textContent='请补充怎样确认完成，再保存任务草稿。';acceptance.focus();return;}
       if(kind.value==='region'&&!region){message.textContent='请先在图片中选择一个有效区域。';overlay.focus();return;}
       if(kind.value==='element'&&!elementHint){message.textContent='请重新选择受控元素，或改用图片区域。';return;}
       pending={request_id:'annotation-'+crypto.randomUUID(),expected_revision:revision,binding,
         kind:kind.value,region:kind.value==='region'?region:null,requested_change:change.value,preserve_scope:preserve.value,view:view()};
+      if(spec)pending.task_spec=spec;
       if(designReference)pending.design_reference={...designReference};
       if(kind.value==='element')pending.element_hint=elementHint;
       if(!writeLocal(pendingKey,pending))message.textContent='原请求只保留在当前内存；请记下请求 ID：'+pending.request_id;
     }
     if(!sameBinding(pending.binding,binding)){message.textContent='原请求属于旧素材版本，只能核对回执；不能发送到当前版本。';return;}
     controls();save.disabled=true;retry.disabled=true;message.textContent='正在保存 · '+pending.request_id;
-    try{await accepted(await api('/api/annotations',pending));}
+    try{await accepted(await api(pending.task_spec?'/api/task-drafts':'/api/annotations',pending));}
     catch(error){
       if(error.outcome==='NOT_COMMITTED'){
         pending=null;writeLocal(pendingKey,null);save.textContent='保存到 Linux';
@@ -204,7 +218,7 @@ export async function renderWorkbench(target,{previewId=null,isCurrent=()=>true}
     const candidate=rectangle({x:next.x1,y:next.y1},{x:next.x2,y:next.y2});
     if(candidate){region=candidate;paint();saveDraft();}
   });
-  for(const field of [change,preserve])field.addEventListener('input',saveDraft);
+  for(const field of [change,preserve,acceptance])field.addEventListener('input',saveDraft);
   kind.addEventListener('change',()=>{if(kind.value!=='element'){elementHint=null;bridge?.leave();}if(kind.value==='whole'){mode='browse';start=null;paint();}live?.setMode(kind.value==='region'?'annotate':'browse');controls();saveDraft();});
   function onIdentity(event){if(!root.isConnected){live?.close();window.removeEventListener('hub:identity',onIdentity);return;}owner=event.detail?.owner_authenticated===true;if(!owner)live?.close();controls();showHistory(historyData);}
   window.addEventListener('hub:identity',onIdentity);

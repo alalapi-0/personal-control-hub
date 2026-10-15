@@ -92,6 +92,40 @@ class TaskService:
         # An internal lease cannot certify an unrelated writer's absence.
         self.writer_check=writer_check or (lambda _:False)
 
+    @staticmethod
+    def _draft(row):
+        command=row['command']
+        return {'annotation_id':row['request_id'],'revision':row['revision'],
+                'command_hash':row['payload_hash'],'binding':copy.deepcopy(command['binding']),
+                'task_spec':copy.deepcopy(command['task_spec']),'status':'draft',
+                'material_state':row.get('material_state','current'),
+                'execution_allowed':False}
+
+    def create_draft(self,command, *, backend_instance,context=None,authorize=lambda:None,actor='owner_session'):
+        # Draft scope is owner text, never a grant or a filesystem capability.
+        try:
+            command=validate_command(command)
+            if 'task_spec'not in command:raise ValueError('task specification required')
+        except (ValueError,TypeError,UnicodeError):raise ServiceError('INVALID_TASK_DRAFT')from None
+        saved=self.annotations.save(command,backend_instance=backend_instance,context=context,authorize=authorize,actor=actor)
+        return {'draft':self._draft(saved['receipt']),'receipt':saved['receipt'],
+                'replayed':saved['replayed'],'outcome':saved['outcome']}
+
+    def drafts(self):
+        annotations=self.annotations.annotations()
+        return {'drafts':[self._draft(row)for row in annotations['records']if 'task_spec'in row['command']],
+                'revision':annotations['revision'],'classification':annotations['classification'],
+                'execution_enabled':False}
+
+    def draft(self,ident):
+        stable_id(ident)
+        row=self.annotations.receipt(ident)['receipt']
+        if 'task_spec'not in row['command']:raise ServiceError('TASK_DRAFT_NOT_FOUND',status=404)
+        # Reuse the preview service's historical-current classification.
+        for item in self.drafts()['drafts']:
+            if item['annotation_id']==ident:return {'draft':item}
+        raise ServiceError('TASK_DRAFT_NOT_FOUND',status=404)
+
     def submit(self,payload, *, owner_context='trusted_local_owner', authorize=None):
         if type(payload)is not dict or set(payload)!=REQUEST_FIELDS:raise ServiceError('INVALID_TASK_REQUEST')
         for key in ('request_id','project_id','annotation_id','grant_id'):stable_id(payload[key])

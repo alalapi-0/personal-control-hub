@@ -19,7 +19,7 @@ MAX_BYTES = 1024 * 1024
 MAX_RECORDS = 128
 COMMAND_FIELDS = {'request_id', 'expected_revision', 'binding', 'kind', 'region',
                   'requested_change', 'preserve_scope', 'view'}
-OPTIONAL_FIELDS = {'design_reference', 'element_hint'}
+OPTIONAL_FIELDS = {'design_reference', 'element_hint', 'task_spec'}
 BINDING_FIELDS = {'project_id', 'preview_id', 'candidate_id', 'candidate_revision',
                   'candidate_hash', 'artifact_id', 'artifact_sha256', 'type', 'classification',
                   'registry_hash', 'pages'}
@@ -79,6 +79,12 @@ def validate_command(value):
         if not isinstance(text, str) or not text.strip() or len(text) > 2000:
             raise ValueError('feedback required')
         text.encode('utf-8')
+    if 'task_spec' in value:
+        exact(value['task_spec'], {'requirements', 'scope', 'acceptance'})
+        for text in value['task_spec'].values():
+            if not isinstance(text, str) or not text.strip() or len(text) > 2000:
+                raise ValueError('task specification required')
+            text.encode('utf-8')
     exact(value['view'], VIEW_FIELDS)
     for key in ('viewport_width', 'viewport_height', 'image_width', 'image_height', 'natural_width', 'natural_height'):
         number(value['view'][key], 1, 32768)
