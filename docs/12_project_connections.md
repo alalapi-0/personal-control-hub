@@ -224,7 +224,7 @@ python3 scripts/hub_connections.py validate-declaration data/connections/hub.con
 YAML/JSON 使用 `selector: {path: [current_work, status]}`；键为字符串，数组索引为非负整数，不允许执行表达式。
 Markdown 使用 `selector: {heading: Current, label: Status}` 精确读取该唯一标题下 `Status: ...` 或 `- Status: ...` 的单行值。
 同名标题、重复标签、重复 YAML/JSON 键、外部来源的 YAML alias/anchor、越界路径及类型错误都会失败；不做模糊猜测。
-Markdown 的布尔或状态文本必须通过显式 `value_map` 转换，例如 `{"yes": true, "no": false}`，不能按非空字符串猜真值。
+Markdown 业务字段的布尔或状态文本可通过显式 `value_map` 转换，例如 `{"yes": true, "no": false}`，不能按非空字符串猜真值。来源已明确写出小写字面量 `true` / `false` 时，也可使用 `selector: {heading: 当前应用界面审计, boolean_label: has_ui}`，返回真实布尔值，适用于 `has_ui` 等扩展事实。此选择器复用唯一标题、唯一标签和围栏过滤；大小写变体、数字、yes/no、引号、强调或附加说明均被拒绝。原有 `label` 仍返回原文字，不自动转换。
 未映射字段，以及映射结果为 null 的字段，都使用声明中该字段的 unknown 原因。
 `validation_entry` 只展示项目原有验证命令，不由 reader 执行。
 

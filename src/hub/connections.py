@@ -118,12 +118,16 @@ def select_value(source: Any, selector: dict) -> Any:
     if "ordered_item" in selector:
         return _markdown_ordered_value(section, selector["ordered_item"])
     values = []
+    label = selector.get("boolean_label", selector.get("label"))
     for line in section:
         text = re.sub(r"^\s*[-*]\s+", "", line).strip()
-        prefix = selector["label"] + ":"
+        prefix = label + ":"
         if text.startswith(prefix):
             values.append(text[len(prefix):].strip())
     require(len(values) == 1, "Markdown label absent or ambiguous")
+    if "boolean_label" in selector:
+        require(values[0] in {"true", "false"}, "Markdown boolean: literal true/false required")
+        return values[0] == "true"
     return values[0]
 
 

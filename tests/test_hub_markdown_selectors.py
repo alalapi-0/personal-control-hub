@@ -31,6 +31,66 @@ SOURCE = f'''# STATUS
 
 
 class MarkdownSelectorTests(unittest.TestCase):
+    def test_boolean_label_is_explicit_and_preserves_string_label_behavior(self):
+        selector = {'heading': 'Interface', 'boolean_label': 'has_ui'}
+        for literal, expected in [('true', True), ('false', False)]:
+            source = '## Interface\n- has_ui: ' + literal + '\n'
+            self.assertIs(expected, select_value(source, selector))
+            self.assertEqual(literal, select_value(source, {'heading': 'Interface', 'label': 'has_ui'}))
+        for literal in ['False', 'FALSE', '0', '1', 'yes', 'no', 'null', '"false"', '**false**', 'false # note', '']:
+            with self.subTest(literal=literal), self.assertRaises(RecordError):
+                select_value('## Interface\nhas_ui: ' + literal, selector)
+        for source in ['## Interface\nhas_ui: false\nhas_ui: true',
+                       '## Interface\n```\nhas_ui: false\n```',
+                       '## Other\nhas_ui: false',
+                       '## Interface\nhas_ui: false\n## Interface\nhas_ui: false']:
+            with self.subTest(source=source), self.assertRaises(RecordError):
+                select_value(source, selector)
+        for invalid in [{**selector, 'label': 'has_ui'}, {**selector, 'extra': False},
+                        {'heading': 'Interface', 'boolean_label': ''}]:
+            with self.subTest(selector=invalid), self.assertRaises(RecordError):
+                validate_selector(invalid)
+
+    def test_boolean_extension_reselects_observed_markdown_and_fails_closed(self):
+        from copy import deepcopy
+        from hub.connection_extensions import validate_extensions
+        from hub.connection_records import validate_result
+        fixture = Fixture()
+        try:
+            root, declaration = fixture.add()
+            declaration['source_refs'][0].update(path='STATUS.md', format='markdown')
+            declaration['mapping'] = {}
+            declaration['extensions'] = {'schema_version': '1.0', 'fact_mapping': {
+                'has_ui': {'source_ref': 'state', 'selector': {'heading': 'Interface', 'boolean_label': 'has_ui'}}},
+                'unknown_fields': {'has_ui': 'Current interface not declared'}}
+            fixture.projects[0]['current_state_paths'] = ['STATUS.md']
+            fixture.save_registry()
+            source = '## Interface\nhas_ui: false\n'
+            (root / 'STATUS.md').write_text(source)
+            (root / 'hub.connection.yaml').write_text(yaml.safe_dump(declaration))
+            result = fixture.resolver().refresh('a')
+            self.assertTrue(result['success'], result['errors'])
+            field = result['extensions']['fact']['has_ui']
+            self.assertIs(False, field['value'])
+            self.assertEqual(hashlib.sha256(source.encode()).hexdigest(), field['proof']['sha256'])
+            self.assertEqual(result, validate_result(result))
+            context = {'state': {'sha256': field['proof']['sha256'], 'observed_at': result['observed_at'],
+                                 'format': 'markdown', 'data': source}}
+            for changed in ['value', 'selector']:
+                forged = deepcopy(result['extensions'])
+                if changed == 'value':
+                    forged['fact']['has_ui']['value'] = True
+                else:
+                    forged['fact']['has_ui']['proof']['selector'] = {'heading': 'Interface', 'label': 'has_ui'}
+                with self.subTest(changed=changed), self.assertRaises(RecordError):
+                    validate_extensions(forged, source_context=context)
+            (root / 'STATUS.md').write_text('## Interface\nhas_ui: False\n')
+            failed = fixture.resolver().refresh('a')
+            self.assertFalse(failed['success'])
+            self.assertNotIn('extensions', failed)
+        finally:
+            fixture.close()
+
     def test_exact_table_and_ordered_text_preserves_markup(self):
         self.assertEqual(PHASE, select_value(SOURCE, {'heading': 'Snapshot', 'table_label': 'Phase'}))
         self.assertEqual(NEXT, select_value(SOURCE, {'heading': 'Next (ordered)', 'ordered_item': 1}))
