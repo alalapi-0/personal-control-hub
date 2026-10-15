@@ -100,9 +100,12 @@ class NativeBusinessAdapter(AppServerAdapter):
         from .task_store import TaskStore
         value=self.recovery_authority;grant=self.business_grant;store=TaskStore(self.hub_root)
         fields={'purpose','task_id','grant_sha256','thread_id','interrupted_turn_id','reconcile_event_key','reason','effort','additional_turn_limit'}
+        amended=type(value)is dict and value.get('reconcile_event_key')=='business-runtime-amendment-v1'
+        reason='owner_runtime600_after_two_timeouts'if amended else'input_overread'
+        consumption='business-runtime-amendment-resume-intent'if amended else'business-resume-intent'
         if (type(value)is not dict or set(value)!=fields or value['purpose']!='story_exchange_interrupted_resume'
             or value['task_id']!=grant['task_id']or value['grant_sha256']!=digest(grant)or value['thread_id']!=previous
-            or value['reason']!='input_overread'or value['effort']!='medium'or value['additional_turn_limit']!=1):
+            or value['reason']!=reason or value['effort']!='medium'or value['additional_turn_limit']!=1):
             raise ServiceError('BUSINESS_NATIVE_REPLAY_REJECTED',status=409)
         task=store.task(grant['task_id']);events=store.events(grant['task_id'])
         event=next((e for e in events if e['key']==value['reconcile_event_key']),None)
@@ -110,9 +113,13 @@ class NativeBusinessAdapter(AppServerAdapter):
             or not event or event['data']['original_thread_id']!=previous
             or event['data']['original_turn_id']!=value['interrupted_turn_id']
             or event['data']['action']!='same_owned_thread_new_turn_after_verified_interruption'
-            or any(e['key']=='business-resume-intent'for e in events)):
+            or any(e['key']==consumption for e in events)):
             raise ServiceError('BUSINESS_NATIVE_REPLAY_REJECTED',status=409)
-        store.event(grant['task_id'],'business-resume-intent',{'authority_sha256':digest(value),'thread_id':previous})
+        if amended and (grant['max_turn_seconds']!=600 or
+                event['data'].get('authority',{}).get('owner_decision_sha256')!=digest('允许全部改为10 分钟上限')or
+                event['data'].get('authority',{}).get('contract')!='PCH-STORY-RUNTIME-600-OWNER-v1'):
+            raise ServiceError('BUSINESS_NATIVE_REPLAY_REJECTED',status=409)
+        store.event(grant['task_id'],consumption,{'authority_sha256':digest(value),'thread_id':previous})
         thread=self.call('thread/read',{'threadId':previous,'includeTurns':True})['thread']
         if (thread['id']!=previous or Path(thread['cwd'])!=self.root or not thread['turns']
             or thread['turns'][-1]['id']!=value['interrupted_turn_id']or thread['turns'][-1]['status']!='interrupted'):
@@ -121,7 +128,8 @@ class NativeBusinessAdapter(AppServerAdapter):
         if result['thread']['id']!=previous or Path(result['thread']['cwd'])!=self.root:
             raise ServiceError('CODEX_THREAD_BINDING_REJECTED',status=409)
         self._profile_echo(result);self.owned_resume=True
-        store.event(grant['task_id'],'business-resumed',{'thread_id':previous,'prior_turn_id':value['interrupted_turn_id'],'additional_turn_limit':1})
+        resumed_key='business-runtime-amendment-resumed'if amended else'business-resumed'
+        store.event(grant['task_id'],resumed_key,{'thread_id':previous,'prior_turn_id':value['interrupted_turn_id'],'additional_turn_limit':1})
         return previous
 
     def _turn_overrides(self):return {'effort':'medium'}if self.owned_resume else{}

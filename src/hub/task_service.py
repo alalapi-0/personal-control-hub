@@ -79,7 +79,7 @@ def validate_grant(grant, *, live=False):
         raise ServiceError('EXACT_PROJECT_ISOLATION_UNVERIFIED',status=403)
     if type(grant['checks'])is not list or (not css and grant['checks']!=['fixture_sample']):raise ServiceError('CHECK_PLAN_REJECTED')
     if type(grant['expires_at'])not in (int,float) or not time.time()<grant['expires_at']<time.time()+86400:raise ServiceError('GRANT_EXPIRED',status=403)
-    if type(grant['max_turn_seconds'])is not int or not 10<=grant['max_turn_seconds']<=120:raise ServiceError('INVALID_GRANT')
+    if type(grant['max_turn_seconds'])is not int or not 10<=grant['max_turn_seconds']<=600:raise ServiceError('INVALID_GRANT')
     for field in ('root_identity','annotation_hash','image_sha256'):
         value=grant[field]
         if not isinstance(value,str) or len(value)!=64 or any(c not in '0123456789abcdef'for c in value):raise ServiceError('INVALID_GRANT')

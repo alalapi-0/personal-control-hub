@@ -628,6 +628,72 @@ class TaskStore:
                 (ident,'reconcile-'+hashed,body,hashed,time.time()))
             connection.execute("UPDATE tasks SET status='queued',owner=NULL,lease_until=NULL,result=NULL,cancel=0,turn_id=NULL,provider_status=NULL WHERE id=?",(ident,))
 
+    def authorize_business_runtime_amendment(self, ident, *, authority, observation, grant):
+        """One explicit owner amendment; retain the same interrupted task/thread.
+
+        This backend-only operation preserves the entire previous intent and
+        failed outcome before atomically enrolling the longer bounded attempt.
+        """
+        from copy import deepcopy
+        from .story_exchange import validate
+        from .story_promotion import source_snapshot
+        key='business-runtime-amendment-v1'
+        fields={'contract','actor','owner_decision_sha256','task_hash','grant_hash','thread_id','turn_id','max_turn_seconds','additional_turn_limit'}
+        proof_fields={'source','root','thread_id','turn_id','thread_status','turn_status','observed_at'}
+        if (type(authority)is not dict or set(authority)!=fields
+            or authority['contract']!='PCH-STORY-RUNTIME-600-OWNER-v1' or authority['actor']!='trusted_local_owner'
+            or authority['owner_decision_sha256']!=digest('允许全部改为10 分钟上限')
+            or type(authority['max_turn_seconds'])is not int or authority['max_turn_seconds']!=600
+            or type(authority['additional_turn_limit'])is not int or authority['additional_turn_limit']!=1
+            or type(observation)is not dict or set(observation)!=proof_fields
+            or observation['source']!='app_server_stdio.thread/read' or observation['turn_status']!='interrupted'
+            or observation['thread_status']not in {'idle','notLoaded'}
+            or type(observation['observed_at'])not in {int,float}or not 0<=time.time()-observation['observed_at']<30):
+            raise ServiceError('BUSINESS_RUNTIME_AMENDMENT_REJECTED',status=409)
+        grant=validate(grant,live=True);source_snapshot(grant,expected=True)
+        if grant['max_turn_seconds']!=600 or Path(grant['root'],'output/result.json').exists():
+            raise ServiceError('BUSINESS_RUNTIME_AMENDMENT_REJECTED',status=409)
+        with self._connection(True)as connection:
+            row=connection.execute('SELECT *FROM tasks WHERE id=?',(stable_id(ident),)).fetchone()
+            task=self._task(row)if row else None
+            if (not task or task['status']!='requires_reconcile' or task['cancel']or digest(task)!=authority['task_hash']
+                or task['payload'].get('kind')!='story_exchange' or task['intent']['grant_hash']!=authority['grant_hash']
+                or task['thread_id']!=authority['thread_id']or task['turn_id']!=authority['turn_id']
+                or observation['thread_id']!=task['thread_id']or observation['turn_id']!=task['turn_id']
+                or observation['root']!=grant['root']):
+                raise ServiceError('BUSINESS_RUNTIME_AMENDMENT_REJECTED',status=409)
+            old=task['intent']['grant'];expected=deepcopy(old)
+            expected.update(version=old['version']+1,expires_at=grant['expires_at'],max_turn_seconds=600)
+            expected['story_exchange']['registration_sha256']=grant['story_exchange']['registration_sha256']
+            expected['story_exchange']['source_preconditions']['source_state_sha256']=grant['story_exchange']['source_preconditions']['source_state_sha256']
+            if grant!=expected:raise ServiceError('BUSINESS_RUNTIME_SCOPE_CHANGED',status=409)
+            registered=connection.execute('SELECT *FROM grants WHERE id=?',(old['grant_id'],)).fetchone()
+            if not registered or self._decode(registered['body'],registered['hash'])!=old:
+                raise ServiceError('GRANT_VERSION_STALE',status=409)
+            events=connection.execute('SELECT *FROM events WHERE task_id=?ORDER BY sequence',(ident,)).fetchall()
+            if any(e['event_key']==key for e in events):raise ServiceError('BUSINESS_RUNTIME_AMENDMENT_CONSUMED',status=409)
+            for event in events:
+                value=self._decode(event['body'],event['hash'])
+                process=value.get('worker')if event['event_key'].startswith('dispatch-intent')else value if event['event_key'].startswith('stdio-child')else None
+                if process:
+                    try:current=Path('/proc',str(process['pid']),'stat').read_text().rsplit(')',1)[1].split()[19]
+                    except FileNotFoundError:continue
+                    if current==process['start_ticks']:raise ServiceError('TASK_OWNER_STILL_ACTIVE',status=409)
+            evidence={'authority':authority,'observation':observation,'original_status':task['status'],
+                'original_thread_id':task['thread_id'],'original_turn_id':task['turn_id'],'original_payload':task['payload'],
+                'original_intent':task['intent'],'original_result':task['result'],
+                'action':'same_owned_thread_new_turn_after_verified_interruption','effects_rolled_back':False}
+            self._append_event(connection,ident,key,evidence)
+            payload={**task['payload'],'grant_version':grant['version']}
+            intent={**task['intent'],'grant':grant,'grant_hash':digest(grant),
+                'source_binding':deepcopy(grant['story_exchange']['source_preconditions']),
+                'runtime_amendment_authority_sha256':digest(authority)}
+            connection.execute('UPDATE grants SET version=?,body=?,hash=?WHERE id=?',
+                (grant['version'],canonical(grant).decode(),digest(grant),grant['grant_id']))
+            connection.execute("UPDATE tasks SET payload=?,payload_hash=?,intent=?,intent_hash=?,status='queued',owner=NULL,lease_until=NULL,result=NULL,turn_id=NULL,provider_status=NULL WHERE id=?",
+                (canonical(payload).decode(),digest(payload),canonical(intent).decode(),digest(intent),ident))
+            return {'event_key':key,'grant_version':grant['version'],'thread_id':task['thread_id'],'additional_turn_limit':1}
+
     def clear_closed_terminal_owner(self, ident, proof):
         """Root-only terminal fence cleanup; never a lease takeover or HTTP action."""
         versions={'HUB-LWB-2.3-CSP-CSS-TRIAL-GOV-v5-REPLACEMENT':'v5',

@@ -150,7 +150,7 @@ def validate(grant, live=False, *, allow_expired=False):
     expiry = grant['expires_at']
     if type(expiry) not in (int, float) or not math.isfinite(expiry) or expiry <= 0 or expiry >= time.time() + 86400 or (not allow_expired and expiry <= time.time()):
         _reject('GRANT_EXPIRED')
-    if type(grant['max_turn_seconds']) is not int or not 10 <= grant['max_turn_seconds'] <= 120 or \
+    if type(grant['max_turn_seconds']) is not int or not 10 <= grant['max_turn_seconds'] <= 600 or \
             not _root(grant['root']) or not _hash(grant['root_identity']):
         _reject('INVALID_GRANT')
     spec = grant['task_spec']

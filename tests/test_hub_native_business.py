@@ -245,12 +245,69 @@ class NativeBusinessTests(unittest.TestCase):
             with self.assertRaises(ServiceError): adapter.start('thread-1', 'text')
             self.assertEqual(start.call_count, 1)
 
+    def test_explicit_600_owner_amendment_preserves_old_consumption_and_is_once(self):
+        from unittest.mock import Mock
+        self.grant['max_turn_seconds']=600;self.wrapper['grant_sha256']=digest(self.grant)
+        authority,events,task,native=self.recovery_fixture()
+        authority.update(reconcile_event_key='business-runtime-amendment-v1',reason='owner_runtime600_after_two_timeouts')
+        events[0]['key']='business-runtime-amendment-v1'
+        events[0]['data']['authority']={'contract':'PCH-STORY-RUNTIME-600-OWNER-v1',
+            'owner_decision_sha256':digest('允许全部改为10 分钟上限')}
+        events.append({'key':'business-resume-intent','data':{'previous':'retained'}})
+        store=Mock();store.task.return_value=task;store.events.side_effect=lambda _:copy.deepcopy(events)
+        store.event.side_effect=lambda _task,key,data:events.append({'key':key,'data':data})
+        with patch('hub.task_store.TaskStore',return_value=store):
+            for field in ('contract','owner_decision_sha256'):
+                value=events[0]['data']['authority'][field];events[0]['data']['authority'][field]='wrong'
+                adapter=self.adapter()
+                with self.subTest(field=field),patch.object(adapter,'call')as call,self.assertRaises(ServiceError):
+                    adapter.thread(previous='prior-thread')
+                call.assert_not_called();events[0]['data']['authority'][field]=value
+            adapter=self.adapter()
+            with patch.object(adapter,'call',side_effect=[{'thread':native},{'thread':native}]),patch.object(adapter,'_profile_echo'):
+                self.assertEqual(adapter.thread(previous='prior-thread'),'prior-thread')
+            self.assertEqual(sum(e['key']=='business-runtime-amendment-resume-intent'for e in events),1)
+            other=self.adapter()
+            with patch.object(other,'call')as call,self.assertRaises(ServiceError):other.thread(previous='prior-thread')
+            call.assert_not_called()
+
     def test_uncertain_thread_allocation_cannot_be_replayed(self):
         adapter = self.adapter()
         with patch.object(AppServerAdapter, 'thread', side_effect=TimeoutError('unknown send outcome')) as thread:
             with self.assertRaises(TimeoutError): adapter.thread()
             with self.assertRaises(ServiceError): adapter.thread()
             self.assertEqual(thread.call_count, 1)
+
+    def test_runtime_amendment_preserves_prior_resume_in_real_event_store(self):
+        from hub.task_store import TaskStore
+        self.grant['max_turn_seconds']=600;self.wrapper['grant_sha256']=digest(self.grant)
+        authority,events,task,native=self.recovery_fixture()
+        authority.update(reconcile_event_key='business-runtime-amendment-v1',reason='owner_runtime600_after_two_timeouts')
+        event=events[0]['data']
+        event['authority']={'contract':'PCH-STORY-RUNTIME-600-OWNER-v1',
+            'owner_decision_sha256':digest('允许全部改为10 分钟上限')}
+        store=TaskStore(self.hub);store.register_storage()
+        store.admit({'request_id':self.grant['task_id'],'project_id':self.grant['project_id'],
+                     'parent_task_id':None,'mode':'new'},task['intent'])
+        store.claim('fixture-worker')
+        store.update(self.grant['task_id'],'fixture-worker',thread_id='prior-thread')
+        prior={'thread_id':'prior-thread','prior_turn_id':'first-interrupted-turn','additional_turn_limit':1}
+        store.event(self.grant['task_id'],'business-resumed',prior)
+        store.event(self.grant['task_id'],'business-runtime-amendment-v1',event)
+        adapter=self.adapter()
+        with patch('hub.task_store.TaskStore',return_value=store), \
+                patch.object(adapter,'call',side_effect=[{'thread':native},{'thread':native}]), \
+                patch.object(adapter,'_profile_echo'):
+            self.assertEqual(adapter.thread(previous='prior-thread'),'prior-thread')
+        recorded={e['key']:e['data']for e in store.events(self.grant['task_id'])}
+        self.assertEqual(recorded['business-resumed'],prior)
+        self.assertEqual(recorded['business-runtime-amendment-resumed']['prior_turn_id'],'interrupted-turn')
+        with self.assertRaises(ServiceError):
+            store.event(self.grant['task_id'],'business-resumed',recorded['business-runtime-amendment-resumed'])
+        second=self.adapter()
+        with patch('hub.task_store.TaskStore',return_value=store),patch.object(second,'call')as call:
+            with self.assertRaises(ServiceError):second.thread(previous='prior-thread')
+            call.assert_not_called()
 
 
 if __name__ == '__main__': unittest.main()
