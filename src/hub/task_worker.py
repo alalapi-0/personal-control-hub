@@ -164,11 +164,12 @@ class TaskWorker:
                 if events>256:raise ServiceError('TASK_EVENT_CAPACITY',outcome='UNKNOWN')
                 evidence={'method':sanitized(method,120),'digest':raw_hash,'thread_id':thread_id,'turn_id':event_turn,
                     'source_emitted_ms':notification.get('emittedAtMs')}
-                # Deduplicate provider facts without retaining executable content/log bodies.
-                self.store.event(ident,'event-'+raw_hash,evidence)
                 if method=='turn/started':
                     if params.get('turn',{}).get('status')!='inProgress':raise ServiceError('CODEX_EVENT_ORDER',outcome='UNKNOWN')
+                    evidence['turn_status']='inProgress'
                     saw_started=True
+                # Deduplicate only validated lifecycle facts; no provider bodies.
+                self.store.event(ident,'event-'+raw_hash,evidence)
                 if method in {'turn/tokenUsage/updated','thread/tokenUsage/updated'}:usage=params.get('tokenUsage')
                 if method=='item/completed' and params.get('item',{}).get('type')=='agentMessage':message=sanitized(params['item'].get('text',''))
                 if method=='turn/completed':

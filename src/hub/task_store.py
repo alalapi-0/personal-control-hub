@@ -272,6 +272,56 @@ class TaskStore:
         except (ValueError, TypeError, UnicodeError):
             raise ServiceError('TASK_STORE_CORRUPT', status=503) from None
 
+    @staticmethod
+    def result_version(task):
+        if task['result'] is None:return None
+        return digest({'task_id':task['id'],'thread_id':task['thread_id'],
+                       'turn_id':task['turn_id'],'result_sha256':digest(task['result'])})
+
+    @staticmethod
+    def review_state(task, events):
+        version=TaskStore.result_version(task)
+        reviews=[e['data']for e in events if e['key'].startswith('result-review-')]
+        latest=reviews[-1]if reviews else None
+        current=latest is not None and latest['result_version']==version and task['status']=='checks_complete'
+        return {'revision':latest['revision']if latest else 0,'result_version':version,
+                'decision':latest['decision']if current else 'pending',
+                'current':current,'git_delivery':'not_recorded'}
+
+    def review_result(self, ident, command, *, owner_context, authorize=None):
+        """An owner receipt for one exact result, never an execution or Git grant."""
+        fields={'request_id','expected_review_revision','expected_result_version','decision'}
+        if type(command)is not dict or set(command)!=fields:raise ServiceError('INVALID_RESULT_REVIEW')
+        stable_id(command['request_id']);stable_id(ident)
+        version=command['expected_result_version']
+        if (type(command['expected_review_revision'])is not int or command['expected_review_revision']<0 or
+                type(version)is not str or len(version)!=64 or any(c not in '0123456789abcdef'for c in version) or
+                type(command['decision'])is not str or command['decision']not in {'accept','request_changes','defer'}):raise ServiceError('INVALID_RESULT_REVIEW')
+        with self._connection(True,guard=authorize)as connection:
+            row=connection.execute('SELECT *FROM tasks WHERE id=?',(ident,)).fetchone()
+            if row is None:raise ServiceError('TASK_NOT_FOUND',status=404)
+            task=self._task(row)
+            if owner_context!=task['intent'].get('owner_context'):raise ServiceError('RESULT_REVIEW_OWNER_REJECTED',status=403)
+            if self.result_version(task)!=version:raise ServiceError('RESULT_VERSION_STALE',status=409)
+            key='result-review-'+command['request_id']
+            old=connection.execute('SELECT body,hash FROM events WHERE task_id=?AND event_key=?',(ident,key)).fetchone()
+            if old:
+                receipt=self._decode(old['body'],old['hash'])
+                if receipt['command']!=command or receipt['owner_context']!=owner_context:raise ServiceError('RESULT_REVIEW_CONFLICT',status=409)
+                return {'replayed':True}
+            events=[{'key':r['event_key'],'data':self._decode(r['body'],r['hash'])}for r in connection.execute('SELECT *FROM events WHERE task_id=?ORDER BY sequence',(ident,))]
+            state=self.review_state(task,events)
+            if state['revision']!=command['expected_review_revision']:raise ServiceError('RESULT_REVIEW_REVISION_CONFLICT',status=409)
+            checks=task['result'].get('checks')if type(task['result'])is dict else None
+            if (task['status']!='checks_complete' or task['provider_status']!='completed' or task['cancel'] or
+                    not task['thread_id']or not task['turn_id']or type(checks)is not list or not checks or
+                    any(type(c)is not dict or type(c.get('exit'))is not int or c['exit']!=0 for c in checks)):
+                raise ServiceError('RESULT_NOT_REVIEWABLE',status=409)
+            receipt={'command':command,'owner_context':owner_context,'revision':state['revision']+1,
+                     'result_version':version,'decision':command['decision']}
+            self._append_event(connection,ident,key,receipt)
+            return {'replayed':False}
+
     def register_grant(self, grant):
         """Trusted local owner-control operation, intentionally absent from HTTP."""
         stable_id(grant['grant_id']); body = canonical(grant).decode(); hashed = digest(grant)

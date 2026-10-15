@@ -565,7 +565,7 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                 self.server.sessions.revoke(self._one_header('Cookie'))
                 self._success({'owner_authenticated': False})
                 return
-            if path not in {"/api/refresh", "/api/designs/decisions", "/api/designs/exports", '/api/annotations', '/api/task-drafts', '/api/tasks', '/api/management/project'} and not (path.startswith('/api/tasks/')and path.endswith(('/cancel','/respond'))):
+            if path not in {"/api/refresh", "/api/designs/decisions", "/api/designs/exports", '/api/annotations', '/api/task-drafts', '/api/tasks', '/api/management/project'} and not (path.startswith('/api/tasks/')and path.endswith(('/cancel','/respond','/review'))):
                 raise ServiceError("NOT_FOUND", status=404)
             if not self.server.owner_auth.configured:
                 raise ServiceError('OWNER_AUTH_UNAVAILABLE', status=503)
@@ -580,6 +580,7 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                     self.server.sessions.validate(self._one_header('Cookie'),token,require_owner=True,credential_version=self.server.owner_auth.version)
                     if self.server.owner_auth.version!=version:raise ServiceError('OWNER_AUTH_FAILED',status=401)
                 if path=='/api/tasks':result=self.server.tasks.submit(command,owner_context=owner_context,authorize=authorize_task)
+                elif path.endswith('/review'):result=self.server.tasks.review(path[len('/api/tasks/'):-len('/review')],command,owner_context=owner_context,authorize=authorize_task)
                 elif path.endswith('/respond'):result=self.server.tasks.respond_control(path[len('/api/tasks/'):-len('/respond')],command,owner_context=owner_context,authorize=authorize_task)
                 else:
                     if command:raise ServiceError('INVALID_TASK_REQUEST')

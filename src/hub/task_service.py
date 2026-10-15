@@ -186,11 +186,19 @@ class TaskService:
         if authorize is not None:authorize()
         return {'task':self.public(task),'replayed':replayed}
 
-    @staticmethod
-    def public(task):
+    def public(self,task):
         # Paths, grants, process/control tokens and request configuration stay server-side.
         result={key:task[key]for key in ('id','sequence','project','parent','status','thread_id','turn_id','provider_status','cancel','result','human_acceptance')}
         result.update(mode=task['payload']['mode'],annotation_id=task['payload']['annotation_id'],annotation_revision=task['payload']['annotation_revision'])
+        from .task_lifecycle import lifecycle
+        facts=self.store.events(task['id'])
+        result['lifecycle']=lifecycle(task,facts)
+        result['result_review']=self.store.review_state(task,facts)
+        result['result_version']=self.store.result_version(task)
+        decision=result['result_review']['decision']
+        result['human_acceptance']={'accept':'accepted','request_changes':'changes_requested','defer':'deferred'}.get(decision,'pending')
+        result['lifecycle']['human_accepted']=decision=='accept'
+        result['lifecycle']['owner_review_required']=task['status']=='checks_complete' and decision!='accept'
         result['worker_state']='lease_expired'if task['lease_until']and task['lease_until']<time.time()and task['status']not in {'checks_complete','failed','cancelled','lost','requires_reconcile'}else'current_or_terminal'
         if task['payload']['mode']=='busy_feedback':
             result['feedback']={'mechanism':'persistent_queue','applied_to_active_turn':False,'parent_binding':task['intent'].get('parent_binding'),
@@ -252,6 +260,12 @@ class TaskService:
             if task['status'] in {'checks_complete','failed','cancelled','lost','requires_reconcile'}:public['allowed_decisions']=[]
             controls.append(public)
         return {'task':self.public(task),'events':events,'controls':controls,'storage':self.store.storage_status()}
+
+    def review(self,ident,command, *, owner_context='trusted_local_owner',authorize=None):
+        if authorize is not None:authorize()
+        saved=self.store.review_result(ident,command,owner_context=owner_context,authorize=authorize)
+        if authorize is not None:authorize()
+        return {**self.get(ident),**saved}
 
     def respond_control(self,ident,command, *, owner_context='trusted_local_owner',authorize=None):
         if not self.test_gate:raise ServiceError('EXECUTION_DISABLED',status=403)

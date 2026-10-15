@@ -1,6 +1,9 @@
 import {el,button,api,navigate} from './common.js';
 
 export const taskLabels={queued:'已接收 · 排队中',running:'Codex 执行中',waiting_input:'等待补充',waiting_approval:'等待审批',validating:'实际检查中',checks_complete:'检查完成 · 待用户验收',failed:'失败',cancelled:'已取消',lost:'执行器失联',requires_reconcile:'结果待对账'};
+const lifecycleLabels={queued:'已接收 · 排队中',preparing:'正在核对执行条件',dispatching:'已准备发送 · 接收结果待确认',accepted:'Agent 已接收 · 尚未确认开始',running:'Agent 正在执行',waiting_input:'等待补充',waiting_approval:'等待审批',validating:'实际检查中',await_owner_review:'检查完成 · 等待验收',failed:'失败',cancelled:'已取消',lost:'执行器失联',requires_reconcile:'结果待对账',unknown:'状态待核对'};
+export const lifecycleLabel=task=>lifecycleLabels[task.lifecycle?.stage]||taskLabels[task.status]||'状态未知';
+const reviewLabels={pending:'待决定',accepted:'已接受此次结果',changes_requested:'需要修改',deferred:'暂缓验收'};
 export function controlState(control,task,owner=true,now=Date.now()/1000){
   const labels={pending:control.kind==='input'?'等待补充输入':'等待审批',declined:'已拒绝',expired:'已过期',cancelled:'已取消',grant_revoked:'授权已撤销'};
   const active=['waiting_input','waiting_approval'].includes(task.status);
@@ -44,17 +47,17 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true}={}){
     root.append(el('p',{className:'warning'},data.test_gate?'隔离测试入口；不代表真实项目执行授权。':'执行入口尚未开放；需要有效的项目授权、隔离与后台配置。'));
     if(data.tasks_available===false)root.append(el('p',{className:'warning'},'目前无法读取任务账本；原记录未被初始化或覆盖。'));
     else if(!data.tasks.length)root.append(el('div',{className:'empty'},el('h2',{},'尚无已接收任务')));
-    for(const t of data.tasks)root.append(el('a',{href:'#tasks/'+encodeURIComponent(t.id),className:'panel stack'},el('h2',{},t.project),el('p',{},t.id),el('p',{},taskLabels[t.status]||'状态未知')));
+    for(const t of data.tasks)root.append(el('a',{href:'#tasks/'+encodeURIComponent(t.id),className:'panel stack'},el('h2',{},t.project),el('p',{},t.id),el('p',{},lifecycleLabel(t))));
     return;
   }
   const task=data.task;
   let owner=!recovery.blocked;const actions=[];
-  root.append(...[el('h2',{},task.id),el('p',{className:task.status==='checks_complete'?'success':'warning'},taskLabels[task.status]||'状态未知'),
+  root.append(...[el('h2',{},task.id),el('p',{className:task.status==='checks_complete'?'success':'warning'},lifecycleLabel(task)),
     task.worker_state==='lease_expired'?el('p',{className:'warning'},'执行器租约已过期；需要核对精确进程与会话，不能重新发送。'):null,
     el('p',{},'项目：'+task.project),el('p',{className:'caption'},`会话 ${task.thread_id||'尚未绑定'} · 回合 ${task.turn_id||'尚未绑定'} · 原生状态 ${task.provider_status||'尚未取得'}`),
     el('p',{className:'caption'},'模式：'+({new:'新建会话',idle_continue:'继续明确的空闲会话',busy_feedback:'排队反馈'}[task.mode]||'待核对')+(task.parent?' · 前序任务 '+task.parent:'')),
     task.annotation_id?el('p',{className:'caption'},`保存意见 ${task.annotation_id} · revision ${task.annotation_revision}`):null,
-    el('p',{className:'caption'},'用户验收：待决定；检查完成不代表用户接受或发布。')].filter(Boolean));
+    el('p',{className:'caption'},'用户验收：'+(reviewLabels[task.human_acceptance]||'待决定')+'。Git 交付另行核对。')].filter(Boolean));
   if(recovery.needsReconcile){
     const retry=button('重新执行（尚未开放）',()=>{});retry.disabled=true;
     root.append(el('p',{className:'warning'},'任务运行或结果尚未确认。核对原请求、执行器和会话后再决定；此处不会重新执行。'),retry);
@@ -75,11 +78,29 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true}={}){
       catch(error){message.textContent='答复结果需要核对：'+(error.code||'连接不可用')+'。请读取原任务，勿重复创建请求。';decline.disabled=true;refresh.focus();}
     });decline.disabled=!state.canDecline;actions.push({button:decline,allowed:()=>controlState(control,task,owner).canDecline});section.append(decline);root.append(section);
   }
+  if(task.result?.transport&&task.result.transport!=='app_server_stdio')root.append(el('p',{className:'warning'},'模拟执行结果 · 验收仅针对这份测试记录。'));
   if(task.result){
     for(const check of task.result.checks||[])root.append(el('section',{className:'panel stack'},el('h3',{},check.id+' · 退出码 '+check.exit),el('pre',{},check.stdout||check.stderr||'无输出')));
     if(task.result.diff)root.append(el('section',{className:'panel'},el('h3',{},'实际差异'),el('pre',{},task.result.diff)));
     if(task.result.error_class)root.append(el('p',{className:'warning'},'失败类别：'+task.result.error_class));
     root.append(el('details',{},el('summary',{},'执行证据'),el('pre',{},JSON.stringify(task.result,null,2))));
+  }
+  if(task.status==='checks_complete'&&task.result_version){
+    const reviewPanel=el('section',{className:'panel stack'},el('h3',{},'审阅此次结果'),
+      el('p',{},'请核对本次差异与实际检查。接受结果会保存验收记录；Git 交付另行核对。'));
+    const reviewMessage=el('p',{role:'status','aria-live':'polite'});
+    const reviewButtons=[];
+    for(const [decision,label]of [['accept','接受此次结果'],['request_changes','需要修改'],['defer','暂缓验收']]){
+      const action=button(label,async()=>{
+        reviewButtons.forEach(b=>b.disabled=true);reviewMessage.textContent='正在保存验收记录…';
+        const command={request_id:'review-'+crypto.randomUUID(),expected_result_version:task.result_version,
+          expected_review_revision:task.result_review?.revision||0,decision};
+        try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/review',command);await renderTasks(target,{taskId,isCurrent});if(isCurrent())target.querySelector('button')?.focus();}
+        catch{reviewMessage.textContent='验收结果需要核对。请重新读取此次任务，再决定；不会重新执行。';refresh.focus();}
+      });
+      action.disabled=!owner;reviewButtons.push(action);actions.push({button:action,allowed:()=>owner});reviewPanel.append(action);
+    }
+    reviewPanel.append(reviewMessage);root.append(reviewPanel);
   }
   if(['queued','running','waiting_input','waiting_approval','validating'].includes(task.status)){
     const cancel=button('取消这个任务',async()=>{cancel.disabled=true;try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/cancel',{});await renderTasks(target,{taskId,isCurrent});if(isCurrent())target.querySelector('button')?.focus();}catch{root.append(el('p',{role:'status'},'取消结果待核对；请读取原任务，不会重新执行。'));cancel.disabled=false;cancel.focus();}});
