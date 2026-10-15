@@ -162,3 +162,29 @@ class SessionHTTPTests(unittest.TestCase):
         FakeDiscovery.hook=lambda method:setattr(self,'proof',None)
         status,_,body=self.call(path='/api/sessions');self.assertEqual(status,503)
         self.assertNotIn(ID,str(body));self.assertIsNone(self.server.session_view.cache)
+
+
+class SessionDataRootTests(unittest.TestCase):
+    def test_explicit_data_root_keeps_native_cwd_separate_from_code_root(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            service = SessionService(hub_root=root)
+            actual = row()
+            actual['cwd'] = str(root)
+            self.assertEqual(service._row(actual, 'vscode', set(actual))['id'], ID)
+            actual['cwd'] = str(HUB_ROOT)
+            with self.assertRaises(ServiceError) as error:
+                service._row(actual, 'vscode', set(actual))
+            self.assertEqual(error.exception.code, 'SESSION_BINDING_MISMATCH')
+            FakeDiscovery.calls = []; FakeDiscovery.results = {}; FakeDiscovery.open_error = None; FakeDiscovery.hook = None
+            metadata = SessionService(hub_root=root, adapter_factory=FakeDiscovery, identity=lambda: 'fixture')
+            metadata.catalog(lambda: 'owner')
+            self.assertEqual([params['cwd'] for method, params in FakeDiscovery.calls if method == 'thread/list'], [str(root)] * 3)
+            self.assertEqual(SessionService().hub_root, HUB_ROOT)
+
+    def test_invalid_trusted_data_root_is_rejected_without_provider_calls(self):
+        for root in ['relative', '/tmp/../other', None, 3]:
+            with self.subTest(root=root), self.assertRaises(ServiceError) as error:
+                SessionService(hub_root=root)
+            self.assertEqual(error.exception.code, 'SESSION_ROOT_REJECTED')

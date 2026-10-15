@@ -37,7 +37,12 @@ def environment_identity():
 
 class SessionService:
     def __init__(self, *, adapter_factory=ReadonlyAppServerAdapter, clock=time.monotonic,
-                 wall=time.time, identity=environment_identity, metadata_read_id=None, excluded_read_ids=()):
+                 wall=time.time, identity=environment_identity, metadata_read_id=None, excluded_read_ids=(),
+                 hub_root=HUB_ROOT):
+        if (not isinstance(hub_root, (str, Path)) or not Path(hub_root).is_absolute()
+                or '..' in Path(hub_root).parts):
+            raise ServiceError('SESSION_ROOT_REJECTED')
+        self.hub_root = Path(hub_root)
         self.adapter_factory, self.clock, self.wall, self.identity = adapter_factory, clock, wall, identity
         # Optional exact selection is trusted server configuration, never an HTTP field.
         # Ordinary browser discovery performs zero reads and cannot select a thread.
@@ -67,7 +72,7 @@ class SessionService:
             raise ServiceError('SESSION_METADATA_REJECTED', status=503)
         ident, status = thread.get('id'), thread.get('status')
         if (type(ident) is not str or not THREAD_ID.fullmatch(ident)
-                or thread.get('cwd') != str(HUB_ROOT) or thread.get('source') != source
+                or thread.get('cwd') != str(self.hub_root) or thread.get('source') != source
                 or thread.get('modelProvider') != 'openai' or type(status) is not dict):
             raise ServiceError('SESSION_BINDING_MISMATCH', status=503)
         kind = status.get('type')
@@ -109,7 +114,7 @@ class SessionService:
                         self._authorize(authorize, owner)
                         group = {'source': source, 'state': 'supported_empty', 'rows': [], 'has_cursor': False}
                         try:
-                            result = adapter.call('thread/list', {'cwd': str(HUB_ROOT), 'sourceKinds': [source],
+                            result = adapter.call('thread/list', {'cwd': str(self.hub_root), 'sourceKinds': [source],
                                 'limit': 3, 'archived': False, 'useStateDbOnly': True})
                             if (type(result) is not dict or set(result)-{'backwardsCursor', 'data', 'nextCursor'}
                                     or 'data' not in result
