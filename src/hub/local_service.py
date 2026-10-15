@@ -34,6 +34,7 @@ WEB_ASSETS = {
     "/assets/common.js": ("common.js", "text/javascript; charset=utf-8"),
     "/assets/connection_view.mjs": ("connection_view.mjs", "text/javascript; charset=utf-8"),
     "/assets/directory.mjs": ("directory.mjs", "text/javascript; charset=utf-8"),
+    "/assets/captures.mjs": ("captures.mjs", "text/javascript; charset=utf-8"),
     "/assets/page_inventory.mjs": ("page_inventory.mjs", "text/javascript; charset=utf-8"),
     "/assets/business_tasks.mjs": ("business_tasks.mjs", "text/javascript; charset=utf-8"),
     "/assets/management.mjs": ("management.mjs", "text/javascript; charset=utf-8"),
@@ -335,7 +336,17 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                     "facts": [], "history": [], "effective": {}, "queues": {}, "reason": error.code}
 
     def _dispatch_get(self, path, query):
-        if path in {"/api/health", "/api/session"}:
+        if path == '/api/preview-runtime':
+            if query:
+                raise ServiceError('INVALID_QUERY')
+            files = {'src/hub/web/'+p.name: hashlib.sha256(p.read_bytes()).hexdigest()
+                     for p in WEB_ROOT.iterdir() if p.is_file()}
+            code_sha = hashlib.sha256(json.dumps(files, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+            result = {'schema_version': '1.0', 'project_id': 'personal-control-hub',
+                      'source_sha256': code_sha, 'build_sha256': None}
+            self._json(result)
+            return
+        if path in {"/api/health", "/api/session", "/api/guest"}:
             if query:
                 raise ServiceError("INVALID_QUERY")
             if path == "/api/health":
@@ -459,6 +470,21 @@ class HubRequestHandler(BaseHTTPRequestHandler):
         elif path == "/api/projects":
             snapshot = self._design_snapshot()
             result = self.server.projects.list_projects(query=query, design_snapshot=snapshot)
+        elif re.fullmatch(r'/api/projects/[^/]+/captures(?:/.*)?', path):
+            if query:
+                raise ServiceError('INVALID_QUERY')
+            parts = path[len('/api/projects/'):].split('/')
+            if (len(parts) not in {2, 4} or not ID.fullmatch(parts[0]) or parts[1] != 'captures'
+                    or len(parts) == 4 and (not ID.fullmatch(parts[2]) or parts[3] != 'image')):
+                raise ServiceError('INVALID_QUERY')
+            from .capture_store import CaptureStore
+            from .capture_worker import capture_catalog, read_capture_image
+            from .connection_records import RecordError
+            try:
+                result = (capture_catalog(self.server.projects.get_project(parts[0]), CaptureStore(self.server.projects.root))
+                          if len(parts) == 2 else read_capture_image(self.server.projects, parts[0], parts[2]))
+            except RecordError:
+                raise ServiceError('CAPTURE_STORE_REJECTED', status=503) from None
         elif path.startswith("/api/projects/"):
             project_id = path[len("/api/projects/"):]
             if query or not ID.fullmatch(project_id):

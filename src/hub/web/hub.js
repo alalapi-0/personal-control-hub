@@ -5,6 +5,7 @@ import {renderManagement} from './management.mjs';
 import {renderTimeline} from './timeline.mjs';
 import {projectDirectory, renderDirectoryTree} from './directory.mjs';
 import {renderPageInventory} from './page_inventory.mjs';
+import {renderCaptures} from './captures.mjs';
 import {attention, freshness, refreshable, currentSourceAvailable, projectFacts, projectTasks, projectSummary, loadProjectDirectory, loadSyncStatus, coreGapSummary, scheduleSummary, requestSummary} from './connection_view.mjs';
 
 const main = document.querySelector('#main');
@@ -250,6 +251,8 @@ async function projectDetail(id,token){
   if(syncStatus&&JSON.stringify(syncStatus.head)!==JSON.stringify(p.provenance.ledger_head)){syncStatus=null;syncStatusError={code:'SYNC_STATUS_INCONSISTENT'};}
   lastProjects=[p];
   const fields=factsView(p),taskPanel=await projectTaskPanel(p,token);if(token!==generation)return;
+  let captures=null;try{captures=await api(`/api/projects/${encodeURIComponent(id)}/captures`);}catch{}
+  if(token!==generation)return;
   const managed = p.management;
   let identity=null,identityError=null;
   try{identity=await api('/api/identity');}catch(error){identityError=error;}
@@ -276,7 +279,7 @@ async function projectDetail(id,token){
   const designCount=p.design.references.filter(x=>x.kind==='candidate').length;
   const design=el('section',{className:'panel stack'},el('h2',{},'界面设计'),el('p',{className:'muted'},designCount?`${designCount} 个设计版本可查看`:'尚未登记设计候选'),el('a',{className:'button',href:`#designs/${encodeURIComponent(id)}`},designCount?'进入设计审核':'查看设计入口'));
   const exception=p.declared.hub_connection_exception;
-  main.replaceChildren(el('section',{className:'stack'},el('a',{href:'#projects'},'← 所有项目'),el('h1',{},p.name),el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},refreshButton([p]),(!refreshable(p)||!syncStatus?.eligible_project_ids.includes(p.project_id))?el('p',{className:'caption'},syncStatus?'此项目不在符合资格的刷新范围内。':'刷新范围暂不可用，请回到项目列表重新核对。'):null),exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,el('section',{className:'panel stack'},el('h2',{},'项目权威状态'),summaryView(p),el('p',{className:'caption'},'仅显示项目登记来源明确提供的事实。缺值和过期记录保留为未知。'),fields),renderBusinessPlan(p),renderPageInventory(p),timeView,identityNotice,managementPanel,taskPanel,el('a',{className:'button',href:'#host'},'查看 Linux 主机观测'),el('div',{className:'details-grid'},el('div',{className:'stack'},sources,relations),design),diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields,quality:p.business.quality})));
+  main.replaceChildren(el('section',{className:'stack'},el('a',{href:'#projects'},'← 所有项目'),el('h1',{},p.name),el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},refreshButton([p]),(!refreshable(p)||!syncStatus?.eligible_project_ids.includes(p.project_id))?el('p',{className:'caption'},syncStatus?'此项目不在符合资格的刷新范围内。':'刷新范围暂不可用，请回到项目列表重新核对。'):null),exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,el('section',{className:'panel stack'},el('h2',{},'项目权威状态'),summaryView(p),el('p',{className:'caption'},'仅显示项目登记来源明确提供的事实。缺值和过期记录保留为未知。'),fields),renderBusinessPlan(p),renderPageInventory(p),renderCaptures(p,captures),timeView,identityNotice,managementPanel,taskPanel,el('a',{className:'button',href:'#host'},'查看 Linux 主机观测'),el('div',{className:'details-grid'},el('div',{className:'stack'},sources,relations),design),diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields,quality:p.business.quality})));
 }
 async function route(focus=true){
   const token=++generation;const parts=location.hash.slice(1).split('/').map(p=>{try{return decodeURIComponent(p);}catch{return '';}});const kind=parts[0]||'projects';

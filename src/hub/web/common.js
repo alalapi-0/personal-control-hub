@@ -65,7 +65,7 @@ export function button(label, fn, attrs = {}) {
 }
 
 async function bootstrap() {
-  const response = await fetch("/api/session", {
+  const response = await fetch("/api/guest", {
     credentials: "same-origin",
     headers: { Accept: "application/json" },
   });

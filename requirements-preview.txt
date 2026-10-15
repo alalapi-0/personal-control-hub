@@ -1,0 +1,3 @@
+# Optional explicit screenshot worker only; base query/sync need no browser.
+-r requirements.txt
+playwright==1.64.0
