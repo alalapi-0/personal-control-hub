@@ -487,11 +487,97 @@ class ReadonlyAppServerAdapter(AppServerAdapter):
     """Discovery cannot acquire an execution capability through inherited methods."""
     methods = frozenset({'initialize', 'thread/list', 'thread/read'})
 
+    def __init__(self, root, *, registration=None, read_only=True, **kwargs):
+        if read_only is not True:
+            raise ServiceError('CODEX_PROFILE_REJECTED', status=503)
+        self.registration = registration
+        self._diagnostic_method = None
+        self._listed_metadata_ids = set()
+        if registration is not None:
+            from .native_config_registration import NativeMetadataRegistration
+            if not isinstance(registration, NativeMetadataRegistration):
+                raise ServiceError('NATIVE_REGISTRATION_REJECTED', status=503)
+        super().__init__(root, read_only=True, **kwargs)
+
+    def _configuration_hash(self):
+        return self.registration.config_sha256 if self.registration else super()._configuration_hash()
+
+    def _child_environment(self):
+        return {**super()._child_environment(), 'CODEX_INTERNAL_APP_SERVER_REMOTE_CONTROL_DISABLED': '1'}
+
+    def _diagnostic(self, method, params):
+        if method not in {'config/read', 'experimentalFeature/list', 'mcpServerStatus/list'}:
+            raise ServiceError('DISCOVERY_METHOD_REJECTED', status=403)
+        self._diagnostic_method = method
+        try:
+            self._check_registered_config()
+            result = AppServerAdapter.call(self, method, params)
+            self._check_registered_config()
+            return result
+        finally:
+            self._diagnostic_method = None
+
+    def _check_registered_config(self):
+        if self.registration is not None and config_fingerprint(
+                Path(self._child_environment()['HOME']) / '.codex/config.toml') != self.registration.config_sha256:
+            raise ServiceError('CODEX_CONFIG_DRIFT', status=503)
+
+    def _verify_metadata_controls(self):
+        effective = self._diagnostic('config/read', {'cwd': str(self.root), 'includeLayers': False})['config']
+        expected = {':root': 'deny', ':minimal': 'read', ':tmpdir': 'deny', ':slash_tmp': 'deny', str(self.root): 'read'}
+        profile = effective.get('permissions', {}).get(self.permission_profile, {})
+        filesystem = profile.get('filesystem')
+        # The pinned native serializer emits this unset scan option alongside
+        # path rules. Only its null default is equivalent to the launch table.
+        if type(filesystem) is dict and filesystem.get('glob_scan_max_depth') is None:
+            filesystem = {key: value for key, value in filesystem.items() if key != 'glob_scan_max_depth'}
+        checks = {'selected_profile': effective.get('default_permissions') == self.permission_profile,
+                  'filesystem_readonly': filesystem == expected,
+                  'network_disabled': profile.get('network', {}).get('enabled') is False,
+                  'no_inheritance': profile.get('extends') is None,
+                  'web_search_disabled': effective.get('web_search') == 'disabled'}
+        if not all(checks.values()):
+            raise ServiceError('CODEX_PROFILE_REJECTED', status=503, details={'controls': checks})
+        servers = effective.get('mcp_servers', {})
+        if set(servers) != set(self.registration.mcp_servers) or any(v.get('enabled') is not False for v in servers.values()):
+            raise ServiceError('CODEX_CAPABILITY_UNVERIFIED', status=503, details={'check': 'mcp_configuration'})
+        status = self._diagnostic('mcpServerStatus/list', {'limit': 100, 'detail': 'toolsAndAuthOnly'})
+        # This is deliberately unscoped: no thread has been loaded or started.
+        # The pinned schema permits null runtimeStatus when unavailable. The
+        # exact configuration is separately verified disabled, with zero tools;
+        # null is retained as unavailable, never promoted to runtime-disabled.
+        if status['nextCursor'] is not None or any(s['name'] not in servers or s['runtimeStatus'] not in (None, 'disabled')
+                or s['tools'] or s['resources'] or s['resourceTemplates'] or s['serverCapabilities'] is not None for s in status['data']):
+            raise ServiceError('CODEX_CAPABILITY_UNVERIFIED', status=503, details={'check': 'mcp_runtime'})
+        flags = {}; cursor = None
+        for _ in range(8):
+            result = self._diagnostic('experimentalFeature/list', {'limit': 100, 'cursor': cursor})
+            for item in result['data']:
+                if item['name'] in flags:
+                    raise ServiceError('CODEX_CAPABILITY_PAGE_DUPLICATE', status=503)
+                flags[item['name']] = item['enabled']
+            cursor = result['nextCursor']
+            if cursor is None:
+                break
+        if (cursor is not None or any(flags.get(name) is not False for name in DISABLED_FEATURES)
+                or self.mcp_startup_seen or self.remote_control_status != 'disabled'):
+            raise ServiceError('CODEX_CAPABILITY_UNVERIFIED', status=503, details={
+                'check': 'features_remote', 'feature_pages_complete': cursor is None,
+                'unverified_disabled_features': [name for name in DISABLED_FEATURES if flags.get(name) is not False],
+                'mcp_startup_seen': self.mcp_startup_seen, 'remote_disabled': self.remote_control_status == 'disabled'})
+        self.metadata_controls = {'filesystem': 'read-only', 'network': False, 'web_search': 'disabled',
+                                  'configured_mcp_disabled': len(servers), 'remote_control': 'disabled',
+                                  'disabled_features': len(DISABLED_FEATURES), 'model_turns': 0,
+                                  'mcp_query_scope': 'unscoped', 'loaded_thread_runtime_probed': False,
+                                  'unavailable_mcp_runtime_rows': sum(s['runtimeStatus'] is None for s in status['data'])}
+
     def open(self):
         try:
             super().open()
             if any(self.schema_hashes.get(k) != v for k, v in DISCOVERY_SCHEMA_PINS.items()):
                 raise ServiceError('CODEX_SCHEMA_CHANGED', status=503)
+            if self.registration is not None:
+                self._verify_metadata_controls()
             return self
         except BaseException:
             self.close()
@@ -500,10 +586,30 @@ class ReadonlyAppServerAdapter(AppServerAdapter):
     def call(self, method, params, timeout=15):
         if method not in self.methods:
             raise ServiceError('DISCOVERY_METHOD_REJECTED', status=403)
-        return super().call(method, params, timeout=timeout)
+        self._check_registered_config()
+        if self.registration is not None and method == 'thread/list':
+            if (type(params) is not dict or set(params) != {'cwd', 'sourceKinds', 'limit', 'archived', 'useStateDbOnly'}
+                    or params['cwd'] != str(self.registration.root) or params['sourceKinds'] not in [['cli'], ['appServer'], ['vscode']]
+                    or type(params['limit']) is not int or not 1 <= params['limit'] <= 3
+                    or params['archived'] is not False or params['useStateDbOnly'] is not True):
+                raise ServiceError('DISCOVERY_SCOPE_REJECTED', status=403)
+        if self.registration is not None and method == 'thread/read':
+            if (type(params) is not dict or set(params) != {'threadId', 'includeTurns'}
+                    or params['includeTurns'] is not False or type(params['threadId']) is not str
+                    or params['threadId'] not in self._listed_metadata_ids):
+                raise ServiceError('DISCOVERY_SCOPE_REJECTED', status=403)
+        result = super().call(method, params, timeout=timeout)
+        if self.registration is not None and method == 'thread/list':
+            self._listed_metadata_ids.update(row['id'] for row in result['data']
+                if row.get('cwd') == str(self.registration.root) and row.get('modelProvider') == 'openai'
+                and row.get('source') in params['sourceKinds'])
+        return result
 
     def _send(self, value):
-        if 'method' in value and value['method'] not in self.methods | {'initialized'}:
+        allowed = self.methods | {'initialized'}
+        if self._diagnostic_method is not None:
+            allowed = allowed | {self._diagnostic_method}
+        if 'method' in value and value['method'] not in allowed:
             raise ServiceError('DISCOVERY_METHOD_REJECTED', status=403)
         return super()._send(value)
 

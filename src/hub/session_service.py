@@ -23,27 +23,33 @@ THREAD_ID = re.compile(r'^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$')
 TTL = 10
 
 
-def environment_identity():
+def environment_identity(root=HUB_ROOT):
+    from .native_config_registration import load_registration
+    registration = load_registration(root)
     env = child_environment()
-    if config_fingerprint(Path(env['HOME']) / '.codex/config.toml') != REGISTERED_CONFIG_SHA256:
+    if config_fingerprint(Path(env['HOME']) / '.codex/config.toml') != registration.config_sha256:
         raise ServiceError('CODEX_CONFIG_DRIFT', status=503)
     binary = shutil.which('codex', path=env['PATH'])
     if binary is None:
         raise ServiceError('CODEX_VERSION_UNSUPPORTED', status=503)
     value = os.stat(binary)
     return (value.st_dev, value.st_ino, value.st_size, value.st_mtime_ns, value.st_ctime_ns,
-            VERSION, REGISTERED_CONFIG_SHA256, tuple(DISCOVERY_SCHEMA_PINS.items()))
+            VERSION, registration.semantic_sha256, tuple(DISCOVERY_SCHEMA_PINS.items()))
 
 
 class SessionService:
-    def __init__(self, *, adapter_factory=ReadonlyAppServerAdapter, clock=time.monotonic,
-                 wall=time.time, identity=environment_identity, metadata_read_id=None, excluded_read_ids=(),
+    def __init__(self, *, adapter_factory=None, clock=time.monotonic,
+                 wall=time.time, identity=None, metadata_read_id=None, excluded_read_ids=(),
                  hub_root=HUB_ROOT):
         if (not isinstance(hub_root, (str, Path)) or not Path(hub_root).is_absolute()
                 or '..' in Path(hub_root).parts):
             raise ServiceError('SESSION_ROOT_REJECTED')
         self.hub_root = Path(hub_root)
-        self.adapter_factory, self.clock, self.wall, self.identity = adapter_factory, clock, wall, identity
+        from .native_config_registration import load_registration
+        self.adapter_factory = adapter_factory or (lambda launch_root: ReadonlyAppServerAdapter(
+            launch_root, registration=load_registration(self.hub_root)))
+        self.clock, self.wall = clock, wall
+        self.identity = identity or (lambda: environment_identity(self.hub_root))
         # Optional exact selection is trusted server configuration, never an HTTP field.
         # Ordinary browser discovery performs zero reads and cannot select a thread.
         if metadata_read_id is not None and (type(metadata_read_id) is not str or not THREAD_ID.fullmatch(metadata_read_id)):
