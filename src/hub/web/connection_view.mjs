@@ -9,6 +9,16 @@ function latestFailure(project) {
     || (Array.isArray(project?.errors) && project.errors.length > 0);
 }
 
+// One current-authority gate shared by detail facts, summaries and history toggles.
+export function currentSourceAvailable(project) {
+  const record=project?.business?.source_record;
+  return !removed(project) && project?.declared?.connection_read_allowed===true
+    && project?.business?.state==='current' && project?.freshness?.state==='fresh'
+    && project?.freshness?.authority_drift!==true && !latestFailure(project)
+    && project?.operational?.latest_attempt?.success===true
+    && record?.schema_version==='2.0' && record.success===true;
+}
+
 export function attention(project) {
   if (removed(project)) return false;
   if (latestFailure(project)) return true;
@@ -61,8 +71,7 @@ function factText(key, value) {
 export function projectFacts(project, {history=false}={}) {
   const hidden=removed(project) || project?.declared?.connection_read_allowed!==true;
   const record=hidden ? null : history ? project?.operational?.last_success : project?.business?.source_record;
-  const current=!history && project?.business?.state==='current'
-    && project?.freshness?.state==='fresh' && project?.operational?.latest_attempt?.success!==false;
+  const current=!history && currentSourceAvailable(project);
   const usable=!hidden && record?.schema_version==='2.0' && record.success===true && (history || current);
   return factGroups.map(([title,...specs])=>({title,fields:specs.map(([key,label])=>{
     const value=usable ? fieldValue(record.business,key) : null;
@@ -85,8 +94,7 @@ export function projectTasks(tasks, projectId) {
 export function projectSummary(project) {
   const facts=Object.fromEntries(projectFacts(project).flatMap(group=>group.fields.map(f=>[f.key,f])));
   const value=key=>facts[key].known ? facts[key].text : '未知';
-  const current=project?.business?.state==='current' && project?.freshness?.state==='fresh'
-    && !removed(project) && project?.declared?.connection_read_allowed===true && !latestFailure(project);
+  const current=currentSourceAvailable(project);
   const quality=latestFailure(project) ? 'error' : current ? project?.business?.quality?.integration_quality : 'partial';
   return {
     fields:[
@@ -104,7 +112,7 @@ export function projectSummary(project) {
 
 // Never publish a partial or mixed-version directory to the caller.
 export async function loadProjectDirectory(request) {
-  const projects=[],ids=new Set();let head=null,total=null,initialized=false;
+  const projects=[],ids=new Set();let head=null,total=null,initialized=false,management,managementInitialized=false;
   const invalid=()=>{const error=new Error('PROJECT_DIRECTORY_INCONSISTENT');error.code=error.message;throw error;};
   const validHead=h=>h===null || (Number.isSafeInteger(h?.sequence) && h.sequence>=0 && /^[a-f0-9]{64}$/.test(h?.hash));
   const sameHead=(a,b)=>validHead(a) && validHead(b)
@@ -119,6 +127,19 @@ export async function loadProjectDirectory(request) {
     for(const project of data.projects){
       if(typeof project?.project_id!=='string' || !project.project_id || ids.has(project.project_id)
         || !sameHead(head,project?.provenance?.ledger_head))invalid();
+      const value=project.management;
+      let snapshot;
+      if(value===undefined)snapshot=null; // Consistently absent legacy fixtures only.
+      else {
+        const hash=v=>typeof v==='string' && /^[a-f0-9]{64}$/.test(v);
+        if(!value || typeof value!=='object' || Array.isArray(value) || typeof value.available!=='boolean'
+          || (value.available ? !Number.isSafeInteger(value.revision) || value.revision<0
+              || !hash(value.config_hash) || !hash(value.source_sha256)
+            : value.revision!==null || value.config_hash!==null || value.source_sha256!==null))invalid();
+        snapshot=[value.available,value.revision,value.config_hash,value.source_sha256];
+      }
+      if(!managementInitialized){management=snapshot;managementInitialized=true;}
+      if(JSON.stringify(management)!==JSON.stringify(snapshot))invalid();
       ids.add(project.project_id);projects.push(project);
     }
     if(projects.length===total)return {projects,total,head};

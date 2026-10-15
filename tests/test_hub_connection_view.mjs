@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {attention, freshness, refreshable, projectFacts, projectTasks, projectSummary, loadProjectDirectory, validateSyncStatus, loadSyncStatus, coreGapSummary, scheduleSummary, requestSummary} from '../src/hub/web/connection_view.mjs';
+import {currentSourceAvailable, attention, freshness, refreshable, projectFacts, projectTasks, projectSummary, loadProjectDirectory, validateSyncStatus, loadSyncStatus, coreGapSummary, scheduleSummary, requestSummary} from '../src/hub/web/connection_view.mjs';
 
 function project(overrides = {}) {
   return {
@@ -455,4 +455,84 @@ test('schedule and recovery text retains failure and unverified real-trigger bou
   const request=requestSummary({request_id:'same-id',started_at:'2026-10-14T00:00:00Z',finished_at:null,
     completed:1,failed:1,remaining_project_ids:['b'],authority_drift:true});
   for(const value of ['same-id','尚未结束','失败 1','剩余 1','原请求不能直接续接'])assert.ok(request.includes(value));
+});
+
+test('invalid success-with-errors DTO and errors without a latest observation remain conservative unknown',()=>{
+  for(const latestPresent of [true,false]){
+    const p=authoritative();
+    if(!latestPresent)p.operational.latest_attempt=null;
+    p.errors=[{code:'INVALID_RECORD',message:'Successful source results cannot carry errors'}];
+    const before=JSON.stringify(p);
+    assert.equal(currentSourceAvailable(p),false);
+    assert.equal(Object.values(facts(p)).every(f=>!f.known),true);
+    assert.equal(summaryFields(p)['项目阶段'],'未知');
+    assert.equal(projectSummary(p).quality,'当前来源读取失败');
+    assert.equal(freshness(p),'最新读取失败');
+    assert.equal(attention(p),true);
+    assert.equal(JSON.stringify(p),before);
+  }
+});
+
+test('one current gate rejects drift, stale, explicit failure and denied or removed authority',()=>{
+  for(const change of [p=>p.freshness.authority_drift=true,p=>p.freshness.state='stale',
+    p=>p.operational.latest_attempt={success:false},p=>p.declared.connection_read_allowed=false,
+    p=>p.freshness.local_presence='removed_local',p=>p.business.source_record.success=false]){
+    const p=authoritative();change(p);
+    assert.equal(currentSourceAvailable(p),false);
+    assert.equal(Object.values(facts(p)).every(f=>!f.known),true);
+    assert.equal(summaryFields(p)['项目阶段'],'未知');
+  }
+});
+
+function managedPage(total,offset,available=true){
+  const data=directoryPage(total,offset);
+  for(const project of data.projects)project.management={available,revision:available?3:null,
+    config_hash:available?'a'.repeat(64):null,source_sha256:available?'b'.repeat(64):null};
+  return data;
+}
+
+test('directory with one management snapshot exhausts pages without confusing per-project overlays',async()=>{
+  for(const available of [false,true]){
+    let calls=0;
+    const result=await loadProjectDirectory(async()=>{
+      const data=managedPage(243,calls++*100,available);
+      for(const project of data.projects)project.management.overlay={priority:project.project_id};
+      return data;
+    });
+    assert.equal(result.projects.length,243);assert.equal(calls,3);
+  }
+});
+
+test('management-only writes between pages or within a page refuse mixed complete publication',async()=>{
+  for(const change of [p=>p.management.revision++,p=>p.management.config_hash='c'.repeat(64),
+    p=>p.management.source_sha256='d'.repeat(64),p=>p.management={available:false,revision:null,config_hash:null,source_sha256:null},
+    p=>delete p.management]){
+    let calls=0;
+    await assert.rejects(loadProjectDirectory(async()=>{
+      const data=managedPage(201,calls++*100);if(calls===2)change(data.projects[0]);return data;
+    }),{code:'PROJECT_DIRECTORY_INCONSISTENT'});
+    assert.equal(calls,2);
+    await assert.rejects(loadProjectDirectory(async()=>{
+      const data=managedPage(2,0);change(data.projects[1]);return data;
+    }),{code:'PROJECT_DIRECTORY_INCONSISTENT'});
+  }
+});
+
+test('management availability changes, mixed legacy omissions and malformed snapshots never publish',async()=>{
+  for(const change of [p=>delete p.management,p=>p.management=null,
+    p=>p.management={available:true,revision:0,config_hash:'a'.repeat(64),source_sha256:'b'.repeat(64)},
+    p=>p.management.available='false',p=>p.management.revision=0]){
+    await assert.rejects(loadProjectDirectory(async()=>{
+      const data=managedPage(2,0,false);change(data.projects[1]);return data;
+    }),{code:'PROJECT_DIRECTORY_INCONSISTENT'});
+  }
+  for(const change of [p=>delete p.management.config_hash,p=>p.management.revision=-1,
+    p=>p.management.source_sha256='invalid',p=>p.management.config_hash=null]){
+    await assert.rejects(loadProjectDirectory(async()=>{
+      const data=managedPage(1,0);change(data.projects[0]);return data;
+    }),{code:'PROJECT_DIRECTORY_INCONSISTENT'});
+  }
+  await assert.rejects(loadProjectDirectory(async()=>{
+    const data=managedPage(2,0);delete data.projects[0].management;return data;
+  }),{code:'PROJECT_DIRECTORY_INCONSISTENT'});
 });

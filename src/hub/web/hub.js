@@ -3,7 +3,8 @@ import {renderDesigns} from './designs.js';
 import {renderBusinessPlan} from './business_tasks.mjs';
 import {renderManagement} from './management.mjs';
 import {renderTimeline} from './timeline.mjs';
-import {attention, freshness, refreshable, projectFacts, projectTasks, projectSummary, loadProjectDirectory, loadSyncStatus, coreGapSummary, scheduleSummary, requestSummary} from './connection_view.mjs';
+import {projectDirectory, renderDirectoryTree} from './directory.mjs';
+import {attention, freshness, refreshable, currentSourceAvailable, projectFacts, projectTasks, projectSummary, loadProjectDirectory, loadSyncStatus, coreGapSummary, scheduleSummary, requestSummary} from './connection_view.mjs';
 
 const main = document.querySelector('#main');
 const connection = document.querySelector('#connection');
@@ -51,6 +52,7 @@ async function updateConnection() {
       el('summary', {}, '连接信息'), el('p', {}, '后台实例：'+identity.backend_instance),
       el('p', {}, '来源账本：'+(identity.ledger_head?.sequence ?? '暂不可用')),
       el('p', {}, '设计记录版本：'+(identity.design_revision ?? '暂不可用')))].filter(Boolean));
+  return {identity,error};
 }
 const statuses = {active:'进行中',paused:'已暂停',blocked:'受阻',complete:'已完成',unknown:'来源未提供状态'};
 const types = {internal_control_plane:'管理',governance_program:'治理',code:'开发',creative:'创作',document:'文档'};
@@ -165,7 +167,7 @@ function summaryView(project,compact=false){
     el('p',{className:'caption'},'读取观察时间：'+dataTime(summary.observedAt)),
     el('p',{className:'caption'},'来源事实更新时间：'+dataTime(summary.factAt)));
 }
-function projectRow(p){return el('a',{href:`#projects/${encodeURIComponent(p.project_id)}`,className:'project-row'},
+function projectRow(p){return el('a',{href:`#projects/${encodeURIComponent(p.project_id)}`,className:'project-row','data-project-id':p.project_id},
   el('h2',{},p.name),el('p',{className:`caption ${attention(p)?'warning':''}`},sourceLine(p)),summaryView(p,true));}
 function factsView(project,history=false){
   return el('div',{className:'stack'},...projectFacts(project,{history}).map((group,index)=>el(index<2?'section':'details',{className:'stack'},
@@ -208,25 +210,39 @@ async function projectsPage(token){
   for(const project of lastProjects)projectNames.set(project.project_id,project.name);
   projectDirectoryLoaded=true;
   const directoryProjects=data.projects;
-  const timeView=el('div',{className:'project-timeline'});
-  const list=el('div',{className:'project-list'}), count=el('p',{className:'muted'}), search=el('input',{type:'search',placeholder:'搜索项目…',maxLength:240,id:'search-projects'}), status=el('select',{id:'status-filter','aria-label':'项目状态'},el('option',{value:''},'全部状态'),...Object.entries(statuses).map(([value,label])=>el('option',{value},label)));
+  const content=el('div',{className:'stack','aria-label':'项目目录视图'});
+  const count=el('p',{className:'muted',role:'status','aria-live':'polite'}), search=el('input',{type:'search',placeholder:'搜索项目…',maxLength:240,id:'search-projects'}), status=el('select',{id:'status-filter','aria-label':'项目状态'},el('option',{value:''},'全部状态'),...Object.entries(statuses).map(([value,label])=>el('option',{value},label)));
   const fresh=el('select',{id:'fresh-filter','aria-label':'来源筛选'},el('option',{value:''},'全部来源'),el('option',{value:'attention'},'需要关注'),el('option',{value:'fresh'},'已更新'));
-  function filter(){const q=search.value.trim().toLocaleLowerCase();const rows=directoryProjects.filter(p=>(!q||`${p.name} ${p.project_id}`.toLocaleLowerCase().includes(q))&&(!status.value||p.business.normalized_status===status.value)&&(!fresh.value||(fresh.value==='attention'?attention(p):p.freshness.state==='fresh')));count.textContent=`${rows.length} 个项目 · ${rows.filter(attention).length} 项来源需关注`;timeView.replaceChildren(renderTimeline(rows,{total:directoryProjects.length}));list.replaceChildren(...(rows.length?rows.map(projectRow):[el('div',{className:'empty'},el('h2',{},'没有匹配的项目'),el('p',{className:'muted'},'试试其他名称或清除筛选。'),button('清除筛选',()=>{search.value='';status.value='';fresh.value='';filter();}))]));}
-  search.addEventListener('input',filter);status.addEventListener('change',filter);fresh.addEventListener('change',filter);
-  main.replaceChildren(el('section',{className:'stack'},el('h1',{},'项目'),syncOverview(),count,el('div',{className:'filters'},el('label',{className:'field search',htmlFor:'search-projects'},el('span',{className:'caption'},'搜索'),search),el('label',{className:'field',htmlFor:'status-filter'},el('span',{className:'caption'},'项目状态'),status),refreshButton(lastProjects,true)),el('div',{className:'row'},el('label',{className:'field',htmlFor:'fresh-filter'},el('span',{className:'caption'},'来源筛选'),fresh)),timeView,list));filter();
+  const group=el('select',{id:'group-projects'},...Object.entries({none:'不分组',status:'按项目状态',freshness:'按来源状态',type:'按项目类型'}).map(([value,label])=>el('option',{value},label)));
+  const view=el('select',{id:'view-projects'},...Object.entries({all:'列表与甘特',list:'项目列表',tree:'业务任务树',timeline:'甘特与未排期'}).map(([value,label])=>el('option',{value},label)));
+  function clear(){search.value='';status.value='';fresh.value='';filter();search.focus();}
+  function filter(){
+    const projection=projectDirectory(directoryProjects,{query:search.value,status:status.value,freshness:fresh.value,groupBy:group.value});
+    count.textContent=`${projection.matched} / ${projection.total} 个项目 · ${projection.rows.filter(attention).length} 项来源需关注`;
+    if(!projection.total){content.replaceChildren(el('section',{className:'empty'},el('h2',{},'尚未登记项目'),el('p',{className:'muted'},'当前目录为空。可重新读取；登记入口和读取资格仍需按项目接入规则核对。'),button('重新读取目录',()=>route(false))));return;}
+    if(!projection.matched){content.replaceChildren(el('section',{className:'empty'},el('h2',{},'没有匹配的项目'),el('p',{className:'muted'},'试试其他名称或清除筛选。'),button('清除筛选',clear)));return;}
+    content.replaceChildren(...projection.groups.map(g=>{
+      const section=el('section',{className:'stack directory-group','data-group':g.key});
+      if(group.value!=='none')section.append(el('h2',{},`${g.label} · ${g.rows.length} 个项目`));
+      if(view.value==='all'||view.value==='timeline')section.append(el('div',{className:'project-timeline'},renderTimeline(g.rows,{total:projection.total})));
+      if(view.value==='all'||view.value==='list')section.append(el('div',{className:'project-list'},...g.rows.map(projectRow)));
+      if(view.value==='tree')section.append(renderDirectoryTree(g.rows));
+      return section;
+    }));
+  }
+  search.addEventListener('input',filter);
+  for(const control of [status,fresh,group,view])control.addEventListener('change',filter);
+  const field=(label,control)=>el('label',{className:'field',htmlFor:control.id},el('span',{className:'caption'},label),control);
+  main.replaceChildren(el('section',{className:'stack'},el('h1',{},'项目'),syncOverview(),count,el('div',{className:'filters'},el('label',{className:'field search',htmlFor:'search-projects'},el('span',{className:'caption'},'搜索'),search),field('项目状态',status),refreshButton(lastProjects,true)),el('div',{className:'directory-controls'},field('来源筛选',fresh),field('分组方式',group),field('显示方式',view)),content));filter();
 }
 async function projectDetail(id,token){
   const p=await api(`/api/projects/${encodeURIComponent(id)}`);if(token!==generation)return;
   projectNames.set(p.project_id,p.name);
-  const relatedIds=p.relations.relations.flatMap(relation=>relation.project_ids||[]);
-  if(relatedIds.some(projectId=>!projectNames.has(projectId))){
-    const directory=await loadProjectDirectory(api);if(token!==generation)return;
-    projectNames.clear();
-    for(const project of directory.projects)projectNames.set(project.project_id,project.name);
-    projectDirectoryLoaded=true;
-  }
   try{
     const scopeDirectory=await loadProjectDirectory(api);if(token!==generation)return;
+    projectNames.clear();
+    for(const project of scopeDirectory.projects)projectNames.set(project.project_id,project.name);
+    projectDirectoryLoaded=true;
     await syncFeedback(scopeDirectory,token);
   }catch(error){if(token===generation){syncStatus=null;syncStatusError=error;}}
   if(token!==generation)return;
@@ -234,16 +250,23 @@ async function projectDetail(id,token){
   lastProjects=[p];
   const fields=factsView(p),taskPanel=await projectTaskPanel(p,token);if(token!==generation)return;
   const managed = p.management;
-  const identity = await api('/api/identity');
+  let identity=null,identityError=null;
+  try{identity=await api('/api/identity');}catch(error){identityError=error;}
   if(token!==generation)return;
   const timeView=el('div',{className:'project-timeline'},renderTimeline([p],{total:1,context:'project'}));
-  const managementPanel=renderManagement(managed,{projectId:id,owner:identity.owner_authenticated===true,
+  const managementPanel=renderManagement(managed,{projectId:id,owner:identity?.owner_authenticated===true,
     save:command=>api('/api/management/project',command),
     reload:()=>api('/api/management?project_id='+encodeURIComponent(id)),
     onSaved:view=>{p.management=view;timeView.replaceChildren(renderTimeline([p],{total:1,context:'project'}));notify('Hub 管理配置已保存。','success');}});
+  let identityNotice=null;
+  if(identityError){
+    const notice=el('section',{className:'panel stack','aria-label':'身份核对'},el('p',{role:'status',className:'warning'},'身份暂时无法核对；项目来源仍可查看，管理编辑已停用。'));
+    const retry=button('重新核对身份',async()=>{retry.disabled=true;const next=await updateConnection();if(token!==generation||!notice.isConnected)return;if(next?.identity&&!next.error){managementPanel.setOwner?.(next.identity.owner_authenticated===true);notice.replaceChildren(el('p',{role:'status'},'身份已重新核对。'));}else retry.disabled=false;});
+    notice.append(retry);identityNotice=notice;
+  }
   const sources=el('section',{className:'panel stack'},el('h2',{},'状态来源'),el('p',{className:'caption'},`最近观察：${time(p.source.observed_at)}`),el('p',{className:attention(p)?'warning':'success'},freshness(p)));
   const operationalNotice=operationalSourceNotice(p);if(operationalNotice)sources.append(operationalNotice);
-  if(p.operational?.last_success && p.freshness.state!=='fresh' && p.declared.connection_read_allowed===true && p.freshness.local_presence!=='removed_local')sources.append(el('details',{},el('summary',{},'历史成功快照 · '+time(p.operational.last_success.observed_at)),el('p',{className:'warning'},'这是过去的项目记录，不能替代当前失败或未知。'),factsView(p,true),renderBusinessPlan(p,{history:true})));
+  if(p.operational?.last_success && !currentSourceAvailable(p) && p.declared.connection_read_allowed===true && p.freshness.local_presence!=='removed_local')sources.append(el('details',{},el('summary',{},'历史成功快照 · '+time(p.operational.last_success.observed_at)),el('p',{className:'warning'},'这是过去的项目记录，不能替代当前失败或未知。'),factsView(p,true),renderBusinessPlan(p,{history:true})));
   for(const path of p.source.entrypoints||[]){const copy=button('复制来源位置',async()=>{try{await navigator.clipboard.writeText(path);notify('来源位置已复制。','success');}catch{notify('无法访问剪贴板，可选中来源位置复制。','warning');}});sources.append(el('p',{},path),copy);}
   if(!p.source.entrypoints?.length)sources.append(el('p',{className:'muted'},p.declared.hub_connection_exception?'此项目已登记管理读取例外。':'来源未提供可打开的位置。'));
   const relations=el('section',{className:'panel stack'},el('h2',{},'项目关联'));
@@ -252,7 +275,7 @@ async function projectDetail(id,token){
   const designCount=p.design.references.filter(x=>x.kind==='candidate').length;
   const design=el('section',{className:'panel stack'},el('h2',{},'界面设计'),el('p',{className:'muted'},designCount?`${designCount} 个设计版本可查看`:'尚未登记设计候选'),el('a',{className:'button',href:`#designs/${encodeURIComponent(id)}`},designCount?'进入设计审核':'查看设计入口'));
   const exception=p.declared.hub_connection_exception;
-  main.replaceChildren(el('section',{className:'stack'},el('a',{href:'#projects'},'← 所有项目'),el('h1',{},p.name),el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},refreshButton([p]),(!refreshable(p)||!syncStatus?.eligible_project_ids.includes(p.project_id))?el('p',{className:'caption'},syncStatus?'此项目不在符合资格的刷新范围内。':'刷新范围暂不可用，请回到项目列表重新核对。'):null),exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,el('section',{className:'panel stack'},el('h2',{},'项目权威状态'),summaryView(p),el('p',{className:'caption'},'仅显示项目登记来源明确提供的事实。缺值和过期记录保留为未知。'),fields),renderBusinessPlan(p),timeView,managementPanel,taskPanel,el('a',{className:'button',href:'#host'},'查看 Linux 主机观测'),el('div',{className:'details-grid'},el('div',{className:'stack'},sources,relations),design),diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields,quality:p.business.quality})));
+  main.replaceChildren(el('section',{className:'stack'},el('a',{href:'#projects'},'← 所有项目'),el('h1',{},p.name),el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},refreshButton([p]),(!refreshable(p)||!syncStatus?.eligible_project_ids.includes(p.project_id))?el('p',{className:'caption'},syncStatus?'此项目不在符合资格的刷新范围内。':'刷新范围暂不可用，请回到项目列表重新核对。'):null),exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,el('section',{className:'panel stack'},el('h2',{},'项目权威状态'),summaryView(p),el('p',{className:'caption'},'仅显示项目登记来源明确提供的事实。缺值和过期记录保留为未知。'),fields),renderBusinessPlan(p),timeView,identityNotice,managementPanel,taskPanel,el('a',{className:'button',href:'#host'},'查看 Linux 主机观测'),el('div',{className:'details-grid'},el('div',{className:'stack'},sources,relations),design),diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields,quality:p.business.quality})));
 }
 async function route(focus=true){
   const token=++generation;const parts=location.hash.slice(1).split('/').map(p=>{try{return decodeURIComponent(p);}catch{return '';}});const kind=parts[0]||'projects';

@@ -33,6 +33,7 @@ WEB_ASSETS = {
     "/assets/hub.js": ("hub.js", "text/javascript; charset=utf-8"),
     "/assets/common.js": ("common.js", "text/javascript; charset=utf-8"),
     "/assets/connection_view.mjs": ("connection_view.mjs", "text/javascript; charset=utf-8"),
+    "/assets/directory.mjs": ("directory.mjs", "text/javascript; charset=utf-8"),
     "/assets/business_tasks.mjs": ("business_tasks.mjs", "text/javascript; charset=utf-8"),
     "/assets/management.mjs": ("management.mjs", "text/javascript; charset=utf-8"),
     "/assets/timeline.mjs": ("timeline.mjs", "text/javascript; charset=utf-8"),

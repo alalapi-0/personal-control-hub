@@ -205,3 +205,7 @@ details[open]>summary {margin-bottom:16px}
 .timeline-bar.timeline-forecast{fill:var(--accent);fill-opacity:.16;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:5 3}
 .timeline-marker.timeline-forecast{fill:var(--surface);stroke:var(--accent);stroke-width:2}
 .timeline-lane-text.timeline-forecast{border-inline-start:2px dashed var(--accent);padding-inline-start:12px}
+.directory-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.directory-group,.directory-tree{min-width:0}
+.directory-tree>details{padding:16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+@media(max-width:700px){.directory-controls{grid-template-columns:1fr}}
