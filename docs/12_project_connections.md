@@ -280,6 +280,22 @@ python3 scripts/hub_refresh.py rebuild
 
 `src/hub/web/connection_view.mjs` 提供现有页面使用的 `attention`、`freshness`、`refreshable` 三个纯函数：已移除项目明确显示“已从本地移除”且不能刷新；最新失败保持可见，即使存在历史成功或例外。回归命令为 `node --test tests/test_hub_connection_view.mjs`。
 
+## Owner 安全配置准备
+
+默认认证继续读取服务进程中的 `HUB_OWNER_TOKEN`。显式启动参数 `--owner-auth=systemd-credential` 改为读取 OS 通过 `CREDENTIALS_DIRECTORY` 投影的固定名称 `pch-owner-token`，缺失或损坏时不回退到环境凭据。目录和文件逐层 no-follow，文件必须私有、属于当前 UID、正规单链接且不超过 2048 bytes；读取前后核对版本和路径绑定，文本须为 32–512 个可打印字符，不自动裁剪。投影轮换、丢失或损坏会使旧 Owner 会话在后续请求中失效；不据此宣称所有进行中的业务操作均可即时撤销。认证配置不启用任务 executor 或模型。
+
+先对明确的候选代码和既有数据根生成配置草稿：
+
+```sh
+python3 scripts/hub_owner_credential.py prepare --code-root "$PCH_CODE_ROOT" --root "$PCH_DATA_ROOT" --python "$PCH_PYTHON" --host 127.0.0.1 --port 8766
+```
+
+`prepare` 只读并返回代码 SHA 和 systemd drop-in，不访问凭据、不调用加解密提供者、不写入或安装配置、不重启服务。它保留数据根、host 和 port，明确使用含新启动参数的代码路径，不能直接给旧生产脚本追加新参数。输出保持 `ready_to_install: false`：正式应用前仍需审核精确代码、服务写责、账本迁移和回退。drop-in 使用 `LoadCredentialEncrypted`，并取消继承 `HUB_OWNER_TOKEN`。
+
+实际录入只能在上述方案审核后，由所有者在本机交互 TTY 显式运行 `python3 scripts/hub_owner_credential.py register --allow-host-key-initialization`。该参数还要求输入明确的主机提供者确认；host 加密可能初始化 OS 全局密钥，`--user` 和 `--no-ask-password` 不保证免初始化。入口先用合成值完成内存加解密资格验证，再隐藏输入两次 Owner proof。明文只经 stdin 内存传递给固定 `systemd-creds`，不进入参数、环境或临时文件；只保存私有目录 0700 下的密文文件 0600，已有文件或链接均拒绝覆盖。非 TTY、缺确认、提供者失败、隐藏输入不可用或两次不一致均失败关闭，不尝试 sudo、GUI 认证、null key、TPM 或其他提供者回退。
+
+当前交付只证明代码、合成提供者和合成 HTTP/浏览器行为。真实 OS 加解密资格验证、可能需要的主机密钥初始化、真实 Owner 录入以及正式服务切换分别保留未验；Agent 未执行这些操作。配置命令不会安装 unit、重启 Hub 或开启任务执行。
+
 ## 仓库检查与本机可用性
 
 ```sh

@@ -21,6 +21,7 @@ from hub.service_contract import ServiceError
 from hub.material_service import MaterialService
 from hub.session_service import SessionService
 from hub.readonly_preview import ReadOnlyPreview, MANIFEST
+from hub.owner_auth import OwnerAuth, SystemdCredentialProvider
 
 
 def attach_ordinary_runtime(server, runtime):
@@ -109,6 +110,8 @@ def main(argv=None):
                         help="Existing Hub data root; defaults to this checkout")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8766)
+    parser.add_argument('--owner-auth', choices=['environment', 'systemd-credential'],
+                        default='environment', help='Explicit Owner proof provider; OS mode has no environment fallback')
     parser.add_argument("--readonly-preview", choices=["computer-study-plan"],
                         help="Start the explicitly granted read-only development fixture")
     parser.add_argument('--ordinary-readonly-grant', action='append', default=[],
@@ -118,7 +121,10 @@ def main(argv=None):
     observer = None
     preview = None
     try:
-        server, observer, preview = assemble_server(args.root, host=args.host, port=args.port)
+        services = ({'owner_auth': OwnerAuth(provider=SystemdCredentialProvider())}
+                    if args.owner_auth == 'systemd-credential' else None)
+        server, observer, preview = assemble_server(args.root, host=args.host, port=args.port,
+                                                    services=services)
         if args.ordinary_readonly_grant:
             from hub.ordinary_runtime import OrdinaryRuntime
             from hub.ordinary_tasks import check_registration, validate_grant

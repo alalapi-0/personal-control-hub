@@ -1,17 +1,19 @@
 """Owner proof/session boundary, with transient random secrets and zero real data."""
 import http.client
 import json
+import os
 from pathlib import Path
 import secrets
 import sys
 import threading
+import tempfile
 import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 import test_hub_local_service as fixtures
 from hub.local_service import HubHTTPServer
-from hub.owner_auth import OwnerAuth
+from hub.owner_auth import OwnerAuth, SystemdCredentialProvider
 from hub.service_contract import ServiceError
 
 
@@ -103,6 +105,29 @@ class OwnerHTTPTests(unittest.TestCase):
         self.bootstrap();self.login()
         self.assertEqual(self.call(path='/api/identity',headers={'Cookie':old_cookie})[0],401)
         self.assertEqual(self.projects.calls,[]);self.assertEqual(self.designs.calls,[])
+
+    def test_os_projection_rotation_and_loss_revoke_sessions_without_environment_fallback(self):
+        with tempfile.TemporaryDirectory() as temporary, patch.dict(os.environ, {
+                'CREDENTIALS_DIRECTORY': temporary, 'HUB_OWNER_TOKEN': self.proof}):
+            path = Path(temporary) / 'pch-owner-token'
+            path.write_text(self.proof); path.chmod(0o600)
+            self.server.owner_auth = OwnerAuth(provider=SystemdCredentialProvider())
+            self.login(); old_owner, old_proof = self.cookie, self.proof
+            self.proof = secrets.token_urlsafe(40)
+            replacement = path.with_name('replacement')
+            replacement.write_text(self.proof); replacement.chmod(0o600); replacement.replace(path)
+            self.assertEqual(self.call('POST','/api/refresh',{})[0],401)
+            self.bootstrap()
+            self.assertEqual(self.call('POST','/api/owner/login',{'token':old_proof})[0],401)
+            self.login()
+            self.assertEqual(self.call(path='/api/identity',headers={'Cookie':old_owner})[0],401)
+            path.write_bytes(b'\xff' * 40)
+            self.assertEqual(self.call('POST','/api/refresh',{})[0],401)
+            self.bootstrap()
+            self.assertEqual(self.call('POST','/api/owner/login',{'token':old_proof})[0],503)
+            path.unlink()
+            self.assertEqual(self.call('POST','/api/owner/login',{'token':old_proof})[0],503)
+            self.assertEqual(self.projects.calls,[]);self.assertEqual(self.designs.calls,[])
 
     def test_expired_session_and_wrong_csrf_deny_before_effect(self):
         self.login()

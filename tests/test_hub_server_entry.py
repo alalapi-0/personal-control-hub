@@ -2,6 +2,7 @@
 import contextlib
 import importlib.util
 import io
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -78,6 +79,24 @@ class ServerEntryTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(state['projects'].root, self.data)
         self.assertEqual((state['host'], state['port']), ('127.0.0.1', 8766))
+        self.assertFalse(list(self.data.iterdir()))
+
+    def test_explicit_os_owner_provider_does_not_enable_or_start_agent_runtime(self):
+        from hub.owner_auth import SystemdCredentialProvider
+        directory = Path(self.temp.name) / 'os-projection'; directory.mkdir(mode=0o700)
+        projection = directory / 'pch-owner-token'
+        projection.write_text('synthetic-projected-owner-proof-' + 'p' * 40); projection.chmod(0o600)
+        with patch.dict(os.environ, {'CREDENTIALS_DIRECTORY':str(directory),
+                                     'HUB_OWNER_TOKEN':'synthetic-env-owner-proof-' + 'e' * 40}):
+            code, state = self.run_entry(['--root',str(self.data),'--owner-auth=systemd-credential'])
+            self.assertEqual(code,0)
+            self.assertIsInstance(state['owner_auth'].provider,SystemdCredentialProvider)
+            self.assertTrue(state['owner_auth'].configured)
+            projection.unlink()
+            self.assertFalse(state['owner_auth'].configured)
+            self.assertFalse(state['tasks'].ordinary_enabled)
+            code, default = self.run_entry(['--root',str(self.data)])
+            self.assertEqual(code,0);self.assertNotIn('owner_auth',default)
         self.assertFalse(list(self.data.iterdir()))
 
     def test_missing_ordinary_grant_never_probes_provider_or_initializes_storage(self):
