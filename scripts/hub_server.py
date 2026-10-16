@@ -118,7 +118,7 @@ def main(argv=None):
     ordinary.add_argument('--ordinary-readonly-grant', action='append', default=[],
                         help='Explicit existing synthetic ordinary grant ID; starts its owned read-only executor')
     ordinary.add_argument('--ordinary-real-readonly-grant', action='append', default=[],
-                        help='Explicit existing real ordinary grant ID; starts its owned serial read-only executor')
+                        help='Explicit existing real ordinary grant ID; starts up to two owned read-only tasks')
     args = parser.parse_args(argv)
     if args.ordinary_real_readonly_grant and args.readonly_preview:
         parser.error('Real ordinary execution cannot start a preview runtime')
