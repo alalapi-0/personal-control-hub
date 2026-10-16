@@ -14,6 +14,128 @@ from hub.local_service import WEB_ASSETS
 
 
 class FunctionalFixtureTests(unittest.TestCase):
+    def test_stress_opt_in_collects_long_names_roles_proposals_and_honest_unknowns(self):
+        with FunctionalFixture() as f:
+            f.handshake()
+            initial = f.call()[2]['data']['projects']
+            self.assertEqual([project['name'] for project in initial], ['Synthetic Project A', 'Synthetic Project B'])
+            original_roots = dict(f.roots)
+            registry = f.projects._resolver().projects
+            qualification = {project: {key: value for key, value in row.items() if key not in {'name', 'description'}}
+                             for project, row in registry.items()}
+            metadata = f.stress_sample()
+            self.assertEqual(f.stress_sample(), metadata)
+            self.assertEqual(metadata['classification'], 'synthetic_fixture')
+            self.assertEqual(len(metadata['proposal_ids']), 3)
+            self.assertEqual(f.roots, original_roots)
+            registry_after = f.projects._resolver().projects
+            self.assertEqual(qualification, {project: {key: value for key, value in row.items() if key not in {'name', 'description'}}
+                                             for project, row in registry_after.items()})
+            public_directory = f.call()[2]['data']['projects']
+            self.assertEqual({p['name'] for p in public_directory}, {p['name'] for p in metadata['projects']})
+            for row in metadata['projects']:
+                project = f.call(path='/api/projects/' + row['project_id'])[2]['data']
+                self.assertEqual(project['name'], row['name'])
+                self.assertIn('LONG_DISPLAY_', project['name'])
+                self.assertEqual(project['freshness']['state'], 'fresh')
+                definition = project['definition']['fields']
+                self.assertEqual(definition['roles']['state'], 'known')
+                self.assertEqual(len(definition['roles']['value']), 3)
+                self.assertEqual(definition['roles']['source']['kind'], 'source_extension')
+                self.assertEqual(definition['outputs']['state'], 'unknown')
+                self.assertIsNone(definition['outputs']['value'])
+                self.assertEqual(len(project['business']['unknown_fields']), row['unknown_business_fields'])
+                self.assertEqual(project['business']['normalized_status'], 'unknown')
+                self.assertEqual({p['kind'] for p in project['relations']['relations']},
+                                 {'pipeline', 'shared_review_pattern', 'shared_visual_language'})
+                self.assertTrue(all(p['status'] == 'proposed' for p in project['relations']['relations']))
+                self.assertFalse(project['relations']['program_link_authority'])
+                self.assertFalse(project['relations']['design_selection_authority'])
+                self.assertNotEqual(project['management']['relation_view']['state'], 'owner_confirmed')
+            self.assertEqual(f.effects, [])
+            self.assertEqual(f.task_store.tasks(), [])
+
+    def test_stress_readonly_responses_follow_http_worker_and_exact_project_lineage(self):
+        with FunctionalFixture() as f:
+            metadata = f.stress_sample()
+            f.handshake();f.ordinary_sample()
+            before = {project: ((root / 'STATE.yaml').read_bytes(), (root / 'index.html').read_bytes())
+                      for project, root in f.roots.items()}
+            replies = []
+            for row in metadata['projects']:
+                project = row['project_id']
+                payload = {'kind': 'ordinary_project', 'request_id': project + '-stress-reply',
+                    'project_id': project, 'objective': 'Synthetic long read-only response review',
+                    'scope': 'Only registered synthetic inputs', 'effect': 'read_only',
+                    'input_version': f.ordinary_grants[project]['input_version'], 'mode': 'new', 'parent_task_id': None}
+                status, _, accepted = f.call('POST', '/api/tasks', payload)
+                self.assertEqual(status, 200, accepted)
+                self.assertTrue(f.run_worker(project, task_id=payload['request_id']))
+                status, _, public = f.call(path='/api/tasks/' + payload['request_id'])
+                self.assertEqual(status, 200)
+                task = public['data']['task']
+                self.assertEqual(task['status'], 'checks_complete', task['result'])
+                self.assertEqual(task['project'], project)
+                self.assertEqual(task['task_spec'], payload)
+                self.assertTrue(task['thread_id'].startswith('thread-' + project))
+                self.assertTrue(task['turn_id'].startswith('turn-' + project))
+                reply = task['result']['response']
+                self.assertEqual(reply, f.stress_replies[project])
+                self.assertEqual(len(reply.encode()), row['reply_bytes'])
+                self.assertEqual(hashlib.sha256(reply.encode()).hexdigest(), row['reply_sha256'])
+                self.assertIn(row['reply_marker'], reply)
+                self.assertIn(row['reply_unbroken_marker'] + project[-1].upper() * 2048, reply)
+                self.assertFalse(task['result']['response_truncated'])
+                self.assertGreaterEqual(row['reply_bytes'], 12 * 1024)
+                self.assertLessEqual(row['reply_bytes'], 24 * 1024)
+                self.assertEqual(f.task_store.result_version(f.task_store.task(task['id'])), task['result_version'])
+                self.assertNotIn('output_refs', task['result'])
+                replies.append(reply)
+            self.assertNotEqual(*replies)
+            self.assertEqual(before, {project: ((root / 'STATE.yaml').read_bytes(), (root / 'index.html').read_bytes())
+                                     for project, root in f.roots.items()})
+            self.assertEqual(f.effects, [])
+            self.assertTrue(all(adapter.closed for adapter in f.ordinary_adapters))
+
+    def test_stress_sample_rejects_after_grants_or_tasks_and_defaults_keep_short_replies(self):
+        with FunctionalFixture() as f:
+            f.ordinary_sample()
+            before = {project: (root / 'STATE.yaml').read_bytes() for project, root in f.roots.items()}
+            with self.assertRaises(ValueError):
+                f.stress_sample()
+            self.assertEqual(before, {project: (root / 'STATE.yaml').read_bytes() for project, root in f.roots.items()})
+            self.assertEqual(f.stress_replies, {})
+            f.handshake()
+            project = 'fixture-project-a'
+            payload = {'kind': 'ordinary_project', 'request_id': 'default-short-reply', 'project_id': project,
+                'objective': 'Synthetic ordinary response', 'scope': 'Only registered inputs', 'effect': 'read_only',
+                'input_version': f.ordinary_grants[project]['input_version'], 'mode': 'new', 'parent_task_id': None}
+            self.assertEqual(f.call('POST', '/api/tasks', payload)[0], 200)
+            self.assertTrue(f.run_worker(project, task_id=payload['request_id']))
+            response = f.call(path='/api/tasks/' + payload['request_id'])[2]['data']['task']['result']['response']
+            self.assertEqual(response, 'Synthetic read-only response for fixture-project-a.')
+        with FunctionalFixture() as f:
+            f.tasks.submit(f.payloads['fixture-project-a'])
+            with self.assertRaises(ValueError):
+                f.stress_sample()
+            self.assertEqual(f.stress_replies, {})
+
+    def test_cli_stress_control_is_explicit_and_reports_only_bounded_metadata(self):
+        result = subprocess.run([sys.executable, str(Path(__file__).with_name('pch_functional_fixture.py')), '--serve'],
+            input='{"action":"stress-sample"}\n{"action":"ordinary-sample"}\n{"action":"stop"}\n',
+            capture_output=True, text=True, timeout=10)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        rows = [json.loads(line) for line in result.stdout.splitlines()]
+        metadata = rows[1]
+        self.assertTrue(metadata['stress_ready'])
+        self.assertEqual({row['project_id'] for row in metadata['projects']}, {'fixture-project-a', 'fixture-project-b'})
+        self.assertTrue(all('reply_sha256' in row and 'reply_bytes' in row for row in metadata['projects']))
+        self.assertTrue(rows[2]['ordinary_ready'])
+        self.assertEqual(rows[3], {'stopped': True})
+        for private in ('root_path', 'cookie', 'csrf', 'reply_text'):
+            self.assertNotIn(private, result.stdout)
+        self.assertLess(len(result.stdout.encode()), 5000)
+
     def test_saved_previews_are_version_bound_historical_and_exactly_invalidated(self):
         with FunctionalFixture() as f:
             source_hashes = {p: hashlib.sha256((root / 'STATE.yaml').read_bytes()).hexdigest()

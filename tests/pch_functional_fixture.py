@@ -35,7 +35,7 @@ from hub.connection_sources import SourceResolver
 from hub.connection_refresh import RefreshLedger, refresh
 from hub.connection_sync import sync_request
 from hub.systemd_refresh import render_units
-from hub.connection_records import validate_result
+from hub.connection_records import FIELDS, validate_result
 from hub.metric_management import REVIEW_AXES, DIMENSIONS, validate_management_config
 from hub.design_cli import _artifact, _baseline, _candidate
 from hub.design_records import with_content_hash
@@ -107,7 +107,9 @@ class ControlledAdapter:
                        event('turn/completed', turn={'id': turn, 'status': 'completed'})]
         if image is None:
             self.events.insert(-1, event('item/completed', item={'id': 'message-' + self.ident,
-                'type': 'agentMessage', 'text': 'Synthetic read-only response for ' + self.ident + '.'}))
+                'type': 'agentMessage', 'text': self.fixture.stress_replies.get(self.ident,
+                    'Synthetic read-only response for ' + self.ident + '.') if self.ordinary else
+                    'Synthetic read-only response for ' + self.ident + '.'}))
         if self.scenario == 'out_of_order': self.events.reverse()
         return turn
     def poll(self, timeout):
@@ -162,6 +164,8 @@ class FunctionalFixture:
         self.ordinary_lock = threading.RLock()
         self.ordinary_adapters = []
         self.ordinary_runtime = None
+        self.stress_replies = {}
+        self.stress_metadata = None
         self.control_observations = []
         self.runtime = {key: {'available': True, 'classification': 'synthetic_fixture'}
                         for key in ('worker_runtime', 'provider')}
@@ -428,6 +432,84 @@ class FunctionalFixture:
         return {'management_ready': True, 'project_ids': [a, b], 'proposal_id': proposal['id'],
                 'proposal_source_sha256': hashlib.sha256(raw).hexdigest(), 'blocked_project': b,
                 'proposals': self.projects.get_management(a).get('proposals', [])}
+
+    def stress_sample(self):
+        """Opt-in synthetic data; collect sources before registering ordinary grants."""
+        if (getattr(self, 'ordinary_grants', None) is not None or self.ordinary_runtime is not None
+                or self.task_store.tasks() or self.workers or self.ordinary_adapters):
+            raise ValueError('Stress sample must precede all task admission and ordinary grants')
+        if self.stress_metadata is not None:
+            return copy.deepcopy(self.stress_metadata)
+        a, b = 'fixture-project-a', 'fixture-project-b'
+        known = lambda value: {'value': value, 'state': 'known', 'reason': None}
+        unknown = lambda reason: {'value': None, 'state': 'unknown', 'reason': reason}
+        projects = []
+        for project in (a, b):
+            suffix = project[-1].upper()
+            name = ('合成长名称只读项目' + suffix + ' · ') * 6 + 'LONG_DISPLAY_' + suffix * 128
+            for row in self.source.projects:
+                if row['id'] == project:
+                    row.update(name=name, description=None)
+            state_path = self.roots[project] / 'STATE.yaml'
+            state = yaml.safe_load(state_path.read_text())
+            for field in FIELDS:
+                parts = field.split('.')
+                target = state
+                for part in parts[:-1]:
+                    target = target[part]
+                target[parts[-1]] = None
+            state['current_work']['objective'] = 'Synthetic stress objective ' + suffix + ': ' + '只读范围与未知事实分别保留。' * 12
+            state['definition'] = {
+                'official_name': known(name),
+                'purpose': unknown('Synthetic source intentionally does not publish its long-term purpose.'),
+                'outputs': unknown('Synthetic source has no verified output inventory.'),
+                'roles': known(['Producer', 'Library', 'Synthetic read-only reviewer'] if project == a else
+                               ['Consumer', 'Working copy', 'Synthetic read-only reviewer']),
+                'aliases': known([{'name': '合成压力项目' + suffix, 'confirmed': True}]),
+                'primary_project_id': unknown('Synthetic primary root is not declared.') if project == a else known(a),
+                'working_copies': known([b] if project == a else []),
+                'project_type': unknown('Synthetic source does not declare a project category.')}
+            state_path.write_text(yaml.safe_dump(state, sort_keys=False, allow_unicode=True))
+            declaration_path = self.roots[project] / 'hub.connection.yaml'
+            declaration = yaml.safe_load(declaration_path.read_text())
+            declaration['unknown_fields'] = {field: 'Synthetic stress source intentionally does not publish this fact.' for field in FIELDS}
+            declaration['extensions'] = {'schema_version': '1.4',
+                'fact_mapping': {'project_definition': {'source_ref': 'state', 'selector': {'path': ['definition']}}},
+                'unknown_fields': {'project_definition': 'Synthetic definition is unavailable.'}}
+            declaration_path.write_text(yaml.safe_dump(declaration, sort_keys=False))
+            marker = 'SYNTHETIC_READONLY_STRESS_' + suffix
+            unbroken = 'LONG_UNBROKEN_REPLY_' + suffix + '_'
+            reply = marker + '\n' + ''.join(
+                f'{index:02d} 合成只读压力答复 {suffix} ' + 'synthetic-readable-scope-' * 12 + '\n'
+                for index in range(48)) + unbroken + suffix * 2048 + '\n' + marker + '_END'
+            reply_bytes = len(reply.encode('utf-8'))
+            if not 12 * 1024 <= reply_bytes <= 24 * 1024:
+                raise AssertionError('Synthetic stress response must remain bounded')
+            self.stress_replies[project] = reply
+            projects.append({'project_id': project, 'name': name, 'reply_marker': marker,
+                'reply_unbroken_marker': unbroken, 'reply_bytes': reply_bytes,
+                'reply_sha256': hashlib.sha256(reply.encode()).hexdigest(),
+                'unknown_business_fields': len(FIELDS) - 1})
+        self.source.save_registry()
+        proposals = [{'id': 'synthetic-stress-' + kind, 'project_ids': [a, b], 'kind': kind,
+            'status': 'proposed', 'shared_tasks': ['Synthetic bounded review; no shared execution authority.'],
+            'differences': ['Separate source identity and read-only reply ownership.'],
+            'not_shared': ['Execution grants, files and owner acceptance.'], 'inventory_index': index,
+            'evidence_refs': ['fixture://synthetic-stress-' + kind]}
+            for index, kind in enumerate(('pipeline', 'shared_review_pattern', 'shared_visual_language'))]
+        projection = {'projects': [{'project_id': project, 'status': 'proposed', 'reason': None,
+            'relations': proposals, 'program_link_authority': False, 'design_selection_authority': False}
+            for project in (a, b)]}
+        path = self.root / 'data/connections/fixture-stress-relations.json'
+        with path.open('x') as stream:
+            json.dump(projection, stream, sort_keys=True)
+        self.projects.relations_path = path
+        synced = self.sync()
+        if synced['exit_code'] != 0:
+            raise RuntimeError('Synthetic stress sources could not be collected')
+        self.stress_metadata = {'stress_ready': True, 'classification': self.classification,
+            'projects': projects, 'proposal_ids': [proposal['id'] for proposal in proposals]}
+        return copy.deepcopy(self.stress_metadata)
 
     def ordinary_sample(self):
         """Explicit O4 trusted grants; no ordinary authority in default fixtures."""
@@ -790,6 +872,7 @@ def main():
             elif action == 'preview-sample': result = fixture.preview_sample()
             elif action == 'preview-drift': result = fixture.drift_preview_materials()
             elif action == 'preview-invalidate': result = fixture.invalidate_preview(command.get('project_id'), command.get('kind'))
+            elif action == 'stress-sample': result = fixture.stress_sample()
             elif action == 'ordinary-sample': result = fixture.ordinary_sample()
             elif action == 'ordinary-runtime-start': result = fixture.start_ordinary_runtime(command.get('request_timeout', 10))
             elif action == 'ordinary-observations': result = fixture.ordinary_observations()
