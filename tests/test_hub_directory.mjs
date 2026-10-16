@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {projectDirectory,renderDirectoryTree} from '../src/hub/web/directory.mjs';
+import {projectDirectory,projectSearchMatch,renderDirectoryTree} from '../src/hub/web/directory.mjs';
 import {attention,freshness} from '../src/hub/web/connection_view.mjs';
 
 const statuses=['active','paused','blocked','complete','unknown'];
@@ -46,7 +46,7 @@ test('complete directory uses one ordered projection for every filter and groupi
 });
 
 test('empty, unknown, removed and management identity survive without guessed relationships',()=>{
-  assert.deepEqual(projectDirectory([]),{rows:[],groups:[],total:0,matched:0});
+  assert.deepEqual(projectDirectory([]),{rows:[],groups:[],total:0,matched:0,matches:new Map()});
   const unknown={project_id:'unknown',name:'未知项目',business:{normalized_status:'novel'},declared:{project_type:'novel'}};
   const removed=structuredClone(projects[0]);removed.project_id='removed';
   const input=[unknown,removed,{project_id:'minimal'}];
@@ -60,6 +60,58 @@ test('empty, unknown, removed and management identity survive without guessed re
   assert.equal(projectDirectory(input,{freshness:'attention'}).rows.includes(removed),false);
   assert.ok(projectDirectory(input,{groupBy:'freshness'}).groups.some(group=>group.label==='已从本地移除'));
   assert.deepEqual(projectDirectory(input,{groupBy:'unrecognized'}).rows,input);
+});
+
+const sourced=value=>({value,state:'known',source:'registry:definition',reason:'已登记'});
+test('search explains sourced identity, aliases, purpose and outputs without guessing mappings',()=>{
+  const p={project_id:'actor-four',name:'Actor 4',definition:{fields:{
+    official_name:sourced('Actor Four Studio'),aliases:sourced(['演员工作台']),
+    purpose:sourced('组织角色表演镜头'),outputs:sourced(['分镜视频','角色档案']),
+  }}};
+  const cases=[['ACTOR-FOUR','project_id','actor-four'],['four studio','official_name','Actor Four Studio'],
+    ['演员','aliases','演员工作台'],['表演','purpose','组织角色表演镜头'],['分镜','outputs','分镜视频']];
+  for(const [query,field,value] of cases){
+    const result=projectSearchMatch(p,query);
+    assert.equal(result.matched,true);
+    assert.ok(result.reasons.some(reason=>reason.field===field&&reason.value===value&&reason.source));
+    assert.ok(result.reasons.every(reason=>reason.label));
+    assert.deepEqual(projectDirectory([p],{query}).matches.get(p.project_id),result.reasons);
+  }
+  assert.deepEqual(projectSearchMatch(p,'三十天'),{matched:false,reasons:[]});
+  assert.equal(projectSearchMatch({...p,local_path:'/tmp/三十天'},'三十天').matched,false);
+  for(const state of ['empty','unknown','missing','unavailable','not_applicable']){
+    const unconfirmed={...p,definition:{fields:{aliases:{...sourced(['三十天']),state}}}};
+    assert.equal(projectSearchMatch(unconfirmed,'三十天').matched,false);
+  }
+  assert.equal(projectSearchMatch({...p,definition:{fields:{aliases:{value:['三十天'],state:'known'}}}},'三十天').matched,false);
+  const similar={project_id:'actor-four-copy',name:'Actor 4 working copy',definition:{fields:{aliases:sourced(['演员工作台'])}}};
+  const view=projectDirectory([p,similar],{query:'演员'});
+  assert.deepEqual(view.rows,[p,similar]);
+  assert.equal(view.matches.size,2);
+  assert.deepEqual(projectSearchMatch(p,'  '),{matched:true,reasons:[]});
+});
+
+test('103 identities remain complete in the shared view projection across searches, filters and groups',()=>{
+  const input=projects.slice(0,103).map((p,i)=>({...p,definition:{fields:{
+    aliases:sourced([i%2?'常用甲':'常用乙']),purpose:sourced(i%3?'镜头整理':'音频制作'),
+  }}}));
+  const before=structuredClone(input);
+  for(const [query,accept] of [['',()=>true],['常用甲',i=>i%2===1],['音频',i=>i%3===0],['不存在',()=>false]])
+    for(const status of ['',...statuses])for(const source of ['','attention','fresh'])
+      for(const groupBy of ['none','status','type','freshness']){
+        const view=projectDirectory(input,{query,status,freshness:source,groupBy});
+        const expected=input.filter((p,i)=>accept(i)&&(!status||p.business.normalized_status===status)
+          &&(!source||(source==='attention'?attention(p):p.freshness.state==='fresh')));
+        assert.equal(view.total,103);
+        assert.deepEqual(view.rows,expected);
+        assert.deepEqual(new Set(view.groups.flatMap(g=>g.rows)),new Set(expected));
+        assert.equal(view.groups.reduce((count,g)=>count+g.rows.length,0),expected.length);
+        assert.deepEqual([...view.matches.keys()],expected.map(p=>p.project_id));
+        const identities=view.rows.map(p=>p.project_id);
+        assert.equal(new Set(identities).size,expected.length);
+        assert.deepEqual(identities,expected.map(p=>p.project_id));
+      }
+  assert.deepEqual(input,before);
 });
 
 // Same small DOM surface used by test_hub_business_tasks; current source tree

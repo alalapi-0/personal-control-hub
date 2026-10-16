@@ -90,12 +90,28 @@ export function projectTasks(tasks, projectId) {
   return Array.isArray(tasks) ? tasks.filter(task=>task.project===projectId) : [];
 }
 
+export function projectDefinition(project) {
+  const labels={official_name:'正式名称',purpose:'项目用途',outputs:'主要产出',roles:'项目角色',
+    aliases:'已确认别名',primary_project_id:'所属主项目',working_copies:'工作副本'};
+  return Object.entries(labels).map(([key,label])=>{
+    const field=project?.definition?.fields?.[key];
+    const known=field?.state==='known' && field?.source && field.value!==null && field.value!==undefined;
+    let text=known ? (Array.isArray(field.value) ? field.value.join('、') : String(field.value)) : '来源未提供';
+    if(field?.state==='empty')text='来源明确未列出';
+    if(field?.state==='not_applicable')text='来源声明不适用';
+    if(field?.state==='unavailable')text='当前定义来源不可用';
+    return {key,label,text,known:Boolean(known),state:field?.state||'missing',
+      reason:field?.reason||(!known?'需要项目来源明确声明，当前不作推断。':null),source:field?.source||null};
+  });
+}
+
 // Keep the daily summary on the same field-proof gate as the full detail.
 export function projectSummary(project) {
   const facts=Object.fromEntries(projectFacts(project).flatMap(group=>group.fields.map(f=>[f.key,f])));
   const value=key=>facts[key].known ? facts[key].text : '未知';
   const current=currentSourceAvailable(project);
   const quality=latestFailure(project) ? 'error' : current ? project?.business?.quality?.integration_quality : 'partial';
+  const allFacts=Object.values(facts),knownFacts=allFacts.filter(field=>field.known).length;
   return {
     fields:[
       ['项目阶段',value('current_work.phase')], ['当前轮次',value('current_work.round')],
@@ -104,7 +120,9 @@ export function projectSummary(project) {
       ['计数依据',value('progress.counting_basis')],
       ['阻塞与待决定',value('blockers')], ['下一步',value('current_work.next_action')],
     ],
-    quality:({complete:'日常查看信息完整',partial:'日常查看信息不完整',error:'当前来源读取失败'})[quality] || '可用程度未知',
+    quality:quality==='error'?'当前来源读取失败；历史结果另行查看':current?
+      `来源读取成功 · ${quality==='complete'?'核心结构已通过':'核心字段仍有缺口'} · 当前业务字段 ${knownFacts}/${allFacts.length} 有依据`:
+      '当前业务事实待核对；历史快照不能替代当前值',
     observedAt:project?.source?.observed_at ?? null,
     factAt:current && project?.freshness?.fact_time_state==='known' ? project.freshness.fact_updated_at : null,
   };

@@ -23,6 +23,9 @@ SOURCES = (
     'templates/shadowrocket_client.conf.template',
     'templates/shadowrocket_macos_ai_workflow.conf.template',
 )
+LINUX_SOURCES = SOURCES[:4] + (
+    'scripts/lib/storage_runtime_macos.sh', 'scripts/lib/linux_storage_runtime.py',
+) + SOURCES[4:]
 POSITIVE = ('modern_template', 'legacy_schema', 'artifact_validation', 'transaction_backup')
 NEGATIVE = ('duplicate_manifest', 'invalid_dns_style', 'unauthorized_external_output',
             'legacy_mixed', 'symlink_output', 'symlink_ancestor', 'dangling_symlink',
@@ -30,9 +33,9 @@ NEGATIVE = ('duplicate_manifest', 'invalid_dns_style', 'unauthorized_external_ou
             'unexpected_artifact', 'unapproved_transaction_backup')
 
 
-def _aggregate(files):
+def _aggregate(files, sources=SOURCES):
     return hashlib.sha256(b''.join(name.encode() + b'\0' + files[name].encode() + b'\n'
-                                  for name in SOURCES)).hexdigest()
+                                  for name in sources)).hexdigest()
 
 
 def collect_fixture_report(root, pid, observed_at, spec):
@@ -87,19 +90,21 @@ def collect_fixture_report(root, pid, observed_at, spec):
     code = data.get('code', {})
     code = code if type(code) is dict else {}
     files = code.get('files')
-    valid_code = (type(files) is dict and set(files) == set(SOURCES)
+    sources = next((selected for selected in (SOURCES, LINUX_SOURCES)
+                    if type(files) is dict and set(files) == set(selected)), ())
+    valid_code = (bool(sources)
                   and all(type(v) is str and re.fullmatch('[0-9a-f]{64}', v) for v in files.values()))
     valid_code = bool(valid_code and code.get('stable') is True
-                      and _aggregate(files) == code.get('sha256') == code.get('sha256_after'))
+                      and _aggregate(files, sources) == code.get('sha256') == code.get('sha256_after'))
     current = None
     if valid_code:
         try:
-            current = _current_files(root, SOURCES)
+            current = _current_files(root, sources)
         except (OSError, RecordError, ValueError, TypeError):
             p.problem('selected-source-files#identity')
     bound = int(current == files) if valid_code and current is not None else None
     emit('bound_to_selected_code', bound, 'boolean',
-         'All 16 declared repository source hashes and aggregate match; external guard and current environment are excluded.', current)
+         'Requires exactly the registered 16- or 18-file fingerprint and matching hashes; external guards and current environment are excluded.', current)
     modern = data.get('modern', {})
     modern = modern if type(modern) is dict else {}
     legacy = data.get('legacy', {})

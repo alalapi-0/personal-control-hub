@@ -145,6 +145,8 @@ def main(argv: list[str] | None = None) -> int:
     identity = sync.add_mutually_exclusive_group(required=True)
     identity.add_argument("--request-id", help="Reuse to resume; choose a fresh ID to read again")
     identity.add_argument("--daily", action="store_true", help="One scope request per Asia/Tokyo day")
+    identity.add_argument("--scheduled", action="store_true", help="One minute check or due daily batch")
+    identity.add_argument("--incremental", action="store_true", help="One bounded incremental check")
     sync.add_argument("--project-id", action="append", dest="projects")
     history = commands.add_parser("history")
     history.add_argument("--request-id")
@@ -203,12 +205,14 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         resolver = SourceResolver(root)
         if args.command in {"discover", "sync"}:
-            from hub.connection_sync import daily_request_id, scope_plan, sync_request
+            from hub.connection_sync import daily_request_id, scope_plan, sync_request, scheduled_request
             plan = scope_plan(root, resolver)
             if args.command == "discover":
                 print(json.dumps(plan, ensure_ascii=False, indent=2))
                 return 0
             require(not args.daily or args.projects is None, "daily sync cannot select a subset")
+            require(not (args.scheduled or args.incremental) or args.projects is None,
+                    "scheduled sync cannot select a subset")
             request_id = daily_request_id(plan["scope_id"]) if args.daily else args.request_id
             # Validate selection before creating or opening a writable ledger.
             if args.projects is not None:
@@ -216,6 +220,10 @@ def main(argv: list[str] | None = None) -> int:
                         and set(args.projects) <= set(plan["eligible_project_ids"]),
                         "sync projects must be eligible scope members")
             ledger = RefreshLedger(root, path, result_validator=validate_result)
+            if args.scheduled or args.incremental:
+                payload,code=scheduled_request(root,resolver,ledger,plan=plan,incremental_only=args.incremental)
+                print(json.dumps(payload,ensure_ascii=False,indent=2))
+                return code
             payload, code = sync_request(root, resolver, ledger, request_id,
                                          project_ids=args.projects, plan=plan)
             print(json.dumps(payload, ensure_ascii=False, indent=2))

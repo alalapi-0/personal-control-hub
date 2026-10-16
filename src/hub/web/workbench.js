@@ -44,7 +44,7 @@ export async function renderWorkbench(target,{previewId=null,isCurrent=()=>true}
   const [catalog,annotations,identity]=await Promise.all([api('/api/previews'),api('/api/annotations'),api('/api/identity')]);
   if(!isCurrent())return;
   const root=el('section',{className:'stack'},el('h1',{},'可视化工作台'),
-    el('p',{className:'muted'},'查看注册方案图，记录整版或区域意见。修改要求和保留范围会保存到 Linux；执行入口尚未开放。'));
+    el('p',{className:'muted'},'查看注册方案图，记录整版或区域意见。修改要求和保留范围会保存到 Linux；发送任务时另行核对授权与通道。'));
   const reload=button('重新核对版本',async()=>{reload.disabled=true;try{await renderWorkbench(target,{previewId,isCurrent});if(isCurrent())target.querySelector('button')?.focus();}catch{notify('无法核对版本；当前意见已保留。','warning');}finally{reload.disabled=false;}});
   root.append(el('a',{href:'#tasks'},'查看任务与结果'),reload);target.replaceChildren(root);
   if(catalog.workflow_classification==='synthetic_fixture')root.append(el('p',{className:'warning'},'隔离 Hub 验证：共享意见仅保存技术测试记录，不是真实用户批注或设计决定。'));
@@ -65,6 +65,7 @@ export async function renderWorkbench(target,{previewId=null,isCurrent=()=>true}
   const draftKey=`hub:annotation-draft:${previewId}:${binding.candidate_hash}:${binding.artifact_sha256}:${binding.registry_hash}`;
   const pendingKey=`hub:annotation-pending:${previewId}`;
   let pending=validPending(readLocal(pendingKey)),revision=annotations.revision,owner=identity.owner_authenticated===true;
+  let executionAvailable=identity.capabilities?.annotation_execution?.available===true;
   let loaded=false,mode='browse',region=null,start=null,canRetry=false,elementHint=null,designReference=null,bridge=null,historyData=annotations,live=null;
   const draft=readLocal(draftKey);
   const image=el('img',{src:preview.image_url,alt:`${preview.project_name}的注册方案图`,draggable:false,referrerPolicy:'no-referrer'});
@@ -158,7 +159,8 @@ export async function renderWorkbench(target,{previewId=null,isCurrent=()=>true}
         a.task_spec?el('section',{className:'stack'},el('p',{},'任务草稿 · 不会自动执行'),el('p',{},'验收标准：'+a.task_spec.acceptance)):null,
         a.design_reference?el('p',{className:'caption'},'关联整版决定：'+({select:'选择',request_changes:'请求修改',defer:'暂缓'}[a.design_reference.action]||'待核对')):null,
         a.element_hint?el('p',{className:'caption'},'元素：'+a.element_hint.element_id+' · 源码映射未知'):null,
-        button('发送给 Codex',()=>sendAnnotation(row.request_id,message),{disabled:!owner||row.material_state==='stale'})));
+        button('发送给 Codex',()=>sendAnnotation(row.request_id,message),{disabled:!owner||!executionAvailable||row.material_state==='stale',
+          title:executionAvailable?'发送时核对本任务的精确授权':'任务执行通道尚未就绪；已保存意见仍保留'})));
     }
   }
   async function accepted(result){
@@ -220,7 +222,7 @@ export async function renderWorkbench(target,{previewId=null,isCurrent=()=>true}
   });
   for(const field of [change,preserve,acceptance])field.addEventListener('input',saveDraft);
   kind.addEventListener('change',()=>{if(kind.value!=='element'){elementHint=null;bridge?.leave();}if(kind.value==='whole'){mode='browse';start=null;paint();}live?.setMode(kind.value==='region'?'annotate':'browse');controls();saveDraft();});
-  function onIdentity(event){if(!root.isConnected){live?.close();window.removeEventListener('hub:identity',onIdentity);return;}owner=event.detail?.owner_authenticated===true;if(!owner)live?.close();controls();showHistory(historyData);}
+  function onIdentity(event){if(!root.isConnected){live?.close();window.removeEventListener('hub:identity',onIdentity);return;}owner=event.detail?.owner_authenticated===true;executionAvailable=event.detail?.capabilities?.annotation_execution?.available===true;if(!owner)live?.close();controls();showHistory(historyData);}
   window.addEventListener('hub:identity',onIdentity);
   showHistory(annotations);paint();controls();
   if(pending){message.textContent='发现原请求 · '+pending.request_id+'；请先核对结果。';save.textContent='核对原请求';}

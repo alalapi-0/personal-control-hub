@@ -1,0 +1,1826 @@
+version: 1.0.0-20261016
+task_id: PCH-REFACTOR-20261014
+increment_id: PCH-FUNCTIONAL-OPT-20261016
+document_kind: static_plan_and_baseline_only
+current_state: STATE.yaml#pch_refactor.user_test_optimization_20261016
+plan: docs/pch_functional_refactor_plan_20261016.md
+catalog: data/roadmap/pch_functional_refactor_20261016.yaml
+prompt: prompts/pch_functional_refactor_goal_mode_20261016.md
+source_report: docs/testing/pch-user-audit-20261015/TEST_REPORT.md
+report_sha256: e36af9dd6b8f8262bb386770b91caba4cbeaeaeba1beb3cef8657d3bad7cb924
+counting:
+  planned_phases: 8
+  planned_rounds: 32
+  functional_rounds: 29
+  git_rounds: 3
+  original_product_cases: 98
+  separate_git_cases: 10
+  historical_engineering: 107/111; 34 execution rounds; preserved
+  implementation_results: Only in canonical STATE subtree; absent means not_started
+dependency_semantics:
+  dependencies: Require relevant autonomous implementation and deterministic checks, not owner acceptance or unrelated
+    external branches. Real code/check defects still require repair.
+  result_inputs: Require an accurate current result record; blocked/unverified external status is a valid input
+    for packaging only, never a product PASS.
+  overall_acceptance: All required branches and explicit final owner acceptance still required; no denominator reduction.
+branch_rules:
+  O4_5_live: Live evidence depends on legitimate provider/identity availability; lack of it does not prevent deterministic
+    O4.6 or O5.
+  O4_6_live: Real parallel evidence additionally requires O4.5 live identities. Mock parallel evidence is distinct.
+  O6_2: May record blocked/unverified formal branches. This permits packaging findings, not marking product acceptance
+    passed.
+  O6_4: Can deliver an accurate with_gaps package; overall acceptance and native complete stay pending.
+  G: Preparation is independent of owner subjective approval; publication requires current execution authorization.
+issue_assignment:
+  F01:
+  - O1.1
+  - O1.3
+  F02:
+  - O1.2
+  F03:
+  - O1.1
+  - O1.3
+  F04:
+  - O1.4
+  F05:
+  - O0.3
+  - O1.4
+  - O4.1
+  F06:
+  - O3.1
+  - O3.2
+  F07:
+  - O1.1
+  F08:
+  - O1.2
+  F09:
+  - O3.3
+phases:
+- id: O0
+  title: 恢复基线和完整测试装配
+- id: O1
+  title: 项目理解和日常导航
+- id: O2
+  title: 自动采集与页面更新
+- id: O3
+  title: 关系排期与数据权威
+- id: O4
+  title: 页面任务和并行闭环
+- id: O5
+  title: 产物预览和交互完整性
+- id: O6
+  title: 同候选全面回归和最终审核包
+- id: G
+  title: 独立整理与授权交付
+rounds:
+- id: O0.1
+  phase: O0
+  title: 登记新优化增量并复核真实候选
+  dependencies: []
+  files:
+  - STATE.yaml#pch_refactor
+  - docs/testing/pch-user-audit-20261015/TEST_REPORT.md
+  - scripts/auto_advance_runner.py
+  actions:
+  - 复核报告哈希、98项原始预期、F01至F09和B01至B03；保留原107/111及34轮历史。
+  - 用本次代码文件内容、运行清单、HTTP静态资源和启动身份分别识别checkout、现运行服务、测试实例；不把旧分支HEAD当服务版本。
+  - 核对native任务和重叠文件写责，划出新优化owned差异；接续已有有效结果，登记唯一下一步。
+  acceptance:
+  - 旧测试报告原文和原结果分布不改；新优化使用独立轮次键，仍归现有pch_refactor。
+  - 首次产品写入前runner检查有真实退出码；已有脏树和其他任务保持原样。
+  checks:
+  - python3 scripts/auto_advance_runner.py --mode check --task-id PCH-REFACTOR-20261014
+  - 逐文件哈希/当前服务身份的只读核验，不执行采集或重启
+  boundary: 历史owner业务验收待审只保留原项；不成为本次实现前置。若旧原生Goal仍属旧范围，不覆盖、不擅自complete，先在普通执行模式推进可独立工作并说明原生Goal归属限制。
+  case_ids:
+  - A-01
+  - N-08
+  - N-09
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O0.2
+  phase: O0
+  title: 组装完整的隔离产品和可控任务通道
+  dependencies:
+  - O0.1
+  files:
+  - tests/test_hub_task_runtime.py
+  - tests/test_hub_task_drafts_http.py
+  - tests/test_hub_service_integration.py
+  - tests/新增浏览器fixture及旅程
+  actions:
+  - 复用已有preview、annotation、TaskStore.register_storage、grant、TaskService、TaskWorker和真实HubHTTPServer组合出同代码同静态资源实例。
+  - 所有root、SQLite、管理文件、端口、owner、Session/Host适配和worker均显式隔离；只使用合成项目与测试工作区，全部访问设探针。
+  - 提供确定性FakeAdapter的延迟、乱序、失联、丢回执、重复事件、失败及取消竞态；mock模式标识清楚。
+  - 提取共享装配以防测试漏服务；建立启动、健康、浏览器握手和精确收尾命令。
+  acceptance:
+  - 浏览器真实HTTP完成guest/owner握手及已有任务路径；Task/Session/刷新服务不再因fixture遗漏而503。
+  - 两个合成项目A/B具有独立ID、存储、来源SHA与任务绑定；一实例所有效果均可核对且不访问正式根。
+  - 实例停止后无owned browser/display/worker/HTTP遗留；原始证据保留本地。
+  checks:
+  - python -m unittest discover -s tests -p 'test_hub_task_runtime.py' -q
+  - python -m unittest discover -s tests -p 'test_hub_task_drafts_http.py' -q
+  - 新增真实浏览器fixture启动/HTTP/收尾smoke
+  boundary: 合成身份材料由fixture临时内存提供，不打印、不写入证据；不复制真实会话、密码或provider凭据。FakeAdapter通过只计隔离层。
+  case_ids: []
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O0.3
+  phase: O0
+  title: 统一服务装配和可观察能力状态
+  dependencies:
+  - O0.2
+  files:
+  - scripts/hub_server.py
+  - src/hub/local_service.py
+  - src/hub/task_service.py
+  - src/hub/web/hub.js
+  - tests/test_hub_server_entry.py
+  actions:
+  - 复用正式装配入口并允许显式依赖注入，保持代码根、数据根、业务workspace分离。
+  - 从实际服务/认证/授权/provider/worker/项目范围推导能力及不可用原因，替换分散硬编码execution_enabled=False。
+  - 页面区分未配置owner、guest只读、owner只读、任务执行可用、provider不可用和未知；设置说明只给用户所需操作。
+  acceptance:
+  - 合法身份不自动等于执行权限；缺服务与空任务不混淆；失效能力不会残留为可点击执行。
+  - 默认正式运行不启test_gate、不偷偷启动worker/模型；隔离配置不能泄入正式实例。
+  checks:
+  - python -m pytest tests/test_hub_server_entry.py tests/test_hub_owner_auth.py tests/test_hub_sessions.py -q
+  - 隔离浏览器核对各能力状态及对应HTTP拒绝
+  boundary: 无人工前置；仅保护本轮精确数据与写责。
+  case_ids: []
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O1.1
+  phase: O1
+  title: 补齐项目定义与可信的概览字段
+  dependencies:
+  - O0.3
+  files:
+  - src/hub/project_service.py
+  - src/hub/connection_records.py
+  - src/hub/connection_extensions.py
+  - src/hub/web/connection_view.mjs
+  actions:
+  - 增加用途、主要产出、多角色、正式名/已确认别名、主项目与工作副本的只读投影；优先现有声明/登记/有资格的来源。
+  - 长期定义与当前目标、阶段、执行者、阻塞/恢复条件、下一步分开；原始术语提供可读解释和原文入口。
+  - 保留字段来源、时间、未知/零/空/不适用差异；把读取成功、结构有效、内容缺口、当前证据覆盖分别呈现。
+  - 来源缺事实时列缺口；可由agent写有来源的摘要或明确管理提议，不能伪造业务用途、负责人或已确认别名。
+  acceptance:
+  - A/B分别可找到定义字段与缺失说明；active并存局部blocked、0/N、未知N、历史失败等组合表达准确。
+  - 不再把integration_quality.complete直译为日常查看信息完整；业务分母不被工程107/111替代。
+  checks:
+  - python -m pytest tests/test_hub_project_service.py tests/test_pch_source_extensions.py tests/test_hub_field_mapping.py
+    -q
+  - node --test tests/test_hub_connection_view.mjs
+  boundary: 口述三十天/Actor 4映射未确认，使用稳定ID完成通用功能；待确认称呼不自动绑定真实发送对象。
+  case_ids:
+  - B-01
+  - B-02
+  - B-04
+  - B-05
+  - B-06
+  - B-07
+  - B-09
+  - D-08
+  - V-02
+  - V-05
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O1.2
+  phase: O1
+  title: 让首页直接找项目并支持可信别名
+  dependencies:
+  - O1.1
+  files:
+  - src/hub/web/hub.js
+  - src/hub/web/directory.mjs
+  - tests/test_hub_directory.mjs
+  actions:
+  - 默认简洁项目列表，搜索、当前筛选、需关注项目和项目入口前置；同步摘要收起，树/甘特按需进入。
+  - 搜索正式名、ID、已确认别名和明确用途关键词；说明命中原因，无结果可清空筛选并查看正式名称。
+  - 同一过滤投影用于列表/树/时间线；区分全部登记、读取资格、匹配数、当前页及缺来源。
+  acceptance:
+  - 1280×800和1440×1050首屏可找到搜索与项目入口；默认不再展开43项全量甘特长页。
+  - 103项目×搜索/状态/来源/分组/视图组合无重复遗漏；相似名/多副本不被误合并。
+  checks:
+  - node --test tests/test_hub_directory.mjs tests/test_hub_connection_view.mjs
+  - 浏览器列表/树/甘特组合及103项分页遍历
+  boundary: 无人工前置；仅保护本轮精确数据与写责。
+  case_ids:
+  - A-02
+  - A-03
+  - A-04
+  - V-01
+  - V-06
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O1.3
+  phase: O1
+  title: 拆解长详情并把任务动作放到可达位置
+  dependencies:
+  - O1.1
+  files:
+  - src/hub/web/hub.js
+  - src/hub/web/index.html
+  - src/hub/web/tasks.js
+  actions:
+  - 提供可直达的概览、任务、排期与关系、来源入口，按现有hash路由增量拆分，不预设重做整个前端。
+  - 概览只呈现一次定义、关键状态、阻塞/恢复与下一步；详细字段/内部ID/同步诊断进入来源区域。
+  - 标题附近给清晰任务动作；已有任务、会话、产物和预览互相链接并显示归属项目。
+  - 兼容现有项目/任务深链接和刷新；信息区数量以功能可达性决定，复用现有组件和样式。
+  acceptance:
+  - 任意项目概览到任务输入/状态区最多一个明确导航操作，无需先滚动约6500px。
+  - 任务、排期关系、来源有独立可复制定位；主导航高亮和所属项目返回路径准确。
+  checks:
+  - node --test tests/test_hub_web_logic.mjs tests/test_hub_business_tasks.mjs
+  - 浏览器A/B各自完整导航、深链接、刷新回归
+  boundary: 无人工前置；仅保护本轮精确数据与写责。
+  case_ids:
+  - A-07
+  - V-03
+  - V-04
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O1.4
+  phase: O1
+  title: 保留返回上下文并给出可行动错误
+  dependencies:
+  - O1.2
+  - O1.3
+  files:
+  - src/hub/web/hub.js
+  - src/hub/web/common.js
+  - src/hub/web/directory.mjs
+  actions:
+  - 可公开查询写入URL，滚动/焦点写入history.state；还原筛选、分组、视图、展开对象和选中项目。
+  - 保留generation迟到请求保护；路由变动取消或忽略旧响应，返回不会误恢复另一对象。
+  - 统一401/403/404/409/500/503/离线/超时的用户含义与恢复动作；保留脱敏诊断入口。
+  - GET可重读；写入结果未知先按同request_id核对；错误/冲突保留草稿，禁止通用自动重发。
+  acceptance:
+  - 搜索筛选→项目→后退还原列表位置和焦点，前进/刷新保持对象；无来路深链接有安全返回。
+  - 每种错误逐次独立注入并确认命中；对象缺失、缺身份、权限不足、冲突与失联显示不同。
+  checks:
+  - node --test tests/test_hub_web_logic.mjs tests/test_hub_directory.mjs
+  - 浏览器逐类错误+后退前进+迟到A不覆盖B
+  boundary: 无人工前置；仅保护本轮精确数据与写责。
+  case_ids:
+  - A-05
+  - A-06
+  - N-04
+  - V-07
+  - E-03
+  - E-04
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O2.1
+  phase: O2
+  title: 打通来源版本到可见页面的有界更新
+  dependencies:
+  - O0.3
+  files:
+  - src/hub/connection_sources.py
+  - src/hub/connection_refresh.py
+  - src/hub/project_service.py
+  - src/hub/web/hub.js
+  actions:
+  - 规定来源版本、最后尝试、最后成功、业务事实时间、ledger head、页面版本的关联与显示。
+  - 合成来源真实写入新值→真实resolver/ledger/API→已打开页面更新；不能只更新时间戳。
+  - 复用同步器做有界增量采集；页面可见时观察head并刷新当前投影，隐藏时降频、恢复可见先对账，GET不触发采集。
+  - 保留用户草稿/滚动/当前任务；单项目刷新只作用指定资格范围。
+  acceptance:
+  - 同一候选取得旧/新来源SHA、ledger sequence、API值和DOM值对应证据；A更新不清空B或其他草稿。
+  - 断开模型能力后发现、采集、查询、管理、排期和基础展示仍能工作。
+  checks:
+  - python -m pytest tests/test_pch_project_api.py tests/test_hub_daily_sync.py tests/test_hub_sync_status.py -q
+  - 新增源变化→采集→可见页面端到端测试
+  boundary: 无人工前置；仅保护本轮精确数据与写责。
+  case_ids:
+  - B-08
+  - D-03
+  - D-04
+  - D-05
+  - N-02
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O2.2
+  phase: O2
+  title: 验证并发刷新、原子读取和故障恢复
+  dependencies:
+  - O2.1
+  files:
+  - src/hub/connection_refresh.py
+  - src/hub/connection_sources.py
+  - tests/test_hub_refresh_concurrency.py
+  - tests/test_hub_source_atomicity.py
+  actions:
+  - 复用request恢复、SQLite/CAS和单项目持久化；定义手动×自动、同ID重放、不同ID重叠的合并/排队/忙碌语义。
+  - 真实多进程制造同head竞争、锁忙和进程中断，恢复仍使用原请求身份。
+  - 覆盖半写YAML、文件/目录替换、权限拒绝、来源读取中更新；一致快照或明确失败，不发布混合字段。
+  - 单坏源降级保留历史与失败原因，其他项目可读；恢复只重试有变化或明确可恢复部分。
+  acceptance:
+  - 无重复效果、静默CAS覆盖或混合新旧业务状态；每项目结果数量和全局请求结果一致。
+  - 失败、部分成功和未提交分别呈现，历史成功不冒充当前。
+  checks:
+  - python -m pytest tests/test_hub_refresh_concurrency.py tests/test_hub_refresh_recovery.py tests/test_hub_source_atomicity.py
+    -q
+  - 真实HTTP双刷新及UI恢复观察
+  boundary: 无人工前置；仅保护本轮精确数据与写责。
+  case_ids:
+  - D-06
+  - D-07
+  - D-10
+  - D-12
+  - N-05
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O2.3
+  phase: O2
+  title: 对账读取资格、分页与全量登记范围
+  dependencies:
+  - O1.2
+  - O2.1
+  files:
+  - src/hub/connection_sync.py
+  - src/hub/project_service.py
+  - data/connections/sync_scope.yaml
+  - data/registry/external_projects.yaml
+  actions:
+  - 以当前登记和读取权限复核原39个确认本地根，保留43登记项等历史基线及变更原因。
+  - 优先复用未变来源证据，只读有资格的相关来源；removed_local、云、非当前路径和未授权候选保持排除。
+  - 在合成登记中为排除对象设访问探针，证明零解析/读取/启动；不能以没动作日志替代防护测试。
+  - 对缺来源/解析错误/部分字段逐项展示实际状态，不为覆盖率自动修子项目或编造完整事实。
+  acceptance:
+  - 当前集合逐ID无漏项重复，登记总数、同步资格、尝试、成功/部分/失败和内容完整度各有口径。
+  - 103项全分页结合过滤仍正确；排除对象点击也不能扩大权限。
+  checks:
+  - python -m pytest tests/test_hub_daily_sync.py tests/test_hub_registry_storage.py tests/test_pch_project_api.py
+    -q
+  - python scripts/check_registry.py --metadata-only
+  - 合成排除对象访问探针及列表总数核对
+  boundary: 不逐项目深挖业务内容；来源配置缺失仅阻塞对应项目，PCH代码和其他项目继续。
+  case_ids:
+  - D-01
+  - D-09
+  - D-11
+  - N-06
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O2.4
+  phase: O2
+  title: 复用现有调度并声明刷新时效
+  dependencies:
+  - O2.1
+  - O2.2
+  files:
+  - src/hub/systemd_refresh.py
+  - src/hub/refresh_schedule.py
+  - scripts/install_hub_refresh.py
+  - src/hub/web/hub.js
+  actions:
+  - 保留既有用户级systemd调度作为唯一采集调度入口，扩展前先核对unit写责和原配置；不新建应用内第二调度器。
+  - 执行默认目标为服务运行时每60秒一次有界增量检查，可见页面每5秒核对head；把正常稳定源的端到端目标设为90秒内，作为本计划新目标而非原报告既定SLA。
+  - 保留既有每日完整批次，增量仅检查既定资格来源；单批超过间隔不叠加，暴露延迟与过载，基于实测调大并记录理由。
+  - 隔离中通过真实日历触发用户级测试unit观测自动批次，区别模拟时钟/手动start；正式旧unit覆盖或服务切换在O6.3单独核责。
+  acceptance:
+  - 记录timer触发→进程/请求→ledger→页面链；基础采集无LLM，不把timer active或手动start当自动成功。
+  - 至少三次受控真实调度窗口测量延迟；稳定样本达目标，超标有根因和调整依据，不能静默放宽。
+  - 自然业务源更新有机会则只读观测；没有自然事件仍保留该分支未验，不无限空等。
+  checks:
+  - python -m pytest tests/test_hub_systemd_refresh.py tests/test_hub_refresh_schedule.py tests/test_hub_daily_sync.py
+    -q
+  - 真实短周期隔离timer至少三次触发与来源→DOM观测
+  boundary: 用户级systemd/注销持久能力若不可用，仅实际时间/注销分支受限；先完成确定性和当前会话运行链。不得提权、覆盖其他unit或改变登录配置。
+  case_ids:
+  - D-02
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O3.1
+  phase: O3
+  title: 统一关系阅读口径并解释归属和方向
+  dependencies:
+  - O1.1
+  - O1.3
+  files:
+  - src/hub/project_service.py
+  - src/hub/management_store.py
+  - src/hub/web/hub.js
+  - src/hub/web/management.mjs
+  actions:
+  - 投影已确认管理关系、来源事实关系和未确认提议，分别保留权威、来源、方向和版本。
+  - 保存A依赖B后概览与关系页立即显示同一管理版本，B能看到反向依赖；提议关系仍待确认。
+  - 支持多角色、多类型关系、主项目/工作副本归属，跳转使用稳定实例ID并保留返回上下文。
+  acceptance:
+  - 不再出现管理已保存而读者区统一称尚未确认；无关系、未知关系、待确认提议不同。
+  - 任务层级、项目归属和依赖边互不混淆，关系不授予读取/写入/分发权限。
+  checks:
+  - python -m pytest tests/test_hub_management_api.py tests/test_hub_management_store.py tests/test_hub_project_service.py
+    -q
+  - node --test tests/test_hub_management.mjs tests/test_hub_directory.mjs
+  - 浏览器真实管理保存→反向阅读→跳转返回
+  boundary: 无人工前置；仅保护本轮精确数据与写责。
+  case_ids:
+  - B-03
+  - R-01
+  - R-02
+  - R-03
+  - R-04
+  - R-05
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O3.2
+  phase: O3
+  title: 补齐关系编辑、建议接受和冲突边界
+  dependencies:
+  - O3.1
+  files:
+  - src/hub/management_store.py
+  - src/hub/design_service.py
+  - src/hub/web/management.mjs
+  actions:
+  - 隔离完整新增/修改/撤销关系；建议→明确接受使用现有决策入口，不伪造owner事实。
+  - 验证自依赖、循环、重复、失效目标与目标被排除；循环允许警告还是拒绝沿现有契约处理并解释。
+  - 覆盖来源/管理/建议三方冲突；保存输入保留，版本冲突可重读与显式重新应用。
+  acceptance:
+  - 每类无效关系有可读定位和恢复；失败不损坏旧关系。
+  - 提议接受不自动执行任务、不修改源业务，权限探针证明无越权读取。
+  checks:
+  - python -m pytest tests/test_hub_management_store.py tests/test_hub_design_service.py tests/test_hub_management_api.py
+    -q
+  - 真实HTTP两编辑者CAS及浏览器建议接受/撤销链
+  boundary: 无人工前置；仅保护本轮精确数据与写责。
+  case_ids:
+  - B-10
+  - R-06
+  - R-07
+  - R-08
+  - R-10
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O3.3
+  phase: O3
+  title: 完成日期、里程碑和甘特操作
+  dependencies:
+  - O3.1
+  files:
+  - src/hub/time_semantics.py
+  - src/hub/rolling_plan.py
+  - src/hub/web/management.mjs
+  - src/hub/web/timeline.mjs
+  actions:
+  - 日期字段返回具体错误并关联aria-invalid/aria-describedby，修改后可保存，失败不丢输入。
+  - 覆盖无日期、仅开始/仅结束、里程碑、跨月/年、Asia/Tokyo跨日、带偏移时间及夏令时输入的规范化边界；不改主机时区。
+  - 计划、滚动估计和来源实际明确区分；同版本概览/时间线一致。
+  - 甘特缩放×筛选×窄窗支持可读名称/日期/未排期和可达操作，不依赖hover。
+  acceptance:
+  - 结束早于开始明确说明原因；未知实际日期不被管理日期或估计填充。
+  - 实际保存后源进度和源事实不变，空排期项目始终可找到。
+  checks:
+  - python -m pytest tests/test_hub_time_semantics.py tests/test_hub_rolling_plan.py tests/test_hub_management_api.py
+    -q
+  - node --test tests/test_hub_management.mjs tests/test_hub_timeline.mjs
+  - 浏览器日期组合及甘特操作
+  boundary: 无人工前置；仅保护本轮精确数据与写责。
+  case_ids:
+  - S-01
+  - S-02
+  - S-03
+  - S-04
+  - S-05
+  - S-06
+  - E-05
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O3.4
+  phase: O3
+  title: 呈现依赖影响并验证管理版本恢复
+  dependencies:
+  - O3.2
+  - O3.3
+  files:
+  - src/hub/project_service.py
+  - src/hub/metric_management.py
+  - src/hub/web/management.mjs
+  actions:
+  - 依赖方blocked时显示可追溯的派生影响、路径与来源版本，不覆盖项目原始状态。
+  - 依赖变化尚未调日期时提示待复核，不自动移动别人计划、不捏造实际完成。
+  - 两个浏览器编辑者保存、来源再导入、刷新、隔离重启后核对管理字段持久化和CAS输入恢复。
+  acceptance:
+  - 管理层和源事实、建议层均保留；重启/采集不会覆盖已保存管理配置。
+  - 无关系循环无限递归，无自动停工/分发/跨项目安排效果。
+  checks:
+  - python -m pytest tests/test_metric_management.py tests/test_hub_management_store.py tests/test_hub_rolling_plan.py
+    -q
+  - 浏览器双编辑器409→重读→显式应用；隔离重启后重读
+  boundary: 无人工前置；仅保护本轮精确数据与写责。
+  case_ids:
+  - R-09
+  - S-07
+  - S-08
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O4.1
+  phase: O4
+  title: 使任务能力和合法认证路径可使用
+  dependencies:
+  - O0.3
+  - O1.3
+  files:
+  - src/hub/owner_auth.py
+  - src/hub/local_service.py
+  - src/hub/web/hub.js
+  - src/hub/task_service.py
+  actions:
+  - 复用owner/CSRF/项目范围校验，完善连接入口与缺配置说明；基本只读浏览不要求执行身份。
+  - 按服务端能力驱动任务创建、继续、控制及provider状态；身份失效或撤权立即阻断新增效果并保留草稿。
+  - 完成合成guest、错误身份、owner只读、owner可执行、权限不足、provider无能力的浏览器测试。
+  acceptance:
+  - 401/403/503能力不足各自有原因和下一步；前端不能通过按钮/JSON自行获得grant。
+  - 正式缺owner只阻塞正式写动作；完整隔离任务测试无需人类登录。
+  checks:
+  - python -m pytest tests/test_hub_owner_auth.py tests/test_hub_task_controls.py tests/test_hub_task_grants.py
+    -q
+  - 浏览器原生认证入口及服务端撤权回归
+  boundary: 不生成、读取或替换正式owner密钥；有既有合法身份可复用其受控入口，否则正式登录留最终审核前的最少事项。修改安全授权语义若超出复用现有边界，先使用项目规定的必要独立审查；不扩大到全项目三角色流程。
+  case_ids:
+  - A-08
+  - T-14
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O4.2
+  phase: O4
+  title: 实现不依赖截图批注的普通项目指令
+  dependencies:
+  - O4.1
+  files:
+  - src/hub/task_service.py
+  - src/hub/task_store.py
+  - src/hub/local_service.py
+  - src/hub/web/hub.js
+  - src/hub/web/tasks.js
+  actions:
+  - 建立普通文本TaskSpec，绑定稳定project_id、workspace/storage、request_id、目标/范围、只读或写入等级、输入版本及新建/继续对象。
+  - 图片/批注作为可选上下文，保留现有CSS/story历史可读性，不为普通任务伪造PNG/annotation。
+  - 由服务端核对存储、cwd、权限和精确native绑定；通用业务任务不复用仅限fixture/CSS/story的grant伪装。
+  - 页面显示接收项目、执行位置的可读名称、任务意图、效果和权限；继续仅选择已验证owned会话。
+  acceptance:
+  - 从项目上下文直接编写普通只读任务，无需截图；篡改project/thread/cwd/grant被服务端拒绝。
+  - 未确认Actor 4等口述名称绝不成为发送目标；陌生会话只读展示。
+  checks:
+  - 新增普通文本TaskSpec/API/浏览器测试
+  - python -m pytest tests/test_hub_task_runtime.py tests/test_hub_native_business.py tests/test_hub_task_drafts_http.py
+    -q
+  boundary: 无人工前置；仅保护本轮精确数据与写责。
+  case_ids:
+  - T-01
+  - T-02
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O4.3
+  phase: O4
+  title: 保存草稿并实现幂等发送和重连
+  dependencies:
+  - O4.2
+  files:
+  - src/hub/task_store.py
+  - src/hub/task_service.py
+  - src/hub/web/tasks.js
+  - src/hub/web/hub.js
+  actions:
+  - 草稿按项目/owner/目标会话隔离，离开返回/刷新/重启可恢复，未发送不创建模型任务。
+  - 双击、同request重放、回执丢失、浏览器超时和网络重连先查原request状态；禁止新ID盲目重发。
+  - 回复/事件严格绑定task/project/thread/turn，长回复和产物不串位；历史导入结果标来源。
+  acceptance:
+  - A草稿切B再返回不丢不串，改目标需明确重新绑定；同意图只有一次排队/执行。
+  - 重开任务可见原指令、状态、回应和历史，离线不被误写任务失败。
+  checks:
+  - python -m pytest tests/test_hub_task_drafts.py tests/test_hub_task_drafts_http.py tests/test_hub_task_recovery.py
+    -q
+  - node --test tests/test_hub_web_logic.mjs tests/test_hub_approval_ui.mjs
+  - 浏览器丢回执/重连/刷新/双击故障注入
+  boundary: 无人工前置；仅保护本轮精确数据与写责。
+  case_ids:
+  - T-03
+  - T-09
+  - T-10
+  - T-11
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O4.4
+  phase: O4
+  title: 装配worker并完成控制和结果生命周期
+  dependencies:
+  - O4.2
+  - O4.3
+  files:
+  - scripts/hub_worker.py
+  - src/hub/task_worker.py
+  - src/hub/codex_adapter.py
+  - src/hub/task_lifecycle.py
+  - src/hub/task_approvals.py
+  actions:
+  - 复用TaskWorker/Adapter装配普通任务队列，启动和退出均有精确owned身份；正式默认不因读页启动模型。
+  - 解释草稿、接收、排队、发送待确认、运行、等待输入/审批、检查完成、待验收、失败、取消和待对账。
+  - 完成追问、忙碌排队、另一新任务、精确取消与取消×迟到完成；结果审阅不自动代owner接受。
+  - 租约/fence/撤权/重复控制按现有契约处理，禁止把未知状态标空闲或成功。
+  acceptance:
+  - mock确定性任务经页面HTTP→真实队列/worker→回复页面完整通过，控制效果仅命中确切task/thread/turn。
+  - 取消失败/超时可核对，重连不重复执行，worker异常可恢复且不抢占未知writer。
+  checks:
+  - python -m pytest tests/test_hub_task_runtime.py tests/test_hub_busy_controls.py tests/test_hub_task_controls.py
+    tests/test_hub_task_lifecycle.py -q
+  - python -m pytest tests/test_hub_task_review.py tests/test_hub_task_approvals.py tests/test_hub_approval_transport.py
+    -q
+  - node --test tests/test_hub_approval_ui.mjs
+  boundary: 无人工前置；仅保护本轮精确数据与写责。
+  case_ids:
+  - T-05
+  - T-08
+  - T-12
+  - T-16
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O4.5
+  phase: O4
+  title: 跑通两条有界真实页面任务链
+  dependencies:
+  - O4.4
+  files:
+  - src/hub/codex_adapter.py
+  - src/hub/writer_handoff.py
+  - tests/真实provider smoke入口
+  - 本地忽略证据
+  actions:
+  - 已有合法provider能力时，为两个合成项目创建全新owned原生测试会话/工作区，经真实页面分别发送只读检查并取得实际回复。
+  - 核对浏览器请求、TaskService请求ID、native thread/turn、worker事件、页面结果；不直接SDK或后台调用替代页面发送。
+  - 各自追问、重开和历史回看；对一个owned可控忙碌测试执行精确取消并核对后续回应处理。
+  - 真实指令限读取本任务合成文件并返回摘要，不改业务项目、不生成媒体、不扩大外部效果。
+  acceptance:
+  - A、B各自有同候选页面→真实native执行→真实回复→页面的完整对应证据。
+  - 真实任务与mock模式分别统计；已有业务候选/旧截图/旧结果不能替代本次回复。
+  checks:
+  - 明确标为live的有界浏览器smoke；核对两条native身份和任务效果
+  - 现有adapter配置/协议/能力检查；失败记录真实错误码与零/未知提交效果
+  boundary: provider登录/额度/认证不可用只阻塞live分支；不得更换账号/模型绕过限制或复制会话。继续O4.6隔离部分、O5/O6自动化，保留真实闭环未验。原业务A/B口述映射仅阻塞对应正式对象发送，不阻塞两个合成项目的真实provider测试。
+  case_ids:
+  - T-04
+  - T-06
+  - T-07
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O4.6
+  phase: O4
+  title: 证明双项目并行和控制互不干扰
+  dependencies:
+  - O4.4
+  files:
+  - src/hub/task_store.py
+  - src/hub/task_worker.py
+  - src/hub/web/hub.js
+  - src/hub/web/tasks.js
+  - tests/浏览器并行旅程
+  actions:
+  - 两条owned任务同时变化：A接收/运行/取消，B持续回应；检查队列、store、native和DOM各层身份。
+  - 切项目、草稿编辑、迟到GET/回复、自动采集、管理保存和控制同时发生；分别注入乱序与CAS。
+  - mock完整覆盖确定性竞态，live部分在O4.5可用后补真实并行；不控制其他原本运行任务。
+  acceptance:
+  - 取消/重试/追问A不影响B，来源与管理变更不串到另一项目；迟到回应不会恢复旧页面。
+  - 真实并行分支必须同时有两条live owned任务；单GET隔离或mock结果不代替。
+  checks:
+  - python -m pytest tests/test_hub_busy_controls.py tests/test_hub_task_runtime.py tests/test_hub_refresh_concurrency.py
+    -q
+  - 双浏览器/双任务可控竞态；O4.5可用后live并行证据
+  boundary: 外部在推进的项目只作合法只读观察，零控制；无live能力时隔离分支先完成，native并行保留待验。
+  case_ids:
+  - T-13
+  - T-15
+  - N-03
+  - N-10
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O5.1
+  phase: O5
+  title: 核对产物预览的版本和返回路径
+  dependencies:
+  - O1.3
+  - O4.3
+  files:
+  - src/hub/material_service.py
+  - src/hub/preview_service.py
+  - src/hub/page_inventory.py
+  - src/hub/web/materials.js
+  - src/hub/web/captures.mjs
+  actions:
+  - 任务回复、产物、截图、页面清单使用稳定归属和版本链接；返回原项目/任务不丢上下文。
+  - 区分当前可操作页面、保存截图、导入历史和预览缺失，展示时间/来源和适用范围。
+  - 验证路径解析、失效文件、无预览、长名与多产物；测试不产生正式业务媒体。
+  acceptance:
+  - 用户能从本轮任务找到本轮结果；历史截图不被标为当前可操作页面。
+  - 仅访问当前允许数据根，无任意路径/软链越界和敏感绝对路径展示。
+  checks:
+  - python -m pytest tests/test_hub_materials.py tests/test_hub_preview_policy.py tests/test_hub_page_inventory.py
+    -q
+  - node --test tests/test_hub_page_inventory.mjs tests/test_hub_captures.mjs
+  boundary: 无人工前置；仅保护本轮精确数据与写责。
+  case_ids:
+  - V-12
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O5.2
+  phase: O5
+  title: 补全键盘操作、焦点和动态公告
+  dependencies:
+  - O1.4
+  - O3.3
+  - O4.4
+  files:
+  - src/hub/web/index.html
+  - src/hub/web/hub.js
+  - src/hub/web/tasks.js
+  - src/hub/web/management.mjs
+  - src/hub/web/hub.css
+  actions:
+  - 纯键盘完成找项目→关系→任务草稿→发送/回应→返回；复用现有skip link和focus-visible。
+  - 对话框/分区/错误后焦点进入与返回明确，无陷阱；语义名称、标签、aria状态和错误关联正确。
+  - 加载、接收、完成、错误、冲突等动态反馈可在可访问树中感知，避免轮询反复抢焦点。
+  acceptance:
+  - 自动可访问树+键盘轨迹覆盖完整已认证任务链；不只检查Tab outline。
+  - 无色彩唯一编码，禁用操作有可理解原因，输入失败仍可编辑。
+  checks:
+  - 浏览器键盘旅程、可访问树和自动规则检查
+  - 复用相关Node交互测试；最终候选完整UI rubric
+  boundary: 真实读屏体验没有可用设备/能力时保留最终人工审核项；自动ARIA检测不冒称真实读屏通过。
+  case_ids:
+  - E-01
+  - E-02
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O5.3
+  phase: O5
+  title: 验证窄屏、缩放、对比度和减少动画
+  dependencies:
+  - O1.4
+  - O3.3
+  - O4.4
+  files:
+  - src/hub/web/hub.css
+  - src/hub/web/hub.js
+  - src/hub/web/tasks.js
+  - src/hub/web/timeline.mjs
+  actions:
+  - 复用现有样式和44px动作目标，验证390×844、1280×800、1440×1050与实际200%缩放。
+  - 组合长名、长回复、多角色、多关系、大量未知、已认证表单和错误，关键动作无丢失/遮挡/文档级横向溢出。
+  - 计算实际前景/背景对比度；本计划新设普通文字4.5:1、大字及关键非文本控件3:1的检查目标，按实际合成背景计算。
+  - reduced-motion下触发真实任务状态变化与错误恢复，信息、焦点及操作保留。
+  acceptance:
+  - A/B都覆盖窄屏与200%操作；按钮可达且内容可读，不仅静态截图。
+  - 对比度有数值和元素定位；动态减少动画有对照证据，不声称全面WCAG认证。
+  checks:
+  - 浏览器视口/真实缩放/对比度计算/动态motion测试
+  - 完整检查console、network及页面渲染
+  boundary: 真实手机触控若不可用仅保留该设备接受未验；不影响浏览器响应式实现和自动化完成。
+  case_ids:
+  - V-08
+  - V-09
+  - V-10
+  - V-11
+  - E-07
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O5.4
+  phase: O5
+  title: 覆盖空态、错误、离线恢复和运行负载
+  dependencies:
+  - O0.2
+  - O2.2
+  - O4.4
+  files:
+  - src/hub/web/common.js
+  - src/hub/web/hub.js
+  - src/hub/web/tasks.js
+  - tests/故障与性能场景
+  actions:
+  - 覆盖空项目/无任务/无关系/无排期/服务未启用，和未认证/不可读/失联的差异。
+  - 逐类HTTP错误、网络超时、浏览器context离线/重连、保存500、任务回执未知；状态有期限与恢复动作。
+  - 采集首屏、103项目分页、长回复、双任务和刷新重叠时耗时、CPU/RSS、请求数与轮询频率；使用软件渲染不占GPU业务。
+  - console/pageerror与关键network逐旅程采证，既有基线和故障注入单列，发现回归才扩大测试。
+  acceptance:
+  - 无永久loading、无限重试、重复提交和离线数据伪当前；错误恢复后草稿与路由保持。
+  - 给出可复现负载样本和前后对比，持续增长/重叠请求/严重导航延迟有修复；单次4.4ms样本不当容量结论。
+  checks:
+  - 浏览器故障矩阵和最终DOM/请求确认
+  - 可控负载采样，报告样本条件及范围；不做无依据全系统基准
+  boundary: 无人工前置；仅保护本轮精确数据与写责。
+  case_ids:
+  - N-11
+  - E-06
+  - E-08
+  - E-09
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O6.1
+  phase: O6
+  title: 同候选重跑全部98项的确定性分支
+  dependencies:
+  - O1.4
+  - O2.2
+  - O2.3
+  - O3.4
+  - O4.4
+  - O5.1
+  - O5.2
+  - O5.3
+  - O5.4
+  files:
+  - docs/testing/pch-user-audit-20261015/TEST_CASES.md
+  - 本次本地证据
+  - STATE.yaml#pch_refactor.user_test_optimization_20261016
+  actions:
+  - 冻结ready候选的语义文件清单/哈希、配置和数据版本；不是暂停其他业务。
+  - 逐项执行原98用例全部适用隔离分支，包括A/B、过滤组合、边界、错误和双任务；保留原始预期不降级。
+  - 功能、视觉、桌面/移动、console、network、数据隔离分别记结果；每ID仅计一次总结果并保留分支记录。
+  - 失败则回到相关实现做实质修复，重新冻结新候选，只复用未受影响且身份有效的证据。
+  acceptance:
+  - 98个ID无缺失/重复；每项有步骤、输入/候选/效果身份、观察、证据与结论。
+  - 旧PASS也按新候选适用性复核；fixture不再以B03缺装配跳过整组T。
+  checks:
+  - 原98项全量浏览器/HTTP/服务联动回归
+  - 完整适用Python+Node检查，采用当前CI精确入口
+  boundary: 本轮不依赖O4.5/live正式认证通过即可执行隔离部分；总体PASS仍需要全部必需分支成立。
+  case_ids: []
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O6.2
+  phase: O6
+  title: 复核正式只读数据和可用真实链
+  dependencies:
+  - O6.1
+  files:
+  - 运行服务清单
+  - 本次本地R/H/C证据
+  - STATE.yaml#pch_refactor.user_test_optimization_20261016
+  actions:
+  - 正式环境重新登记候选，与隔离候选不同则分别报告，不合并为同版本通过。
+  - 对实际允许登记项目复核源字段→采集→API→页面，观察既有自动批次和自然更新窗口，保留partial/失败。
+  - 具备当前合法能力时完成正式owner操作及O4.5/O4.6的live链；不操作未知真实业务会话。
+  - 缺身份、口述映射、自然事件、provider或真实设备时仅列对应阻塞及恢复动作，继续结果整理。
+  acceptance:
+  - 正式R、合法H/C与I分栏；新自然源SHA有无被采集显示明确，不把受控fixture升级为自然业务验收。
+  - 两条live任务、真实provider和正式业务A/B是不同分支，不互相替代。
+  checks:
+  - 正式只读版本/字段对账；可用身份下有界任务链
+  - 原生thread/turn/请求与当前DOM对应核验
+  boundary: 没有自然事件或正式身份时不无限等待，不停止独立工程；相应原测试分支保留BLOCKED/UNVERIFIED并交最终审核。
+  case_ids:
+  - N-01
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+  result_inputs:
+  - 'O2.4: available scheduling evidence or exact external limitation; not a PASS prerequisite for formal read-only
+    checks'
+- id: O6.3
+  phase: O6
+  title: 核对运行候选、切换边界和恢复
+  dependencies:
+  - O6.1
+  files:
+  - scripts/hub_server.py
+  - 既有运行清单
+  - 本地候选和恢复记录
+  actions:
+  - 核对代码候选、HTTP资源、数据schema和实际进程；防止checkout改好但日常服务仍旧版。
+  - 优先启动独立端口的完整候选供审核，保留现有8766服务。
+  - 只有核对写责、inflight请求、账本兼容、原配置与恢复入口后才安排既有服务切换；唯一数据写责未知则不切。
+  - 隔离验证停止/重启、旧数据读取、任务恢复和可逆退回；正式迁移需真实生产边界授权，不能由计划暗授。
+  acceptance:
+  - 最终审核入口明确对应所测候选；本机文件变化不被宣称已进入正式运行。
+  - 恢复过程不丢业务数据和其他任务；新候选只读/隔离预览可在不切服务时交付。
+  checks:
+  - 服务身份/HTTP资源哈希对账，隔离重启与数据兼容检查
+  - 当前UI候选完整rubric结果随审核入口提供
+  boundary: 本执行Prompt默认授权独立测试实例，不默认授权生产服务/账本迁移；真实切换受原项目写责与迁移边界约束。仅此动作受限时交付独立候选并继续G。
+  case_ids: []
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: O6.4
+  phase: O6
+  title: 交付最终审核包并保留准确结论
+  dependencies:
+  - O6.1
+  files:
+  - 本计划验收汇总
+  - STATE.yaml#pch_refactor.user_test_optimization_20261016
+  actions:
+  - 给出当前可打开入口/启动命令、候选、主要变化、代表性旅程和全部98项结果，列F01至F09关闭证据。
+  - 分别报告代码/隔离、真实通道、正式运行、Git和所有者接受；保留原107/111与旧4项待接受。
+  - 把口述映射、正式登录、真实手机/读屏等确实剩余项合成最少审核清单；不要求用户重复实现、查源码或组织测试。
+  - 收尾所有owned agent/browser/display/worker/测试unit；不关闭日常服务/其他任务。
+  acceptance:
+  - 用户一次审核可看到成品、操作和限制；未验分支不隐藏或移出98分母。
+  - 工程可交付可为with_gaps，但产品整体PASS/Goal complete必须全部约定验收含所有者最终接受成立。
+  checks:
+  - 108覆盖对象、历史分母、证据链接与资源归属的最终核验
+  boundary: 本轮是最终人工审核入口，不是自动把用户未回复当接受；等待审核不能阻塞先完成的工程工作或G准备。
+  case_ids:
+  - N-07
+  - N-12
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+  result_inputs:
+  - 'O6.2: final formal/live branch results including blocked/unverified'
+  - 'O6.3: independent review candidate and exact runtime-switch status including blocked'
+- id: G.1
+  phase: G
+  title: 独立核对差异归属与私人资料
+  dependencies:
+  - O6.1
+  files:
+  - 本仓Git工作树
+  - 精确ignore规则
+  - 本次owned候选
+  actions:
+  - 按G01至G05逐组核对status、原生任务/文件归属、已交付字节、旁支独有历史和运行checkout依赖。
+  - 把旧checkout对已交付main的投影与真正新差异分开；不为status归零删除他人文件。
+  - DB/真实任务消息/凭据/完整私人路径清单/敏感截图和原始证据留本地；无归属项保留。
+  acceptance:
+  - 产生精确可提交单元与本地保留项，且不把未跟踪文件当废物。
+  - 原服务依赖和已有manual edits完好，归属不明只阻塞对应提交组。
+  checks:
+  - G-01至G-05逐项只读对账；按精确文件与已交付commit比较
+  boundary: 无人工前置；仅保护本轮精确数据与写责。
+  case_ids:
+  - E-10
+  - G-01
+  - G-02
+  - G-03
+  - G-04
+  - G-05
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+  result_inputs:
+  - 'O6.3: ownership/runtime evidence; a blocked production switch does not block safe local Git preparation'
+- id: G.2
+  phase: G
+  title: 组成可审阅提交并验证精确候选
+  dependencies:
+  - G.1
+  files:
+  - 本次owned安全代码和测试
+  - 必要精确ignore规则
+  actions:
+  - G06只对已确认生成物加精确ignore并测反例；已跟踪项单独处理，禁止宽泛忽略藏业务源码。
+  - 按独立可验证功能组构造提交候选，不借整理大范围refactor。
+  - G07/G08复核精确差异、必要测试、隐私与baseline；无授权时只准备候选，不stage或commit。
+  acceptance:
+  - 每个候选可解释、可验证、可回退；包含所有运行必需安全源码，私人数据不入公开候选。
+  - 不覆盖/搬运/借用其他仓交付，未归属差异仍留原处。
+  checks:
+  - git diff --check -- 精确owned路径
+  - 当前CI适用检查；精确暂存内容复核
+  boundary: 此轮准备工作可自治。实际stage/commit/push只在执行会话有明确Git交付授权时进行；本次规划无此效果。
+  case_ids:
+  - G-06
+  - G-07
+  - G-08
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+- id: G.3
+  phase: G
+  title: 按授权正常交付并核对远端
+  dependencies:
+  - G.2
+  files:
+  - 授权分支/main或PR
+  - 本地唯一状态的delivery字段
+  actions:
+  - G09实时核对origin、可见性、main和保护；只stage验证过的owned unit，正常提交和推送。
+  - 保护要求PR则创建并attach，遵守检查/审批；无权限或待外部审批只记录远端交付阻塞。
+  - G10核对远端包含精确commit与日常运行版本的关系；不声称main永远等于本地HEAD。
+  - 保存剩余本地项去向、恢复依赖和唯一下一步；不为了清树reset/stash/强推/改remote。
+  acceptance:
+  - 授权交付的准确远端commit或PR可核查；本地、分支、main、运行版本分别报告。
+  - G10覆盖结论与98产品测试分开；提交/CI成功不替代用户产品接受。
+  checks:
+  - 实时远端commit/祖先关系与保护检查；创建PR后attach_artifact
+  - G-09、G-10证据及最终资源/差异复核
+  boundary: 最终执行Prompt若被用户发送则包含精确owned安全单元的正常Git交付授权；本规划阶段不commit/push。外部保护/审批不可绕过，仅阻塞交付分支。
+  case_ids:
+  - G-09
+  - G-10
+  completion_rule: All listed acceptance claims need applicable evidence; blocked branches remain unpassed. Do not
+    infer human acceptance.
+cases:
+- id: A-01
+  scenario: 从正式首页核对三十天项目及Actor 4名称、用途、已有任务绑定
+  original_expectation: 形成明确A/B映射；歧义被指出，不因发音或目录名猜定
+  original_result: BLOCKED
+  implementation_round: O0.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: A-02
+  scenario: 初次打开首页找A，再找B，不提示搜索/导航位置
+  original_expectation: 找得到且能区分相似名称；记录用时、首击、滚动和错路
+  original_result: PASS
+  implementation_round: O1.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: A-03
+  scenario: 用正式名称、常用名称/关键词检索，再清空
+  original_expectation: 搜索结果可解释；无结果可恢复；不误以为项目消失；别名不支持需记问题
+  original_result: FAIL
+  implementation_round: O1.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: A-04
+  scenario: 切状态、来源、分组、列表/树/甘特后打开项目
+  original_expectation: 当前筛选与选中项目清楚；切视图不丢项目；全部统计与筛选数量不混淆
+  original_result: UNVERIFIED
+  implementation_round: O1.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: A-05
+  scenario: 从A到B再返回列表，用浏览器后退/前进
+  original_expectation: 返回位置/筛选/项目上下文可理解；不反复迷路
+  original_result: FAIL
+  implementation_round: O1.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: A-06
+  scenario: 打开项目/任务深链接、刷新，再访问不存在ID
+  original_expectation: 合法链接可恢复对应对象；不存在有可理解返回路径
+  original_result: FAIL
+  implementation_round: O1.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: A-07
+  scenario: 从项目找任务/会话入口，再找对应产物
+  original_expectation: 不依赖源码或外部提示；导航高亮和返回路径与用户任务一致
+  original_result: BLOCKED
+  implementation_round: O1.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: A-08
+  scenario: 无身份、合法身份、权限不足分别看同一路径
+  original_expectation: 状态与实际能力一致；不会“已连接”即暗示能执行；认证说明可理解
+  original_result: BLOCKED
+  implementation_round: O4.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: B-01
+  scenario: A/B各自用一句话回答项目用途和主要产出
+  original_expectation: 页面支持回答；无需把技术阶段、路径或任务编号翻译成用途
+  original_result: FAIL
+  implementation_round: O1.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: B-02
+  scenario: 辨认业务项目/Agent/基座/连接器/工作副本等角色
+  original_expectation: 角色可说明、可多重；技术栈标签不代替本质角色
+  original_result: FAIL
+  implementation_round: O1.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: B-03
+  scenario: 比较主项目与分支/工作副本
+  original_expectation: 归属可见，不把同一项目副本重复当独立业务；能进入正确实例
+  original_result: UNVERIFIED
+  implementation_round: O3.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: B-04
+  scenario: 找当前目标、阶段、任务和执行者
+  original_expectation: 含义可读，当前与长期定义分开；未知不被虚填
+  original_result: FAIL
+  implementation_round: O1.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: B-05
+  scenario: 判断项目active但局部blocked的状态
+  original_expectation: 两者可同时解释；不会单一绿色状态掩盖当前阻塞
+  original_result: UNVERIFIED
+  implementation_round: O1.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: B-06
+  scenario: 读业务进度及原始分母
+  original_expectation: 范围、单位和依据清楚；工程完成率不当成作品/业务接受
+  original_result: PASS
+  implementation_round: O1.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: B-07
+  scenario: 找阻塞原因、恢复条件和下一步
+  original_expectation: 用户能据此决定行动；技术代码有可读解释；缺项有说明
+  original_result: FAIL
+  implementation_round: O1.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: B-08
+  scenario: 区分采集时间、来源更新时间、预估和事实
+  original_expectation: 读过旧文件不会被理解为业务刚推进；派生值有身份
+  original_result: PASS
+  implementation_round: O2.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: B-09
+  scenario: 多个业务字段未知、部分字段已知
+  original_expectation: 已知信息仍可用；未知/不适用/无内容不同；不给整体“完整可用”误导
+  original_result: FAIL
+  implementation_round: O1.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: B-10
+  scenario: 检查来源/管理/Agent建议相互矛盾的样本
+  original_expectation: 权威层次和冲突可辨；建议不悄悄成为事实或已接受关系
+  original_result: UNVERIFIED
+  implementation_round: O3.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: D-01
+  scenario: 核对A/B合法来源到Hub采集再到页面的关键字段
+  original_expectation: 同一版本值和语义对应；不以读源成功替代字段正确
+  original_result: PASS
+  implementation_round: O2.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: D-02
+  scenario: 观察现有自动采集的一次实际运行
+  original_expectation: 无需Agent代读即可出现可核对的新数据/采集结果；仅手动刷新不算自动
+  original_result: UNVERIFIED
+  implementation_round: O2.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: D-03
+  scenario: 对A单项目刷新并查看B和全局反馈
+  original_expectation: 请求只作用允许范围；B不被意外启动；反馈区分已接收/完成/失败
+  original_result: BLOCKED
+  implementation_round: O2.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: D-04
+  scenario: 来源自然更新后再次查看/按既有机制刷新
+  original_expectation: 新值实际出现；只改变“读取时间”不算更新成功
+  original_result: UNVERIFIED
+  implementation_round: O2.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: D-05
+  scenario: 合法运行配置不具模型执行能力时浏览与采集；边界在副本补测
+  original_expectation: 基础功能可独立工作；无隐式模型/业务进程启动
+  original_result: UNVERIFIED
+  implementation_round: O2.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: D-06
+  scenario: 来源文件缺失/损坏/不可读
+  original_expectation: 仅受影响项目降级；错误可理解，其他项目仍可浏览
+  original_result: PASS
+  implementation_round: O2.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: D-07
+  scenario: 来源过期或读取失败但有历史成功
+  original_expectation: 当前与历史明确，过期值不被当当前；保留可用线索
+  original_result: PASS
+  implementation_round: O2.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: D-08
+  scenario: 字段null、0、空列表及未排期并存
+  original_expectation: 不把0或空列表误写未知；不把未知写0%或“无阻塞”
+  original_result: PASS
+  implementation_round: O1.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: D-09
+  scenario: 项目超出单页数量、多个筛选组合
+  original_expectation: 不漏读、不重复；总数、匹配数、资格分母有意义
+  original_result: UNVERIFIED
+  implementation_round: O2.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: D-10
+  scenario: 两个刷新请求重复/重叠
+  original_expectation: 合并、排队或忙碌说明可理解；不产生相互覆盖/重复效果
+  original_result: BLOCKED
+  implementation_round: O2.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: D-11
+  scenario: removed/云排除/未授权项目出现在登记中
+  original_expectation: 显示解释但无探测/读取/启动；点击不会扩大范围
+  original_result: UNVERIFIED
+  implementation_round: O2.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: D-12
+  scenario: 来源在读取期间更新或中间写入不完整
+  original_expectation: 快照一致或明确失败/重试；不发布混合状态，能在后续合法读取恢复
+  original_result: UNVERIFIED
+  implementation_round: O2.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: R-01
+  scenario: 从A回答与B有没有已确认关系
+  original_expectation: 关系/无关系/未知不同；不能为了测试造关联
+  original_result: PASS
+  implementation_round: O3.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: R-02
+  scenario: 阅读归属、依赖、供给/服务等方向
+  original_expectation: 能说清“谁属于谁、谁依赖谁、为什么”
+  original_result: FAIL
+  implementation_round: O3.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: R-03
+  scenario: 同一对象有多角色、多条关系
+  original_expectation: 展示不丢角色；业务角色与关系类型不混为一项
+  original_result: UNVERIFIED
+  implementation_round: O3.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: R-04
+  scenario: 点击关联项目再返回
+  original_expectation: 上下文不丢；不落到同名错误工作副本
+  original_result: FAIL
+  implementation_round: O3.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: R-05
+  scenario: 在列表、业务树、关系视图间比较
+  original_expectation: 能区分任务层级、项目归属与项目依赖；视图名不误导
+  original_result: UNVERIFIED
+  implementation_round: O3.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: R-06
+  scenario: 对比提议关系和明确接受关系
+  original_expectation: 未接受提议可识别；不隐式生效或触发任务
+  original_result: UNVERIFIED
+  implementation_round: O3.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: R-07
+  scenario: 副本新增、修改、撤销一条管理关系
+  original_expectation: 入口可找到，变化立即可理解；不改源业务事实
+  original_result: FAIL
+  implementation_round: O3.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: R-08
+  scenario: 自依赖、循环、重复关系及失效目标
+  original_expectation: 提示准确、保留输入并给恢复路径；不破坏既有关系
+  original_result: UNVERIFIED
+  implementation_round: O3.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: R-09
+  scenario: 查看依赖方阻塞对项目的影响
+  original_expectation: 影响可追溯，不把推导当原始事实；不自动停其他任务
+  original_result: UNVERIFIED
+  implementation_round: O3.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: R-10
+  scenario: 跨项目关系旁尝试寻找分发/访问含义
+  original_expectation: 用户知道“关联”是否代表可读、可写或任务传递；不能由画线扩大权限
+  original_result: UNVERIFIED
+  implementation_round: O3.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: S-01
+  scenario: 回答A/B本周/近期做什么和为什么
+  original_expectation: 可从任务、依赖、日期或明确未排期中作判断
+  original_result: PASS
+  implementation_round: O3.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: S-02
+  scenario: 区分计划、滚动预估、来源实际
+  original_expectation: 名称和视觉可辨；估计不被当承诺/已发生事件
+  original_result: PASS
+  implementation_round: O3.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: S-03
+  scenario: 打开没有日期/部分日期/里程碑的项目
+  original_expectation: 未排期可见；不填假日期，不把缺少日期误成项目不存在
+  original_result: UNVERIFIED
+  implementation_round: O3.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: S-04
+  scenario: 副本设定/调整日期，再看概览和时间线
+  original_expectation: 同一管理版本一致；反馈明确；不改子项目实际进度
+  original_result: PASS
+  implementation_round: O3.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: S-05
+  scenario: 结束早于开始、时区/跨日、无效日期
+  original_expectation: 可读校验、时区一致、输入不无故丢失
+  original_result: UNVERIFIED
+  implementation_round: O3.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: S-06
+  scenario: 甘特缩放/筛选/窄窗查看
+  original_expectation: 项目名、日期、未排期与关键动作仍可理解；不靠悬停才有全部信息
+  original_result: UNVERIFIED
+  implementation_round: O3.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: S-07
+  scenario: 依赖改变但计划尚未调整
+  original_expectation: 影响有依据；不未经操作改别人的安排或捏造实际完成时间
+  original_result: UNVERIFIED
+  implementation_round: O3.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: S-08
+  scenario: 两个编辑者基于不同版本保存排期
+  original_expectation: 冲突可恢复，不静默覆盖；测试只在隔离副本模拟
+  original_result: PASS
+  implementation_round: O3.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: T-01
+  scenario: A/B分别从项目上下文找“下指令”
+  original_expectation: 不必先有截图/图像批注才能表达普通项目任务；没有可用入口记缺口
+  original_result: BLOCKED
+  implementation_round: O4.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: T-02
+  scenario: 编写只读指令，核对项目/新建或继续/任务范围
+  original_expectation: 用户看得懂接收对象与效果；后台绑定吻合；无歧义默认目标
+  original_result: BLOCKED
+  implementation_round: O4.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: T-03
+  scenario: 存草稿、离开、回到同一任务
+  original_expectation: 内容可恢复且明确未发送；不偷偷创建模型任务
+  original_result: BLOCKED
+  implementation_round: O4.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: T-04
+  scenario: 经页面真实发送一次有界只读任务
+  original_expectation: 页面请求走真实通道，正确项目/会话真实接收；非后台替代调用
+  original_result: BLOCKED
+  implementation_round: O4.5
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: T-05
+  scenario: 观察发送到回应的各阶段
+  original_expectation: 草稿/接收/排队/执行/完成/失败不混；正在等待有解释
+  original_result: BLOCKED
+  implementation_round: O4.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: T-06
+  scenario: 打开真实回复及对应产物
+  original_expectation: 结果与指令、项目、会话对应；导入/历史结果不冒充本次生成
+  original_result: BLOCKED
+  implementation_round: O4.5
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: T-07
+  scenario: 对自己任务追问一句并回看历史
+  original_expectation: 继续正确上下文；回应不丢且时间顺序合理
+  original_result: BLOCKED
+  implementation_round: O4.5
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: T-08
+  scenario: 对自己的忙碌测试任务反馈/新建另一任务
+  original_expectation: 用户理解排队与继续含义；不打断别人的任务，不能向未知writer投递
+  original_result: BLOCKED
+  implementation_round: O4.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: T-09
+  scenario: 双击发送或同request重试
+  original_expectation: 不重复执行同一意图；冲突/重放反馈可理解
+  original_result: BLOCKED
+  implementation_round: O4.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: T-10
+  scenario: 刷新页面、返回列表再开任务
+  original_expectation: 仍能找到指令、进度、回复；不重发、不把掉线当任务失败
+  original_result: BLOCKED
+  implementation_round: O4.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: T-11
+  scenario: 请求送达后网络断开/回执丢失
+  original_expectation: 结果未知有核对路径，先对账再重试；不生成重复任务
+  original_result: BLOCKED
+  implementation_round: O4.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: T-12
+  scenario: 自己测试任务失败、超时、执行者不可用
+  original_expectation: 保留指令和错误摘要，可辨重试条件；失败不包装为完成
+  original_result: BLOCKED
+  implementation_round: O4.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: T-13
+  scenario: 取消自己测试任务，与迟到完成竞态
+  original_expectation: 只影响精确任务；取消已请求/已生效/完成明确；B不受影响
+  original_result: BLOCKED
+  implementation_round: O4.6
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: T-14
+  scenario: 执行门关闭、无合法身份、缺授权
+  original_expectation: 解释真实原因；按钮/状态一致；不改门控、盗用会话或直接SDK补过
+  original_result: BLOCKED
+  implementation_round: O4.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: T-15
+  scenario: A编辑指令期间切B并等待A迟到响应
+  original_expectation: 草稿/目标/回复不串位；发送前目标明确；B不收到A指令
+  original_result: BLOCKED
+  implementation_round: O4.6
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: T-16
+  scenario: 核对“执行结束、工程通过、业务合格、用户接受”
+  original_expectation: 四种状态有区别；无需先把故事/角色作品做满意才评Hub分发
+  original_result: BLOCKED
+  implementation_round: O4.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: N-01
+  scenario: 观察一个本来就在推进的任务，同时浏览A/B
+  original_expectation: 其他任务无需暂停；记录精确身份和自然进展，测试不发控制指令
+  original_result: PASS
+  implementation_round: O6.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: N-02
+  scenario: 自然来源更新与Hub读取交错
+  original_expectation: 来源→采集→显示有版本链；无混合快照；未遇更新不写PASS
+  original_result: UNVERIFIED
+  implementation_round: O2.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: N-03
+  scenario: 自己的A测试任务与B任务状态同时变化
+  original_expectation: 所选项目、状态和回复隔离；错误不会污染另一项
+  original_result: BLOCKED
+  implementation_round: O4.6
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: N-04
+  scenario: A/B快速切换且请求乱序
+  original_expectation: 旧页面响应不覆盖当前页面；loading/error属于正确项目
+  original_result: PASS
+  implementation_round: O1.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: N-05
+  scenario: 同时自然刷新与手动刷新；忙碌边界在副本
+  original_expectation: 无双写/错误回退，能理解合并、排队或忙碌
+  original_result: BLOCKED
+  implementation_round: O2.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: N-06
+  scenario: 观察来源业务文件与本次Hub效果归属
+  original_expectation: 采集不写业务源；自然业务写入不误算测试破坏；不要求全树不变
+  original_result: PASS
+  implementation_round: O2.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: N-07
+  scenario: 测试结束只清理自己创建的任务/临时记录
+  original_expectation: 不回滚别人的新进展，不取消未知任务，不删除原始材料
+  original_result: PASS
+  implementation_round: O6.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: N-08
+  scenario: 别的任务在同一仓库修改无关文件
+  original_expectation: 继续独立只读测试；重叠写入只阻塞对应组，不stash/reset/改分支
+  original_result: UNVERIFIED
+  implementation_round: O0.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: N-09
+  scenario: 测试期间正式代码被正常更新
+  original_expectation: 识别新候选并拆分证据；旧结果保留版本，不为冻结停别的任务
+  original_result: UNVERIFIED
+  implementation_round: O0.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: N-10
+  scenario: 测试自己的取消/重试，旁边业务任务继续
+  original_expectation: 控制精确命中自己的任务，其他任务没有收到控制效果
+  original_result: BLOCKED
+  implementation_round: O4.6
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: N-11
+  scenario: 正常浏览/采集时观察CPU/RSS/请求耗时
+  original_expectation: 无业务生成/GPU争用、无抢占物理桌面；异常有实测依据
+  original_result: UNVERIFIED
+  implementation_round: O5.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: N-12
+  scenario: 自然事件未发生、身份缺失或局部冲突
+  original_expectation: 对应项UNVERIFIED/BLOCKED；其他覆盖继续，模拟不替实测
+  original_result: PASS
+  implementation_round: O6.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: V-01
+  scenario: 不滚动看首页，说出页面用途、项目入口、需要关注的事
+  original_expectation: 首屏优先支持找项目和决策；同步/恢复说明不淹没核心内容
+  original_result: FAIL
+  implementation_round: O1.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: V-02
+  scenario: 打开项目首屏回答“是什么、现在怎样、能做什么”
+  original_expectation: 定义、关键状态、主动作有明确顺序，不靠通读工程字段
+  original_result: FAIL
+  implementation_round: O1.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: V-03
+  scenario: 通读完整项目页，标记重复、长段落和无关模块
+  original_expectation: 每块服务明确问题；能辨主次，重复状态不造成矛盾感
+  original_result: FAIL
+  implementation_round: O1.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: V-04
+  scenario: 从长页找关系、排期、任务和来源
+  original_expectation: 找路成本可记录；难找时提出基于任务的分层/拆页建议
+  original_result: FAIL
+  implementation_round: O1.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: V-05
+  scenario: 解释内部ID、英文阶段、unknown与技术状态码
+  original_expectation: 正常用户能理解；有必要的技术详情可深入查看；不替用户脑补
+  original_result: FAIL
+  implementation_round: O1.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: V-06
+  scenario: 比较列表/树/甘特中的同一个项目
+  original_expectation: 名称、状态、日期含义一致，视图差异为决策服务
+  original_result: UNVERIFIED
+  implementation_round: O1.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: V-07
+  scenario: 等待、空列表、错误、禁用、成功反馈逐一查看
+  original_expectation: 状态清楚、有恢复路径，重要反馈不只靠颜色或瞬时toast
+  original_result: FAIL
+  implementation_round: O1.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: V-08
+  scenario: 长项目名、长回复、多关系、很多unknown
+  original_expectation: 不截掉关键对象/操作，不破版；长内容可定位和返回
+  original_result: UNVERIFIED
+  implementation_round: O5.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: V-09
+  scenario: 1440×1050与1280×800观察首屏及滚动
+  original_expectation: 主要任务和反馈可用；大截图不能掩盖小窗的入口缺失
+  original_result: PASS
+  implementation_round: O5.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: V-10
+  scenario: 390×844窄窗浏览、导航、表单和长回复
+  original_expectation: 内容有层次、无关键动作丢失；触控目标可用；真实手机另验
+  original_result: UNVERIFIED
+  implementation_round: O5.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: V-11
+  scenario: 200%缩放、对比度、焦点/禁用视觉检查
+  original_expectation: 不丢内容/操作，文字可读，状态不只靠颜色；记录检查工具和限制
+  original_result: UNVERIFIED
+  implementation_round: O5.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: V-12
+  scenario: 判断方案图/截图预览与当前页面的关系
+  original_expectation: 用户知道是设计、历史截图、导入结果还是当前现场；不可操作图不暗示可控制
+  original_result: PASS
+  implementation_round: O5.1
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: E-01
+  scenario: 只用键盘完成找项目、查看关系、进入指令和返回
+  original_expectation: 焦点可见、顺序合任务、无陷阱；链接/按钮语义正确
+  original_result: BLOCKED
+  implementation_round: O5.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: E-02
+  scenario: 展开面板/打开关闭对话框/触发错误
+  original_expectation: 焦点进入/返回合理；状态与错误可被辅助技术感知
+  original_result: UNVERIFIED
+  implementation_round: O5.2
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: E-03
+  scenario: 页面等待期间和错误恢复后反复导航
+  original_expectation: loading不永远悬置；错误可重试；旧请求不恢复错误页面
+  original_result: PASS
+  implementation_round: O1.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: E-04
+  scenario: 副本模拟401/403/404/409/5xx和超时
+  original_expectation: 各自含义清楚；不泄露敏感内部细节、不把权限问题说成无数据
+  original_result: FAIL
+  implementation_round: O1.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: E-05
+  scenario: 提交校验失败或网络失败后再次编辑
+  original_expectation: 输入保留；错误定位；不重复提交，不静默清空
+  original_result: PASS
+  implementation_round: O3.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: E-06
+  scenario: 浏览器离线/重连边界
+  original_expectation: 可读旧数据标历史；在线恢复可核对；不调整工作站网络/VPN
+  original_result: PASS
+  implementation_round: O5.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: E-07
+  scenario: 打开reduced-motion观察状态变化
+  original_expectation: 非必要动效减少，状态和功能仍完整
+  original_result: UNVERIFIED
+  implementation_round: O5.3
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: E-08
+  scenario: 全程检查console异常和network关键交换
+  original_expectation: 新旧错误分开；请求目标、方法、授权、返回处理匹配实际动作
+  original_result: UNVERIFIED
+  implementation_round: O5.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: E-09
+  scenario: 空项目/无任务/无关系/无排期/服务未启用
+  original_expectation: 各自说明和下一步正确；入口缺失不写NOT_APPLICABLE
+  original_result: UNVERIFIED
+  implementation_round: O5.4
+  final_recheck:
+  - O6.1
+  - O6.2
+- id: E-10
+  scenario: 回看测试产生的本地效果和原始证据
+  original_expectation: 不公开DB/消息/凭据/私密路径/敏感截图；不误改/清理其他任务
+  original_result: PASS
+  implementation_round: G.1
+  final_recheck:
+  - O6.1
+  - O6.2
+git_cases:
+- id: G-01
+  expectation: 盘点status、ignore、服务代码身份和实时远端
+  implementation_round: G.1
+- id: G-02
+  expectation: 核对差异对应的native任务、归属与用途
+  implementation_round: G.1
+- id: G-03
+  expectation: 逐文件核对已交付字节，避免重复交付旧投影
+  implementation_round: G.1
+- id: G-04
+  expectation: 保留旁支独有历史、未提交工作和运行依赖
+  implementation_round: G.1
+- id: G-05
+  expectation: 私人DB、消息、凭据、路径清单与敏感证据留本地
+  implementation_round: G.1
+- id: G-06
+  expectation: 精确ignore生成物并验证反例
+  implementation_round: G.2
+- id: G-07
+  expectation: 组成可独立验证的精确owned提交单元
+  implementation_round: G.2
+- id: G-08
+  expectation: 精确候选检查、脱敏与差异复核
+  implementation_round: G.2
+- id: G-09
+  expectation: 当前授权下正常交付并核对远端commit/保护
+  implementation_round: G.3
+- id: G-10
+  expectation: 交付版本、剩余本地项与恢复依赖交接
+  implementation_round: G.3

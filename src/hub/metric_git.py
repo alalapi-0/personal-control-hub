@@ -134,7 +134,9 @@ def _numstat(data: bytes) -> tuple[int, int, int]:
     return added, deleted, binary
 
 
-def collect_git(root: Path, project_id: str, observed_at: str) -> dict:
+def collect_git(root: Path, project_id: str, observed_at: str, *, observe_ignored: bool = True) -> dict:
+    if type(observe_ignored) is not bool:
+        raise ValueError("ignored-tree observation option must be boolean")
     root = Path(root).resolve()
     metrics, issues, digest = [], [], hashlib.sha256()
 
@@ -195,10 +197,17 @@ def collect_git(root: Path, project_id: str, observed_at: str) -> dict:
         digest.update(b"HEAD_unavailable")  # An unborn repository still has valid status metrics.
 
     try:
-        counts = _status_counts(run("status", "--porcelain=v1", "-z", "--untracked-files=all", "--ignored=traditional"))
+        flags = ["status", "--porcelain=v1", "-z", "--untracked-files=all"]
+        if observe_ignored:
+            flags.append("--ignored=traditional")
+        counts = _status_counts(run(*flags))
         for name in ("staged", "unstaged", "untracked", "ignored"):
-            emit(f"git.{name}.files", counts[name], dimensions={},
-                 basis="Porcelain file records with all untracked and ignored files; staged and unstaged overlap; nested repositories are opaque records", source="git:status")
+            disabled = name == "ignored" and not observe_ignored
+            emit(f"git.{name}.files", None if disabled else counts[name], dimensions={},
+                 reason="protected_runtime_ignored_tree_observation_disabled" if disabled else None,
+                 basis=("Porcelain file records with all untracked and ignored files; staged and unstaged overlap; nested repositories are opaque records"
+                        if observe_ignored else "All untracked porcelain file records; ignored-tree observation disabled to protect runtime directories; staged and unstaged overlap; nested repositories are opaque records"),
+                 source="git:status")
         for suffix, key in (("overlapping_files", "overlapping"), ("conflicted_files", "conflicted")):
             emit("git.changed." + suffix, counts[key], basis="Porcelain file records", source="git:status")
     except GitObservationError as exc:

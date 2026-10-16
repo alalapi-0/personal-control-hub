@@ -346,7 +346,7 @@ class ExtensionTests(unittest.TestCase):
                 'f' * 64 if bad_proof == 'sha256' else '2020-01-01T00:00:00Z')
             invalid['update_key'] = update_key(invalid)
             with self.subTest(proof=bad_proof), self.assertRaises(RecordError): validate_result(invalid)
-        self.assertEqual(['1.0', '1.1', '1.2', '1.3'], record_schema()['optional_extensions']['versions'])
+        self.assertEqual(['1.0', '1.1', '1.2', '1.3', '1.4'], record_schema()['optional_extensions']['versions'])
 
 
 if __name__ == '__main__':

@@ -161,6 +161,7 @@ export async function sendAnnotation(annotationId,status){
   status.textContent='正在核对项目授权…';
   try{
     const options=await api('/api/tasks/options/'+encodeURIComponent(annotationId));
+    if(!options.execution_enabled){status.textContent='任务执行通道尚未就绪；意见已保留，请先核对连接信息。';return;}
     if(options.choices.length!==1){status.textContent='需要唯一有效的项目执行授权；意见已保存在 Linux。';return;}
     const command=options.choices[0];
     // The server supplies this grant-bound request ID; any uncertain result is read

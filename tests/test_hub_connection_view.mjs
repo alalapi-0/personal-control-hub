@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {currentSourceAvailable, attention, freshness, refreshable, projectFacts, projectTasks, projectSummary, loadProjectDirectory, validateSyncStatus, loadSyncStatus, coreGapSummary, scheduleSummary, requestSummary} from '../src/hub/web/connection_view.mjs';
+import {currentSourceAvailable, attention, freshness, refreshable, projectDefinition, projectFacts, projectTasks, projectSummary, loadProjectDirectory, validateSyncStatus, loadSyncStatus, coreGapSummary, scheduleSummary, requestSummary} from '../src/hub/web/connection_view.mjs';
 
 function project(overrides = {}) {
   return {
@@ -193,6 +193,20 @@ function setFact(p,key,value) {
 }
 const summaryFields=p=>Object.fromEntries(projectSummary(p).fields);
 
+test('long-term definitions require their own source and retain explicit empty, unknown and not-applicable states',()=>{
+  const source={kind:'registry',field:'description'};
+  const p={definition:{fields:{purpose:{value:'A sourced purpose',state:'known',source},
+    roles:{value:[],state:'empty',source},aliases:{value:['unconfirmed'],state:'missing',source:null},
+    primary_project_id:{value:null,state:'not_applicable',source,reason:'Explicit independent project'}}}};
+  const fields=Object.fromEntries(projectDefinition(p).map(f=>[f.key,f]));
+  assert.equal(fields.purpose.text,'A sourced purpose');assert.equal(fields.purpose.known,true);
+  assert.equal(fields.roles.text,'来源明确未列出');assert.equal(fields.aliases.text,'来源未提供');
+  assert.equal(fields.primary_project_id.text,'来源声明不适用');
+  p.definition.fields.purpose.source=null;
+  assert.equal(projectDefinition(p).find(f=>f.key==='purpose').known,false);
+  assert.ok(!JSON.stringify(projectDefinition(p)).includes('current_work.objective'));
+});
+
 test('daily summary preserves explicit zero, false and empty values without percentage inference',()=>{
   const p=authoritative();setFact(p,'progress.completed',0);setFact(p,'progress.total',0);
   setFact(p,'progress.counting_basis','Declared review units');setFact(p,'blockers',[]);
@@ -203,14 +217,14 @@ test('daily summary preserves explicit zero, false and empty values without perc
   assert.equal(fields['阻塞与待决定'],'来源未列出阻塞');
   assert.equal(facts(p)['current_work.completed'].text,'尚未完成');
   assert.equal(facts(p)['current_work.accepted'].text,'尚未接受');
-  assert.equal(summary.quality,'日常查看信息完整');assert.equal(summary.factAt,null);
+  assert.match(summary.quality,/来源读取成功 · 核心结构已通过/);assert.equal(summary.factAt,null);
   assert.equal(JSON.stringify(p),before);
 });
 
 test('known numerator and unknown denominator remain independent and never gain a percentage',()=>{
   const p=authoritative();setFact(p,'progress.completed',7);
   const fields=summaryFields(p);assert.equal(fields['业务进度 V/N'],'7 / 未知');
-  assert.equal(fields['计数依据'],'未知');assert.equal(projectSummary(p).quality,'可用程度未知');
+  assert.equal(fields['计数依据'],'未知');assert.match(projectSummary(p).quality,/核心字段仍有缺口/);
 });
 
 test('daily summary separates observation time from current fact time and full next action',()=>{
@@ -230,7 +244,7 @@ test('failed and stale summaries suppress history and complete quality while pre
     if(failed)p.operational.latest_attempt={success:false};else p.freshness.state='stale';
     const summary=projectSummary(p);
     assert.equal(summary.fields.every(([,text])=>text==='未知'||text==='未知 / 未知'),true);
-    assert.equal(summary.quality,failed?'当前来源读取失败':'日常查看信息不完整');
+    assert.equal(summary.quality,failed?'当前来源读取失败；历史结果另行查看':'当前业务事实待核对；历史快照不能替代当前值');
     assert.equal(summary.factAt,null);assert.equal(summary.observedAt,p.source.observed_at);
     assert.equal(facts(p,{history:true})['current_work.phase'].text,'M2');
   }
@@ -466,7 +480,7 @@ test('invalid success-with-errors DTO and errors without a latest observation re
     assert.equal(currentSourceAvailable(p),false);
     assert.equal(Object.values(facts(p)).every(f=>!f.known),true);
     assert.equal(summaryFields(p)['项目阶段'],'未知');
-    assert.equal(projectSummary(p).quality,'当前来源读取失败');
+    assert.equal(projectSummary(p).quality,'当前来源读取失败；历史结果另行查看');
     assert.equal(freshness(p),'最新读取失败');
     assert.equal(attention(p),true);
     assert.equal(JSON.stringify(p),before);

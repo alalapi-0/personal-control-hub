@@ -22,6 +22,42 @@ from hub.session_service import SessionService
 from hub.readonly_preview import ReadOnlyPreview, MANIFEST
 
 
+def assemble_server(root, *, host='127.0.0.1', port=8766, services=None):
+    """Construct the product without starting effects or initializing stores.
+
+    Explicit dependencies let disposable instances use the same assembly while
+    keeping source, host observations, identity and provider access isolated.
+    This process-local injection point is never accepted from HTTP clients.
+    """
+    root = Path(root).absolute()
+    if ('..' in root.parts or len(root.parents) < 2 or not root.is_dir()
+            or any(path.is_symlink() for path in (root, *root.parents))):
+        raise ServiceError('HUB_ROOT_REJECTED')
+    services = dict(services or {})
+    allowed = {'projects', 'designs', 'host_observer', 'previews', 'tasks',
+               'materials', 'session_view', 'owner_auth'}
+    if set(services) - allowed:
+        raise ValueError('Unknown Hub service dependency')
+    def dependency(name, factory):
+        return services[name] if name in services else factory()
+    designs = dependency('designs', lambda: DesignService(DesignStore(root, 'data/design_governance/design-store.json')))
+    observer = dependency('host_observer', lambda: HostObserver({'hub': root, 'temp': root.parents[1] / 'Temp'}))
+    projects = dependency('projects', lambda: ProjectService(root))
+    previews = dependency('previews', lambda: PreviewService(projects, designs, WorkbenchStore(root)))
+    preview = None
+    if (root / MANIFEST).exists() and 'previews' not in services:
+        preview = ReadOnlyPreview(root, projects, designs)
+        previews.readonly_preview = preview
+    tasks = dependency('tasks', lambda: TaskService(projects, previews, TaskStore(root)))
+    options = dict(host_observer=observer, previews=previews, tasks=tasks,
+                   materials=dependency('materials', lambda: MaterialService(projects, designs)),
+                   session_view=dependency('session_view', lambda: SessionService(hub_root=root)))
+    if 'owner_auth' in services:
+        options['owner_auth'] = services['owner_auth']
+    server = HubHTTPServer(projects, designs, host=host, port=port, **options)
+    return server, observer, preview
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=CODE_ROOT,
@@ -35,26 +71,10 @@ def main(argv=None):
     observer = None
     preview = None
     try:
-        root = args.root.absolute()
-        if ('..' in root.parts or len(root.parents) < 2 or not root.is_dir()
-                or any(path.is_symlink() for path in (root, *root.parents))):
-            raise ServiceError('HUB_ROOT_REJECTED')
-        # Read/command authorities stay in their accepted Hub-owned locations.
-        # An absent design store remains unavailable; starting is never a write.
-        designs = DesignService(DesignStore(root, "data/design_governance/design-store.json"))
-        observer = HostObserver({'hub': root, 'temp': root.parents[1] / 'Temp'})
-        projects = ProjectService(root)
-        previews = PreviewService(projects, designs, WorkbenchStore(root))
-        if (root / MANIFEST).exists():
-            preview = ReadOnlyPreview(root, projects, designs)
-            previews.readonly_preview = preview
+        server, observer, preview = assemble_server(args.root, host=args.host, port=args.port)
         if args.readonly_preview:
             if preview is None: raise ServiceError('REAL_PREVIEW_REGISTRATION_INVALID')
             preview.start()
-        tasks = TaskService(projects, previews, TaskStore(root))
-        server = HubHTTPServer(projects, designs, host=args.host, port=args.port,
-                               host_observer=observer, previews=previews, tasks=tasks,
-                               materials=MaterialService(projects, designs), session_view=SessionService(hub_root=root))
         observer.start()
         print(f"Personal Control Hub: {server.origin}/", flush=True)
         print("Open this address in your browser. Ctrl-C stops the Hub.", flush=True)

@@ -1,0 +1,2875 @@
+plan_version: 1.0.0-20261014
+task_id: PCH-REFACTOR-20261014
+purpose: 冻结重构任务定义与基线；唯一可变执行事实在 STATE.yaml.pch_refactor，本文不调度、不保存另一份当前进度。
+authority:
+  current_state: STATE.yaml#pch_refactor
+  identity_registry: data/registry/external_projects.yaml
+  requirements: docs/pch_refactor_plan.md
+  execution_prompt: prompts/pch_refactor_goal_mode.md
+  old_governance_plan: data/roadmap/project_data_v3.yaml (独立旧任务，未激活/覆盖)
+activation: prepared_not_started
+state_model:
+  task_result_ref: STATE.yaml#pch_refactor.task_results[task_id]
+  missing_result: not_started
+  dimensions:
+  - implementation
+  - verification
+  - human_acceptance
+  - blocker
+  - delivery
+  verification_values:
+  - not_run
+  - pending
+  - passed
+  - failed
+  - not_applicable
+  delivery_values:
+  - not_attempted
+  - local_only
+  - branch_only
+  - main_verified
+  - blocked
+  verified_count_rule: verification=passed且证据适用于当前输入/代码/契约；不加计父节点、取消项、夹具冒充的真实接入
+  execution_round_rule: native Goal accounting and STATE completed_round_keys; no new scheduler
+baseline:
+  task_count: 111
+  current_task_count: 111
+  counting_unit: equal-weight independently acceptable leaf task; stage/round not counted
+  initial_verified_planning_tasks: 3
+  initial_product_tasks_verified: 0
+  product_task_count: 108
+  denominator_history:
+  - version: 1.0.0-20261014
+    original: 111
+    current: 111
+    reason: P0 local audit and planning baseline
+coverage_baseline:
+  registry_records: 43
+  confirmed_current_roots: 39
+  confirmed_external_roots: 38
+  hub_self: 1
+  sync_denominator: 39
+  declarations_present: 38
+  declarations_missing:
+  - desktop-tool
+  legacy_noncurrent_unprobed:
+  - storage_governance
+  - manga-localizer
+  removed_unprobed:
+  - game-removed-local
+  - manga-removed-local
+  unregistered_directory_candidates:
+  - asset-operations-platform
+  - creator_workbench
+  - personal-control-hub-lwb-delivery
+  - stellar-mod-console
+  historical_cloud_excluded_count: 17
+  historical_cloud_identity_list: not available in current registry; do not invent IDs
+  ledger_latest_resolved: 32
+  ledger_resolved_stale: 31
+  ledger_fresh:
+  - lyric-motion
+  never_refreshed:
+  - dance-motion-library
+  - emotion-shot-atlas
+  - film-editing-library
+  - hypothesis-lab
+  - local-toolbox
+  - minecraft-director-workbench
+  - reaper-music-workbench
+  coverage_formula: confirmed allowed root set is denominator; core-complete/current-fresh/value/evidence coverage
+    separate; candidates/legacy/excluded separate
+change_control:
+  changes_require:
+  - version
+  - reason
+  - old_and_new_denominator
+  - stable_id_mapping
+  - preserved_history
+  no_silent_denominator_reduction: true
+  no_runtime_llm: true
+  sibling_write_authorized: false
+  git_policy: execution prompt invocation must explicitly authorize main delivery; this planning run did not commit/push
+rounds:
+- id: R0.1
+  title: 当前环境、范围与权威审计
+  tasks:
+  - PCH-R0-1-01
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R0.2
+  title: 真实断点、基线与复用决策
+  tasks:
+  - PCH-R0-2-01
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R0.3
+  title: 冻结计划与可交接Prompt
+  tasks:
+  - PCH-R0-3-01
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R1.1
+  title: 激活任务入口与兼容契约
+  tasks:
+  - PCH-R1-1-01
+  - PCH-R1-1-02
+  - PCH-R1-1-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R1.2
+  title: 修通数据与可解释API
+  tasks:
+  - PCH-R1-2-01
+  - PCH-R1-2-02
+  - PCH-R1-2-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R1.3
+  title: 第一里程碑：三真实项目页面
+  tasks:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R2.0
+  title: 旧路径与新增候选资格对账
+  tasks:
+  - PCH-R2-0-01
+  - PCH-R2-0-02
+  - PCH-R2-0-03
+  - PCH-R2-0-04
+  - PCH-R2-0-05
+  - PCH-R2-0-06
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R2.1
+  title: 当前登记接入批次 1
+  tasks:
+  - PCH-R2-1-01
+  - PCH-R2-1-02
+  - PCH-R2-1-03
+  - PCH-R2-1-04
+  - PCH-R2-1-05
+  - PCH-R2-1-06
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R2.2
+  title: 当前登记接入批次 2
+  tasks:
+  - PCH-R2-2-01
+  - PCH-R2-2-02
+  - PCH-R2-2-03
+  - PCH-R2-2-04
+  - PCH-R2-2-05
+  - PCH-R2-2-06
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R2.3
+  title: 当前登记接入批次 3
+  tasks:
+  - PCH-R2-3-01
+  - PCH-R2-3-02
+  - PCH-R2-3-03
+  - PCH-R2-3-04
+  - PCH-R2-3-05
+  - PCH-R2-3-06
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R2.4
+  title: 当前登记接入批次 4
+  tasks:
+  - PCH-R2-4-01
+  - PCH-R2-4-02
+  - PCH-R2-4-03
+  - PCH-R2-4-04
+  - PCH-R2-4-05
+  - PCH-R2-4-06
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R2.5
+  title: 当前登记接入批次 5
+  tasks:
+  - PCH-R2-5-01
+  - PCH-R2-5-02
+  - PCH-R2-5-03
+  - PCH-R2-5-04
+  - PCH-R2-5-05
+  - PCH-R2-5-06
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R2.6
+  title: 当前登记接入批次 6
+  tasks:
+  - PCH-R2-6-01
+  - PCH-R2-6-02
+  - PCH-R2-6-03
+  - PCH-R2-6-04
+  - PCH-R2-6-05
+  - PCH-R2-6-06
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R2.7
+  title: 当前登记接入批次 7
+  tasks:
+  - PCH-R2-7-01
+  - PCH-R2-7-02
+  - PCH-R2-7-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R2.8
+  title: 每日独立同步入口
+  tasks:
+  - PCH-R2-8-01
+  - PCH-R2-8-02
+  - PCH-R2-8-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R2.9
+  title: 同步重入、错误隔离与原子读取
+  tasks:
+  - PCH-R2-9-01
+  - PCH-R2-9-02
+  - PCH-R2-9-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R2.10
+  title: 全量覆盖与每日调度准备验收
+  tasks:
+  - PCH-R2-10-01
+  - PCH-R2-10-02
+  - PCH-R2-10-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R3.1
+  title: 业务任务树与进度下钻
+  tasks:
+  - PCH-R3-1-01
+  - PCH-R3-1-02
+  - PCH-R3-1-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R3.2
+  title: 关系配置与持久管理信息
+  tasks:
+  - PCH-R3-2-01
+  - PCH-R3-2-02
+  - PCH-R3-2-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R3.3
+  title: 甘特与未排期总览
+  tasks:
+  - PCH-R3-3-01
+  - PCH-R3-3-02
+  - PCH-R3-3-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R3.4
+  title: 日常视图一致性与可访问验收
+  tasks: &id001
+  - PCH-R3-4-01
+  - PCH-R3-4-02
+  - PCH-R3-4-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R4.1
+  title: 代表页面清单与版本契约
+  tasks:
+  - PCH-R4-1-01
+  - PCH-R4-1-02
+  - PCH-R4-1-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R4.2
+  title: 按需采集与索引
+  tasks:
+  - PCH-R4-2-01
+  - PCH-R4-2-02
+  - PCH-R4-2-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R4.3
+  title: 全量预览适用性与真实验收
+  tasks: &id002
+  - PCH-R4-3-01
+  - PCH-R4-3-02
+  - PCH-R4-3-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R5.1
+  title: Agent能力与受控真实连接
+  tasks:
+  - PCH-R5-1-01
+  - PCH-R5-1-02
+  - PCH-R5-1-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R5.2
+  title: 确定性路由与持久任务队列
+  tasks:
+  - PCH-R5-2-01
+  - PCH-R5-2-02
+  - PCH-R5-2-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R5.3
+  title: 并发、审批与不确定结果恢复
+  tasks:
+  - PCH-R5-3-01
+  - PCH-R5-3-02
+  - PCH-R5-3-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R5.4
+  title: 真实子项目小改动闭环（条件任务）
+  tasks:
+  - PCH-R5-4-01
+  - PCH-R5-4-02
+  - PCH-R5-4-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R6.1
+  title: 完整集合与事实质量最终验收
+  tasks:
+  - PCH-R6-1-01
+  - PCH-R6-1-02
+  - PCH-R6-1-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R6.2
+  title: 重启、中断与备份恢复
+  tasks:
+  - PCH-R6-2-01
+  - PCH-R6-2-02
+  - PCH-R6-2-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R6.3
+  title: 资源开销与操作交付
+  tasks:
+  - PCH-R6-3-01
+  - PCH-R6-3-02
+  - PCH-R6-3-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+- id: R6.4
+  title: 真实定时触发与最终接受
+  tasks:
+  - PCH-R6-4-01
+  - PCH-R6-4-02
+  - PCH-R6-4-03
+  next_selection: 首个未完成且依赖满足；真实阻塞只跳过依赖组并记录，不跳过验收。
+  delivery: 作用域复核→必要检查→精确stage→按保护交付main→核对祖先关系；未授权/拒绝保留local_only。
+tasks:
+- id: PCH-R0-1-01
+  phase: P0
+  round: R0.1
+  title: 确认真实登记与保护边界
+  dependencies: []
+  owned_scope:
+  - registry
+  - STATE relevant entries
+  build_or_change: 只读对账43登记/39当前根/4候选；不探测移除或旧非当前路径
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 只读registry、限定一级目录、状态声明存在检查
+  expected_result: 冻结可接入集合39；旧分母24/41与43/39分开
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R0-1-01
+- id: PCH-R0-2-01
+  phase: P0
+  round: R0.2
+  title: 确认源/账本/API断点
+  dependencies:
+  - PCH-R0-1-01
+  owned_scope:
+  - docs/pch_refactor_plan.md
+  build_or_change: 只读实际HTTP与SQLite；分析three source types与3运行样本
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 58隔离Python+13纯Node；匿名GET；静态页面代码
+  expected_result: 记录authority drift/未刷新/identity空head；页面呈现与真实定时未验不算通过
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R0-2-01
+- id: PCH-R0-3-01
+  phase: P0
+  round: R0.3
+  title: 本地材料与唯一状态索引
+  dependencies:
+  - PCH-R0-2-01
+  owned_scope:
+  - docs/pch_refactor_plan.md
+  - data/roadmap/pch_refactor_v1.yaml
+  - prompts/pch_refactor_goal_mode.md
+  - STATE.yaml#pch_refactor
+  build_or_change: 生成计划/111叶任务/执行Prompt；仅PREPARED索引
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: YAML类型/唯一ID/依赖DAG/39集合覆盖/32轮/相对链接与受保护状态保持
+  expected_result: 完整规划本地交付；目标未启、P1未做、Git未推
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R0-3-01
+- id: PCH-R1-1-01
+  phase: P1
+  round: R1.1
+  title: 任务入口定界与规则交接
+  dependencies:
+  - PCH-R0-3-01
+  owned_scope:
+  - AGENTS.md
+  - project.yaml
+  - scripts/governance_scope.py
+  - STATE.yaml#pch_refactor
+  build_or_change: Root按实际GOVERNED小合同激活该任务入口，允许本任务UI；不激活旧v3、不修改全局Agent规则；先建立精确文件写责
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 入口路由与runner task-id回归；候选审查/前像保持
+  expected_result: 新会话只路由PCH-REFACTOR，旧任务事实完整且不被自动续跑
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R1-1-01
+- id: PCH-R1-1-02
+  phase: P1
+  round: R1.1
+  title: 事实/管理/派生/建议契约与版本
+  dependencies:
+  - PCH-R0-3-01
+  owned_scope:
+  - data/connections/schema.json
+  - src/hub/connection_records.py
+  - src/hub/connections.py
+  build_or_change: 兼容source2.0/DTO1.0；为任务树、可用版本、同步时间、字段证据定义最小扩展
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 既有21字段roundtrip+新字段类型/null/0/unknown/兼容测试
+  expected_result: 拒绝分子分母/单位混算；旧声明仍可读
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R1-1-02
+- id: PCH-R1-1-03
+  phase: P1
+  round: R1.1
+  title: 身份与只读采集策略
+  dependencies:
+  - PCH-R0-3-01
+  owned_scope:
+  - src/hub/connection_sources.py
+  - data/registry/external_projects.yaml
+  build_or_change: 稳定ID与checkout分离；根/深度/越界symlink与来源角色白名单；默认不执行exporter
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: duplicate checkout/rename/越界链接/removed拒绝夹具
+  expected_result: 39当前集合与候选/旧路径分开；登记不授予写入
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R1-1-03
+- id: PCH-R1-2-01
+  phase: P1
+  round: R1.2
+  title: 结构适配与来源声明漂移修复
+  dependencies:
+  - PCH-R1-1-01
+  - PCH-R1-1-02
+  - PCH-R1-1-03
+  owned_scope:
+  - src/hub/connection_sources.py
+  - src/hub/connections.py
+  - data/connections/metric_sources.yaml
+  - hub.connection.yaml
+  build_or_change: 优先JSON/YAML/固定Markdown读取；Hub映射改为本任务；必要多源显式角色兼容而非复制业务状态
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 隔离JSON/YAML/Markdown/多源边界与null选择器；实际3样本只读
+  expected_result: 旧Mac来源逐项目核对；不能读旧成功冒充当前值
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R1-2-01
+- id: PCH-R1-2-02
+  phase: P1
+  round: R1.2
+  title: 复用事务账本与业务时间
+  dependencies:
+  - PCH-R1-1-01
+  - PCH-R1-1-02
+  - PCH-R1-1-03
+  owned_scope:
+  - src/hub/connection_refresh.py
+  - src/hub/project_service.py
+  build_or_change: 增量扩展不新建替代DB；区分尝试/成功/事实/观察时间，原子快照、失败历史、request身份
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 幂等/CAS/崩溃恢复/坏项目隔离；生产先备份校验后单实例迁移
+  expected_result: 一次新同步获得新身份；重试同一次身份；保留历史而正确降级
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R1-2-02
+- id: PCH-R1-2-03
+  phase: P1
+  round: R1.2
+  title: 修复身份head与完整查询
+  dependencies:
+  - PCH-R1-1-01
+  - PCH-R1-1-02
+  - PCH-R1-1-03
+  owned_scope:
+  - src/hub/local_service.py
+  - src/hub/project_service.py
+  - src/hub/connection_cli.py
+  build_or_change: 修复identity非法design_snapshot吞错；统一API/CLI head，字段质量与分页总数
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: identity/projects/DB同head；超过100分页夹具；GET不产生采集
+  expected_result: 数据同源可核对；源失败原因和历史可见
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R1-2-03
+- id: PCH-R1-3-01
+  phase: P1
+  round: R1.3
+  title: 最小日常项目总览/详情
+  dependencies:
+  - PCH-R1-2-01
+  - PCH-R1-2-02
+  - PCH-R1-2-03
+  owned_scope:
+  - src/hub/web/hub.js
+  - src/hub/web/connection_view.mjs
+  - src/hub/web/hub.css
+  build_or_change: 复用组件展示阶段/任务/V-N/口径/可用程度/阻塞/下一步/数据时间，完整分页
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 页面数据、交互、console/network、窄屏/键盘状态分别核查
+  expected_result: 用户能日常查看，不需Agent或模型；空/错/未知/历史明确
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R1-3-01
+- id: PCH-R1-3-02
+  phase: P1
+  round: R1.3
+  title: 三真实项目来源到页面核对
+  dependencies:
+  - PCH-R1-2-01
+  - PCH-R1-2-02
+  - PCH-R1-2-03
+  owned_scope:
+  - PCH only source adapter/registry paths
+  build_or_change: 选lyric-motion active视频、REAPER blocked音频、desktop-jav-tools未知非Git；源缺口保持partial
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 逐字段source→normalized→ledger→API→真实浏览器同值与hash；缺值给原因
+  expected_result: 2/54、0/6等仅按当前实际源，非Gitunknown不被写成完成；样本不替代全量
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R1-3-02
+- id: PCH-R1-3-03
+  phase: P1
+  round: R1.3
+  title: 无Agent独立最小闭环
+  dependencies:
+  - PCH-R1-2-01
+  - PCH-R1-2-02
+  - PCH-R1-2-03
+  owned_scope:
+  - PCH runtime integration tests
+  build_or_change: 隔离PCH应用模型/Agent适配路径，手动程序同步与普通页面查询
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 无模型凭据/Agent端点不可达；检查无模型调用日志；不停止他人Agent
+  expected_result: M1真实3样本闭环通过；模型接口离线不影响基础能力
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R1-3-03
+- id: PCH-R2-0-01
+  phase: P2
+  round: R2.0
+  title: 核对身份/资格 storage_governance
+  dependencies:
+  - PCH-R1-1-01
+  - PCH-R1-1-02
+  - PCH-R1-1-03
+  owned_scope:
+  - data/registry/external_projects.yaml
+  - STATE.yaml#pch_refactor.coverage
+  build_or_change: 先复用迁移身份与已授权证据；旧根不探测；新候选内容只在明确读权限后检查，交付checkout不自动另计项目
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: ID/现有registry/已记录迁移证据对账；未确认保存pending
+  expected_result: 确认复用/重复/排除/待确认；不自动增加同步分母或授权业务写入
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-0-01
+- id: PCH-R2-0-02
+  phase: P2
+  round: R2.0
+  title: 核对身份/资格 manga-localizer
+  dependencies:
+  - PCH-R1-1-01
+  - PCH-R1-1-02
+  - PCH-R1-1-03
+  owned_scope:
+  - data/registry/external_projects.yaml
+  - STATE.yaml#pch_refactor.coverage
+  build_or_change: 先复用迁移身份与已授权证据；旧根不探测；新候选内容只在明确读权限后检查，交付checkout不自动另计项目
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: ID/现有registry/已记录迁移证据对账；未确认保存pending
+  expected_result: 确认复用/重复/排除/待确认；不自动增加同步分母或授权业务写入
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-0-02
+- id: PCH-R2-0-03
+  phase: P2
+  round: R2.0
+  title: 核对身份/资格 asset-operations-platform
+  dependencies:
+  - PCH-R1-1-01
+  - PCH-R1-1-02
+  - PCH-R1-1-03
+  owned_scope:
+  - data/registry/external_projects.yaml
+  - STATE.yaml#pch_refactor.coverage
+  build_or_change: 先复用迁移身份与已授权证据；旧根不探测；新候选内容只在明确读权限后检查，交付checkout不自动另计项目
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: ID/现有registry/已记录迁移证据对账；未确认保存pending
+  expected_result: 确认复用/重复/排除/待确认；不自动增加同步分母或授权业务写入
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-0-03
+- id: PCH-R2-0-04
+  phase: P2
+  round: R2.0
+  title: 核对身份/资格 creator_workbench
+  dependencies:
+  - PCH-R1-1-01
+  - PCH-R1-1-02
+  - PCH-R1-1-03
+  owned_scope:
+  - data/registry/external_projects.yaml
+  - STATE.yaml#pch_refactor.coverage
+  build_or_change: 先复用迁移身份与已授权证据；旧根不探测；新候选内容只在明确读权限后检查，交付checkout不自动另计项目
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: ID/现有registry/已记录迁移证据对账；未确认保存pending
+  expected_result: 确认复用/重复/排除/待确认；不自动增加同步分母或授权业务写入
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-0-04
+- id: PCH-R2-0-05
+  phase: P2
+  round: R2.0
+  title: 核对身份/资格 personal-control-hub-lwb-delivery
+  dependencies:
+  - PCH-R1-1-01
+  - PCH-R1-1-02
+  - PCH-R1-1-03
+  owned_scope:
+  - data/registry/external_projects.yaml
+  - STATE.yaml#pch_refactor.coverage
+  build_or_change: 先复用迁移身份与已授权证据；旧根不探测；新候选内容只在明确读权限后检查，交付checkout不自动另计项目
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: ID/现有registry/已记录迁移证据对账；未确认保存pending
+  expected_result: 确认复用/重复/排除/待确认；不自动增加同步分母或授权业务写入
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-0-05
+- id: PCH-R2-0-06
+  phase: P2
+  round: R2.0
+  title: 核对身份/资格 stellar-mod-console
+  dependencies:
+  - PCH-R1-1-01
+  - PCH-R1-1-02
+  - PCH-R1-1-03
+  owned_scope:
+  - data/registry/external_projects.yaml
+  - STATE.yaml#pch_refactor.coverage
+  build_or_change: 先复用迁移身份与已授权证据；旧根不探测；新候选内容只在明确读权限后检查，交付checkout不自动另计项目
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: ID/现有registry/已记录迁移证据对账；未确认保存pending
+  expected_result: 确认复用/重复/排除/待确认；不自动增加同步分母或授权业务写入
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-0-06
+- id: PCH-R2-1-01
+  phase: P2
+  round: R2.1
+  title: 真实接入 personal-control-hub
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for personal-control-hub
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-1-01
+  project_id: personal-control-hub
+  registry_ref: data/registry/external_projects.yaml#projects[id=personal-control-hub]
+- id: PCH-R2-1-02
+  phase: P2
+  round: R2.1
+  title: 真实接入 universal-player
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for universal-player
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-1-02
+  project_id: universal-player
+  registry_ref: data/registry/external_projects.yaml#projects[id=universal-player]
+- id: PCH-R2-1-03
+  phase: P2
+  round: R2.1
+  title: 真实接入 ai-anime-short-factory
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for ai-anime-short-factory
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-1-03
+  project_id: ai-anime-short-factory
+  registry_ref: data/registry/external_projects.yaml#projects[id=ai-anime-short-factory]
+- id: PCH-R2-1-04
+  phase: P2
+  round: R2.1
+  title: 真实接入 ai-music-foundry
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for ai-music-foundry
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-1-04
+  project_id: ai-music-foundry
+  registry_ref: data/registry/external_projects.yaml#projects[id=ai-music-foundry]
+- id: PCH-R2-1-05
+  phase: P2
+  round: R2.1
+  title: 真实接入 novel-continuation-agent
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for novel-continuation-agent
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-1-05
+  project_id: novel-continuation-agent
+  registry_ref: data/registry/external_projects.yaml#projects[id=novel-continuation-agent]
+- id: PCH-R2-1-06
+  phase: P2
+  round: R2.1
+  title: 真实接入 story-faceless-utopia
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for story-faceless-utopia
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-1-06
+  project_id: story-faceless-utopia
+  registry_ref: data/registry/external_projects.yaml#projects[id=story-faceless-utopia]
+- id: PCH-R2-2-01
+  phase: P2
+  round: R2.2
+  title: 真实接入 light-novel
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for light-novel
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-2-01
+  project_id: light-novel
+  registry_ref: data/registry/external_projects.yaml#projects[id=light-novel]
+- id: PCH-R2-2-02
+  phase: P2
+  round: R2.2
+  title: 真实接入 wechat-article-scheduler
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for wechat-article-scheduler
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-2-02
+  project_id: wechat-article-scheduler
+  registry_ref: data/registry/external_projects.yaml#projects[id=wechat-article-scheduler]
+- id: PCH-R2-2-03
+  phase: P2
+  round: R2.2
+  title: 真实接入 resilient-personal-network
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for resilient-personal-network
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-2-03
+  project_id: resilient-personal-network
+  registry_ref: data/registry/external_projects.yaml#projects[id=resilient-personal-network]
+- id: PCH-R2-2-04
+  phase: P2
+  round: R2.2
+  title: 真实接入 pixel-world-asset-forge
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for pixel-world-asset-forge
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-2-04
+  project_id: pixel-world-asset-forge
+  registry_ref: data/registry/external_projects.yaml#projects[id=pixel-world-asset-forge]
+- id: PCH-R2-2-05
+  phase: P2
+  round: R2.2
+  title: 真实接入 desktop-jav-tools
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for desktop-jav-tools
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-2-05
+  project_id: desktop-jav-tools
+  registry_ref: data/registry/external_projects.yaml#projects[id=desktop-jav-tools]
+- id: PCH-R2-2-06
+  phase: P2
+  round: R2.2
+  title: 真实接入 zarathustra-adaptation
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for zarathustra-adaptation
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-2-06
+  project_id: zarathustra-adaptation
+  registry_ref: data/registry/external_projects.yaml#projects[id=zarathustra-adaptation]
+- id: PCH-R2-3-01
+  phase: P2
+  round: R2.3
+  title: 真实接入 computer-study-plan
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for computer-study-plan
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-3-01
+  project_id: computer-study-plan
+  registry_ref: data/registry/external_projects.yaml#projects[id=computer-study-plan]
+- id: PCH-R2-3-02
+  phase: P2
+  round: R2.3
+  title: 真实接入 desktop-tool
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for desktop-tool
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-3-02
+  project_id: desktop-tool
+  registry_ref: data/registry/external_projects.yaml#projects[id=desktop-tool]
+- id: PCH-R2-3-03
+  phase: P2
+  round: R2.3
+  title: 真实接入 audio-clone
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for audio-clone
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-3-03
+  project_id: audio-clone
+  registry_ref: data/registry/external_projects.yaml#projects[id=audio-clone]
+- id: PCH-R2-3-04
+  phase: P2
+  round: R2.3
+  title: 真实接入 personal-control-hub-dreamer
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for personal-control-hub-dreamer
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-3-04
+  project_id: personal-control-hub-dreamer
+  registry_ref: data/registry/external_projects.yaml#projects[id=personal-control-hub-dreamer]
+- id: PCH-R2-3-05
+  phase: P2
+  round: R2.3
+  title: 真实接入 actorforge
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for actorforge
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-3-05
+  project_id: actorforge
+  registry_ref: data/registry/external_projects.yaml#projects[id=actorforge]
+- id: PCH-R2-3-06
+  phase: P2
+  round: R2.3
+  title: 真实接入 movie-swipe
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for movie-swipe
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-3-06
+  project_id: movie-swipe
+  registry_ref: data/registry/external_projects.yaml#projects[id=movie-swipe]
+- id: PCH-R2-4-01
+  phase: P2
+  round: R2.4
+  title: 真实接入 video-to-motion
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for video-to-motion
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-4-01
+  project_id: video-to-motion
+  registry_ref: data/registry/external_projects.yaml#projects[id=video-to-motion]
+- id: PCH-R2-4-02
+  phase: P2
+  round: R2.4
+  title: 真实接入 skill-lab
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for skill-lab
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-4-02
+  project_id: skill-lab
+  registry_ref: data/registry/external_projects.yaml#projects[id=skill-lab]
+- id: PCH-R2-4-03
+  phase: P2
+  round: R2.4
+  title: 真实接入 cognitive-asset-library
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for cognitive-asset-library
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-4-03
+  project_id: cognitive-asset-library
+  registry_ref: data/registry/external_projects.yaml#projects[id=cognitive-asset-library]
+- id: PCH-R2-4-04
+  phase: P2
+  round: R2.4
+  title: 真实接入 pycharm-agent-workspace
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for pycharm-agent-workspace
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-4-04
+  project_id: pycharm-agent-workspace
+  registry_ref: data/registry/external_projects.yaml#projects[id=pycharm-agent-workspace]
+- id: PCH-R2-4-05
+  phase: P2
+  round: R2.4
+  title: 真实接入 youtube-hq-downloader
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for youtube-hq-downloader
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-4-05
+  project_id: youtube-hq-downloader
+  registry_ref: data/registry/external_projects.yaml#projects[id=youtube-hq-downloader]
+- id: PCH-R2-4-06
+  phase: P2
+  round: R2.4
+  title: 真实接入 desktop-magnet
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for desktop-magnet
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-4-06
+  project_id: desktop-magnet
+  registry_ref: data/registry/external_projects.yaml#projects[id=desktop-magnet]
+- id: PCH-R2-5-01
+  phase: P2
+  round: R2.5
+  title: 真实接入 pycharm-misc-project
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for pycharm-misc-project
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-5-01
+  project_id: pycharm-misc-project
+  registry_ref: data/registry/external_projects.yaml#projects[id=pycharm-misc-project]
+- id: PCH-R2-5-02
+  phase: P2
+  round: R2.5
+  title: 真实接入 desktop-downloads-scripts
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for desktop-downloads-scripts
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-5-02
+  project_id: desktop-downloads-scripts
+  registry_ref: data/registry/external_projects.yaml#projects[id=desktop-downloads-scripts]
+- id: PCH-R2-5-03
+  phase: P2
+  round: R2.5
+  title: 真实接入 mpv-clip-workbench
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for mpv-clip-workbench
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-5-03
+  project_id: mpv-clip-workbench
+  registry_ref: data/registry/external_projects.yaml#projects[id=mpv-clip-workbench]
+- id: PCH-R2-5-04
+  phase: P2
+  round: R2.5
+  title: 真实接入 feishu-sheets-stat-template
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for feishu-sheets-stat-template
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-5-04
+  project_id: feishu-sheets-stat-template
+  registry_ref: data/registry/external_projects.yaml#projects[id=feishu-sheets-stat-template]
+- id: PCH-R2-5-05
+  phase: P2
+  round: R2.5
+  title: 真实接入 linux-agent-bootstrap
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for linux-agent-bootstrap
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-5-05
+  project_id: linux-agent-bootstrap
+  registry_ref: data/registry/external_projects.yaml#projects[id=linux-agent-bootstrap]
+- id: PCH-R2-5-06
+  phase: P2
+  round: R2.5
+  title: 真实接入 linux-video-workbench
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for linux-video-workbench
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-5-06
+  project_id: linux-video-workbench
+  registry_ref: data/registry/external_projects.yaml#projects[id=linux-video-workbench]
+- id: PCH-R2-6-01
+  phase: P2
+  round: R2.6
+  title: 真实接入 film-editing-library
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for film-editing-library
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-6-01
+  project_id: film-editing-library
+  registry_ref: data/registry/external_projects.yaml#projects[id=film-editing-library]
+- id: PCH-R2-6-02
+  phase: P2
+  round: R2.6
+  title: 真实接入 emotion-shot-atlas
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for emotion-shot-atlas
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-6-02
+  project_id: emotion-shot-atlas
+  registry_ref: data/registry/external_projects.yaml#projects[id=emotion-shot-atlas]
+- id: PCH-R2-6-03
+  phase: P2
+  round: R2.6
+  title: 真实接入 dance-motion-library
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for dance-motion-library
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-6-03
+  project_id: dance-motion-library
+  registry_ref: data/registry/external_projects.yaml#projects[id=dance-motion-library]
+- id: PCH-R2-6-04
+  phase: P2
+  round: R2.6
+  title: 真实接入 minecraft-director-workbench
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for minecraft-director-workbench
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-6-04
+  project_id: minecraft-director-workbench
+  registry_ref: data/registry/external_projects.yaml#projects[id=minecraft-director-workbench]
+- id: PCH-R2-6-05
+  phase: P2
+  round: R2.6
+  title: 真实接入 reaper-music-workbench
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for reaper-music-workbench
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-6-05
+  project_id: reaper-music-workbench
+  registry_ref: data/registry/external_projects.yaml#projects[id=reaper-music-workbench]
+- id: PCH-R2-6-06
+  phase: P2
+  round: R2.6
+  title: 真实接入 hypothesis-lab
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for hypothesis-lab
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-6-06
+  project_id: hypothesis-lab
+  registry_ref: data/registry/external_projects.yaml#projects[id=hypothesis-lab]
+- id: PCH-R2-7-01
+  phase: P2
+  round: R2.7
+  title: 真实接入 layered-character-workbench
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for layered-character-workbench
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-7-01
+  project_id: layered-character-workbench
+  registry_ref: data/registry/external_projects.yaml#projects[id=layered-character-workbench]
+- id: PCH-R2-7-02
+  phase: P2
+  round: R2.7
+  title: 真实接入 local-toolbox
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for local-toolbox
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-7-02
+  project_id: local-toolbox
+  registry_ref: data/registry/external_projects.yaml#projects[id=local-toolbox]
+- id: PCH-R2-7-03
+  phase: P2
+  round: R2.7
+  title: 真实接入 lyric-motion
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - PCH adapter/registry/source binding for lyric-motion
+  build_or_change: 只读既有声明与唯一源；必要Hub拥有的确定性适配；不能在子项目补状态/写业务代码
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 该项目真实源版本→校验→账本→API→页面；检查核心实际值/unknown原因/结构值证据覆盖
+  expected_result: 完整接入须核心字段实际有效；缺声明/关键unknown只计partial或blocked，不算完整接入/百分比100
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  - source版本、API项目ID、浏览器观察对应同一project_id
+  - integration_quality=complete/partial/error以及关键字段缺口
+  failure_recovery: 只隔离此project_id失败；保存last_success并标stale/history。缺业务声明/事实由该项目owner补发，Hub不越权写源。其余项目与调度继续。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-7-03
+  project_id: lyric-motion
+  registry_ref: data/registry/external_projects.yaml#projects[id=lyric-motion]
+- id: PCH-R2-8-01
+  phase: P2
+  round: R2.8
+  title: 复用CLI同步服务
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - scripts/hub_connections.py
+  - src/hub/connection_cli.py
+  - src/hub/connection_refresh.py
+  build_or_change: 增加全量/单项目/手动/有限发现一致入口；无shell拼接和任意exporter执行
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 离线无LLM运行；同run_id复试/新run_id新采集；批次失败隔离
+  expected_result: 独立脚本能读取授权集合39并保留缺口，不靠浏览器或会话在线
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-8-01
+- id: PCH-R2-8-02
+  phase: P2
+  round: R2.8
+  title: 每日systemd timer/service
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - data/scheduler/scheduled_tasks.yaml
+  - proposed task-owned user service/timer
+  build_or_change: 复用可靠现有调度否则systemd259用户timer；主机Asia/Tokyo默认09:00可配置，Persistent missed-run；不擅自改时区/linger
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: systemd-analyze verify/calendar；timer/service状态；真实到点journal留待R6.4
+  expected_result: 独立每天至少一次；登录/注销能力分别验证，不把timer文件算完成
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-8-02
+- id: PCH-R2-8-03
+  phase: P2
+  round: R2.8
+  title: 刷新反馈与完整同步统计
+  dependencies:
+  - PCH-R1-3-01
+  - PCH-R1-3-02
+  - PCH-R1-3-03
+  owned_scope:
+  - src/hub/local_service.py
+  - src/hub/web/hub.js
+  build_or_change: 明确手动刷新动作、作用域与错误摘要；显示发现/登记/可接入/partial/失败/过期/排除
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 所有分页统计、当前/历史与field gaps；刷新不会触发测试/GPU/Agent
+  expected_result: 数值分母来自39集合，排除/离线项目没有被偷偷删除
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-8-03
+- id: PCH-R2-9-01
+  phase: P2
+  round: R2.9
+  title: 重入与单写入复用
+  dependencies:
+  - PCH-R2-8-01
+  - PCH-R2-8-02
+  - PCH-R2-8-03
+  owned_scope:
+  - src/hub/connection_refresh.py
+  - existing CLI sync entry
+  build_or_change: 复用CAS/SQLite事务和现有单写控制；服务与手动刷新重入不重复发布，不建新lock service
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 隔离并发两刷新、超时、事务故障，head单调
+  expected_result: 失败请求身份可恢复；重复任务没有重复结果
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-9-01
+- id: PCH-R2-9-02
+  phase: P2
+  round: R2.9
+  title: 来源半写与权限故障
+  dependencies:
+  - PCH-R2-8-01
+  - PCH-R2-8-02
+  - PCH-R2-8-03
+  owned_scope:
+  - src/hub/connection_sources.py
+  build_or_change: 来源前后fingerprint一致或重读，坏schema/权限/缺文件单项目隔离
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 临时副本故障注入且不动真实源；stale成功历史展示
+  expected_result: 拒绝半份数据；失败不覆盖用户配置/其他项目
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-9-02
+- id: PCH-R2-9-03
+  phase: P2
+  round: R2.9
+  title: 中断恢复与有限路径变化
+  dependencies:
+  - PCH-R2-8-01
+  - PCH-R2-8-02
+  - PCH-R2-8-03
+  owned_scope:
+  - src/hub/connection_refresh.py
+  - registry binding/CLI
+  build_or_change: 恢复pending request与原子published view；路径迁移需身份核对
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 临时副本杀测试子进程/恢复/路径改名/越界link拒绝
+  expected_result: 保留成功历史和失败指纹；不靠新ID绕过同一失败
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-9-03
+- id: PCH-R2-10-01
+  phase: P2
+  round: R2.10
+  title: 39集合对账与质量报告
+  dependencies:
+  - PCH-R2-9-01
+  - PCH-R2-9-02
+  - PCH-R2-9-03
+  owned_scope:
+  - ProjectService/STATE coverage
+  build_or_change: 逐项复核39身份、登记、核心值、freshness与证据；candidate/legacy单列
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 集合差集、重复、原39→当前授权集合的版本历史
+  expected_result: known complete/partial/error清单可追溯；全部未知不算全接入
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-10-01
+- id: PCH-R2-10-02
+  phase: P2
+  round: R2.10
+  title: 调度失败恢复可见
+  dependencies:
+  - PCH-R2-9-01
+  - PCH-R2-9-02
+  - PCH-R2-9-03
+  owned_scope:
+  - sync CLI/API/UI
+  build_or_change: 最近失败、最近成功、错过触发、离线恢复信息一致
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 模拟时钟只测逻辑；真实触发不填passed直到R6.4journal
+  expected_result: 程序恢复逻辑可用，真实每日触发仍待验证时如实保留
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-10-02
+- id: PCH-R2-10-03
+  phase: P2
+  round: R2.10
+  title: 注册新增入口与帮助
+  dependencies:
+  - PCH-R2-9-01
+  - PCH-R2-9-02
+  - PCH-R2-9-03
+  owned_scope:
+  - registry/config and existing docs
+  build_or_change: 明确新增非Git/路径迁移/缺声明的最小步骤及读权限；支持按规则发现
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 授权夹具新增不复制业务仓、不模型猜测；新旧ID映射
+  expected_result: 新增可见且不自动执行任意代码；旧记录和排除保持
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R2-10-03
+- id: PCH-R3-1-01
+  phase: P3
+  round: R3.1
+  title: 只读任务层级
+  dependencies:
+  - PCH-R2-10-01
+  - PCH-R2-10-02
+  - PCH-R2-10-03
+  owned_scope:
+  - connection contract/ProjectService
+  build_or_change: 项目→阶段→轮次→叶任务，ID/依赖/版本/验收条件；与provider execution tasks分开
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 循环/重复/父子计数/跨单位/缺分母拒绝
+  expected_result: 只加计叶任务；无分母百分比null
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R3-1-01
+- id: PCH-R3-1-02
+  phase: P3
+  round: R3.1
+  title: 任务详情与证据下钻
+  dependencies:
+  - PCH-R2-10-01
+  - PCH-R2-10-02
+  - PCH-R2-10-03
+  owned_scope:
+  - web project detail/connection_view
+  build_or_change: 显示V/N、口径、缺口、适用版本与证据；当前/历史入口
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 真实样本下钻、键盘焦点、空树/坏树、历史验收失效
+  expected_result: 用户可解释为什么这个进度，Agent任务状态不替代业务进度
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R3-1-02
+- id: PCH-R3-1-03
+  phase: P3
+  round: R3.1
+  title: 分母变更历史
+  dependencies:
+  - PCH-R2-10-01
+  - PCH-R2-10-02
+  - PCH-R2-10-03
+  owned_scope:
+  - STATE/contract/project DTO
+  build_or_change: 稳定taskID与plan_version，新增/拆分/移除历史保留
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 旧N→新N，取消不加V，stage/round不重计
+  expected_result: PCH111、接入39、子项目业务分母分别展示
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R3-1-03
+- id: PCH-R3-2-01
+  phase: P3
+  round: R3.2
+  title: 管理配置存储与版本
+  dependencies:
+  - PCH-R3-1-01
+  - PCH-R3-1-02
+  - PCH-R3-1-03
+  owned_scope:
+  - Hub existing SQLite/config store
+  build_or_change: 优先现有DB加表/现有store扩展，无独立平行state；priority/date/relations revision
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 导入前后不覆盖user settings；CAS过期更新拒绝
+  expected_result: PCH配置独立于项目事实，重启后保留
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R3-2-01
+- id: PCH-R3-2-02
+  phase: P3
+  round: R3.2
+  title: 所属/依赖/相关/独立语义
+  dependencies:
+  - PCH-R3-1-01
+  - PCH-R3-1-02
+  - PCH-R3-1-03
+  owned_scope:
+  - connection_relations/management DTO
+  build_or_change: 保留proposal原类型，新增owner confirmed关系；所属和任务阻塞依赖防环，项目循环提示
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 所属cycle阻断、related network允许、independent仍可dependent
+  expected_result: unconfigured与confirmed independent严格不同
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R3-2-02
+- id: PCH-R3-2-03
+  phase: P3
+  round: R3.2
+  title: 关系编辑用户流程
+  dependencies:
+  - PCH-R3-1-01
+  - PCH-R3-1-02
+  - PCH-R3-1-03
+  owned_scope:
+  - web project management/API
+  build_or_change: 可编辑/保存/撤回配置，pending proposal不自动accepted，拖动仅布局
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 键盘/触摸操作、版本冲突恢复与持久化；导入后保持
+  expected_result: 用户管理行为不触发子项目执行或改实际完成率
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R3-2-03
+- id: PCH-R3-3-01
+  phase: P3
+  round: R3.3
+  title: 日期与里程碑语义
+  dependencies:
+  - PCH-R3-2-01
+  - PCH-R3-2-02
+  - PCH-R3-2-03
+  owned_scope:
+  - ProjectService time DTO/config
+  build_or_change: 计划与实际日期分别存，timezone明确，unknown null
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 无日期/只结束/不合法日期/跨时区夹具
+  expected_result: 不得按文件mtime或轮次猜工期
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R3-3-01
+- id: PCH-R3-3-02
+  phase: P3
+  round: R3.3
+  title: 甘特与未排期视图
+  dependencies:
+  - PCH-R3-2-01
+  - PCH-R3-2-02
+  - PCH-R3-2-03
+  owned_scope:
+  - existing web UI
+  build_or_change: 真实日期甘特/里程碑，无日期进入未排期阶段轨道
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 真实有/无排期项目；缩放/筛选/窄屏与键盘等价入口
+  expected_result: 所有项目可见，未排期不伪造准确甘特
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R3-3-02
+- id: PCH-R3-3-03
+  phase: P3
+  round: R3.3
+  title: 排期与优先级编辑保持
+  dependencies:
+  - PCH-R3-2-01
+  - PCH-R3-2-02
+  - PCH-R3-2-03
+  owned_scope:
+  - API management CRUD/web
+  build_or_change: 修改仅计划与优先级，不改事实/运行状态；version冲突处理
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 保存→刷新→每日导入→重启仍保持，实际事实byte等价
+  expected_result: 管理排期可用且不会开任务/产生业务写入
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R3-3-03
+- id: PCH-R3-4-01
+  phase: P3
+  round: R3.4
+  title: 搜索分组与分页
+  dependencies:
+  - PCH-R3-3-01
+  - PCH-R3-3-02
+  - PCH-R3-3-03
+  owned_scope:
+  - web overview/ProjectService
+  build_or_change: 通用投影驱动列表/树/甘特；完整查询不本地只筛第一页
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 超过100夹具+真实43对账；组合筛选一致
+  expected_result: 所有视图同一head/revision；排除名单单列
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R3-4-01
+- id: PCH-R3-4-02
+  phase: P3
+  round: R3.4
+  title: 加载/空/错误/过期/历史状态
+  dependencies:
+  - PCH-R3-3-01
+  - PCH-R3-3-02
+  - PCH-R3-3-03
+  owned_scope:
+  - web shared components
+  build_or_change: 统一状态文案与恢复动作，不用技术ID替代日常信息
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 失败/空/部分结果/历史预览状态实际浏览器检查
+  expected_result: 未知0/null/不适用区分，用户能操作恢复
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R3-4-02
+- id: PCH-R3-4-03
+  phase: P3
+  round: R3.4
+  title: 跨视口与键盘可用
+  dependencies:
+  - PCH-R3-3-01
+  - PCH-R3-3-02
+  - PCH-R3-3-03
+  owned_scope:
+  - web CSS and interactions
+  build_or_change: 复用现有设计tokens；窄屏、焦点、可读标签、reduced-motion
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 桌面/窄屏/keyboard、console/network分别留证；按UI skill rubric
+  expected_result: 页面布局与交互证据齐备，不以截图替代持久/功能验证
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R3-4-03
+- id: PCH-R4-1-01
+  phase: P4
+  round: R4.1
+  title: 页面清单受控适配
+  dependencies: *id001
+  owned_scope:
+  - preview_service/source declaration schema
+  build_or_change: project/page IDs与known_page_count/completeness，设计稿与实现分域
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 动态路由/弹窗/标签计数定义；未知总数保持unknown
+  expected_result: 路由数量不自动等于全部页面数量
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R4-1-01
+- id: PCH-R4-1-02
+  phase: P4
+  round: R4.1
+  title: 预览版本与状态
+  dependencies: *id001
+  owned_scope:
+  - preview_service/ProjectService
+  build_or_change: 时间、源/构建hash、历史/当前/无法绑定；复用existing hash binding
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: stale/unknown source-version/错project/page拒绝
+  expected_result: 1—3代表预览有版本关联；旧图标历史
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R4-1-02
+- id: PCH-R4-1-03
+  phase: P4
+  round: R4.1
+  title: 采集权限与本地保留
+  dependencies: *id001
+  owned_scope:
+  - preview policy/owned artifact paths
+  build_or_change: 地址/redirect/read paths白名单；凭据与会话不入仓，默认本地
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 越权localhost/外域redirect/敏感字段与symlink拒绝夹具
+  expected_result: 预览不是任意浏览/抓本机服务接口
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R4-1-03
+- id: PCH-R4-2-01
+  phase: P4
+  round: R4.2
+  title: 网页预览独立worker
+  dependencies:
+  - PCH-R4-1-01
+  - PCH-R4-1-02
+  - PCH-R4-1-03
+  owned_scope:
+  - preview_service/CLI screenshot entry
+  build_or_change: 优先已有图，否则Playwright独立浏览上下文受控截图；不与每日轻量metadata绑定
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 授权真实Web1—3页实际截图与版本；无app批量启动
+  expected_result: 普通查询/日同步不隐式截图或起业务服务
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R4-2-01
+- id: PCH-R4-2-02
+  phase: P4
+  round: R4.2
+  title: 桌面与无UI分类
+  dependencies:
+  - PCH-R4-1-01
+  - PCH-R4-1-02
+  - PCH-R4-1-03
+  owned_scope:
+  - preview_service/web
+  build_or_change: 优先既有桌面图；必要采集按linux-task-desktop独立任务display，不占用户前台
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 真实适用样本+script noUI+未实现+失败历史分别验证
+  expected_result: not_applicable/not_implemented/unavailable/historical分开
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R4-2-02
+- id: PCH-R4-2-03
+  phase: P4
+  round: R4.2
+  title: 预览更新与失败隔离
+  dependencies:
+  - PCH-R4-1-01
+  - PCH-R4-1-02
+  - PCH-R4-1-03
+  owned_scope:
+  - preview worker/catalog
+  build_or_change: 按版本/过期/明确手动刷新，超时单项目隔离；已有关联去重
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 截图失败保留旧图且标历史；受控恢复
+  expected_result: 截图错误不影响项目状态同步或其他预览
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R4-2-03
+- id: PCH-R4-3-01
+  phase: P4
+  round: R4.3
+  title: 39项目适用性对账
+  dependencies:
+  - PCH-R4-2-01
+  - PCH-R4-2-02
+  - PCH-R4-2-03
+  owned_scope:
+  - registry/project preview DTO
+  build_or_change: 逐项清单适用/无UI/未实现/缺声明；不要求搬所有页
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 39ID覆盖，无UI正确状态，缺清单给unknown原因
+  expected_result: 每个项目都有真实适用性记录，unknown不虚构页面总数
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R4-3-01
+- id: PCH-R4-3-02
+  phase: P4
+  round: R4.3
+  title: 代表预览真实页面核对
+  dependencies:
+  - PCH-R4-2-01
+  - PCH-R4-2-02
+  - PCH-R4-2-03
+  owned_scope:
+  - web project preview/detail
+  build_or_change: 至少Web/已有desktop/script三类核对，1—3代表页绑定scope
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 图像视觉与source version/入口分别证据；敏感信息遮蔽
+  expected_result: 预览可用于判断当前实现，设计候选不冒充产品
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R4-3-02
+- id: PCH-R4-3-03
+  phase: P4
+  round: R4.3
+  title: 预览性能与查询隔离
+  dependencies:
+  - PCH-R4-2-01
+  - PCH-R4-2-02
+  - PCH-R4-2-03
+  owned_scope:
+  - preview_service/web integration
+  build_or_change: 缩略/按需加载，本地资源受限，元数据查询不运行worker
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 无Agent情况下索引/查询；实际磁盘/CPU/耗时测量
+  expected_result: 预览低频受控，基础同步仍轻量
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R4-3-03
+- id: PCH-R5-1-01
+  phase: P5
+  round: R5.1
+  title: 本机协议兼容能力审计
+  dependencies: *id002
+  owned_scope:
+  - src/hub/codex_adapter.py
+  - session_service
+  build_or_change: 核对Codex0.159.3或执行时版本、AppServer schema与实际client能力；不假设接管任意IDE
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 原生thread/session精确cwd身份读取；能力否定证据保留
+  expected_result: 真实read connection与仅mock分开；不可用不阻断P1—P4
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R5-1-01
+- id: PCH-R5-1-02
+  phase: P5
+  round: R5.1
+  title: 精确grant与控制面安全合同
+  dependencies: *id002
+  owned_scope:
+  - task_service/owner_auth/codex_adapter
+  build_or_change: Root GOVERNED合同定义实际文件/权限/网络/恢复；复用exact grant，不把登记变授权
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: writer身份/overlap/capability echo/未知状态拒绝；独立review
+  expected_result: UI前端不能填任意cwd/shell，模型/凭据仅本机后端
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R5-1-02
+- id: PCH-R5-1-03
+  phase: P5
+  round: R5.1
+  title: 模型缺失时基础功能回归
+  dependencies: *id002
+  owned_scope:
+  - ProjectService/sync/web
+  build_or_change: Agent adapter fail/disabled独立于基础采集管理链
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 断开Agent接口且不停止用户进程；同步/关系/预览查询仍可用
+  expected_result: Agent是可选功能，普通查询不调用模型
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R5-1-03
+- id: PCH-R5-2-01
+  phase: P5
+  round: R5.2
+  title: 用户请求绑定与draft
+  dependencies:
+  - PCH-R5-1-01
+  - PCH-R5-1-02
+  - PCH-R5-1-03
+  owned_scope:
+  - task_service/web UI
+  build_or_change: task/project/cwd/page-version/requirements/scope/acceptance绑定登记revision
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 错project/截图旧版/任意shell/越权目录拒绝
+  expected_result: 用户指定项目无需总控LLM推断；草稿不自动执行
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R5-2-01
+- id: PCH-R5-2-02
+  phase: P5
+  round: R5.2
+  title: 队列与状态机复用
+  dependencies:
+  - PCH-R5-1-01
+  - PCH-R5-1-02
+  - PCH-R5-1-03
+  owned_scope:
+  - task_store/task_storage/task_worker
+  build_or_change: 复用既有SQLite任务队列；queued/sent/accepted/running/approval/review/completed/failed/cancel/uncertain独立
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: restart/幂等/不可确定发送结果不重发
+  expected_result: 发消息不当任务完成，重启后恢复真实身份
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R5-2-02
+- id: PCH-R5-2-03
+  phase: P5
+  round: R5.2
+  title: 返回diff/验证/状态入口
+  dependencies:
+  - PCH-R5-1-01
+  - PCH-R5-1-02
+  - PCH-R5-1-03
+  owned_scope:
+  - task_service/session_service/web
+  build_or_change: 读取确切task result/变化范围/测试与版本，await owner review
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 真实结果绑定hash；Agent完成声明未验证时不加V
+  expected_result: 用户能审阅，建议与接受状态分开
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R5-2-03
+- id: PCH-R5-3-01
+  phase: P5
+  round: R5.3
+  title: 共享仓写串行与writer交接
+  dependencies:
+  - PCH-R5-2-01
+  - PCH-R5-2-02
+  - PCH-R5-2-03
+  owned_scope:
+  - task_worker/session identity
+  build_or_change: 按native thread/cwd/owned paths核对，不根据process名或idle badge；跨仓效果串行
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 两个同repo任务冲突与不重叠read；错误owner拒绝
+  expected_result: 不stop其他owner，不新建竞争lock服务
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R5-3-01
+- id: PCH-R5-3-02
+  phase: P5
+  round: R5.3
+  title: 恢复与精确停止
+  dependencies:
+  - PCH-R5-2-01
+  - PCH-R5-2-02
+  - PCH-R5-2-03
+  owned_scope:
+  - task_worker/codex_adapter
+  build_or_change: request/turn/thread identity已发送不确定先查，直接用户stop立即interrupt本任务descendants
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 断线/复连/重启、重复发送拒绝、支持的interrupt验证
+  expected_result: 不靠新thread或request重发reset失败，无伪造pauseAPI
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R5-3-02
+- id: PCH-R5-3-03
+  phase: P5
+  round: R5.3
+  title: 审批与结果复核界面
+  dependencies:
+  - PCH-R5-2-01
+  - PCH-R5-2-02
+  - PCH-R5-2-03
+  owned_scope:
+  - owner_auth/task UI
+  build_or_change: 权限审批、人类结果接受、Git交付分别表达；必要独立审查
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 非owner拒绝；批准范围精确；审阅后状态/预览才更新
+  expected_result: 不会因页面点击/模型说完成扩大授权
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R5-3-03
+- id: PCH-R5-4-01
+  phase: P5
+  round: R5.4
+  title: 取得精确子项目写入范围
+  dependencies:
+  - PCH-R5-3-01
+  - PCH-R5-3-02
+  - PCH-R5-3-03
+  owned_scope:
+  - STATE.yaml#pch_refactor grant reference
+  build_or_change: 等待用户选project/file/change/acceptance；先完成PCH准备，不自行挑业务改动
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 核对当前明确授权与child协议；无授权记录pending
+  expected_result: 该项是待授权；规划或Goal本身不授业务写责
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R5-4-01
+- id: PCH-R5-4-02
+  phase: P5
+  round: R5.4
+  title: 真实执行与测试回传
+  dependencies:
+  - PCH-R5-4-01
+  owned_scope:
+  - selected project only when explicitly granted
+  build_or_change: 单选外仓串行，真实正确Agent→修改→该项目必要测试→用户结果审核
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 记录native thread/cwd/turn/input/output/diff/test；不用mock
+  expected_result: 一个真实端到端通过；子项目自己的Git限制仍逐项有效
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R5-4-02
+- id: PCH-R5-4-03
+  phase: P5
+  round: R5.4
+  title: 状态/预览更新与主链回归
+  dependencies:
+  - PCH-R5-4-02
+  owned_scope:
+  - PCH adapters/preview/web
+  build_or_change: 读取新的源版本与接受结果，刷新对应预览；记录main交付独立
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 新源→API→UI→预览同版本；无Agent基础功能再验
+  expected_result: 有授权才算E2E，通过不代表整子项目业务完成
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R5-4-03
+- id: PCH-R6-1-01
+  phase: P6
+  round: R6.1
+  title: 项目/字段/证据三重对账
+  dependencies:
+  - PCH-R2-10-01
+  - PCH-R2-10-02
+  - PCH-R2-10-03
+  - PCH-R3-4-01
+  - PCH-R3-4-02
+  - PCH-R3-4-03
+  - PCH-R4-3-01
+  - PCH-R4-3-02
+  - PCH-R4-3-03
+  owned_scope:
+  - ProjectService/STATE coverage
+  build_or_change: 39基线→当前确认范围历史，complete/partial/error与缺值逐项核对
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 集合覆盖/没有重复、遗漏、取消伪完成；真实源逐项证据
+  expected_result: 保留未补源blockers；缺口不能宣称全部完整
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R6-1-01
+- id: PCH-R6-1-02
+  phase: P6
+  round: R6.1
+  title: 无Agent与断网本地验收
+  dependencies:
+  - PCH-R2-10-01
+  - PCH-R2-10-02
+  - PCH-R2-10-03
+  - PCH-R3-4-01
+  - PCH-R3-4-02
+  - PCH-R3-4-03
+  - PCH-R4-3-01
+  - PCH-R4-3-02
+  - PCH-R4-3-03
+  owned_scope:
+  - PCH sync/API/UI
+  build_or_change: 在PCH隔离测试上下文阻断网络/模型、不改变主机VPN/网络、不停用户任务
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 真实本地sync/query/stats/management/preview index，无网络请求
+  expected_result: 断网仍可运行；Git远端验收另列
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R6-1-02
+- id: PCH-R6-1-03
+  phase: P6
+  round: R6.1
+  title: 迁移历史兼容验收
+  dependencies:
+  - PCH-R2-10-01
+  - PCH-R2-10-02
+  - PCH-R2-10-03
+  - PCH-R3-4-01
+  - PCH-R3-4-02
+  - PCH-R3-4-03
+  - PCH-R4-3-01
+  - PCH-R4-3-02
+  - PCH-R4-3-03
+  owned_scope:
+  - existing SQLite/schema/DTO
+  build_or_change: 旧库/旧声明只在copy演练升级，保留history/managed values/versions
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 迁移前后值与head/hash核对；失败恢复完整
+  expected_result: 原库和用户管理值不被重建擦除
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R6-1-03
+- id: PCH-R6-2-01
+  phase: P6
+  round: R6.2
+  title: PCH服务重启恢复
+  dependencies:
+  - PCH-R6-1-01
+  - PCH-R6-1-02
+  - PCH-R6-1-03
+  owned_scope:
+  - task-owned service/PCH ledger
+  build_or_change: 准确识别service与writer，PCH task-private实例优先；不触发整机重启
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 受控PCH restart前后head/tasks/user config保持；无双writer
+  expected_result: 重启服务恢复；整机重启/注销未观测保持pending
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R6-2-01
+- id: PCH-R6-2-02
+  phase: P6
+  round: R6.2
+  title: 备份与恢复实测
+  dependencies:
+  - PCH-R6-1-01
+  - PCH-R6-1-02
+  - PCH-R6-1-03
+  owned_scope:
+  - existing data backup/retention paths
+  build_or_change: 一致性SQLite backup→isolated restore，不保存secret/store browser session
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 恢复后head/content/user settings/任务状态核对
+  expected_result: 恢复独立可用；备份存在本身不算PASS
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R6-2-02
+- id: PCH-R6-2-03
+  phase: P6
+  round: R6.2
+  title: 注销/missed-run持久调度边界
+  dependencies:
+  - PCH-R6-1-01
+  - PCH-R6-1-02
+  - PCH-R6-1-03
+  owned_scope:
+  - user timer/service
+  build_or_change: 读取linger当前状态；必要系统权限由owner local TTY处理，不擅自enable-linger
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 真实注销/未观测分开；missed-run真实/模拟分开
+  expected_result: 用户manager生命周期真实可用或明确限制/恢复条件
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R6-2-03
+- id: PCH-R6-3-01
+  phase: P6
+  round: R6.3
+  title: 本机资源实测
+  dependencies:
+  - PCH-R6-2-01
+  - PCH-R6-2-02
+  - PCH-R6-2-03
+  owned_scope:
+  - sync/preview/runtime telemetry
+  build_or_change: 记录实际elapsed/CPU/RSS/I/O/读量；对39集合观测，截图独立
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 基线与优化前后真实统计；用户业务不运行/不抢GPU
+  expected_result: 不是硬件推定；显式基线限额以测量决定，不伪定性能SLA
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R6-3-01
+- id: PCH-R6-3-02
+  phase: P6
+  round: R6.3
+  title: 日常使用与故障恢复说明
+  dependencies:
+  - PCH-R6-2-01
+  - PCH-R6-2-02
+  - PCH-R6-2-03
+  owned_scope:
+  - README.md and existing project docs
+  build_or_change: 唯一入口/启动/刷新/配置/备份/日志/新增/partial解决；移除本任务确证obsolete文档路径仅有所有权
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 命令在task-private实例验证，入口链接有效
+  expected_result: 新用户能操作本地系统；老监控保留
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R6-3-02
+- id: PCH-R6-3-03
+  phase: P6
+  round: R6.3
+  title: 最终代码/数据安全与main交付
+  dependencies:
+  - PCH-R6-2-01
+  - PCH-R6-2-02
+  - PCH-R6-2-03
+  owned_scope:
+  - owned task change set
+  build_or_change: 只task-owned代码/schema/templates/sanitized config，不上传本机DB/messages/私有根清单
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: relevant checks/diff/secret scan/visibility/branch protection/remote ancestry
+  expected_result: 真实main包含任务commit才main_verified；拒绝仍local/branch_only
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R6-3-03
+- id: PCH-R6-4-01
+  phase: P6
+  round: R6.4
+  title: 真实每日timer触发
+  dependencies:
+  - PCH-R6-3-01
+  - PCH-R6-3-02
+  - PCH-R6-3-03
+  owned_scope:
+  - systemd timer/journal/STATE evidence
+  build_or_change: 等待真实OnCalendar事件，保存journal/主机timezone/run identity/结果；不空等开启第二scheduler
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 真实time event且非手動start/模拟clock；missed-run证据单列
+  expected_result: 未发生保留pending，不能把service start当每日运行
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R6-4-01
+- id: PCH-R6-4-02
+  phase: P6
+  round: R6.4
+  title: 用户日常页面验收
+  dependencies:
+  - PCH-R6-3-01
+  - PCH-R6-3-02
+  - PCH-R6-3-03
+  owned_scope:
+  - PCH product UI/source evidence
+  build_or_change: 请求用户评审具体candidate/version/scope，数据、互动、视觉分开
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 用户明确回执与source/runtime/browser/test证据对应
+  expected_result: 未回复保留human_pending；截图/测试/静默不替代接受
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R6-4-02
+- id: PCH-R6-4-03
+  phase: P6
+  round: R6.4
+  title: 最终闭环与去重轮次收口
+  dependencies:
+  - PCH-R6-3-01
+  - PCH-R6-3-02
+  - PCH-R6-3-03
+  - PCH-R6-4-01
+  - PCH-R6-4-02
+  - PCH-R5-4-01
+  - PCH-R5-4-02
+  - PCH-R5-4-03
+  owned_scope:
+  - STATE.yaml#pch_refactor
+  - native Goal
+  build_or_change: 复用goal-progress并只在真实checkpoint累计round keys；保留失败/分母/恢复点，核对所有子agent终态
+  integration: 沿来源→规范校验→现有账本→ProjectService/API→现有页面；该任务边界外不产生效果。
+  test_method: 111当前版本全部应验leaf结果、coverage、delivery、human、timer逐项检查
+  expected_result: 所有要求达成才complete；有未验/待授权/待人工则如实部分交付，不自动扩范围
+  evidence_required:
+  - 适用输入/代码/契约版本或hash
+  - 真实命令与退出码/失败摘要
+  - 相应API/页面或结构证据；夹具与真实证据明确分开
+  failure_recovery: 保留失败及原始分母；仅修本任务拥有的差异；精确前像且无并发改动才回退；无前像不声称恢复。
+  counting: 1 leaf task; implementation/human/main-delivery独立；verification未通过不加V
+  state_ref: STATE.yaml#pch_refactor.task_results.PCH-R6-4-03
+round_count: 32
+future_planned_round_count: 29
+local_delivery_note: 本轮不commit/push。源路径清单/账本/任务消息仅本地；未来外部交付须当轮明确授权与可见性核对。

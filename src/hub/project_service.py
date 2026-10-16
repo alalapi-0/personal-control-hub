@@ -619,6 +619,63 @@ class ProjectService:
                 "previews": inventory_preview_states(fact["value"]),
                 "observed_at": record["observed_at"]}
 
+    @staticmethod
+    def _definition(declared, record, freshness, authority, read_allowed):
+        """Project identity/long-term purpose, never inferred from current work.
+
+        Registry metadata is already loaded. Optional source definitions use the
+        existing verified extension envelope; GET performs no further reads.
+        """
+        from .connection_extensions import DEFINITION_FIELDS, DEFINITION_LISTS
+        fields = {}
+        for name in sorted(DEFINITION_FIELDS):
+            fields[name] = {"value": None, "state": "missing", "source": None,
+                            "reason": "No published long-term definition field."}
+        for name, key in (("official_name", "name"), ("purpose", "description"), ("project_type", "project_type")):
+            if key not in declared:
+                continue
+            value = declared[key]
+            source = {"kind": "registry", "registry_sha256": authority["registry_hash"],
+                      "field": key, "sha256": authority["registry_hash"], "observed_at": None}
+            if value is None or value == "unknown":
+                fields[name] = {"value": None, "state": "unknown", "source": source,
+                                "reason": "Registry explicitly publishes an unknown value."}
+            elif type(value) is str and value.strip():
+                fields[name] = {"value": value, "state": "known", "source": source, "reason": None}
+            else:
+                fields[name] = {"value": None, "state": "unknown", "source": source,
+                                "reason": "Registry definition value is not a nonempty string."}
+        available = (read_allowed and record and record["success"] and freshness["state"] == "fresh")
+        extension = (record or {}).get("extensions") or {}
+        published = extension.get("fact", {}).get("project_definition")
+        if published and available:
+            proof = published["proof"]
+            if published["value"] is None:
+                for name in fields:
+                    if fields[name]["state"] == "missing":
+                        fields[name].update(state="unknown", reason=published["unknown_reason"])
+            else:
+                for name, item in published["value"].items():
+                    source = {"kind": "source_extension", "registry_sha256": authority["registry_hash"],
+                              "field": name, **copy.deepcopy(proof)}
+                    value = copy.deepcopy(item["value"])
+                    if name == "aliases" and value is not None:
+                        value = [entry["name"] for entry in value]
+                    state = item["state"]
+                    reason = item["reason"]
+                    if state == "known" and value == "unknown":
+                        state, value, reason = "unknown", None, "Source explicitly publishes unknown."
+                    if state == "known" and name in DEFINITION_LISTS and value == []:
+                        state = "empty"
+                    fields[name] = {"value": value, "state": state, "source": source, "reason": reason}
+        elif published:
+            for name in fields:
+                if fields[name]["state"] == "missing":
+                    fields[name].update(state="unavailable", reason=(freshness["reason"] or
+                                        "Current source definition is unavailable under this project's read policy."))
+        return {"schema_version": "1.0", "read_only": True, "fields": fields,
+                "missing": [name for name, item in fields.items() if item["state"] in {"missing", "unknown", "unavailable"}]}
+
     def _dto(self, declared: dict, snapshot: dict, row: dict, relation: dict,
              design_snapshot: dict | None) -> dict:
         latest, previous = row["latest_attempt"], row["last_success"]
@@ -663,6 +720,7 @@ class ProjectService:
         business["page_inventory"] = self._page_inventory_view(latest, row["freshness"], connection_read_allowed)
         return {"schema_version": "1.0", "project_id": row["project_id"],
                 "name": row["name"], "declared": declared_view,
+                "definition": self._definition(declared, latest, row["freshness"], snapshot["authority"], connection_read_allowed),
                 "business": business,
                 "operational": {"facts": [], "latest_attempt": source_record,
                                 "last_success": copy.deepcopy(previous)},

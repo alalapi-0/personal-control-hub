@@ -3,8 +3,9 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
-from hub.metric_fixture_report import collect_fixture_report, SOURCES, POSITIVE, NEGATIVE, _aggregate
+from hub.metric_fixture_report import collect_fixture_report, SOURCES, LINUX_SOURCES, POSITIVE, NEGATIVE, _aggregate
 from hub.metrics import validate_metric
 
 
@@ -36,6 +37,53 @@ class FixtureReportTests(unittest.TestCase):
         for row in group['metrics']:
             validate_metric(row)
         return {x['metric_id'].replace('validation.client_fixture.', ''): x for x in group['metrics']}
+
+    def use_linux_report(self):
+        files = self.report['code']['files']
+        for path in LINUX_SOURCES:
+            if path not in files:
+                p = self.root / path
+                p.parent.mkdir(exist_ok=True, parents=True)
+                p.write_text('synthetic Linux guard')
+                files[path] = hashlib.sha256(p.read_bytes()).hexdigest()
+        aggregate = _aggregate(files, LINUX_SOURCES)
+        self.report['code'].update(sha256=aggregate, sha256_after=aggregate)
+        self.report['modern']['version'] = '1.12.3'
+
+    def test_linux_fingerprint_binds_current_sources(self):
+        self.use_linux_report()
+        rows = self.collect()
+        self.assertEqual(rows['bound_to_selected_code']['value'], 1)
+        self.assertEqual(rows['current_selected_code_passed']['value'], 1)
+        self.assertEqual(rows['saved_run_passed']['value'], 1)
+        self.assertEqual(rows['legacy_binary_checks_executed']['value'], 0)
+
+    def test_each_linux_guard_change_unbinds_but_keeps_history(self):
+        self.use_linux_report()
+        for name in LINUX_SOURCES[4:6]:
+            with self.subTest(source=name):
+                p = self.root / name
+                original = p.read_text()
+                p.write_text('changed Linux guard')
+                rows = self.collect()
+                self.assertEqual(rows['bound_to_selected_code']['value'], 0)
+                self.assertIsNone(rows['current_selected_code_passed']['value'])
+                self.assertEqual(rows['saved_run_passed']['value'], 1)
+                p.write_text(original)
+
+    def test_unregistered_source_sets_never_read_current_files(self):
+        self.use_linux_report()
+        original = dict(self.report['code']['files'])
+        for files in (dict(original, **{'../../credentials.json': 'a'*64}),
+                      {k: v for k, v in original.items() if k != LINUX_SOURCES[4]}):
+            with self.subTest(file_count=len(files)), patch('hub.metric_fixture_report._current_files') as read:
+                self.report['code']['files'] = files
+                rows = self.collect()
+                read.assert_not_called()
+                self.assertIsNone(rows['bound_to_selected_code']['value'])
+                self.assertIsNone(rows['saved_run_passed']['value'])
+                self.assertEqual(rows['generated_artifacts']['value'], 9)
+                self.assertNotIn('credentials.json', json.dumps(rows))
 
     def test_saved_result_and_scope(self):
         rows = self.collect()

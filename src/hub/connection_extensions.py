@@ -13,7 +13,7 @@ from .connection_records import (RecordError, content_hash, exact, fingerprint, 
                                  require, string, timestamp, validate_selector)
 
 VERSION = "1.0"
-SUPPORTED_VERSIONS = {"1.0", "1.1", "1.2", "1.3"}
+SUPPORTED_VERSIONS = {"1.0", "1.1", "1.2", "1.3", "1.4"}
 DOMAINS = {"fact", "managed", "derived", "proposed"}
 FACT_FIELDS = {"task_nodes", "usable_versions", "core_capabilities", "fact_updated_at",
                "has_ui", "plan_version", "unit", "counting_basis", "progress_counts"}
@@ -21,10 +21,44 @@ TASK_PLAN_FIELDS = FACT_FIELDS | {"task_plan"}
 TIMELINE_FIELDS = TASK_PLAN_FIELDS | {"task_timeline"}
 PAGE_INVENTORY_FIELDS = TIMELINE_FIELDS | {"page_inventory"}
 VERSION_FIELDS = {"1.0": FACT_FIELDS, "1.1": TASK_PLAN_FIELDS, "1.2": TIMELINE_FIELDS,
-                  "1.3": PAGE_INVENTORY_FIELDS}
+                  "1.3": PAGE_INVENTORY_FIELDS, "1.4": PAGE_INVENTORY_FIELDS | {"project_definition"}}
 MANAGED_FIELDS = {"planned_start", "planned_end", "priority", "watch", "order", "layout"}
 COUNTS = {"total", "implemented", "verified", "human", "not_started", "active", "blocked"}
 METADATA = {"unit", "plan_version", "counting_basis", "baseline_denominator"}
+
+
+DEFINITION_FIELDS = {"official_name", "purpose", "outputs", "roles", "aliases", "primary_project_id", "working_copies", "project_type"}
+DEFINITION_LISTS = {"outputs", "roles", "aliases", "working_copies"}
+
+
+def validate_project_definition(value):
+    """Published source metadata only; aliases must explicitly be confirmed."""
+    require(type(value) is dict and set(value) <= DEFINITION_FIELDS, "project definition: unknown field")
+    for name, field in value.items():
+        exact(field, {"value", "state", "reason"}, "project definition field")
+        require(field["state"] in {"known", "unknown", "not_applicable"}, "project definition: invalid state")
+        if field["state"] != "known":
+            require(field["value"] is None, "unknown definition cannot contain a value")
+            string(field["reason"], "definition reason")
+            continue
+        require(field["reason"] is None, "known definition cannot have unknown reason")
+        item = field["value"]
+        if name in DEFINITION_LISTS:
+            require(type(item) is list and len(item) <= 32, "definition: bounded list required")
+            for entry in item:
+                if name == "aliases":
+                    exact(entry, {"name", "confirmed"}, "confirmed alias")
+                    string(entry["name"], "alias name")
+                    require(entry["confirmed"] is True, "unconfirmed alias is not a definition fact")
+                else:
+                    string(entry, "definition list item")
+                    if name == "working_copies": identifier(entry, "working copy project")
+            normalized = [entry["name"] if name == "aliases" else entry for entry in item]
+            require(len(set(normalized)) == len(normalized), "duplicate definition item")
+        else:
+            string(item, "definition value")
+            if name == "primary_project_id": identifier(item, "primary project")
+    return value
 
 
 def _integer(value: Any) -> None:
@@ -132,7 +166,9 @@ def _versions(value: Any) -> None:
 
 
 def _fact_value(key: str, value: Any, *, task_plan=None) -> None:
-    if key == "page_inventory":
+    if key == "project_definition":
+        validate_project_definition(value)
+    elif key == "page_inventory":
         from .page_inventory import validate_page_inventory
         validate_page_inventory(value)
     elif key == "task_timeline":

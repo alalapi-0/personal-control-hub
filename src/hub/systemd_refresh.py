@@ -21,7 +21,12 @@ def _argument(path: Path) -> str:
 
 
 def render_units(root: Path, code_root: Path, python: Path, *,
-                 time: str = "09:00", timezone: str = "Asia/Tokyo") -> dict[str, str]:
+                 time: str = "09:00", timezone: str = "Asia/Tokyo", incremental: bool = False,
+                 unit_prefix: str = "personal-control-hub-refresh") -> dict[str, str]:
+    if not re.fullmatch(r'[a-z][a-z0-9-]{0,79}',unit_prefix):raise ValueError('Invalid unit prefix.')
+    if incremental and (time!='09:00' or timezone!='Asia/Tokyo'):
+        raise ValueError('Scheduled daily dispatch currently requires 09:00 Asia/Tokyo.')
+    service_name=unit_prefix+'.service';timer_name=unit_prefix+'.timer'
     if not re.fullmatch(r"(?:[01][0-9]|2[0-3]):[0-5][0-9]", time):
         raise ValueError("Time must be HH:MM.")
     if not re.fullmatch(r"[A-Za-z_]+(?:/[A-Za-z_+-]+)+", timezone):
@@ -32,6 +37,7 @@ def render_units(root: Path, code_root: Path, python: Path, *,
     # systemd retains quote characters there and rejects the resulting path.
     working_directory = str(root).replace('%', '%%')
     script = _argument(code_root / "scripts/hub_sync.py")
+    mode='--scheduled' if incremental else '--daily'
     service = f"""{MARKER}
 [Unit]
 Description=Personal Control Hub finite local source refresh
@@ -39,27 +45,29 @@ Description=Personal Control Hub finite local source refresh
 [Service]
 Type=oneshot
 WorkingDirectory={working_directory}
-ExecStart={python_arg} {script} --root {root_arg} sync --daily
+ExecStart={python_arg} {script} --root {root_arg} sync {mode}
 UMask=0077
 NoNewPrivileges=true
 Nice=10
 TimeoutStartSec=300
 UnsetEnvironment=OPENAI_API_KEY ANTHROPIC_API_KEY HUB_OWNER_TOKEN
 """
+    minute_calendar='OnCalendar=*-*-* *:*:00 Asia/Tokyo\n' if incremental else ''
+    accuracy='1s' if incremental else '1min'
     timer = f"""{MARKER}
 [Unit]
 Description=Personal Control Hub daily local source refresh
 
 [Timer]
 OnCalendar=*-*-* {time}:00 {timezone}
-Persistent=true
-AccuracySec=1min
-Unit={SERVICE}
+{minute_calendar}Persistent=true
+AccuracySec={accuracy}
+Unit={service_name}
 
 [Install]
 WantedBy=timers.target
 """
-    return {SERVICE: service, TIMER: timer}
+    return {service_name: service, timer_name: timer}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -69,10 +77,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--python", required=True, type=Path)
     parser.add_argument("--time", default="09:00")
     parser.add_argument("--timezone", default="Asia/Tokyo")
+    parser.add_argument("--incremental",action='store_true',help='Render the same service with 60-second checks and 09:00 full batch')
+    parser.add_argument("--unit-prefix",default='personal-control-hub-refresh',help='Explicit isolated test unit identity if needed')
     parser.add_argument("--unit-dir", required=True, type=Path)
     args = parser.parse_args(argv)
     units = render_units(args.root, args.code_root, args.python,
-                         time=args.time, timezone=args.timezone)
+                         time=args.time, timezone=args.timezone,incremental=args.incremental,unit_prefix=args.unit_prefix)
     # Never overwrite an existing operator-owned or previously installed unit.
     # Changes use an explicit reviewed preimage rather than a broad replace flag.
     args.unit_dir.mkdir(parents=True, exist_ok=True)

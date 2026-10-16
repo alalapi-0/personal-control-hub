@@ -70,12 +70,14 @@
       "1.0",
       "1.1",
       "1.2",
-      "1.3"
+      "1.3",
+      "1.4"
     ],
     "ingestion": "Literal selector and actual source hash/observation/value equality; no managed/derived/proposed source authority",
     "task_plan": "1.1 business hierarchy/leaf acceptance and versioned denominator history; provider tasks excluded",
     "task_timeline": "1.2 literal actual calendar/offset times and milestones, bound to project/current plan/task IDs; unknown dates and named timezones remain null; Hub management plans are separate",
     "page_inventory": "1.3 literal implementation/design page units and at most three representative preview references, bound to project/source proof; version binding is metadata only, not runtime, capture or human acceptance",
+    "project_definition": "1.4 literal long-term definition fields with per-field unknown/not-applicable states; independent of current work and execution identity",
     "legacy": "Absent extension preserves source2.0 fields/update identity; old optional1.0 remains readable"
   },
   "permission_rule": "explicit connection_read_allowed=false denies before root access; absent field falls back to enabled",

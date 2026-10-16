@@ -2,8 +2,14 @@
 from __future__ import annotations
 
 from collections import Counter
+from contextlib import contextmanager
+from copy import deepcopy
 from datetime import datetime
+import fcntl
+import os
 from pathlib import Path
+import stat
+import time
 from zoneinfo import ZoneInfo
 
 from hub.connection_records import identifier, require, string
@@ -11,6 +17,104 @@ from hub.connection_refresh import RequestConflictError, refresh
 from hub.connection_sources import _safe_relative_read
 from hub.connections import parse_source
 from hub.service_contract import ServiceError
+
+INCREMENTAL_SECONDS = 60
+
+
+@contextmanager
+def sync_mutex(ledger):
+    """One nonblocking batch lock; SQLite CAS still fences other writers."""
+    path=ledger.path.with_name('.sync.lock')
+    descriptor=os.open(path,os.O_CREAT|os.O_RDWR|os.O_NOFOLLOW,0o600)
+    try:
+        info=os.fstat(descriptor)
+        require(stat.S_ISREG(info.st_mode) and info.st_nlink==1 and info.st_uid==os.getuid(),
+                'unsafe sync mutex')
+        try:fcntl.flock(descriptor,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise ServiceError('SYNC_BATCH_BUSY',status=409,retryable=True) from None
+        yield
+    finally:os.close(descriptor)
+
+
+def _version(result):
+    # A metadata-only touch is not a changed source or business fact.
+    value=deepcopy(result)
+    value.pop('observed_at',None);value.pop('update_key',None)
+    for source in value.get('sources',[]):source.pop('modified_at',None)
+    for field in value.get('extensions',{}).get('fact',{}).values():
+        if field.get('proof'):field['proof'].pop('observed_at',None)
+    return value
+
+
+def incremental_request(root, resolver, ledger, request_id, *, plan=None):
+    """Bounded safe reads; append only changed/expired evidence, never on GET."""
+    plan=plan if plan is not None else scope_plan(root,resolver)
+    identifier(request_id,'request')
+    if not plan['eligible_project_ids']:
+        return {'request_id':request_id,'status':'NO_ELIGIBLE_PROJECTS','appended_count':0,
+                'checked_count':0,'unchanged_count':0,
+                'failure_code_counts':{'NO_ELIGIBLE_PROJECTS':1},'head':ledger.head},2
+    history=ledger.history(current_authority=resolver.authority)
+    existing=next((row for row in history['requests'] if row['request_id']==request_id),None)
+    if existing:
+        return sync_request(root,resolver,ledger,request_id,project_ids=existing['project_ids'],plan=plan)
+    previous={row['project_id']:row['result'] for row in history['results']}
+    scanned={};unchanged=[];errors=Counter()
+    for ident in plan['eligible_project_ids']:
+        result=resolver.refresh(ident)
+        old=previous.get(ident)
+        expired=False
+        if old is not None and result['success']:
+            observed=datetime.fromisoformat(result['observed_at'].replace('Z','+00:00'))
+            prior=datetime.fromisoformat(old['observed_at'].replace('Z','+00:00'))
+            age=(observed-prior).total_seconds()
+            expired=age<0 or age>=old['freshness']['max_read_age_seconds']
+        if old is None or _version(old)!=_version(result) or expired:
+            scanned[ident]=result
+        else:unchanged.append(ident)
+        if not result['success']:
+            errors.update(error['code'] for error in result['errors'])
+    resolver._check_registry()
+    if not scanned:
+        return {'request_id':request_id,'status':'UNCHANGED','appended_count':0,
+                'checked_count':len(unchanged),'unchanged_count':len(unchanged),
+                'failure_code_counts':dict(errors),'head':ledger.head},2 if errors else 0
+    class ScannedResolver:
+        authority=resolver.authority
+        validate_result=staticmethod(resolver.validate_result)
+        def refresh(self,ident):
+            resolver._check_registry()
+            return deepcopy(scanned[ident])
+    outcome=refresh(ledger,ScannedResolver(),request_id,list(scanned),expected_head=history['head'])
+    return {'request_id':request_id,'status':outcome['request']['status'],
+            'appended_count':len(outcome['appended_project_ids']),
+            'checked_count':len(scanned)+len(unchanged),'unchanged_count':len(unchanged),
+            'failure_code_counts':dict(errors),'head':outcome['projection']['head']},2 if errors else 0
+
+
+def scheduled_request(root,resolver,ledger,*,instant=None,plan=None,incremental_only=False):
+    """One timer/service owns both the 09:00 full batch and minute checks."""
+    instant=instant or datetime.now(ZoneInfo('Asia/Tokyo'))
+    require(instant.tzinfo is not None,'scheduled instant needs timezone')
+    local=instant.astimezone(ZoneInfo('Asia/Tokyo'))
+    plan=plan if plan is not None else scope_plan(root,resolver)
+    started=time.monotonic()
+    with sync_mutex(ledger):
+        daily=daily_request_id(plan['scope_id'],instant=instant)
+        history=ledger.history(current_authority=resolver.authority)
+        full=next((row for row in history['requests'] if row['request_id']==daily),None)
+        if not incremental_only and local.hour>=9 and (full is None or full['status']!='FINISHED'):
+            payload,code=sync_request(root,resolver,ledger,daily,plan=plan)
+            mode='daily'
+        else:
+            ident=f"{plan['scope_id']}.incremental.{local.strftime('%Y-%m-%dT%H-%M')}"
+            payload,code=incremental_request(root,resolver,ledger,ident,plan=plan)
+            mode='incremental'
+        elapsed=time.monotonic()-started
+        payload.update(mode=mode,scheduled_at=instant.isoformat(),elapsed_seconds=elapsed,
+                       incremental_interval_seconds=INCREMENTAL_SECONDS,overloaded=elapsed>INCREMENTAL_SECONDS)
+        return payload,code
 
 SCOPE_PATH = "data/connections/sync_scope.yaml"
 
@@ -46,6 +150,8 @@ def scope_plan(root: Path, resolver) -> dict:
             reason = "removed_local"
         elif row.get("enabled") is not True:
             reason = "disabled"
+        elif row.get('project_type') in {'cloud','cloud_project'} or row.get('root_kind')=='cloud':
+            reason = 'cloud'
         elif row.get("summary_enabled", row.get("enabled")) is not True:
             reason = "summary_disabled"
         elif (row.get("connection_read_allowed", row.get("enabled")) is not True

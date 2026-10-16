@@ -283,7 +283,7 @@ class ProjectServiceFacadeTests(unittest.TestCase):
         self.assertEqual(project_facts(detail), project_facts(listing["projects"][0]))
         self.assertEqual({"schema_version", "project_id", "name", "declared", "business",
                           "operational", "freshness", "source", "errors", "relations",
-                          "design", "provenance", "management"}, set(detail))
+                          "design", "provenance", "management", "definition"}, set(detail))
         self.assertFalse(detail["management"]["available"])
         self.assertEqual("MANAGEMENT_NOT_INITIALIZED", detail["management"]["reason"])
         self.assertIsNone(detail["management"]["overlay"])

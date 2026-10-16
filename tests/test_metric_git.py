@@ -60,6 +60,37 @@ class GitMetricTests(unittest.TestCase):
         self.assertEqual(0, metrics["git.staged.lines_added"]["value"])
         self.assertEqual((3, 2, 0), _numstat(b"3\t2\t\0old\tname\0new\nname\0"))
 
+    def test_protected_ignored_tree_opt_out_preserves_status_and_unknown_count(self):
+        (self.root / ".gitignore").write_text(".venv/\n")
+        (self.root / ".venv").mkdir()
+        (self.root / ".venv" / "retained").write_text("old environment")
+        (self.root / "tracked").write_text("staged\n")
+        self.git("add", "tracked")
+        (self.root / "tracked").write_text("staged\nunstaged\n")
+        (self.root / "new-source").write_text("source")
+        from hub import metric_git
+        with patch.object(metric_git, "_run", wraps=metric_git._run) as run:
+            result = collect_git(self.root, "example", datetime.now(timezone.utc).isoformat(),
+                                 observe_ignored=False)
+        rows = {m["metric_id"]: m for m in result["metrics"]}
+        self.assertEqual(1, rows["git.staged.files"]["value"])
+        self.assertEqual(1, rows["git.unstaged.files"]["value"])
+        self.assertEqual(2, rows["git.untracked.files"]["value"])
+        self.assertEqual(1, rows["git.changed.overlapping_files"]["value"])
+        self.assertIsNone(rows["git.ignored.files"]["value"])
+        self.assertEqual("unknown", rows["git.ignored.files"]["quality"])
+        self.assertEqual("protected_runtime_ignored_tree_observation_disabled",
+                         rows["git.ignored.files"]["reason"])
+        status = [call.args for call in run.call_args_list if call.args[1] == "status"]
+        self.assertEqual(1, len(status))
+        self.assertFalse(any(arg.startswith("--ignored") for arg in status[0][1:]))
+        for row in rows.values():
+            validate_metric(row)
+        with patch.object(metric_git, "_run", side_effect=AssertionError("Git called")):
+            with self.assertRaises(ValueError):
+                collect_git(self.root, "example", datetime.now(timezone.utc).isoformat(),
+                            observe_ignored="false")
+
     def test_binary_lines_unknown_with_known_text_separate(self):
         (self.root / "binary").write_bytes(b"a\0b")
         self.git("add", "binary")

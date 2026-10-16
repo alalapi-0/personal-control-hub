@@ -101,11 +101,63 @@ def validate_grant(grant, *, live=False):
 
 
 class TaskService:
-    def __init__(self,projects,annotations,store, *, test_gate=False, writer_check=None):
+    def __init__(self,projects,annotations,store, *, test_gate=False, writer_check=None, runtime_status=None):
         self.projects,self.annotations,self.store=projects,annotations,store
         self.test_gate=test_gate
         # An internal lease cannot certify an unrelated writer's absence.
         self.writer_check=writer_check or (lambda _:False)
+        self.writer_check_configured=writer_check is not None
+        self.runtime_status=runtime_status
+
+    def capabilities(self, *, storage=None):
+        """Read server readiness only; never authorize a task or probe a provider.
+
+        The trusted runtime callback reports worker_runtime/provider availability.
+        Per-task grants and writer evidence remain admission-time requirements.
+        """
+        def capability(available, reason=None, status=None, classification='unknown'):
+            return {'available':available,'status':status or ('available' if available else 'unavailable'),
+                    'reason_code':reason,'classification':classification}
+        if storage is None:storage=self.store.storage_status()
+        runtime={}
+        if self.runtime_status is not None:
+            try:
+                reported=self.runtime_status()
+                if type(reported)is dict:runtime=reported
+            except Exception:
+                pass  # A failed observer cannot confer readiness.
+        result={}
+        for key,reason in (('worker_runtime','TASK_WORKER_UNCONFIGURED'),('provider','TASK_PROVIDER_UNAVAILABLE')):
+            reported=runtime.get(key)
+            ready=type(reported)is dict and reported.get('available') is True
+            classification=reported.get('classification') if type(reported)is dict else None
+            if type(classification)is not str or classification not in {'synthetic_fixture','real','unknown'}:
+                classification='unknown'
+            # Runtime details/paths are private; expose only fixed reason codes.
+            result[key]=capability(ready,None if ready else reason,classification=classification)
+        reason=storage.get('reason_code') if type(storage)is dict else 'TASK_STORAGE_STATUS_UNAVAILABLE'
+        storage_ready=type(storage)is dict and storage.get('state')=='ready'
+        history_ready=storage_ready or reason in {'LOW_SPACE','SPACE_UNAVAILABLE'}
+        result['task_drafts']=capability(self.annotations is not None,
+            None if self.annotations is not None else 'WORKBENCH_UNAVAILABLE')
+        result['task_history']=capability(history_ready,None if history_ready else reason or 'TASK_STORAGE_BLOCKED')
+        execution_reason=None
+        for ready,blocked_reason in (
+                (bool(self.test_gate),'EXECUTION_DISABLED'),
+                (self.writer_check_configured,'TASK_WRITER_CHECK_UNCONFIGURED'),
+                (result['worker_runtime']['available'],result['worker_runtime']['reason_code']),
+                (result['provider']['available'],result['provider']['reason_code']),
+                (storage_ready,reason or 'TASK_STORAGE_BLOCKED')):
+            if not ready:
+                execution_reason=blocked_reason
+                break
+        runtime_classes={result[key]['classification'] for key in ('worker_runtime','provider')}
+        execution_class=('synthetic_fixture' if 'synthetic_fixture' in runtime_classes else
+                         'real' if runtime_classes=={'real'} else 'unknown')
+        result['annotation_execution']=capability(execution_reason is None,execution_reason,
+            'disabled' if not self.test_gate else None,classification=execution_class)
+        result['ordinary_execution']=capability(False,'ORDINARY_TASK_CONTRACT_UNAVAILABLE')
+        return result
 
     @staticmethod
     def _draft(row):
@@ -128,9 +180,10 @@ class TaskService:
 
     def drafts(self):
         annotations=self.annotations.annotations()
+        capabilities=self.capabilities()
         return {'drafts':[self._draft(row)for row in annotations['records']if 'task_spec'in row['command']],
                 'revision':annotations['revision'],'classification':annotations['classification'],
-                'execution_enabled':False}
+                'execution_enabled':capabilities['annotation_execution']['available'],'capabilities':capabilities}
 
     def draft(self,ident):
         stable_id(ident)
@@ -312,18 +365,25 @@ class TaskService:
         for key in ('design_reference','element_hint'):
             if key in command:reference[key]=copy.deepcopy(command[key])
         self.annotations.validate_references(command,historical=True)
-        return {'choices':choices,'test_gate':self.test_gate,'execution_enabled':False,'reference':reference}
+        capabilities=self.capabilities()
+        return {'choices':choices,'test_gate':self.test_gate,
+                'execution_enabled':capabilities['annotation_execution']['available'],
+                'capabilities':capabilities,'reference':reference}
 
     def list(self):
         storage=self.store.storage_status()
+        capabilities=self.capabilities(storage=storage)
+        readiness={'execution_enabled':capabilities['annotation_execution']['available'],'capabilities':capabilities}
         if storage['state']=='blocked' and storage['reason_code'] not in {'LOW_SPACE','SPACE_UNAVAILABLE'}:
-            return {'tasks':[],'tasks_available':False,'execution_enabled':False,'test_gate':self.test_gate,'storage':storage}
+            return {'tasks':[],'tasks_available':False,**readiness,'test_gate':self.test_gate,'storage':storage}
         try:tasks=[self.public(t)for t in self.store.tasks()]
         except ServiceError as error:
             if error.code not in {'TASK_STORE_CORRUPT','TASK_SCHEMA_UNSUPPORTED','TASK_LOCATION_REJECTED'}:raise
+            storage={'state':'blocked','profile_version':None,'reason_code':error.code}
+            capabilities=self.capabilities(storage=storage)
             return {'tasks':[],'tasks_available':False,'execution_enabled':False,'test_gate':self.test_gate,
-                    'storage':{'state':'blocked','profile_version':None,'reason_code':error.code}}
-        return {'tasks':tasks,'tasks_available':True,'execution_enabled':False,'test_gate':self.test_gate,'storage':storage}
+                    'capabilities':capabilities,'storage':storage}
+        return {'tasks':tasks,'tasks_available':True,**readiness,'test_gate':self.test_gate,'storage':storage}
 
     def get(self,ident):
         storage=self.store.storage_status()

@@ -6,13 +6,43 @@ const statuses={active:'进行中',paused:'已暂停',blocked:'受阻',complete:
 const types={internal_control_plane:'管理',governance_program:'治理',code:'开发',creative:'创作',document:'文档',unknown:'类型未知'};
 const knownKey=(labels,value)=>Object.hasOwn(labels,value)?value:'unknown';
 
+// Search only identity and explicitly sourced definition fields. In particular,
+// local paths and similar-sounding names never create aliases or relationships.
+export function projectSearchMatch(project,query=''){
+  const q=String(query).trim().toLocaleLowerCase();
+  if(!q)return {matched:true,reasons:[]};
+  const candidates=[
+    {field:'project_id',label:'项目ID',value:project.project_id,source:'project_id'},
+    {field:'official_name',label:'正式名称',value:project.name,source:'name'},
+  ];
+  const fields=project.definition?.fields??{};
+  for(const [field,label] of [['official_name','正式名称'],['aliases','已确认别名'],['purpose','用途'],['outputs','产出']]){
+    const entry=fields[field];
+    if(entry?.state!=='known'||!entry.source)continue;
+    const values=Array.isArray(entry.value)?entry.value:[entry.value];
+    for(const value of values)candidates.push({field,label,value,source:entry.source});
+  }
+  const reasons=[],seen=new Set();
+  for(const candidate of candidates){
+    if(typeof candidate.value!=='string'||!candidate.value.toLocaleLowerCase().includes(q))continue;
+    const key=JSON.stringify([candidate.field,candidate.value]);
+    if(!seen.has(key)){seen.add(key);reasons.push(candidate);}
+  }
+  return {matched:reasons.length>0,reasons};
+}
+
 // All views share this projection of the complete directory. Grouping never
 // invents project relationships or changes the original directory order.
 export function projectDirectory(projects,{query='',status='',freshness='',groupBy='none'}={}){
-  const q=String(query).trim().toLocaleLowerCase();
-  const rows=projects.filter(project=>(!q||`${project.name??''} ${project.project_id??''}`.toLocaleLowerCase().includes(q))
+  const matches=new Map();
+  const rows=projects.filter(project=>{
+    const match=projectSearchMatch(project,query);
+    const included=match.matched
     &&(!status||project.business?.normalized_status===status)
-    &&(!freshness||(freshness==='attention'?attention(project):freshness==='fresh'?project.freshness?.state==='fresh':false)));
+    &&(!freshness||(freshness==='attention'?attention(project):freshness==='fresh'?project.freshness?.state==='fresh':false));
+    if(included)matches.set(project.project_id,match.reasons);
+    return included;
+  });
   const groups=[],byKey=new Map();
   for(const project of rows){
     let key='all',label='全部项目';
@@ -28,7 +58,7 @@ export function projectDirectory(projects,{query='',status='',freshness='',group
     }
     byKey.get(key).rows.push(project);
   }
-  return {rows,groups,total:projects.length,matched:rows.length};
+  return {rows,groups,total:projects.length,matched:rows.length,matches};
 }
 
 export function renderDirectoryTree(rows){

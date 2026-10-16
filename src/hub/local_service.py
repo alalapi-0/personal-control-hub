@@ -369,8 +369,26 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                 raise ServiceError('INVALID_QUERY')
             ledger = self.server.projects.ledger_head()
             snapshot = self._design_snapshot()
-            result = {'backend_instance': self.server.backend_instance, 'owner_authenticated': owner and self.server.owner_auth.configured,
-                      'owner_configured': self.server.owner_auth.configured, 'execution_enabled': False,
+            capabilities = self.server.tasks.capabilities() if self.server.tasks is not None else {}
+            authenticated = bool(owner and self.server.owner_auth.configured)
+            for name in ('task_drafts', 'task_history', 'annotation_execution', 'ordinary_execution'):
+                if name in capabilities:
+                    capability = capabilities[name]
+                    capability['service_available'] = capability['available']
+                    if not authenticated:
+                        capability.update(available=False, status='requires_owner',
+                                          reason_code='OWNER_REQUIRED' if self.server.owner_auth.configured else 'OWNER_AUTH_UNAVAILABLE')
+            capabilities['owner_auth'] = {'available': self.server.owner_auth.configured,
+                                          'status': 'configured' if self.server.owner_auth.configured else 'unconfigured',
+                                          'reason_code': None if self.server.owner_auth.configured else 'OWNER_AUTH_UNAVAILABLE'}
+            capabilities['owner_session'] = {'available': authenticated,
+                                             'status': 'authenticated' if authenticated else 'guest',
+                                             'reason_code': None if authenticated else 'OWNER_REQUIRED'}
+            execution = capabilities.get('annotation_execution', {}).get('available', False)
+            result = {'backend_instance': self.server.backend_instance, 'owner_authenticated': authenticated,
+                      'owner_configured': self.server.owner_auth.configured,
+                      'execution_enabled': execution,
+                      'capabilities': capabilities,
                       'ledger_head': ledger, 'design_revision': snapshot.get('store_revision'),
                       'data_classification': snapshot.get('store_classification', 'unavailable')}
         elif path == '/api/sessions':

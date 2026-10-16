@@ -25,6 +25,16 @@ _TIMESTAMP = re.compile(r'(?:|n/a|0|(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun) '
                         r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)? [A-Za-z0-9_+:/-]+)')
 
 
+def _elapsed_seconds(start,end):
+    """Compare only complete timestamps in the same reported timezone."""
+    try:
+        left,left_zone=start.rsplit(' ',1);right,right_zone=end.rsplit(' ',1)
+        if left_zone!=right_zone:return None
+        seconds=(datetime.fromisoformat(right[4:])-datetime.fromisoformat(left[4:])).total_seconds()
+        return seconds if seconds>=0 else None
+    except (ValueError,TypeError,AttributeError):return None
+
+
 def _parse(stdout: str, fields: tuple[str, ...]) -> dict:
     if type(stdout) is not str or len(stdout) > 16384:
         raise ValueError('invalid output')
@@ -61,6 +71,9 @@ def refresh_schedule_status() -> dict:
               'status': 'unavailable', 'timer': None, 'service': None,
               'actual_calendar_verification': 'unverified',
               'logout_recovery_verification': 'unverified',
+              'freshness_target': {'incremental_check_seconds':60,'visible_head_check_seconds':5,
+                                   'source_to_page_seconds':90,'configuration_verification':'unverified'},
+              'last_run_seconds':None,'overloaded':None,
               'missed': None, 'catchup': None}
     if sys.platform != 'linux':
         result['reason'] = 'unsupported_platform'
@@ -97,7 +110,9 @@ def refresh_schedule_status() -> dict:
             result['reason'] = 'invalid_output'
             return result
     timer, service = observations
+    elapsed=_elapsed_seconds(service['ExecMainStartTimestamp'],service['ExecMainExitTimestamp'])
     result.update(available=True, timer=timer, service=service,
+                  last_run_seconds=elapsed,overloaded=elapsed>60 if elapsed is not None else None,
                   status='active' if timer['ActiveState'] == 'active' else
                          'paused' if timer['ActiveState'] == 'inactive' else 'unavailable')
     if result['status'] == 'unavailable':
