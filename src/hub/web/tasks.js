@@ -96,8 +96,34 @@ export function taskReadPath(taskId,expectedResultVersion=null){
   return '/api/tasks/'+encodeURIComponent(taskId)+(expectedResultVersion?'?expected_result_version='+expectedResultVersion:'');
 }
 
+function taskFocusSnapshot(target){
+  const node=document.activeElement;
+  if(!node||!target.contains?.(node))return null;
+  return {node,id:node.id,key:node.getAttribute?.('data-task-focus'),value:node.value,
+    start:node.selectionStart,end:node.selectionEnd};
+}
+function taskFocusIdle(target){
+  const active=document.activeElement;
+  return !active||active===document.body||active===target||active.isConnected===false;
+}
+function restoreTaskFocus(target,snapshot){
+  if(!snapshot||!taskFocusIdle(target))return;
+  let next=snapshot.id?document.getElementById?.(snapshot.id):null;
+  if(!next||!target.contains?.(next))next=snapshot.key?target.querySelector('[data-task-focus="'+snapshot.key+'"]'):null;
+  if(next&&!next.disabled){
+    if(snapshot.value!==undefined&&['INPUT','TEXTAREA','SELECT'].includes(next.tagName))next.value=snapshot.value;
+    next.focus();
+    if(snapshot.start!==null&&snapshot.start!==undefined)try{next.setSelectionRange(snapshot.start,snapshot.end);}catch{}
+  }else target.querySelector('[aria-label="任务执行状态"]')?.focus();
+}
+function focusTaskStatus(target,isCurrent){
+  if(isCurrent()&&taskFocusIdle(target))target.querySelector('[aria-label="任务执行状态"]')?.focus();
+}
+function taskMessage(node,value){if(node.textContent!==value)node.textContent=value;}
+
 export async function renderTasks(target,{taskId=null,isCurrent=()=>true,expectedResultVersion=null}={}){
   const options={taskId,isCurrent,expectedResultVersion};
+  let focusSnapshot=null;
   function stale(){
     if(!isCurrent())return;
     const previous=target.querySelector?.('[data-task-record="'+taskId+'"]');
@@ -119,7 +145,10 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true,expecte
   const root=el('section',{className:'stack'},el('h1',{},'任务与结果'),el('a',{href:'#workbench'},'← 可视化工作台'),
     el('p',{className:'muted'},'浏览器关闭后读取同一请求核对结果。执行回复、实际检查与用户验收分别记录。'),
     el('a',{href:'#sessions'},'核对既有 Codex 会话'));
-  const refresh=button('重新对账',async()=>{refresh.disabled=true;try{await renderTasks(target,options);if(isCurrent())target.querySelector('button')?.focus();}catch{root.append(el('p',{role:'status'},'连接暂不可用；保留当前记录，请重连后核对。'));refresh.disabled=false;refresh.focus();}});
+  const refresh=button('重新对账',async()=>{refresh.disabled=true;try{await renderTasks(target,options);focusTaskStatus(target,isCurrent);}catch{root.append(el('p',{role:'status'},'连接暂不可用；保留当前记录，请重连后核对。'));refresh.disabled=false;refresh.focus();}});
+  refresh.setAttribute('data-task-focus','refresh');
+  focusSnapshot=taskFocusSnapshot(target);
+  const previousStatus=target.querySelector?.('[data-task-record]')?.getAttribute('data-task-status');
   root.append(refresh);target.replaceChildren(root);
   const recovery=recoveryState(data.task,data.storage);
   if(recovery.blocked)root.append(el('section',{className:'panel stack'},el('h2',{},'存储写入暂停'),el('p',{},recovery.reason),
@@ -132,10 +161,11 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true,expecte
       t.kind==='ordinary_project'?el('p',{},'普通只读任务：'+(t.task_spec?.objective||'原指令待核对')):null));
     return;
   }
-  const task=data.task;root.setAttribute('data-task-record',task.id);
+  const task=data.task;root.setAttribute('data-task-record',task.id);root.setAttribute('data-task-status',lifecycleLabel(task));
+  if(previousStatus&&previousStatus!==lifecycleLabel(task)){const notice=document.getElementById?.('notice');if(notice)taskMessage(notice,'任务状态：'+lifecycleLabel(task));}
   if(task.result_version)root.append(el('a',{href:taskResultLink(task)},'本次结果固定链接'));
   let owner=!recovery.blocked;const actions=[];
-  root.append(...[el('h2',{},task.id),el('p',{className:task.status==='checks_complete'?'success':'warning'},lifecycleLabel(task)),
+  root.append(...[el('h2',{},task.id),el('p',{className:task.status==='checks_complete'?'success':'warning',role:'status','aria-live':'polite','aria-label':'任务执行状态',tabIndex:-1},lifecycleLabel(task)),
     task.worker_state==='lease_expired'?el('p',{className:'warning'},'执行器租约已过期；需要核对精确进程与会话，不能重新发送。'):null,
     el('p',{},'项目：'+task.project),el('p',{className:'caption'},`会话 ${task.thread_id||'尚未绑定'} · 回合 ${task.turn_id||'尚未绑定'} · 原生状态 ${task.provider_status||'尚未取得'}`),
     el('p',{className:'caption'},'模式：'+({new:'新建会话',idle_continue:'继续明确的空闲会话',busy_feedback:'排队反馈'}[task.mode]||'待核对')+(task.parent?' · 前序任务 '+task.parent:'')),
@@ -167,35 +197,50 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true,expecte
         const id='control-'+control.id+'-'+question.id;
         const input=options.length&&!question.isOther?el('select',{id},
           el('option',{value:''},'请选择'),...options.map(option=>el('option',{value:option.label},option.label+' — '+option.description))):el('textarea',{id,rows:3,maxLength:2000});
-        input.disabled=!state.canAnswer;
+        input.disabled=!state.canAnswer;input.setAttribute('aria-describedby','task-input-error-'+control.id);input.setAttribute('aria-invalid','false');
+        input.addEventListener('input',()=>{input.setAttribute('aria-invalid','false');});
         section.append(el('label',{htmlFor:id},question.header+'：'+question.question),input);
         if(options.length&&question.isOther)section.append(el('p',{className:'caption'},'可填写 '+options.map(option=>option.label).join(' / ')+'，或补充其他回答。'));
         fields.push({question,input});
         actions.push({button:input,allowed:()=>!responding&&controlState(control,task,owner).canAnswer});
       }
-      const message=el('p',{role:'status','aria-live':'polite'});
+      const message=el('p',{id:'task-input-error-'+control.id,role:'status','aria-live':'polite'});
       const answer=button('提交补充输入',async()=>{
         if(responding)return;
-        if(!fields.length||fields.some(field=>!field.input.value.trim())){message.textContent='请回答每个问题。';fields.find(field=>!field.input.value.trim())?.input.focus();return;}
+        if(!fields.length||fields.some(field=>!field.input.value.trim())){for(const field of fields)field.input.setAttribute('aria-invalid',String(!field.input.value.trim()));message.textContent='请回答每个问题。';fields.find(field=>!field.input.value.trim())?.input.focus();return;}
         const answers=Object.fromEntries(fields.map(({question,input})=>[question.id,{answers:[input.value.trim()]}]));
         responding=true;controlButtons.forEach(action=>action.disabled=true);fields.forEach(field=>field.input.disabled=true);message.textContent='正在保存本次答复…';
-        try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/respond',{control_id:control.id,version:control.version,decision:'answer',answers});await renderTasks(target,options);}
-        catch{message.textContent='答复结果需要核对。保留当前输入，请重新读取原任务；不会另建任务。';refresh.focus();}
+        try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/respond',{control_id:control.id,version:control.version,decision:'answer',answers});await renderTasks(target,options);focusTaskStatus(target,isCurrent);}
+        catch(error){
+          if(!isCurrent()||!section.isConnected)return;
+          if(error.outcome==='NOT_COMMITTED'){
+            if(error.status===401||error.status===403)owner=false;
+            responding=false;
+            for(const field of fields){field.input.disabled=!controlState(control,task,owner).canAnswer;field.input.setAttribute('aria-invalid','true');}
+            answer.disabled=!controlState(control,task,owner).canAnswer;
+            for(const action of controlButtons)if(action!==answer)action.disabled=!controlState(control,task,owner).canDecline;
+            message.textContent=owner?'答复未保存，原输入保留；请修改后重新提交。':'当前身份无法保存答复，原输入保留；请重新核对所有者身份。';
+            if(taskFocusIdle(target)||document.activeElement===answer)fields.find(field=>!field.input.disabled)?.input.focus();
+          }else{
+            message.textContent='答复结果未知，原输入保留；请重新对账原请求，不会自动再次提交。';
+            if(taskFocusIdle(target)||document.activeElement===answer)refresh.focus();
+          }
+        }
       });
-      answer.disabled=!state.canAnswer;controlButtons.push(answer);actions.push({button:answer,allowed:()=>!responding&&controlState(control,task,owner).canAnswer});section.append(answer,message);
+      answer.setAttribute('data-task-focus','answer-'+control.id);answer.disabled=!state.canAnswer;controlButtons.push(answer);actions.push({button:answer,allowed:()=>!responding&&controlState(control,task,owner).canAnswer});section.append(answer,message);
     }
     if(control.kind==='approval'&&control.allowed_decisions.includes('accept')){
       const accept=button('仅本次允许',async()=>{
         responding=true;controlButtons.forEach(action=>action.disabled=true);const message=el('p',{role:'status'},'正在保存本次答复…');section.append(message);
-        try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/respond',{control_id:control.id,version:control.version,decision:'accept'});await renderTasks(target,options);if(isCurrent())target.querySelector('button')?.focus();}
+        try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/respond',{control_id:control.id,version:control.version,decision:'accept'});await renderTasks(target,options);focusTaskStatus(target,isCurrent);}
         catch(error){message.textContent='答复结果需要核对：'+(error.code||'连接不可用')+'。请读取原任务，勿重复创建请求。';refresh.focus();}
-      });accept.disabled=!state.canAccept;controlButtons.push(accept);actions.push({button:accept,allowed:()=>!responding&&controlState(control,task,owner).canAccept});section.append(accept);
+      });accept.setAttribute('data-task-focus','accept-'+control.id);accept.disabled=!state.canAccept;controlButtons.push(accept);actions.push({button:accept,allowed:()=>!responding&&controlState(control,task,owner).canAccept});section.append(accept);
     }
     const decline=button('拒绝本次请求',async()=>{
       responding=true;controlButtons.forEach(action=>action.disabled=true);const message=el('p',{role:'status'},'正在保存拒绝…');section.append(message);
-      try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/respond',{control_id:control.id,version:control.version,decision:'decline'});await renderTasks(target,options);if(isCurrent())target.querySelector('button')?.focus();}
+      try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/respond',{control_id:control.id,version:control.version,decision:'decline'});await renderTasks(target,options);focusTaskStatus(target,isCurrent);}
       catch(error){message.textContent='答复结果需要核对：'+(error.code||'连接不可用')+'。请读取原任务，勿重复创建请求。';decline.disabled=true;refresh.focus();}
-    });decline.disabled=!state.canDecline;controlButtons.push(decline);actions.push({button:decline,allowed:()=>!responding&&controlState(control,task,owner).canDecline});section.append(decline);root.append(section);
+    });decline.setAttribute('data-task-focus','decline-'+control.id);decline.disabled=!state.canDecline;controlButtons.push(decline);actions.push({button:decline,allowed:()=>!responding&&controlState(control,task,owner).canDecline});section.append(decline);root.append(section);
   }
   if(task.result?.transport&&task.result.transport!=='app_server_stdio')root.append(el('p',{className:'warning'},'模拟执行结果 · 验收仅针对这份测试记录。'));
   if(task.result){
@@ -214,16 +259,17 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true,expecte
         reviewButtons.forEach(b=>b.disabled=true);reviewMessage.textContent='正在保存验收记录…';
         const command={request_id:'review-'+crypto.randomUUID(),expected_result_version:task.result_version,
           expected_review_revision:task.result_review?.revision||0,decision};
-        try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/review',command);await renderTasks(target,options);if(isCurrent())target.querySelector('button')?.focus();}
+        try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/review',command);await renderTasks(target,options);focusTaskStatus(target,isCurrent);}
         catch{reviewMessage.textContent='验收结果需要核对。请重新读取此次任务，再决定；不会重新执行。';refresh.focus();}
       });
-      action.disabled=!owner;reviewButtons.push(action);actions.push({button:action,allowed:()=>owner});reviewPanel.append(action);
+      action.setAttribute('data-task-focus','review-'+decision);action.disabled=!owner;reviewButtons.push(action);actions.push({button:action,allowed:()=>owner});reviewPanel.append(action);
     }
     reviewPanel.append(reviewMessage);root.append(reviewPanel);
   }
   if(['queued','running','waiting_input','waiting_approval','validating'].includes(task.status)){
-    const cancel=button('取消这个任务',async()=>{cancel.disabled=true;try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/cancel',{});await renderTasks(target,options);if(isCurrent())target.querySelector('button')?.focus();}catch{root.append(el('p',{role:'status'},'取消结果待核对；请读取原任务，不会重新执行。'));cancel.disabled=false;cancel.focus();}});
+    const cancel=button('取消这个任务',async()=>{cancel.disabled=true;try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/cancel',{});await renderTasks(target,options);focusTaskStatus(target,isCurrent);}catch{root.append(el('p',{role:'status'},'取消结果待核对；请读取原任务，不会重新执行。'));cancel.disabled=false;cancel.focus();}});
     cancel.disabled=!owner;
+    cancel.setAttribute('data-task-focus','cancel');
     actions.push({button:cancel,allowed:()=>owner});
     root.append(cancel);
     root.append(el('p',{className:'caption'},task.kind==='ordinary_project'?'取消只中断这个只读任务；执行状态和已经收到的回复仍保留。':'取消只中断这个任务；已经产生的修改可能保留，须查看差异后决定。'));
@@ -231,8 +277,9 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true,expecte
   function identity(event){if(!root.isConnected){window.removeEventListener('hub:identity',identity);return;}owner=!recovery.blocked&&event.detail?.owner_authenticated===true;for(const action of actions)action.button.disabled=!action.allowed();}
   window.addEventListener('hub:identity',identity);
   root.append(el('details',{},el('summary',{},'有序事件'),el('pre',{},JSON.stringify(data.events,null,2))));
+  restoreTaskFocus(target,focusSnapshot);
   if(task.kind==='ordinary_project'&&['queued','running','waiting_input','waiting_approval','validating'].includes(task.status)){
-    const observation=el('p',{className:'caption',role:'status','aria-live':'polite'},'正在核对本任务的执行状态。');root.append(observation);
+    const observation=el('p',{className:'caption',role:'status','aria-live':'polite'},'本任务状态已核对；尚无新的执行结果。');root.append(observation);
     const signature=value=>JSON.stringify([value.task?.id,value.task?.project,value.task?.status,
       value.task?.provider_status,value.task?.worker_state,value.task?.result_version,
       value.task?.lifecycle?.stage,value.controls]);
@@ -245,11 +292,11 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true,expecte
         if(!root.isConnected||!isCurrent())return;
         if(next.task?.id!==task.id||next.task?.project!==task.project)throw new Error('TASK_RESPONSE_BINDING_REJECTED');
         if(signature(next)!==original){await renderTasks(target,options);return;}
-        observation.textContent='本任务状态已核对；尚无新的执行结果。';
+        taskMessage(observation,'本任务状态已核对；尚无新的执行结果。');
       }catch(error){
         if(!root.isConnected||!isCurrent())return;
         if(expectedResultVersion&&error.status===409&&error.code==='RESULT_VERSION_STALE'){stale();return;}
-        observation.textContent='暂时无法核对本任务；保留当前回复和原请求，重连后继续读取。';
+        taskMessage(observation,'暂时无法核对本任务；保留当前回复和原请求，重连后继续读取。');
         if(error.status===401||error.status===403){owner=false;actions.forEach(action=>action.button.disabled=true);}
       }
       if(root.isConnected&&isCurrent())setTimeout(observe,1000);

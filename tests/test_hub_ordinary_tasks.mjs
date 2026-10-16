@@ -16,6 +16,8 @@ class N{
 const walk=node=>[node,...node.children.filter(Boolean).flatMap(walk)];
 const button=(node,name)=>walk(node).find(n=>n.tag==='button'&&n.textContent===name);
 const field=(node,name)=>walk(node).find(n=>n.attrs['aria-label']===name);
+const described=(node,control)=>walk(node).find(n=>n.attrs.id===control.attrs['aria-describedby']);
+const sendReason=node=>described(node,button(node,'发送普通任务'));
 const spec=(project='a',parent=null)=>({kind:'ordinary_project',request_id:'ordinary-saved-'+project,project_id:project,
   objective:'Read project '+project,scope:'Read-only owned scope',effect:'read_only',input_version:'a'.repeat(64),mode:parent?'idle_continue':'new',parent_task_id:parent});
 const parentTask=(project='a',id='parent-a')=>({id,kind:'ordinary_project',project,task_spec:spec(project),status:'checks_complete',allowed_modes:['idle_continue']});
@@ -92,6 +94,7 @@ test('unconfirmed or mismatched original task stays locked and only GET reconcil
   const sent=state.calls.find(call=>call.path==='/api/tasks').body;
   assert.match(field(node,'普通任务状态').textContent,/尚未查到.*不会自动重发或生成新请求/);
   assert.equal(field(node,'任务目标').disabled,true);assert.equal(button(node,'新建另一条任务草稿').disabled,true);
+  assert.match(sendReason(node).textContent,/发送结果尚未确认.*核对原任务请求/);
   state.getTask=async()=>({task:{...taskFor(sent),project:'b'}});
   await button(node,'核对原任务请求').fire('click');assert.deepEqual(state.go,[]);
   assert.equal(state.calls.filter(call=>call.path==='/api/tasks').length,1);
@@ -105,6 +108,7 @@ test('draft CAS conflict preserves input until explicit version reread and expli
   };
   const node=await state.render();await fill(node);await button(node,'保存任务草稿').fire('click');
   assert.equal(field(node,'任务目标').value,'A precise objective');assert.equal(button(node,'发送普通任务').disabled,true);
+  assert.match(sendReason(node).textContent,/草稿版本存在冲突/);
   state.context.draft={...state.context.draft,revision:7,value:{...spec(),objective:'Other editor text'}};
   await button(node,'重读草稿版本').fire('click');assert.equal(field(node,'任务目标').value,'A precise objective');
   await button(node,'保存任务草稿').fire('click');
@@ -119,6 +123,7 @@ test('uncertain draft save retries the same draft command and never sends the ta
   };
   const node=await state.render();await fill(node);await button(node,'发送普通任务').fire('click');
   assert.equal(button(node,'发送普通任务').disabled,true);assert.equal(field(node,'任务目标').disabled,true);
+  assert.match(sendReason(node).textContent,/草稿保存结果尚未确认/);
   await button(node,'重试确认草稿保存').fire('click');
   const commands=state.calls.filter(call=>call.path==='/api/ordinary-drafts');assert.deepEqual(commands[0].body,commands[1].body);
   assert.equal(state.calls.filter(call=>call.path==='/api/tasks').length,0);
@@ -220,4 +225,68 @@ test('unavailable browser backup and mismatched cached targets stay explicit wit
   globalThis.localStorage={getItem:()=>null,setItem:()=>{throw new Error('storage unavailable');},removeItem:()=>{}};
   await fill(node);assert.match(node.textContent,/本次未保存输入仅在当前页面/);assert.equal(field(node,'任务目标').value,'A precise objective');
   await button(node,'保存任务草稿').fire('click');assert.match(field(node,'普通任务状态').textContent,/已保存/);
+}));
+
+
+test('objective and scope expose separate required errors and clear only when their values are valid',()=>setup(async()=>{
+  const state=service(),node=await state.render();
+  const objective=field(node,'任务目标'),scope=field(node,'任务范围');
+  assert.equal(objective.attrs['aria-required'],'true');assert.equal(scope.attrs['aria-required'],'true');
+  assert.notEqual(objective.attrs['aria-describedby'],scope.attrs['aria-describedby']);
+  for(const [control,label]of [[objective,'任务目标'],[scope,'任务范围']]){
+    assert.equal(control.attrs['aria-invalid'],'true');
+    const error=described(node,control);assert.ok(error);assert.equal(error.hidden,false);
+    assert.equal(error.textContent,'请填写'+label+'。');
+  }
+  objective.value='Specific objective';await objective.fire('input');
+  assert.equal(objective.attrs['aria-invalid'],'false');assert.equal(described(node,objective).hidden,true);
+  assert.equal(scope.attrs['aria-invalid'],'true');assert.equal(button(node,'发送普通任务').disabled,true);
+  assert.match(sendReason(node).textContent,/任务目标或任务范围中标明的问题/);
+  scope.value='Read registered files only';await scope.fire('input');
+  assert.equal(scope.attrs['aria-invalid'],'false');assert.equal(described(node,scope).hidden,true);
+  assert.equal(button(node,'发送普通任务').disabled,false);
+  assert.match(sendReason(node).textContent,/发送前会先保存同一份/);
+  assert.equal(state.calls.filter(call=>call.body).length,0);
+}));
+
+test('field errors retain overlong and invalid text without silently truncating or saving it',()=>setup(async()=>{
+  const state=service(),node=await state.render();
+  await fill(node,'X'.repeat(2001),'Y'.repeat(1001));
+  const objective=field(node,'任务目标'),scope=field(node,'任务范围');
+  assert.equal(objective.value.length,2001);assert.equal(scope.value.length,1001);
+  assert.match(described(node,objective).textContent,/最多 2000 字符.*当前输入保留/);
+  assert.match(described(node,scope).textContent,/最多 1000 字符.*当前输入保留/);
+  assert.equal(objective.disabled,false);assert.equal(scope.disabled,false);
+  assert.equal(button(node,'保存任务草稿').disabled,true);assert.equal(button(node,'发送普通任务').disabled,true);
+  await fill(node,'Objective\0suffix','   ');
+  assert.match(described(node,objective).textContent,/无效字符/);assert.match(described(node,scope).textContent,/请填写任务范围/);
+  assert.equal(objective.value,'Objective\0suffix');assert.equal(scope.value,'   ');
+  assert.equal(state.calls.filter(call=>call.body).length,0);
+}));
+
+test('disabled-send description distinguishes identity readiness and stale input while retaining editable fields',()=>setup(async({identity})=>{
+  const state=service({...context(),ready:false});const node=await state.render();await fill(node);
+  assert.match(sendReason(node).textContent,/执行条件尚未就绪.*仍可保存草稿/);
+  assert.equal(field(node,'任务目标').disabled,false);assert.equal(button(node,'保存任务草稿').disabled,false);
+  state.owner=false;identity({owner_authenticated:false});
+  assert.match(sendReason(node).textContent,/请连接所有者后发送/);
+  assert.equal(field(node,'任务范围').disabled,false);
+  state.owner=true;state.context.ready=true;state.context.input_version='b'.repeat(64);
+  identity({owner_authenticated:true});await new Promise(resolve=>setImmediate(resolve));
+  assert.match(sendReason(node).textContent,/输入版本.*变化.*重新读取任务输入/);
+  assert.equal(field(node,'任务目标').value,'A precise objective');
+  assert.equal(state.calls.filter(call=>call.body).length,0);
+}));
+
+test('feedback description IDs belong to each rendered form and survive draft reload',()=>setup(async()=>{
+  const state=service(),first=await state.render();await fill(first);await button(first,'保存任务草稿').fire('click');
+  const reopened=await state.render();
+  for(const name of ['任务目标','任务范围']){
+    const original=field(first,name),current=field(reopened,name);
+    assert.notEqual(original.attrs['aria-describedby'],current.attrs['aria-describedby']);
+    assert.ok(described(reopened,current));assert.equal(current.attrs['aria-invalid'],'false');
+  }
+  assert.notEqual(button(first,'发送普通任务').attrs['aria-describedby'],button(reopened,'发送普通任务').attrs['aria-describedby']);
+  assert.ok(sendReason(reopened));assert.equal(field(reopened,'任务目标').value,'A precise objective');
+  assert.equal(state.calls.filter(call=>call.path==='/api/tasks').length,0);
 }));

@@ -59,6 +59,15 @@ export async function renderOrdinaryTasks(project,{isCurrent=()=>true,request=ap
     el('p',{},'编写本项目的只读任务。保存草稿不会启动模型；发送前会先保存同一份任务指令。'));
   const status=el('p',{role:'status','aria-live':'polite','aria-label':'普通任务状态'}),conditions=el('div',{className:'stack'});
   const objective=el('textarea',{maxLength:2000,rows:4,'aria-label':'任务目标'}),scope=el('textarea',{maxLength:1000,rows:3,'aria-label':'任务范围'});
+  const feedbackPrefix='ordinary-fields-'+crypto.randomUUID();
+  const objectiveError=el('span',{id:feedbackPrefix+'-objective',className:'management-field-error warning'});
+  const scopeError=el('span',{id:feedbackPrefix+'-scope',className:'management-field-error warning'});
+  const sendReason=el('p',{id:feedbackPrefix+'-send',className:'caption',role:'status','aria-live':'polite'});
+  for(const [control,error,name]of [[objective,objectiveError,'objective'],[scope,scopeError,'scope']]){
+    control.setAttribute('aria-required','true');control.setAttribute('aria-invalid','false');
+    control.setAttribute('aria-describedby',feedbackPrefix+'-'+name);
+    error.hidden=true;
+  }
   const parent=el('select',{'aria-label':'续接任务'}),mode=el('select',{'aria-label':'任务模式'});
   let context=null,owner=false,busy=false,dirty=false,conflict=false,pendingDraft=null,uncertain=null,loadEpoch=0;
   let parentId=null,spec=null,revision=0,blocked=false,backupConflict=false,backupBaseRevision=0,backupWarning='';
@@ -98,7 +107,7 @@ export async function renderOrdinaryTasks(project,{isCurrent=()=>true,request=ap
   function readFields(){if(!spec||!alive()||busy||pendingDraft||uncertain)return;spec.objective=objective.value;spec.scope=scope.value;spec.mode=mode.value;dirty=true;writeBackup();refresh();}
   for(const field of [objective,scope])field.addEventListener('input',readFields);mode.addEventListener('change',readFields);
   const save=button('保存任务草稿',()=>saveDraft().catch(()=>{}));
-  const send=button('发送普通任务',submit);
+  const send=button('发送普通任务',submit,{'aria-describedby':feedbackPrefix+'-send'});
   const reconcile=button('核对原任务请求',()=>lookupOriginal().catch(()=>{}));
   const reload=button('核对任务条件',()=>loadContext(true,parentId,true).catch(error=>{if(alive())status.textContent=ordinaryFailure(error);}));
   const rebind=button('重新读取任务输入',async()=>{
@@ -129,9 +138,9 @@ export async function renderOrdinaryTasks(project,{isCurrent=()=>true,request=ap
     if(busy||pendingDraft||uncertain||!context)return;
     spec=freshSpec(context.input_version);dirty=true;blocked=false;writeBackup();fill();status.textContent='已准备新请求草稿；原任务不会重发，请填写目标和范围后保存。';refresh();
   });
-  section.append(conditions,el('label',{},'任务目标',objective),el('label',{},'任务范围',scope),
+  section.append(conditions,el('label',{},'任务目标',objective,objectiveError),el('label',{},'任务范围',scope,scopeError),
     el('label',{},'续接任务',parent),switchDraft,el('label',{},'任务模式',mode),
-    el('div',{className:'row'},save,send,reconcile,reload,rebind,resolveDraft,newDraft),status);
+    sendReason,el('div',{className:'row'},save,send,reconcile,reload,rebind,resolveDraft,newDraft),status);
   function contextPath(target){return '/api/ordinary-context?project_id='+encodeURIComponent(projectId)+(target?'&parent_task_id='+encodeURIComponent(target):'');}
   function checkContext(value,target){
     if(value?.project_id!==projectId||value?.draft?.project_id!==projectId||value.draft.parent_task_id!==target
@@ -147,7 +156,18 @@ export async function renderOrdinaryTasks(project,{isCurrent=()=>true,request=ap
     if(spec&&!values.includes(spec.mode))mode.append(el('option',{value:spec.mode,disabled:true},'原任务模式当前不可用'));
     mode.value=spec?.mode||(parentId?'idle_continue':'new');
   }
+  function fieldMessage(value,label,limit){
+    if(typeof value!=='string'||!value.trim())return '请填写'+label+'。';
+    if(value.length>limit)return label+'最多 '+limit+' 字符；当前输入保留，请缩短后再保存或发送。';
+    if(value.includes('\0'))return label+'包含无效字符，请移除后再保存或发送。';
+    return '';
+  }
   function refresh(){
+    const messages=[fieldMessage(spec?.objective,'任务目标',2000),fieldMessage(spec?.scope,'任务范围',1000)];
+    for(const [index,control,error]of [[0,objective,objectiveError],[1,scope,scopeError]]){
+      const message=spec?messages[index]:'';
+      control.setAttribute('aria-invalid',String(Boolean(message)));error.textContent=message;error.hidden=!message;
+    }
     const locked=busy||Boolean(pendingDraft)||Boolean(uncertain);
     for(const field of [objective,scope,parent,mode])field.disabled=locked||!context;
     save.disabled=!owner||busy||Boolean(uncertain)||!spec||conflict||!pendingDraft&&!validOrdinarySpec(spec);
@@ -155,6 +175,20 @@ export async function renderOrdinaryTasks(project,{isCurrent=()=>true,request=ap
     const valid=validOrdinarySpec(spec,{submit:true});
     send.disabled=!owner||locked||conflict||blocked||!context?.ready||!valid||!allowedModes().includes(spec?.mode)
       ||!context.allowed_effects?.includes('read_only')||spec?.input_version!==context.input_version;
+    sendReason.textContent=!send.disabled?'任务目标、范围和只读条件已核对；发送前会先保存同一份任务草稿。'
+      :!context?'尚未取得本项目任务条件，请连接所有者并核对任务条件。'
+      :!owner?'请连接所有者后发送；当前输入保留。'
+      :uncertain?'发送结果尚未确认，请核对原任务请求；不会重新发送。'
+      :pendingDraft?'草稿保存结果尚未确认，请先重试确认原草稿保存。'
+      :busy?'正在处理原请求，请等待结果；不会重复发送。'
+      :conflict?'草稿版本存在冲突，请先重读或显式应用当前草稿版本；当前输入保留。'
+      :blocked?'执行条件已变化，请先核对任务条件；当前输入保留。'
+      :messages.some(Boolean)?'请先修正任务目标或任务范围中标明的问题，再保存或发送。'
+      :!context.ready?'普通任务执行条件尚未就绪，请核对任务条件；仍可保存草稿。'
+      :!allowedModes().includes(spec?.mode)?'当前续接目标不允许所选任务模式，请核对续接任务。'
+      :!context.allowed_effects?.includes('read_only')?'当前授权没有允许只读任务，请核对任务条件。'
+      :!sha(spec?.input_version)||spec.input_version!==context.input_version?'草稿输入版本尚未核实或已经变化，请显式重新读取任务输入。'
+      :'任务指令尚未通过校验，请核对原任务草稿。';
     reconcile.disabled=busy||!uncertain;reconcile.hidden=!uncertain;
     reload.disabled=busy||Boolean(pendingDraft)||Boolean(uncertain);
     rebind.disabled=locked||!context;resolveDraft.disabled=locked||!conflict;resolveDraft.hidden=!conflict;

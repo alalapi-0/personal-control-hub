@@ -71,13 +71,27 @@ export async function runBrowserJourney(name,journey,{directorySize=2}={}){
     page.on('request',request=>{
       if(request.method()==='POST'&&new URL(request.url()).pathname==='/api/tasks')evidence.tasks.push(request.postDataJSON());
     });
-    async function loginOwner(){
+    async function loginOwner({keyboard=false}={}){
       // The isolated restart journey reauthenticates through the real UI using
       // only this fixture's in-memory synthetic proof, never a provider secret.
       owner=secret;
-      await page.getByRole('button',{name:'连接所有者',exact:true}).click();
-      await page.getByLabel('所有者凭据',{exact:true}).fill(owner);
-      await page.getByRole('button',{name:'认证',exact:true}).click();
+      if(keyboard){
+        const connect=page.getByRole('button',{name:'连接所有者',exact:true});
+        let reached=false;
+        for(let step=0;step<100;step++){
+          if(await connect.evaluate(node=>node===document.activeElement)){reached=true;break;}
+          await page.keyboard.press('Tab');
+        }
+        assert.ok(reached,'Owner connection must be reachable by keyboard');
+        await page.keyboard.press('Enter');
+        const proof=page.getByLabel('所有者凭据',{exact:true});
+        await proof.waitFor();assert.ok(await proof.evaluate(node=>node===document.activeElement));
+        await page.keyboard.insertText(owner);await page.keyboard.press('Enter');
+      }else{
+        await page.getByRole('button',{name:'连接所有者',exact:true}).click();
+        await page.getByLabel('所有者凭据',{exact:true}).fill(owner);
+        await page.getByRole('button',{name:'认证',exact:true}).click();
+      }
       await page.getByRole('button',{name:'断开所有者',exact:true}).waitFor();owner=null;
     }
     await journey({page,context,evidence,evidenceRoot,origin:info.origin,waitMessage,loginOwner,browser});

@@ -15,6 +15,7 @@ const connection = document.querySelector('#connection');
 let wasOwner = false, connectionGeneration = 0;
 
 function loginDialog() {
+  const invoker=document.activeElement;let authenticated=false;
   const proof = el('input', {type:'password', id:'owner-proof', minLength:32, maxLength:512,
     required:true, autocomplete:'off', spellcheck:false});
   const message = el('p', {role:'status','aria-live':'polite'});
@@ -23,7 +24,7 @@ function loginDialog() {
     if (!proof.reportValidity()) return;
     const transientProof = proof.value; proof.value = ''; submit.disabled = true;
     message.textContent = '正在认证…';
-    try { await ownerLogin(transientProof); dialog.close(); await updateConnection();
+    try { await ownerLogin(transientProof); authenticated=true;dialog.close(); await updateConnection({restoreFocus:true});
       if(routeAuthRequired)await route(false); }
     catch(error) { message.textContent = ({OWNER_AUTH_FAILED:'身份未通过，请重新输入。',
       OWNER_AUTH_UNAVAILABLE:'所有者身份尚未配置，请在受保护的后台入口完成配置。',
@@ -36,11 +37,15 @@ function loginDialog() {
     el('p', {className:'caption'}, '输入后台已配置的所有者凭据。此页面不保存凭据；项目执行还需要独立授权。'),
     el('label', {className:'field',htmlFor:'owner-proof'}, '所有者凭据', proof), message,
     el('div', {className:'row'}, submit, button('取消',()=>dialog.close())));
-  dialog.addEventListener('close',()=>{proof.value='';dialog.remove();connection.querySelector('button:not(:disabled)')?.focus();});
+  dialog.addEventListener('close',()=>{
+    const active=document.activeElement,restore=!authenticated&&(!active||active===document.body||active===invoker||dialog.contains(active));
+    proof.value='';dialog.remove();
+    if(restore){const next=invoker?.isConnected?invoker:connection.querySelector('button:not(:disabled)');next?.focus();}
+  });
   document.body.append(dialog); dialog.showModal(); proof.focus();
 }
 
-async function updateConnection() {
+async function updateConnection({restoreFocus=false}={}) {
   const token = ++connectionGeneration; let identity, error;
   try { identity = await api('/api/identity'); } catch(e) { error = e; }
   if (token !== connectionGeneration) return;
@@ -61,6 +66,8 @@ async function updateConnection() {
     else if (!capabilities.provider?.available) taskLabel = '任务通道尚未就绪';
     else taskLabel = '已连接所有者 · 执行权限未启用';
   }
+  const active=document.activeElement,focusedHere=connection.contains(active),summaryFocused=focusedHere&&active.tagName==='SUMMARY';
+  const detailOpen=connection.querySelector('details')?.open;
   connection.replaceChildren(...[el('span', {className: state.kind==='offline'||state.kind==='expired'?'warning':'caption'}, state.label),
     identity?.data_classification==='synthetic_fixture'?el('span',{className:'warning'},'隔离测试数据'):null,
     el('span', {className:'caption'}, taskLabel), control,
@@ -68,6 +75,10 @@ async function updateConnection() {
       el('summary', {}, '连接信息'), el('p', {}, '后台实例：'+identity.backend_instance),
       el('p', {}, '来源账本：'+(identity.ledger_head?.sequence ?? '暂不可用')),
       el('p', {}, '设计记录版本：'+(identity.design_revision ?? '暂不可用')))].filter(Boolean));
+  const details=connection.querySelector('details');if(details&&detailOpen)details.open=true;
+  if(focusedHere||(restoreFocus&&(!active||active===document.body||active.isConnected===false))){
+    (summaryFocused?connection.querySelector('summary')??control:control).focus();
+  }
   return {identity,error};
 }
 const statuses = {active:'进行中',paused:'已暂停',blocked:'受阻',complete:'已完成',unknown:'来源未提供状态'};
@@ -413,6 +424,8 @@ async function projectDetail(id,token,section='overview',reconcile=false){
   projectionHead(p.provenance.ledger_head);return p.provenance.ledger_head;
 }
 async function route(focus=true){
+  const routeInvoker=document.activeElement;
+  const focusStillOwned=()=>{const active=document.activeElement;return !active||active===document.body||active===routeInvoker||active.isConnected===false;};
   stopDirectoryObservation();stopDirectoryObservation=()=>{};reconcileVisible=null;routeAuthRequired=false;
   const token=++generation,{parts,kind,query}=parseHubRoute(location.hash);
   for(const name of ['projects','designs','workbench','materials','host']){const nav=document.querySelector(`#nav-${name}`);if(name===(['tasks','sessions'].includes(kind)?'workbench':kind))nav.setAttribute('aria-current','page');else nav.removeAttribute('aria-current');}
@@ -451,9 +464,9 @@ async function route(focus=true){
       await renderDesigns(view,{projectId:parts[1]||null,candidateId:parts[2]||null,projectNames:names});
     }else if(kind==='projects'&&parts[1])await projectDetail(parts[1],token,parts[2]||'overview');
     else await projectsPage(token);
-    if(focus&&token===generation)main.focus();
+    if(focus&&token===generation&&focusStillOwned())main.focus();
   }
-  catch(error){if(token!==generation)return;routeAuthRequired=['OWNER_AUTH_REQUIRED','SESSION_REQUIRED'].includes(error.code);const recovery=errorRecovery(error);main.replaceChildren(el('section',{className:'empty'},el('h1',{},recovery.title),el('p',{},failure(error)),el('a',{className:'button',href:lastDirectoryHash},'返回项目列表'),button('重新读取',()=>route(false)),diagnostic({code:error.code||'NETWORK_UNAVAILABLE',outcome:error.outcome})));}
+  catch(error){if(token!==generation)return;routeAuthRequired=['OWNER_AUTH_REQUIRED','SESSION_REQUIRED'].includes(error.code);const recovery=errorRecovery(error);main.replaceChildren(el('section',{className:'empty'},el('h1',{},recovery.title),el('p',{},failure(error)),el('a',{className:'button',href:lastDirectoryHash},'返回项目列表'),button('重新读取',()=>route()),diagnostic({code:error.code||'NETWORK_UNAVAILABLE',outcome:error.outcome})));if(focusStillOwned())main.focus();}
   finally{if(token===generation){main.removeAttribute('aria-busy');updateConnection();}}
 }
 window.addEventListener('hashchange',()=>route());
