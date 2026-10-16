@@ -41,6 +41,7 @@ WEB_ASSETS = {
     "/assets/business_preview.mjs": ("business_preview.mjs", "text/javascript; charset=utf-8"),
     "/assets/management.mjs": ("management.mjs", "text/javascript; charset=utf-8"),
     "/assets/relations.mjs": ("relations.mjs", "text/javascript; charset=utf-8"),
+    "/assets/ordinary_tasks.mjs": ("ordinary_tasks.mjs", "text/javascript; charset=utf-8"),
     "/assets/timeline.mjs": ("timeline.mjs", "text/javascript; charset=utf-8"),
     "/assets/designs.js": ("designs.js", "text/javascript; charset=utf-8"),
     "/assets/host.js": ("host.js", "text/javascript; charset=utf-8"),
@@ -409,6 +410,18 @@ class HubRequestHandler(BaseHTTPRequestHandler):
             if self.server.session_view is None: raise ServiceError('SESSION_VIEW_UNAVAILABLE', status=503)
             result = self.server.session_view.catalog(authorize_sessions)
             authorize_sessions()
+        elif path == '/api/ordinary-context':
+            if 'project_id'not in query or not set(query)<={'project_id','parent_task_id'}:
+                raise ServiceError('INVALID_QUERY')
+            version=self.server.owner_auth.version
+            self.server.sessions.validate(self._one_header('Cookie'),require_owner=True,credential_version=version)
+            if self.server.tasks is None:raise ServiceError('TASK_RUNTIME_UNAVAILABLE',status=503)
+            owner_context=hashlib.sha256(b'hub-task-owner-v1'+version).hexdigest()
+            result=self.server.tasks.ordinary_context(query['project_id'],owner_context=owner_context,
+                parent_task_id=query.get('parent_task_id'))
+            self.server.sessions.validate(self._one_header('Cookie'),require_owner=True,
+                credential_version=self.server.owner_auth.version)
+            if self.server.owner_auth.version!=version:raise ServiceError('OWNER_AUTH_FAILED',status=401)
         elif path == '/api/task-drafts' or path.startswith('/api/task-drafts/'):
             if query:raise ServiceError('INVALID_QUERY')
             self.server.sessions.validate(self._one_header('Cookie'),require_owner=True,credential_version=self.server.owner_auth.version)
@@ -593,13 +606,13 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                 self.server.sessions.revoke(self._one_header('Cookie'))
                 self._success({'owner_authenticated': False})
                 return
-            if path not in {"/api/refresh", "/api/designs/decisions", "/api/designs/exports", '/api/annotations', '/api/task-drafts', '/api/tasks', '/api/management/project'} and not (path.startswith('/api/tasks/')and path.endswith(('/cancel','/respond','/review'))):
+            if path not in {"/api/refresh", "/api/designs/decisions", "/api/designs/exports", '/api/annotations', '/api/task-drafts', '/api/ordinary-drafts', '/api/tasks', '/api/management/project'} and not (path.startswith('/api/tasks/')and path.endswith(('/cancel','/respond','/review'))):
                 raise ServiceError("NOT_FOUND", status=404)
             if not self.server.owner_auth.configured:
                 raise ServiceError('OWNER_AUTH_UNAVAILABLE', status=503)
             self.server.sessions.validate(self._one_header('Cookie'), token, require_owner=True, credential_version=self.server.owner_auth.version)
             operation_started = True
-            if path == '/api/tasks' or path.startswith('/api/tasks/'):
+            if path == '/api/tasks' or path.startswith('/api/tasks/') or path=='/api/ordinary-drafts':
                 if self.server.tasks is None:raise ServiceError('TASK_RUNTIME_UNAVAILABLE',status=503)
                 version=self.server.owner_auth.version
                 # Stable across Hub restarts, rotated with the owner credential.
@@ -607,7 +620,8 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                 def authorize_task():
                     self.server.sessions.validate(self._one_header('Cookie'),token,require_owner=True,credential_version=self.server.owner_auth.version)
                     if self.server.owner_auth.version!=version:raise ServiceError('OWNER_AUTH_FAILED',status=401)
-                if path=='/api/tasks':result=self.server.tasks.submit(command,owner_context=owner_context,authorize=authorize_task)
+                if path=='/api/ordinary-drafts':result=self.server.tasks.save_ordinary_draft(command,owner_context=owner_context,authorize=authorize_task)
+                elif path=='/api/tasks':result=self.server.tasks.submit(command,owner_context=owner_context,authorize=authorize_task)
                 elif path.endswith('/review'):result=self.server.tasks.review(path[len('/api/tasks/'):-len('/review')],command,owner_context=owner_context,authorize=authorize_task)
                 elif path.endswith('/respond'):result=self.server.tasks.respond_control(path[len('/api/tasks/'):-len('/respond')],command,owner_context=owner_context,authorize=authorize_task)
                 else:

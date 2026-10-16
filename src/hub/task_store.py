@@ -20,6 +20,13 @@ SCHEMA_VERSION = 2
 MAX_TASKS = 128
 MAX_EVENTS = 2048
 MAX_DATABASE_BYTES = 16 * 1024 * 1024
+MAX_ORDINARY_DRAFT_BYTES = 8192
+MAX_ORDINARY_DRAFTS = 256
+MAX_ORDINARY_DRAFT_REQUESTS = 1024
+ORDINARY_DRAFT_TABLES = {
+    'ordinary_drafts': 'CREATE TABLE ordinary_drafts(owner TEXT NOT NULL, project TEXT NOT NULL, parent TEXT NOT NULL, revision INTEGER NOT NULL, body TEXT NOT NULL, hash TEXT NOT NULL, PRIMARY KEY(owner,project,parent))',
+    'ordinary_draft_requests': 'CREATE TABLE ordinary_draft_requests(owner TEXT NOT NULL, id TEXT NOT NULL, command_hash TEXT NOT NULL, body TEXT NOT NULL, hash TEXT NOT NULL, PRIMARY KEY(owner,id))',
+}
 TERMINAL = {'checks_complete', 'failed', 'cancelled', 'lost', 'requires_reconcile'}
 STATES = TERMINAL | {'queued', 'running', 'waiting_input', 'waiting_approval', 'validating'}
 SCHEMA = '''
@@ -359,6 +366,117 @@ class TaskStore:
         with self._connection() as connection:
             return [self._decode(row['body'],row['hash'])for row in connection.execute('SELECT * FROM grants ORDER BY id')]if connection else []
 
+    @staticmethod
+    def _ordinary_key(owner_context,project_id,parent_task_id):
+        if type(owner_context)is not str or not 1<=len(owner_context)<=256 or '\x00'in owner_context:
+            raise ServiceError('INVALID_ORDINARY_DRAFT')
+        stable_id(project_id)
+        if parent_task_id is not None:stable_id(parent_task_id)
+        return owner_context,project_id,parent_task_id or ''
+
+    @staticmethod
+    def _ordinary_features(connection,*,create=False):
+        rows=connection.execute("SELECT type,name,sql FROM sqlite_master WHERE name IN ('ordinary_drafts','ordinary_draft_requests')").fetchall()
+        if not rows:
+            if create:
+                for statement in ORDINARY_DRAFT_TABLES.values():connection.execute(statement)
+            return create
+        if len(rows)!=2 or any(row['type']!='table' or row['sql']!=ORDINARY_DRAFT_TABLES[row['name']] for row in rows):
+            raise ServiceError('TASK_STORE_CORRUPT',status=503)
+        return True
+
+    def _ordinary_view(self,row,project_id,parent_task_id):
+        if row is None:return {'project_id':project_id,'parent_task_id':parent_task_id,'revision':0,'value':None}
+        value=self._decode(row['body'],row['hash'])
+        if (type(value)is not dict or set(value)!={'project_id','parent_task_id','revision','value'}
+                or value['project_id']!=project_id or value['parent_task_id']!=parent_task_id
+                or type(value['revision'])is not int or value['revision']!=row['revision'] or value['revision']<1
+                or (value['value'] is not None and type(value['value'])is not dict)
+                or len(canonical(value['value']))>MAX_ORDINARY_DRAFT_BYTES):
+            raise ServiceError('TASK_STORE_CORRUPT',status=503)
+        return value
+
+    def _validate_ordinary_tables(self,connection):
+        """Offline copy validation preserves the optional feature and receipts."""
+        if not self._ordinary_features(connection):return False
+        drafts=connection.execute('SELECT * FROM ordinary_drafts').fetchall()
+        receipts=connection.execute('SELECT * FROM ordinary_draft_requests').fetchall()
+        if len(drafts)>MAX_ORDINARY_DRAFTS or len(receipts)>MAX_ORDINARY_DRAFT_REQUESTS:
+            raise ServiceError('TASK_STORE_CORRUPT',status=503)
+        current={};confirmed=set()
+        def check_view(row,project,parent):
+            view=self._ordinary_view(row,project,parent)
+            if len(canonical(view['value']))>MAX_ORDINARY_DRAFT_BYTES:
+                raise ServiceError('TASK_STORE_CORRUPT',status=503)
+            return view
+        for row in drafts:
+            parent=row['parent'] or None
+            key=self._ordinary_key(row['owner'],row['project'],parent)
+            current[key]=check_view(row,row['project'],parent)
+        for row in receipts:
+            stable_id(row['id'])
+            decoded=self._decode(row['body'],row['hash'])
+            if type(decoded)is not dict:raise ServiceError('TASK_STORE_CORRUPT',status=503)
+            project=decoded.get('project_id');parent=decoded.get('parent_task_id')
+            key=self._ordinary_key(row['owner'],project,parent)
+            view=check_view({**dict(row),'revision':decoded.get('revision')},project,parent)
+            command={'request_id':row['id'],'expected_revision':view['revision']-1,
+                     'project_id':project,'parent_task_id':parent,'value':view['value']}
+            if (digest(command)!=row['command_hash'] or key not in current
+                    or current[key]['revision']<view['revision']):
+                raise ServiceError('TASK_STORE_CORRUPT',status=503)
+            if current[key]==view:confirmed.add(key)
+        if confirmed!=set(current):raise ServiceError('TASK_STORE_CORRUPT',status=503)
+        return True
+
+    def ordinary_draft(self,owner_context,project_id,parent_task_id=None):
+        key=self._ordinary_key(owner_context,project_id,parent_task_id)
+        with self._connection() as connection:
+            row=(connection.execute('SELECT * FROM ordinary_drafts WHERE owner=?AND project=?AND parent=?',key).fetchone()
+                 if self._ordinary_features(connection) else None)
+            return self._ordinary_view(row,project_id,parent_task_id)
+
+    def save_ordinary_draft(self,command,owner_context,authorize):
+        """Explicit owner save only: the service validates TaskSpec and scope."""
+        try:
+            if type(command)is not dict or set(command)!={'request_id','expected_revision','project_id','parent_task_id','value'}:
+                raise ValueError()
+            stable_id(command['request_id'])
+            key=self._ordinary_key(owner_context,command['project_id'],command['parent_task_id'])
+            if (type(command['expected_revision'])is not int or command['expected_revision']<0
+                    or command['value'] is not None and type(command['value'])is not dict):raise ValueError()
+            if len(canonical(command['value']))>MAX_ORDINARY_DRAFT_BYTES:
+                raise ServiceError('ORDINARY_DRAFT_CAPACITY',status=413)
+            command_hash=digest(command)
+            # Freeze caller-owned data before authorization and transaction work.
+            command=json.loads(canonical(command))
+        except (ValueError,TypeError,UnicodeError,OverflowError):
+            raise ServiceError('INVALID_ORDINARY_DRAFT') from None
+        authorize()
+        with self._connection(True,guard=authorize) as connection:
+            self._ordinary_features(connection,create=True)
+            old=connection.execute('SELECT * FROM ordinary_draft_requests WHERE owner=?AND id=?',
+                                   (owner_context,command['request_id'])).fetchone()
+            if old:
+                if old['command_hash']!=command_hash:raise ServiceError('ORDINARY_DRAFT_REQUEST_CONFLICT',status=409)
+                receipt=self._decode(old['body'],old['hash'])
+                return {'draft':receipt,'replayed':True,'request_id':command['request_id']}
+            row=connection.execute('SELECT * FROM ordinary_drafts WHERE owner=?AND project=?AND parent=?',key).fetchone()
+            current=self._ordinary_view(row,command['project_id'],command['parent_task_id'])
+            if current['revision']!=command['expected_revision']:
+                raise ServiceError('ORDINARY_DRAFT_CONFLICT',status=409)
+            if (row is None and connection.execute('SELECT count(*) FROM ordinary_drafts').fetchone()[0]>=MAX_ORDINARY_DRAFTS
+                    or connection.execute('SELECT count(*) FROM ordinary_draft_requests').fetchone()[0]>=MAX_ORDINARY_DRAFT_REQUESTS):
+                raise ServiceError('ORDINARY_DRAFT_CAPACITY',status=507)
+            view={'project_id':command['project_id'],'parent_task_id':command['parent_task_id'],
+                  'revision':current['revision']+1,'value':command['value']}
+            body=canonical(view).decode();hashed=digest(view)
+            connection.execute('INSERT INTO ordinary_drafts VALUES(?,?,?,?,?,?) ON CONFLICT(owner,project,parent) DO UPDATE SET revision=excluded.revision,body=excluded.body,hash=excluded.hash',
+                               (*key,view['revision'],body,hashed))
+            connection.execute('INSERT INTO ordinary_draft_requests VALUES(?,?,?,?,?)',
+                               (owner_context,command['request_id'],command_hash,body,hashed))
+            return {'draft':view,'replayed':False,'request_id':command['request_id']}
+
     def admit(self, payload, intent, *, authorize=None):
         ident = stable_id(payload['request_id']); hashed = digest(payload)
         if len(canonical(payload)) > 8192 or len(canonical(intent)) > 49152:
@@ -458,12 +576,15 @@ class TaskStore:
             raise ServiceError('INVALID_TASK_UPDATE')
         if 'status' in values and values['status'] not in STATES: raise ServiceError('INVALID_TASK_UPDATE')
         if 'result' in values:
-            if len(canonical(values['result'])) > 16384: raise ServiceError('TASK_RESULT_CAPACITY', status=507)
+            result_bytes=len(canonical(values['result']))
             values['result'] = canonical({'data':values['result'],'hash':digest(values['result'])}).decode()
         with self._connection(True) as connection:
             row = connection.execute('SELECT * FROM tasks WHERE id=? AND owner=?',(ident,owner)).fetchone()
             if not row or row['status'] in TERMINAL or row['lease_until'] < time.time():
                 raise ServiceError('TASK_OWNER_CONFLICT', status=409)
+            if 'result'in values:
+                limit=131072 if self._task(row)['payload'].get('kind')=='ordinary_project' else 16384
+                if result_bytes>limit:raise ServiceError('TASK_RESULT_CAPACITY',status=507)
             transitions = {'running':{'running','waiting_input','waiting_approval','validating','failed','cancelled','requires_reconcile'},
                 'waiting_input':{'running','failed','cancelled','requires_reconcile'},
                 'waiting_approval':{'running','failed','cancelled','requires_reconcile'},

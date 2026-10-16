@@ -1,0 +1,223 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {renderOrdinaryTasks,renderOrdinaryTaskResult,validOrdinarySpec,ordinaryTaskMatches} from '../src/hub/web/ordinary_tasks.mjs';
+
+class N{
+  constructor(tag){this.tag=tag;this.children=[];this.attrs={};this.events={};this.value='';this.disabled=false;this.hidden=false;this.isConnected=true;this.text='';}
+  appendChild(child){this.children.push(child);return child;}
+  append(...children){for(const child of children)this.children.push(typeof child==='string'?new N('#text'):child);}
+  replaceChildren(...children){this.children=children;this.text='';}
+  addEventListener(name,fn){(this.events[name]??=[]).push(fn);}
+  setAttribute(name,value){this.attrs[name]=String(value);}
+  get textContent(){return this.text+this.children.map(child=>child?.textContent??'').join('');}
+  set textContent(value){this.text=String(value);this.children=[];}
+  async fire(name){for(const fn of this.events[name]??[])await fn({});}
+}
+const walk=node=>[node,...node.children.filter(Boolean).flatMap(walk)];
+const button=(node,name)=>walk(node).find(n=>n.tag==='button'&&n.textContent===name);
+const field=(node,name)=>walk(node).find(n=>n.attrs['aria-label']===name);
+const spec=(project='a',parent=null)=>({kind:'ordinary_project',request_id:'ordinary-saved-'+project,project_id:project,
+  objective:'Read project '+project,scope:'Read-only owned scope',effect:'read_only',input_version:'a'.repeat(64),mode:parent?'idle_continue':'new',parent_task_id:parent});
+const parentTask=(project='a',id='parent-a')=>({id,kind:'ordinary_project',project,task_spec:spec(project),status:'checks_complete',allowed_modes:['idle_continue']});
+const context=(project='a',parent=null)=>({project_id:project,name:'Project '+project,execution_location:'Isolated synthetic project',input_version:'a'.repeat(64),
+  draft_scope:(project==='a'?(parent?'d':'c'):'e').repeat(64),
+  allowed_effects:['read_only'],ready:true,reason_code:null,capabilities:{},parents:[parentTask(project)],
+  draft:{project_id:project,parent_task_id:parent,revision:0,value:null}});
+const taskFor=value=>({id:value.request_id,kind:'ordinary_project',project:value.project_id,task_spec:structuredClone(value),status:'queued',classification:'synthetic_fixture'});
+async function setup(run){
+  const previous={document:globalThis.document,window:globalThis.window,location:globalThis.location,localStorage:globalThis.localStorage};
+  const listeners=new Map();
+  const storage=new Map();globalThis.localStorage={getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value)),removeItem:key=>storage.delete(key)};
+  globalThis.document={createElement:tag=>new N(tag),createTextNode:text=>{const node=new N('#text');node.textContent=text;return node;}};
+  globalThis.window={addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:name=>listeners.delete(name)};
+  globalThis.location={hash:'#projects/a/tasks'};
+  try{await run({identity:detail=>listeners.get('hub:identity')?.({detail}),listeners,storage});}finally{Object.assign(globalThis,previous);}
+}
+async function fill(node,objective='A precise objective',scope='Only this synthetic project'){
+  const target=field(node,'任务目标'),area=field(node,'任务范围');target.value=objective;await target.fire('input');area.value=scope;await area.fire('input');
+}
+function service(initial=context()){
+  const state={context:structuredClone(initial),calls:[],owner:true,go:[],postTask:null,postDraft:null,getTask:null};
+  state.request=async(path,body)=>{
+    state.calls.push({path,body:body===undefined?undefined:structuredClone(body)});
+    if(path==='/api/identity')return {owner_authenticated:state.owner};
+    if(path.startsWith('/api/ordinary-context'))return structuredClone(state.context);
+    if(path==='/api/ordinary-drafts'){
+      if(state.postDraft)return state.postDraft(body);
+      state.context.draft={project_id:body.project_id,parent_task_id:body.parent_task_id,revision:body.expected_revision+1,value:structuredClone(body.value)};
+      return {draft:structuredClone(state.context.draft),replayed:false,request_id:body.request_id};
+    }
+    if(path==='/api/tasks')return state.postTask?state.postTask(body):{task:taskFor(body)};
+    if(path.startsWith('/api/tasks/'))return state.getTask?state.getTask(path):{task:taskFor(state.calls.find(call=>call.path==='/api/tasks').body)};
+    throw new Error('unexpected API');
+  };
+  state.render=(project={project_id:state.context.project_id},options={})=>renderOrdinaryTasks(project,{request:state.request,go:value=>state.go.push(value),...options});
+  return state;
+}
+
+test('ready false and unknown input still save isolated drafts without starting a task; saved draft reopens',()=>setup(async()=>{
+  const state=service({...context(),ready:false,input_version:null,reason_code:'GRANT_UNAVAILABLE'});
+  let node=await state.render();await fill(node);assert.equal(button(node,'发送普通任务').disabled,true);
+  assert.equal(button(node,'保存任务草稿').disabled,false);await button(node,'保存任务草稿').fire('click');
+  assert.equal(state.calls.filter(call=>call.path==='/api/tasks').length,0);
+  const sent=state.calls.find(call=>call.path==='/api/ordinary-drafts').body;
+  assert.equal(sent.value.input_version,null);assert.equal(sent.project_id,'a');assert.equal(sent.parent_task_id,null);
+  assert.match(field(node,'普通任务状态').textContent,/已保存.*没有启动模型/);
+  node=await state.render();assert.equal(field(node,'任务目标').value,'A precise objective');
+  assert.equal(field(node,'任务范围').value,'Only this synthetic project');
+}));
+
+test('send first saves and then uses that exact task ID; double clicks cannot dispatch twice',()=>setup(async()=>{
+  const state=service();let release;state.postTask=body=>new Promise(resolve=>{release=()=>resolve({task:taskFor(body)});});
+  const node=await state.render();await fill(node);const sending=button(node,'发送普通任务').fire('click');
+  await new Promise(resolve=>setImmediate(resolve));assert.equal(button(node,'发送普通任务').disabled,true);
+  await button(node,'发送普通任务').fire('click');
+  assert.equal(state.calls.filter(call=>call.path==='/api/tasks').length,1);
+  const draft=state.calls.find(call=>call.path==='/api/ordinary-drafts').body,task=state.calls.find(call=>call.path==='/api/tasks').body;
+  assert.deepEqual(task,draft.value);assert.ok(validOrdinarySpec(task,{submit:true}));release();await sending;
+  assert.deepEqual(state.go,['#tasks/'+task.request_id]);
+}));
+
+test('uncertain dispatch reads the original request and never creates a second identity or POST',()=>setup(async()=>{
+  const state=service();state.postTask=async()=>{throw {code:'NETWORK_TIMEOUT',outcome:'UNKNOWN'};};
+  const node=await state.render();await fill(node);await button(node,'发送普通任务').fire('click');
+  const sent=state.calls.find(call=>call.path==='/api/tasks').body;
+  assert.ok(state.calls.some(call=>call.path==='/api/tasks/'+sent.request_id));assert.deepEqual(state.go,['#tasks/'+sent.request_id]);
+  assert.equal(state.calls.filter(call=>call.path==='/api/tasks').length,1);
+}));
+
+test('unconfirmed or mismatched original task stays locked and only GET reconciliation is available',()=>setup(async()=>{
+  const state=service();state.postTask=async()=>{throw {outcome:'UNKNOWN'};};state.getTask=async()=>{throw {status:404};};
+  const node=await state.render();await fill(node);await button(node,'发送普通任务').fire('click');
+  const sent=state.calls.find(call=>call.path==='/api/tasks').body;
+  assert.match(field(node,'普通任务状态').textContent,/尚未查到.*不会自动重发或生成新请求/);
+  assert.equal(field(node,'任务目标').disabled,true);assert.equal(button(node,'新建另一条任务草稿').disabled,true);
+  state.getTask=async()=>({task:{...taskFor(sent),project:'b'}});
+  await button(node,'核对原任务请求').fire('click');assert.deepEqual(state.go,[]);
+  assert.equal(state.calls.filter(call=>call.path==='/api/tasks').length,1);
+  assert.ok(state.calls.filter(call=>call.path.startsWith('/api/tasks/')).every(call=>call.path==='/api/tasks/'+sent.request_id));
+}));
+
+test('draft CAS conflict preserves input until explicit version reread and explicit save',()=>setup(async()=>{
+  const state=service();let first=true;state.postDraft=async command=>{
+    if(first){first=false;throw {status:409,outcome:'NOT_COMMITTED'};}
+    return {draft:{project_id:'a',parent_task_id:null,revision:8,value:command.value}};
+  };
+  const node=await state.render();await fill(node);await button(node,'保存任务草稿').fire('click');
+  assert.equal(field(node,'任务目标').value,'A precise objective');assert.equal(button(node,'发送普通任务').disabled,true);
+  state.context.draft={...state.context.draft,revision:7,value:{...spec(),objective:'Other editor text'}};
+  await button(node,'重读草稿版本').fire('click');assert.equal(field(node,'任务目标').value,'A precise objective');
+  await button(node,'保存任务草稿').fire('click');
+  const commands=state.calls.filter(call=>call.path==='/api/ordinary-drafts');assert.equal(commands[1].body.expected_revision,7);
+  assert.equal(commands[1].body.value.objective,'A precise objective');
+}));
+
+test('uncertain draft save retries the same draft command and never sends the task',()=>setup(async()=>{
+  const state=service();let first=true;state.postDraft=async command=>{
+    if(first){first=false;throw {outcome:'UNKNOWN'};}
+    return {draft:{project_id:'a',parent_task_id:null,revision:1,value:command.value}};
+  };
+  const node=await state.render();await fill(node);await button(node,'发送普通任务').fire('click');
+  assert.equal(button(node,'发送普通任务').disabled,true);assert.equal(field(node,'任务目标').disabled,true);
+  await button(node,'重试确认草稿保存').fire('click');
+  const commands=state.calls.filter(call=>call.path==='/api/ordinary-drafts');assert.deepEqual(commands[0].body,commands[1].body);
+  assert.equal(state.calls.filter(call=>call.path==='/api/tasks').length,0);
+}));
+
+test('identity metadata updates preserve text and input version until the explicit rebind action',()=>setup(async({identity})=>{
+  const state=service();const node=await state.render();await fill(node);await button(node,'保存任务草稿').fire('click');
+  const first=state.context.draft.value.request_id;state.context.input_version='b'.repeat(64);
+  identity({owner_authenticated:true});await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(field(node,'任务目标').value,'A precise objective');assert.equal(button(node,'发送普通任务').disabled,true);
+  await button(node,'重新读取任务输入').fire('click');assert.equal(button(node,'发送普通任务').disabled,false);
+  await button(node,'保存任务草稿').fire('click');assert.equal(state.context.draft.value.input_version,'b'.repeat(64));
+  assert.notEqual(state.context.draft.value.request_id,first);assert.equal(state.calls.filter(call=>call.path==='/api/tasks').length,0);
+}));
+
+test('guest login initializes a previously unavailable context without a reload',()=>setup(async({identity})=>{
+  const state=service();state.owner=false;const original=state.request;
+  state.request=async(path,body)=>{if(path.startsWith('/api/ordinary-context')&&!state.owner)throw {status:403};return original(path,body);};
+  const node=await state.render();assert.equal(field(node,'任务目标').disabled,true);
+  state.owner=true;identity({owner_authenticated:true});await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(field(node,'任务目标').disabled,false);await fill(node);assert.equal(button(node,'保存任务草稿').disabled,false);
+}));
+
+test('parent draft targets and allowed modes are server-bound and cannot cross project or kind',()=>setup(async()=>{
+  const state=service();state.context.parents.push({...parentTask('b','foreign')},{...parentTask('a','other-kind'),kind:'story_exchange'});
+  const node=await state.render();await fill(node);const parent=field(node,'续接任务');
+  assert.deepEqual(parent.children.map(option=>option.value),['','parent-a']);
+  // render captured the original request function, which reads this live context.
+  parent.value='parent-a';state.context={...context('a','parent-a'),draft:{project_id:'a',parent_task_id:'parent-a',revision:2,value:spec('a','parent-a')}};
+  // Each server draft key is independent; saving the old target cannot replace
+  // the different parent draft that the next context read will return.
+  state.postDraft=async command=>({draft:{project_id:command.project_id,parent_task_id:command.parent_task_id,
+    revision:command.expected_revision+1,value:command.value}});
+  await button(node,'载入所选任务草稿').fire('click');
+  assert.equal(state.calls.find(call=>call.path==='/api/ordinary-drafts').body.parent_task_id,null);
+  assert.equal(field(node,'任务目标').value,'Read project a');assert.deepEqual(field(node,'任务模式').children.map(option=>option.value),['idle_continue']);
+  await button(node,'保存任务草稿').fire('click');const command=state.calls.filter(call=>call.path==='/api/ordinary-drafts').at(-1).body;
+  assert.equal(command.parent_task_id,'parent-a');assert.equal(command.value.mode,'idle_continue');
+  parent.value='foreign';const before=state.calls.length;await button(node,'载入所选任务草稿').fire('click');assert.equal(state.calls.length,before);
+}));
+
+test('late project context never fills another route and confirmed HTTP failures keep text',()=>setup(async()=>{
+  let current=true,release;
+  const state=service();const request=async path=>path==='/api/identity'?{owner_authenticated:true}:new Promise(resolve=>{release=resolve;});
+  const pending=state.render({project_id:'a'},{request,isCurrent:()=>current});current=false;release(context());const stale=await pending;
+  assert.equal(field(stale,'任务目标').value,'');assert.deepEqual(state.go,[]);
+  for(const status of [401,403,409,503]){
+    const attempt=service();attempt.postTask=async()=>{throw {status,outcome:'NOT_COMMITTED'};};const node=await attempt.render();
+    await fill(node);await button(node,'发送普通任务').fire('click');assert.equal(field(node,'任务目标').value,'A precise objective');
+    assert.match(field(node,'普通任务状态').textContent,status===401?/连接所有者/:status===403?/权限/:status===409?/版本或执行条件/:/服务暂不可用/);
+    assert.equal(attempt.calls.filter(call=>call.path==='/api/tasks').length,1);
+  }
+}));
+
+test('ordinary result preserves bounded full response and instruction identity without HTML execution',()=>setup(async()=>{
+  const original=spec(),task={...taskFor(original),execution_location:'Synthetic A',result:{response:'<script>literal</script>\n'+'答复'.repeat(5000),response_truncated:false}};
+  const node=renderOrdinaryTaskResult(task);assert.equal(field(node,'普通任务执行回复').textContent,task.result.response);
+  assert.match(node.textContent,/Read project a/);assert.equal(walk(node).filter(n=>n.tag==='script').length,0);
+  assert.ok(walk(node).some(n=>n.attrs.href==='#projects/a/tasks?parent_task_id='+original.request_id));
+  assert.equal(ordinaryTaskMatches({...task,task_spec:{...original,objective:'Wrong message'}},original),false);
+  const wrong=renderOrdinaryTaskResult({...task,project:'b'});assert.match(wrong.textContent,/项目绑定不一致/);assert.ok(!wrong.textContent.includes(task.result.response));
+  assert.match(renderOrdinaryTaskResult({...task,result:{...task.result,response_truncated:true}}).textContent,/已截断/);
+  assert.equal(validOrdinarySpec({...original,extra:'not allowed'}),false);assert.equal(renderOrdinaryTaskResult({...task,kind:'story_exchange'}),null);
+}));
+
+test('unsaved and incomplete text survives route changes and refresh without crossing project or owner scope',()=>setup(async({storage,identity})=>{
+  const state=service();let node=await state.render();field(node,'任务目标').value='Unsaved A objective';await field(node,'任务目标').fire('input');
+  assert.equal(state.calls.filter(call=>call.body).length,0,'browser backup does not start a backend operation');
+  const cached=JSON.parse(storage.get('hub:ordinary-draft:'+'c'.repeat(64)));
+  assert.deepEqual(Object.keys(cached).sort(),['base_revision','spec']);assert.equal(cached.spec.scope,'');
+  const other=service(context('b'));const b=await other.render({project_id:'b'});await fill(b,'Unsaved B','B scope');
+  node=await state.render();assert.equal(field(node,'任务目标').value,'Unsaved A objective');assert.equal(field(node,'任务范围').value,'');
+  assert.match(field(node,'普通任务状态').textContent,/已恢复浏览器/);
+  state.context.draft_scope='f'.repeat(64);identity({owner_authenticated:true});await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(field(node,'任务目标').value,'','new owner scope cannot inherit the prior owner backup or current form');
+  assert.ok(storage.has('hub:ordinary-draft:'+'c'.repeat(64)));
+  await fill(node,'Current owner draft','Current owner scope');await button(node,'保存任务草稿').fire('click');
+  assert.equal(storage.has('hub:ordinary-draft:'+'f'.repeat(64)),false,'confirmed formal save clears only this scope backup');
+  assert.ok(storage.has('hub:ordinary-draft:'+'e'.repeat(64)),'other project backup remains untouched');
+}));
+
+test('stale backup keeps its original base across edits and refresh until explicit application',()=>setup(async({storage})=>{
+  const state=service();let node=await state.render();await fill(node,'Local unsaved text','Local scope');
+  state.context.draft={...state.context.draft,revision:4,value:{...spec(),objective:'Newer formal draft'}};
+  node=await state.render();assert.equal(field(node,'任务目标').value,'Local unsaved text');
+  assert.equal(button(node,'保存任务草稿').disabled,true);assert.equal(button(node,'发送普通任务').disabled,true);
+  assert.match(field(node,'普通任务状态').textContent,/基础版本.*不同/);
+  await fill(node,'Still local text','Still local scope');
+  assert.equal(JSON.parse(storage.get('hub:ordinary-draft:'+'c'.repeat(64))).base_revision,0);
+  node=await state.render();assert.equal(button(node,'保存任务草稿').disabled,true);
+  await button(node,'按当前版本应用本地草稿').fire('click');assert.equal(state.calls.filter(call=>call.body).length,0);
+  assert.equal(field(node,'任务目标').value,'Still local text');await button(node,'保存任务草稿').fire('click');
+  const command=state.calls.find(call=>call.path==='/api/ordinary-drafts').body;assert.equal(command.expected_revision,4);assert.equal(command.value.objective,'Still local text');
+}));
+
+test('unavailable browser backup and mismatched cached targets stay explicit without importing foreign text',()=>setup(async({storage})=>{
+  storage.set('hub:ordinary-draft:'+'c'.repeat(64),JSON.stringify({base_revision:0,spec:spec('b')}));
+  const state=service(),node=await state.render();assert.equal(field(node,'任务目标').value,'');assert.match(node.textContent,/备份与当前项目.*不一致/);
+  globalThis.localStorage={getItem:()=>null,setItem:()=>{throw new Error('storage unavailable');},removeItem:()=>{}};
+  await fill(node);assert.match(node.textContent,/本次未保存输入仅在当前页面/);assert.equal(field(node,'任务目标').value,'A precise objective');
+  await button(node,'保存任务草稿').fire('click');assert.match(field(node,'普通任务状态').textContent,/已保存/);
+}));

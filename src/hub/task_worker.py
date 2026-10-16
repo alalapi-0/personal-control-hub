@@ -17,6 +17,8 @@ from .workbench_store import canonical, digest
 
 # Stream fragments are transport data, not lifecycle facts. Their bounded
 # aggregate remains evidence; terminal/approval/binding events are never dropped.
+ORDINARY_RESPONSE_BYTES = 65536  # UTF-8 ceiling; the hashed result also has a strict cap.
+
 STREAM_NOTIFICATIONS={'item/agentMessage/delta','item/reasoning/textDelta','item/reasoning/summaryTextDelta',
                       'item/commandExecution/outputDelta','account/rateLimits/updated'}
 
@@ -61,6 +63,29 @@ class TaskWorker:
         heart=threading.Thread(target=heartbeat,name='hub-task-heartbeat',daemon=False);heart.start()
         thread_id=turn_id=None;interrupted=False;deadline=None
         stream={'count':0,'methods':{}};stream_hash=hashlib.sha256()
+        ordinary=False;ordinary_response={};ordinary_delta_seen=set()
+        def collect_ordinary_text(params, completed=False):
+            item=params.get('item',{})
+            key=item.get('id')or params.get('itemId')
+            if not key:
+                pending=[name for name,row in ordinary_response.items()if not row['completed']]
+                if completed and len(pending)>1:raise ServiceError('ORDINARY_RESPONSE_BINDING_UNKNOWN',outcome='UNKNOWN')
+                key=pending[0]if completed and pending else 'unkeyed'
+            if key not in ordinary_response:
+                if len(ordinary_response)>=256:raise ServiceError('ORDINARY_RESPONSE_ITEM_CAPACITY',outcome='UNKNOWN')
+                ordinary_response[key]={'text':'','completed':False,'truncated':False}
+            row=ordinary_response[key]
+            value=item.get('text','')if completed else params.get('delta','')
+            if row['completed']:
+                if completed and row['text_hash']!=hashlib.sha256(str(value).encode()).hexdigest():
+                    raise ServiceError('ORDINARY_RESPONSE_CONFLICT',outcome='UNKNOWN')
+                return
+            if completed:row['text_hash']=hashlib.sha256(str(value).encode()).hexdigest()
+            clean=sanitized(value,ORDINARY_RESPONSE_BYTES+1)
+            candidate=(clean if completed else row['text']+clean).encode('utf-8')
+            row['text']=candidate[:ORDINARY_RESPONSE_BYTES].decode('utf-8',errors='ignore')
+            row['truncated']=len(candidate)>ORDINARY_RESPONSE_BYTES or (row['truncated'] and not completed)
+            row['completed']=completed
         def provider_request(request):
             params=request.get('params',{});method=request['method']
             if thread_id is None or turn_id is None or params.get('threadId')!=thread_id or params.get('turnId')!=turn_id:
@@ -90,6 +115,10 @@ class TaskWorker:
             return {'control_id':control_id,'status':control['status'],'decision':control.get('decision','decline'),
                     'request_digest':request_hash,'operation_sha256':control.get('operation_sha256')}
         try:
+            ordinary=type(task['intent'].get('grant'))is dict and task['intent']['grant'].get('kind')=='ordinary_project'
+            if ordinary:
+                from . import ordinary_tasks
+                ordinary_tasks.check_registration(task['intent']['grant'],self.store.root)
             grant=validate_grant(task['intent']['grant'],live=True)
             business=grant.get('kind')=='story_exchange'
             current=self.store.grant(grant['grant_id'])
@@ -102,17 +131,32 @@ class TaskWorker:
                 parent=self.store.task(task['parent']) if task['parent'] else None
                 if not parent_binding_matches(task['intent'],parent) or parent['status']!='checks_complete' or parent['provider_status']!='completed':
                     raise ServiceError('TASK_PARENT_NOT_IDLE',status=409,outcome='UNKNOWN')
+            if parent and (ordinary != (parent['payload'].get('kind') == 'ordinary_project')):
+                raise ServiceError('ORDINARY_PARENT_KIND_MISMATCH',status=409)
+            if ordinary:
+                from . import ordinary_tasks
+                if task['payload'].get('kind') != ordinary_tasks.KIND:
+                    raise ServiceError('ORDINARY_KIND_MISMATCH',status=409)
+                ordinary_tasks.validate_grant(grant,live=True)
+                ordinary_before = ordinary_tasks.snapshot_inputs(grant)
+                ordinary_text = ordinary_tasks.prompt(task['intent']['task_spec'],input_files=grant['input_files'])
+                if hashlib.sha256(ordinary_text.encode()).hexdigest()!=task['intent']['prompt_sha256']:
+                    raise ServiceError('ORDINARY_PROMPT_VERSION_STALE',status=409)
             self.store.event(ident,'dispatch-intent-'+self.owner,{'worker':self.identity,'grant_hash':digest(grant),'transport':'app_server_stdio','at':time.time()})
             self.fault('before_dispatch')
             self.store.check_storage()
             css='css_trial'in grant
-            if business and self.adapter_factory is AppServerAdapter:
+            if ordinary and self.adapter_factory is AppServerAdapter:
+                adapter=AppServerAdapter(Path(grant['root']),read_only=True,readable_paths=[row['path']for row in grant['input_files']]).open()
+            elif business and self.adapter_factory is AppServerAdapter:
                 from .native_business import NativeBusinessAdapter
                 adapter=NativeBusinessAdapter(grant['root'],hub_root=self.store.root,grant=grant).open()
             elif css and self.adapter_factory is AppServerAdapter:
                 from . import css_trial
                 adapter=css_trial.replacement_adapter(self.store,task,self.owner).open()
             else:adapter=self.adapter_factory(Path(grant['root'])).open()
+            if ordinary and getattr(adapter,'read_only',None) is not True:
+                raise ServiceError('ORDINARY_READ_ONLY_PROFILE_REQUIRED',status=403)
             adapter.request_handler=provider_request
             if css:adapter.request_handler=None  # This trial cannot expand permissions.
             if parent:
@@ -131,7 +175,9 @@ class TaskWorker:
             self.fault('after_thread_binding')
             if self.store.task(ident)['cancel']:raise ServiceError('TASK_CANCEL_BEFORE_DISPATCH')
             css='css_trial'in grant
-            if business:
+            if ordinary:
+                text=ordinary_text
+            elif business:
                 from .story_exchange import prompt
                 from .story_promotion import source_snapshot
                 source_snapshot(grant,expected=True)
@@ -156,7 +202,12 @@ class TaskWorker:
             else:text=fixture_prompt(task['intent']['annotation'],self.store.root)
             self.store.event(ident,'turn-intent-'+self.owner,{'thread_id':thread_id,'input_digest':hashlib.sha256(text.encode()).hexdigest(),'at':time.time()})
             self.fault('before_turn')
-            image=None if business else css_trial.HUB_ROOT/grant['css_trial']['image_ref']if css else Path(grant['root'])/grant['image']
+            image=None if business or ordinary else css_trial.HUB_ROOT/grant['css_trial']['image_ref']if css else Path(grant['root'])/grant['image']
+            if ordinary and parent:
+                verify_parent=getattr(adapter,'verify_parent_binding',None)
+                if not callable(verify_parent):
+                    raise ServiceError('ORDINARY_PARENT_VERIFICATION_UNAVAILABLE',status=409)
+                verify_parent(thread_id,parent['turn_id'])
             turn_id=adapter.start(thread_id,text,image)
             self.fault('after_turn_before_binding')
             self.store.update(ident,self.owner,turn_id=turn_id,provider_status='inProgress')
@@ -164,6 +215,10 @@ class TaskWorker:
             while completed is None:
                 if lease_lost.is_set():raise ServiceError('TASK_LEASE_LOST',outcome='UNKNOWN')
                 if time.monotonic()>deadline:raise ServiceError('TASK_RUNTIME_TIMEOUT',outcome='UNKNOWN')
+                if ordinary:
+                    ordinary_tasks.check_registration(grant,self.store.root)
+                    if self.store.grant(grant['grant_id'])!=grant or time.time()>=grant['expires_at']:
+                        raise ServiceError('GRANT_VERSION_STALE',status=409,outcome='UNKNOWN')
                 if self.store.task(ident)['cancel'] and not interrupted:
                     adapter.interrupt(thread_id,turn_id);interrupted=True
                 notification=adapter.poll(.2)
@@ -180,6 +235,9 @@ class TaskWorker:
                 if event_turn is not None and event_turn!=turn_id:raise ServiceError('CODEX_EVENT_BINDING_REJECTED',outcome='UNKNOWN')
                 raw_hash=hashlib.sha256(canonical(notification)).hexdigest()
                 if method in STREAM_NOTIFICATIONS:
+                    if ordinary and method=='item/agentMessage/delta'and raw_hash not in ordinary_delta_seen:
+                        if len(ordinary_delta_seen)>=4096:raise ServiceError('ORDINARY_RESPONSE_EVENT_CAPACITY',outcome='UNKNOWN')
+                        ordinary_delta_seen.add(raw_hash);collect_ordinary_text(params)
                     stream['count']+=1;stream['methods'][method]=stream['methods'].get(method,0)+1;stream_hash.update(bytes.fromhex(raw_hash));continue
                 events+=1
                 if events>256:raise ServiceError('TASK_EVENT_CAPACITY',outcome='UNKNOWN')
@@ -192,7 +250,9 @@ class TaskWorker:
                 # Deduplicate only validated lifecycle facts; no provider bodies.
                 self.store.event(ident,'event-'+raw_hash,evidence)
                 if method in {'turn/tokenUsage/updated','thread/tokenUsage/updated'}:usage=params.get('tokenUsage')
-                if method=='item/completed' and params.get('item',{}).get('type')=='agentMessage':message=sanitized(params['item'].get('text',''))
+                if method=='item/completed' and params.get('item',{}).get('type')=='agentMessage':
+                    if ordinary:collect_ordinary_text(params,completed=True)
+                    message=sanitized(params['item'].get('text',''))
                 if method=='turn/completed':
                     if not saw_started:raise ServiceError('CODEX_EVENT_ORDER',outcome='UNKNOWN')
                     completed=params.get('turn',{}).get('status')
@@ -225,6 +285,42 @@ class TaskWorker:
                 adapter.close();adapter=None
                 self.store.update(ident,self.owner,status='validating',result=result)
                 self.store.handoff_validation(ident,self.owner,digest(result))
+                return True
+            if ordinary:
+                ordinary_tasks.check_registration(grant,self.store.root)
+                ordinary_tasks.validate_grant(grant,live=True)
+                ordinary_after=ordinary_tasks.snapshot_inputs(grant)
+                if ordinary_after!=ordinary_before:
+                    raise ServiceError('ORDINARY_INPUT_VERSION_CHANGED',status=409,outcome='UNKNOWN')
+                if self.store.grant(grant['grant_id'])!=grant:
+                    raise ServiceError('GRANT_VERSION_STALE',status=409,outcome='UNKNOWN')
+                checks=[{'id':'ordinary_declared_inputs_unchanged','exit':0,
+                         'before_sha256':digest(ordinary_before),'after_sha256':digest(ordinary_after),
+                         'basis':'Exact declared input manifest; native profile enforces read-only execution.'}]
+                response='\n'.join(row['text']for row in ordinary_response.values())
+                encoded=response.encode('utf-8')
+                ordinary_reply=encoded[:ORDINARY_RESPONSE_BYTES].decode('utf-8',errors='ignore')
+                ordinary_truncated=len(encoded)>ORDINARY_RESPONSE_BYTES or any(row['truncated']for row in ordinary_response.values())
+                checks.append({'id':'ordinary_response_present','exit':0 if ordinary_reply.strip()else 1})
+                result={'kind':ordinary_tasks.KIND,'effect':'read_only','classification':grant['classification'],
+                        'checks':checks,'provider_reply':ordinary_reply,'response_truncated':ordinary_truncated,
+                        'response_limit_bytes':ORDINARY_RESPONSE_BYTES,'response_completed_items':sum(row['completed']for row in ordinary_response.values()),
+                        'response_has_unfinished_items':any(not row['completed']for row in ordinary_response.values()),'transport':adapter.transport,
+                        'usage':usage,'usage_coverage':'provider notification only'if usage else'unavailable',
+                        'approval_denials':adapter.denials,
+                        'stream_observation':{**stream,'sha256_chain':stream_hash.hexdigest(),'critical_events':events}}
+                # JSON escaping can exceed the raw UTF-8 ceiling. Retain a
+                # bounded truthful response instead of overflowing the store.
+                result['response_saved_bytes']=len(result['provider_reply'].encode('utf-8'))
+                while len(canonical(result))>131072 and result['provider_reply']:
+                    excess=len(canonical(result))-131072
+                    raw=result['provider_reply'].encode('utf-8')
+                    result['provider_reply']=raw[:max(0,len(raw)-excess)].decode('utf-8',errors='ignore')
+                    result['response_truncated']=True
+                    result['response_saved_bytes']=len(result['provider_reply'].encode('utf-8'))
+                if len(canonical(result))>131072:raise ServiceError('TASK_RESULT_CAPACITY',outcome='UNKNOWN')
+                if self.store.task(ident)['cancel']:raise ServiceError('TASK_CANCEL_AFTER_EFFECT')
+                self.store.update(ident,self.owner,status='checks_complete'if all(check['exit']==0 for check in checks)else'failed',result=result)
                 return True
             before={row[0]:row[1:]for row in task['intent']['preimage']};after=fingerprint(grant['root'])
             changed=sorted(key for key in set(before)|{r[0]for r in after}if before.get(key)!={r[0]:r[1:]for r in after}.get(key))

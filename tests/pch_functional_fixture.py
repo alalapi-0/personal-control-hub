@@ -67,9 +67,12 @@ def png(color):
 class ControlledAdapter:
     """Deterministic mock. Faults never establish real provider acceptance."""
     transport = 'mock'
+    # Ordinary branch enforces image=None and never performs a workspace effect.
+    read_only = True
 
-    def __init__(self, fixture, root):
+    def __init__(self, fixture, root, *, ordinary=False):
         self.fixture, self.root = fixture, Path(root)
+        self.ordinary = ordinary
         if self.root not in fixture.roots.values():
             raise AssertionError('foreign adapter root')
         self.scenario = fixture.scenarios.get(self.root.name, 'normal')
@@ -79,16 +82,26 @@ class ControlledAdapter:
         self.release = fixture.release
 
     def open(self): return self
-    def thread(self, previous=None): return previous or 'thread-' + self.ident
+    def thread(self, previous=None):
+        return previous or 'thread-' + self.ident + ('-' + secrets.token_hex(6) if self.ordinary else '')
+    def verify_parent_binding(self, thread, turn):
+        if self.fixture.ordinary_turns.get(thread) != (self.root, turn, 'completed'):
+            raise ServiceError('CODEX_PARENT_BINDING_REJECTED', status=409)
     def start(self, thread, text, image):
-        self.fixture.effects.append(self.root)
-        (self.root / 'index.html').write_text(AFTER)
-        turn = 'turn-' + self.ident
+        if image is not None:
+            self.fixture.effects.append(self.root)
+            (self.root / 'index.html').write_text(AFTER)
+        turn = 'turn-' + self.ident + ('-' + secrets.token_hex(6) if self.ordinary else '')
+        if self.ordinary:
+            self.fixture.ordinary_turns[thread] = (self.root, turn, 'inProgress')
         def event(method, **extra):
             return {'method': method, 'params': {'threadId': thread, 'turnId': turn, **extra}}
         self.events = [event('turn/started', turn={'id': turn, 'status': 'inProgress'}),
                        event('turn/started', turn={'id': turn, 'status': 'inProgress'}),
                        event('turn/completed', turn={'id': turn, 'status': 'completed'})]
+        if image is None:
+            self.events.insert(-1, event('item/completed', item={'id': 'message-' + self.ident,
+                'type': 'agentMessage', 'text': 'Synthetic read-only response for ' + self.ident + '.'}))
         if self.scenario == 'out_of_order': self.events.reverse()
         return turn
     def poll(self, timeout):
@@ -96,7 +109,11 @@ class ControlledAdapter:
             if not self.release.wait(min(timeout, .05)): return None
         if self.scenario in {'disconnect', 'lost_receipt'}:
             raise ServiceError('FIXTURE_CONNECTION_LOST', outcome='UNKNOWN')
-        return self.events.pop(0) if self.events else None
+        event = self.events.pop(0) if self.events else None
+        if self.ordinary and event and event['method'] == 'turn/completed':
+            params = event['params']
+            self.fixture.ordinary_turns[params['threadId']] = (self.root, params['turnId'], 'completed')
+        return event
     def check(self, argv):
         assert tuple(argv) == FIXED_CHECKS['fixture_sample']
         assert (self.root / 'index.html').read_text() == AFTER
@@ -119,6 +136,7 @@ class FunctionalFixture:
         self.owner = owner or secrets.token_urlsafe(40)
         self.probes, self.effects, self.interrupts = [], [], []
         self.scenarios, self.workers = {}, []
+        self.ordinary_turns = {}
         self.runtime = {key: {'available': True, 'classification': 'synthetic_fixture'}
                         for key in ('worker_runtime', 'provider')}
         self.release = threading.Event()
@@ -314,6 +332,45 @@ class FunctionalFixture:
                 'proposal_source_sha256': hashlib.sha256(raw).hexdigest(), 'blocked_project': b,
                 'proposals': self.projects.get_management(a).get('proposals', [])}
 
+    def ordinary_sample(self):
+        """Explicit O4 trusted grants; no ordinary authority in default fixtures."""
+        from hub.ordinary_tasks import make_grant
+        self.ordinary_grants = {}
+        registry = self.root / 'data/registry/external_projects.yaml'
+        registry_hash = hashlib.sha256(registry.read_bytes()).hexdigest()
+        for project, root in self.roots.items():
+            readme = root / 'README.md'
+            if not readme.exists(): readme.write_text('Synthetic read-only project ' + project + '\n')
+            grant = make_grant(root, project, registry_hash, project + '-ordinary-grant',
+                               input_paths=['AGENTS.md', 'README.md'], classification='synthetic_fixture',
+                               version=1, max_turn_seconds=120)
+            self.task_store.register_grant(grant)
+            self.ordinary_grants[project] = grant
+        self.tasks.ordinary_enabled = True
+        return {'ordinary_ready': True, 'project_ids': list(self.ordinary_grants),
+                'classification': self.classification}
+
+    def ordinary_input(self, project_id):
+        if project_id not in getattr(self, 'ordinary_grants', {}):
+            raise ValueError('Only explicitly granted synthetic projects may change')
+        path = self.roots[project_id] / 'README.md'
+        path.write_text(path.read_text() + 'Synthetic input version changed.\n')
+        return {'ordinary_input_changed': True, 'project_id': project_id}
+
+    def ordinary_regrant(self, project_id):
+        from hub.ordinary_tasks import make_grant
+        if project_id not in getattr(self, 'ordinary_grants', {}):
+            raise ValueError('Only explicitly granted synthetic projects may rebind')
+        previous = self.ordinary_grants[project_id]
+        registry = self.root / 'data/registry/external_projects.yaml'
+        grant = make_grant(self.roots[project_id], project_id,
+                           hashlib.sha256(registry.read_bytes()).hexdigest(), previous['grant_id'],
+                           input_paths=['AGENTS.md', 'README.md'], classification='synthetic_fixture',
+                           version=previous['version'] + 1, max_turn_seconds=120)
+        self.task_store.register_grant(grant)
+        self.ordinary_grants[project_id] = grant
+        return {'ordinary_regranted': True, 'project_id': project_id}
+
     def restart_server(self):
         if any(thread.is_alive() for thread in self.workers):
             raise RuntimeError('Cannot restart fixture with active owned worker')
@@ -373,9 +430,15 @@ class FunctionalFixture:
             self.cookie, self.csrf = headers['Set-Cookie'].split(';', 1)[0], data['data']['csrf_token']
         return {'classification': self.classification, 'owner_authenticated': owner}
 
-    def run_worker(self, project='fixture-project-a', *, background=False):
-        worker = TaskWorker(self.task_store, adapter_factory=lambda root: ControlledAdapter(self, root),
-                            writer_check=self.writer_check, only_task_id=self.payloads[project]['request_id'], request_timeout=1)
+    def run_worker(self, project='fixture-project-a', *, background=False, task_id=None):
+        if project not in self.roots: raise ValueError('Foreign synthetic project')
+        selected = task_id or self.payloads[project]['request_id']
+        if task_id is not None:
+            task = self.task_store.task(task_id)
+            if not task or task['project'] != project or task['payload'].get('kind') != 'ordinary_project':
+                raise ValueError('Only exact synthetic ordinary task IDs may be selected')
+        worker = TaskWorker(self.task_store, adapter_factory=lambda root: ControlledAdapter(self, root, ordinary=task_id is not None),
+                            writer_check=self.writer_check, only_task_id=selected, request_timeout=1)
         if background:
             thread = threading.Thread(target=worker.run_one, name='functional-fixture-worker')
             self.workers.append(thread); thread.start(); return thread
@@ -572,9 +635,34 @@ def main():
             command = json.loads(line); action = command.get('action')
             if action == 'stop': break
             if action == 'handshake': result = fixture.handshake()
-            elif action == 'run': result = {'ran': fixture.run_worker(command.get('project_id', 'fixture-project-a'))}
+            elif action == 'run':
+                ran = fixture.run_worker(command.get('project_id', 'fixture-project-a'),
+                                         task_id=command.get('task_id'), background=command.get('background', False))
+                result = {'ran': True if isinstance(ran, threading.Thread) else ran,
+                          'background': isinstance(ran, threading.Thread)}
             elif action == 'health': result = {'status': fixture.call(path='/api/health')[0]}
             elif action == 'management-sample': result = fixture.management_sample()
+            elif action == 'ordinary-sample': result = fixture.ordinary_sample()
+            elif action == 'ordinary-input': result = fixture.ordinary_input(command.get('project_id'))
+            elif action == 'ordinary-regrant': result = fixture.ordinary_regrant(command.get('project_id'))
+            elif action == 'ordinary-scenario':
+                project = command.get('project_id')
+                if project not in fixture.roots or command.get('scenario') not in {'normal', 'delay', 'disconnect'}:
+                    raise ValueError('Invalid synthetic ordinary scenario')
+                fixture.scenarios[fixture.roots[project].name] = command['scenario']
+                fixture.release.clear()
+                result = {'ordinary_scenario': command['scenario']}
+            elif action == 'ordinary-release':
+                fixture.release.set()
+                for thread in fixture.workers: thread.join(3)
+                if any(thread.is_alive() for thread in fixture.workers): raise RuntimeError('Fixture worker did not finish')
+                result = {'ordinary_released': True}
+            elif action == 'ordinary-revoke':
+                project = command.get('project_id')
+                grant = copy.deepcopy(fixture.ordinary_grants[project])
+                grant.update(version=grant['version'] + 1, expires_at=time.time() - 1)
+                fixture.task_store.register_grant(grant)
+                result = {'ordinary_revoked': True, 'project_id': project}
             elif action == 'restart': result = fixture.restart_server()
             elif action == 'source': result = fixture.update_source(command.get('project_id'), completed=command.get('completed'), objective=command.get('objective'))
             elif action == 'sync': result = fixture.sync(command.get('only_project_id'))

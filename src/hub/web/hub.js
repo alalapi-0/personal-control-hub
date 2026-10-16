@@ -235,9 +235,14 @@ async function projectTaskPanel(project,token){
   }
   try{
     const identity=await api('/api/identity');
+    const {renderOrdinaryTasks}=await import('./ordinary_tasks.mjs');
+    if(token!==generation)return panel;
+    const ordinary=await renderOrdinaryTasks(project,{isCurrent:()=>token===generation});
+    if(token!==generation)return panel;
+    ordinary.dataset.livePreserve='ordinary:'+project.project_id;panel.append(ordinary);
     if(!identity.owner_authenticated){panel.append(el('p',{className:'muted'},'连接所有者后可核对该项目的执行任务。'));return panel;}
     const data=await api('/api/tasks');const tasks=projectTasks(data.tasks,project.project_id);
-    panel.append(el('p',{className:'muted'},data.test_gate?'隔离测试记录；真实项目执行仍需独立授权。':'执行入口尚未开放。'));
+    panel.append(el('p',{className:'muted'},data.capabilities?.ordinary_execution?.available?'普通只读任务通道已配置；发送仍需逐项核对。':data.test_gate?'隔离测试记录；真实项目执行仍需独立授权。':'执行入口尚未开放。'));
     if(!tasks.length)panel.append(el('p',{className:'muted'},'尚无这个项目的已接收任务。'));
     else{
       const {taskLabels}=await import('./tasks.js');

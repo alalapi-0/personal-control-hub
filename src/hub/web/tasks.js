@@ -1,5 +1,6 @@
 import {el,button,api,navigate} from './common.js';
 import {renderBusinessPreview} from './business_preview.mjs';
+import {renderOrdinaryTaskResult} from './ordinary_tasks.mjs';
 
 export async function renderBusinessTaskPreview(target,task,{isCurrent=()=>true}={}){
   if(task.kind!=='story_exchange')return;
@@ -80,7 +81,8 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true}={}){
     root.append(el('p',{className:'warning'},data.test_gate?'隔离测试入口；不代表真实项目执行授权。':'执行入口尚未开放；需要有效的项目授权、隔离与后台配置。'));
     if(data.tasks_available===false)root.append(el('p',{className:'warning'},'目前无法读取任务账本；原记录未被初始化或覆盖。'));
     else if(!data.tasks.length)root.append(el('div',{className:'empty'},el('h2',{},'尚无已接收任务')));
-    for(const t of data.tasks)root.append(el('a',{href:'#tasks/'+encodeURIComponent(t.id),className:'panel stack'},el('h2',{},t.project),el('p',{},t.id),el('p',{},lifecycleLabel(t))));
+    for(const t of data.tasks)root.append(el('a',{href:'#tasks/'+encodeURIComponent(t.id),className:'panel stack'},el('h2',{},t.project),el('p',{},t.id),el('p',{},lifecycleLabel(t)),
+      t.kind==='ordinary_project'?el('p',{},'普通只读任务：'+(t.task_spec?.objective||'原指令待核对')):null));
     return;
   }
   const task=data.task;
@@ -103,7 +105,8 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true}={}){
   }
   await renderBusinessTaskPreview(root,task,{isCurrent});
   if(!isCurrent())return;
-  for(const control of data.controls||[]){
+  const ordinary=renderOrdinaryTaskResult(task);if(ordinary)root.append(ordinary);
+  for(const control of task.kind==='ordinary_project'?[]:data.controls||[]){
     const state=controlState(control,task,owner),label=el('h3',{},state.label),section=el('section',{className:'panel stack'},label,
       el('p',{},control.kind==='input'?'本适配器尚未验证输入答复能力。可拒绝本次请求，保存的修改意见不会被删除。':control.allowed_decisions.includes('accept')?'本次命令已与既有授权核对。允许只适用于这一次请求；项目、命令和网络权限不会扩大。':'请求权限尚未确认在已有授权内。本入口只允许拒绝，不会扩大项目、命令或网络权限。'),
       el('p',{className:'caption'},'请求版本 '+control.version+' · '+new Date(control.expires_at*1000).toLocaleTimeString()+' 到期'));
@@ -155,6 +158,30 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true}={}){
   function identity(event){if(!root.isConnected){window.removeEventListener('hub:identity',identity);return;}owner=!recovery.blocked&&event.detail?.owner_authenticated===true;for(const action of actions)action.button.disabled=!action.allowed();}
   window.addEventListener('hub:identity',identity);
   root.append(el('details',{},el('summary',{},'有序事件'),el('pre',{},JSON.stringify(data.events,null,2))));
+  if(task.kind==='ordinary_project'&&['queued','running','waiting_input','waiting_approval','validating'].includes(task.status)){
+    const observation=el('p',{className:'caption',role:'status','aria-live':'polite'},'正在核对本任务的执行状态。');root.append(observation);
+    const signature=value=>JSON.stringify([value.task?.id,value.task?.project,value.task?.status,
+      value.task?.provider_status,value.task?.worker_state,value.task?.result_version,
+      value.task?.lifecycle?.stage,value.controls]);
+    const original=signature(data);
+    const observe=async()=>{
+      if(!root.isConnected||!isCurrent()){window.removeEventListener('hub:identity',identity);return;}
+      if(document.hidden||navigator.onLine===false){setTimeout(observe,5000);return;}
+      try{
+        const next=await api('/api/tasks/'+encodeURIComponent(task.id));
+        if(!root.isConnected||!isCurrent())return;
+        if(next.task?.id!==task.id||next.task?.project!==task.project)throw new Error('TASK_RESPONSE_BINDING_REJECTED');
+        if(signature(next)!==original){await renderTasks(target,{taskId,isCurrent});return;}
+        observation.textContent='本任务状态已核对；尚无新的执行结果。';
+      }catch(error){
+        if(!root.isConnected||!isCurrent())return;
+        observation.textContent='暂时无法核对本任务；保留当前回复和原请求，重连后继续读取。';
+        if(error.status===401||error.status===403){owner=false;actions.forEach(action=>action.button.disabled=true);}
+      }
+      if(root.isConnected&&isCurrent())setTimeout(observe,1000);
+    };
+    setTimeout(observe,1000);
+  }
 }
 
 export async function sendAnnotation(annotationId,status){

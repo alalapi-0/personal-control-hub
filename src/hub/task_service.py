@@ -54,6 +54,9 @@ def fingerprint(root):
 
 
 def validate_grant(grant, *, live=False):
+    if type(grant)is dict and grant.get('kind')=='ordinary_project':
+        from .ordinary_tasks import validate_grant as validate_ordinary_grant
+        return validate_ordinary_grant(grant,live=live)
     if type(grant)is dict and grant.get('kind')=='story_exchange':
         from .story_exchange import validate
         return validate(grant,live=live)
@@ -101,13 +104,14 @@ def validate_grant(grant, *, live=False):
 
 
 class TaskService:
-    def __init__(self,projects,annotations,store, *, test_gate=False, writer_check=None, runtime_status=None):
+    def __init__(self,projects,annotations,store, *, test_gate=False, writer_check=None, runtime_status=None, ordinary_enabled=False):
         self.projects,self.annotations,self.store=projects,annotations,store
         self.test_gate=test_gate
         # An internal lease cannot certify an unrelated writer's absence.
         self.writer_check=writer_check or (lambda _:False)
         self.writer_check_configured=writer_check is not None
         self.runtime_status=runtime_status
+        self.ordinary_enabled=ordinary_enabled is True
 
     def capabilities(self, *, storage=None):
         """Read server readiness only; never authorize a task or probe a provider.
@@ -156,8 +160,124 @@ class TaskService:
                          'real' if runtime_classes=={'real'} else 'unknown')
         result['annotation_execution']=capability(execution_reason is None,execution_reason,
             'disabled' if not self.test_gate else None,classification=execution_class)
-        result['ordinary_execution']=capability(False,'ORDINARY_TASK_CONTRACT_UNAVAILABLE')
+        ordinary_reason=None
+        for ready,reason in ((self.ordinary_enabled,'ORDINARY_EXECUTION_DISABLED'),
+                (self.writer_check_configured,'TASK_WRITER_CHECK_UNCONFIGURED'),
+                (result['worker_runtime']['available'],result['worker_runtime']['reason_code']),
+                (result['provider']['available'],result['provider']['reason_code']),
+                (storage_ready,reason or 'TASK_STORAGE_BLOCKED')):
+            if not ready:ordinary_reason=reason;break
+        result['ordinary_execution']=capability(ordinary_reason is None,ordinary_reason,classification=execution_class)
         return result
+
+    def _ordinary_project(self,project_id):
+        stable_id(project_id);resolver=self.projects._resolver();resolver._check_registry()
+        eligible,_=self.projects._management_context(resolver)
+        if project_id not in eligible:raise ServiceError('TASK_PROJECT_REJECTED',status=403)
+        return resolver,resolver.projects[project_id]
+
+    def _ordinary_grant(self,resolver,project, *, live=True):
+        candidates=[]
+        for grant in self.store.grants():
+            if grant.get('kind')=='ordinary_project' and grant.get('project_id')==project['id']:
+                candidates.append(grant)
+        if not candidates:raise ServiceError('ORDINARY_PROJECT_GRANT_REQUIRED',status=403)
+        if len(candidates)!=1:raise ServiceError('ORDINARY_PROJECT_GRANT_AMBIGUOUS',status=409)
+        grant=validate_grant(candidates[0],live=False)
+        if grant['root']!=project.get('root_path') or grant['registry_hash']!=resolver.authority['registry_hash']:
+            raise ServiceError('GRANT_BINDING_REJECTED',status=409)
+        return validate_grant(grant,live=live)
+
+    @staticmethod
+    def _ordinary_parent(parent,project_id,owner_context,grant=None):
+        if (not parent or parent['project']!=project_id or parent['payload'].get('kind')!='ordinary_project'
+                or parent['intent'].get('owner_context')!=owner_context or not parent['thread_id'] or not parent['turn_id']):
+            raise ServiceError('TASK_PARENT_REJECTED',status=409)
+        if grant and (parent['intent']['grant']['root_identity']!=grant['root_identity']
+                      or parent['intent']['grant']['effect']!='read_only'):
+            raise ServiceError('TASK_PARENT_REJECTED',status=409)
+        if parent['status']=='checks_complete' and parent['provider_status']=='completed' and not parent['cancel']:
+            return ['idle_continue']
+        if parent['status']in {'running','waiting_input','waiting_approval','validating'} and not parent['cancel']:
+            return ['busy_feedback']
+        return []
+
+    def ordinary_context(self,project_id, *, owner_context,parent_task_id=None):
+        resolver,project=self._ordinary_project(project_id)
+        capabilities=self.capabilities();ready=capabilities['ordinary_execution']['available']
+        reason=capabilities['ordinary_execution']['reason_code'];grant=None
+        if ready:
+            try:grant=self._ordinary_grant(resolver,project)
+            except ServiceError as error:ready=False;reason=error.code
+        parents=[]
+        for parent in self.store.tasks():
+            try:allowed=self._ordinary_parent(parent,project_id,owner_context,grant)
+            except ServiceError:continue
+            parents.append({**self.public(parent),'allowed_modes':allowed})
+        if parent_task_id is not None:
+            stable_id(parent_task_id)
+            if not any(parent['id']==parent_task_id for parent in parents):
+                raise ServiceError('TASK_PARENT_REJECTED',status=409)
+        draft=self.store.ordinary_draft(owner_context,project_id,parent_task_id)
+        resolver._check_registry()
+        return {'project_id':project_id,'name':project['name'],'execution_location':project['name']+' · 已注册文件只读范围',
+                'input_version':grant['input_version']if grant else None,'allowed_effects':['read_only'],
+                'ready':ready,'reason_code':reason,'capabilities':capabilities,'parents':parents,'draft':draft,
+                'draft_scope':digest({'owner':owner_context,'project':project_id,'parent':parent_task_id})}
+
+    def save_ordinary_draft(self,command, *, owner_context,authorize):
+        from .ordinary_tasks import validate_spec
+        fields={'request_id','expected_revision','project_id','parent_task_id','value'}
+        if type(command)is not dict or set(command)!=fields:raise ServiceError('ORDINARY_DRAFT_INVALID')
+        resolver,_=self._ordinary_project(command['project_id'])
+        if command['value']is not None:
+            spec=validate_spec(command['value'],draft=True)
+            if spec['project_id']!=command['project_id'] or spec['parent_task_id']!=command['parent_task_id']:
+                raise ServiceError('ORDINARY_DRAFT_BINDING_REJECTED',status=409)
+        if command['parent_task_id']is not None:
+            self._ordinary_parent(self.store.task(command['parent_task_id']),command['project_id'],owner_context)
+        def check():
+            authorize();resolver._check_registry()
+            current,_=self._ordinary_project(command['project_id'])
+            if current.authority!=resolver.authority:raise ServiceError('TASK_SCOPE_CHANGED',status=409)
+        return self.store.save_ordinary_draft(command,owner_context,check)
+
+    def submit_ordinary(self,payload, *, owner_context,authorize):
+        from .ordinary_tasks import validate_spec,prompt
+        spec=validate_spec(payload);authorize()
+        resolver,project=self._ordinary_project(spec['project_id'])
+        old=self.store.task(spec['request_id'])
+        if old:
+            if old['payload']!=spec:raise ServiceError('TASK_REQUEST_CONFLICT',status=409)
+            if old['intent'].get('owner_context')!=owner_context:raise ServiceError('TASK_OWNER_REJECTED',status=403)
+            authorize();return {'task':self.public(old),'replayed':True}
+        caps=self.capabilities()
+        if not caps['ordinary_execution']['available']:
+            raise ServiceError(caps['ordinary_execution']['reason_code'],status=503)
+        grant=self._ordinary_grant(resolver,project)
+        if spec['input_version']!=grant['input_version']:raise ServiceError('ORDINARY_INPUT_CHANGED',status=409)
+        if not self.writer_check(grant):raise ServiceError('EXTERNAL_WRITER_UNKNOWN',status=409)
+        parent=self.store.task(spec['parent_task_id'])if spec['parent_task_id'] else None
+        if parent and spec['mode']not in self._ordinary_parent(parent,spec['project_id'],owner_context,grant):
+            raise ServiceError('TASK_PARENT_NOT_IDLE',status=409)
+        if spec['parent_task_id']and parent is None:raise ServiceError('TASK_PARENT_REJECTED',status=409)
+        intent={'grant':grant,'grant_hash':digest(grant),'task_spec':copy.deepcopy(spec),
+                'registry_hash':resolver.authority['registry_hash'],'previous_thread':parent['thread_id']if parent else None,
+                'owner_context':owner_context,'writer_status':'verified','prompt_sha256':hashlib.sha256(prompt(spec,input_files=grant['input_files']).encode()).hexdigest()}
+        if parent:intent['parent_binding']={'thread_id':parent['thread_id'],'turn_id':parent['turn_id']}
+        def check():
+            authorize();resolver._check_registry()
+            current,current_project=self._ordinary_project(spec['project_id'])
+            if current.authority!=resolver.authority or self._ordinary_grant(current,current_project)!=grant:
+                raise ServiceError('GRANT_VERSION_STALE',status=409)
+            if not self.writer_check(grant):raise ServiceError('EXTERNAL_WRITER_UNKNOWN',status=409)
+            if parent:
+                latest=self.store.task(parent['id'])
+                if (spec['mode']not in self._ordinary_parent(latest,spec['project_id'],owner_context,grant)
+                        or {'thread_id':latest['thread_id'],'turn_id':latest['turn_id']}!=intent['parent_binding']):
+                    raise ServiceError('TASK_PARENT_NOT_IDLE',status=409)
+        task,replayed=self.store.admit(spec,intent,authorize=check)
+        return {'task':self.public(task),'replayed':replayed}
 
     @staticmethod
     def _draft(row):
@@ -241,6 +361,8 @@ class TaskService:
         return {'task':self.public(task),'replayed':replayed}
 
     def submit(self,payload, *, owner_context='trusted_local_owner', authorize=None):
+        if type(payload)is dict and payload.get('kind')=='ordinary_project':
+            return self.submit_ordinary(payload,owner_context=owner_context,authorize=authorize or (lambda:None))
         if type(payload)is not dict or set(payload)!=REQUEST_FIELDS:raise ServiceError('INVALID_TASK_REQUEST')
         for key in ('request_id','project_id','annotation_id','grant_id'):stable_id(payload[key])
         for key in ('annotation_revision','grant_version'):
@@ -307,6 +429,9 @@ class TaskService:
         result.update(mode=task['payload']['mode'],annotation_id=task['payload'].get('annotation_id'),annotation_revision=task['payload'].get('annotation_revision'))
         if task['payload'].get('kind')=='story_exchange':
             result.update(kind='story_exchange',task_spec=copy.deepcopy(task['intent']['task_spec']),classification='real')
+        elif task['payload'].get('kind')=='ordinary_project':
+            result.update(kind='ordinary_project',task_spec=copy.deepcopy(task['intent']['task_spec']),
+                classification=task['intent']['grant']['classification'],execution_location=task['project']+' · 已注册文件只读范围')
         from .task_lifecycle import lifecycle
         facts=self.store.events(task['id'])
         result['lifecycle']=lifecycle(task,facts)
@@ -321,6 +446,8 @@ class TaskService:
             result['feedback']={'mechanism':'persistent_queue','applied_to_active_turn':False,'parent_binding':task['intent'].get('parent_binding'),
                                 'sequence':task['sequence'],'expires_at':task['intent']['grant']['expires_at'],'writer_status':task['intent'].get('writer_status','unknown')}
         if result['result']is not None:result['result']={k:v for k,v in result['result'].items()if k!='fingerprint'}
+        if result.get('kind')=='ordinary_project' and result['result']is not None:
+            result['result']['response']=result['result'].pop('provider_reply','')
         return result
 
     def business_preview(self,ident):

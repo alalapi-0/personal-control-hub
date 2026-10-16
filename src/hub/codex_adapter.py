@@ -54,15 +54,39 @@ EVIDENCE_PERMISSION_PROFILE='hub_lwb_evidence_v11'
 APPROVAL_RESPONSE='CommandExecutionRequestApprovalResponse'
 
 
-def profile_arguments(root,*,read_only=False):
+def _profile_entries(root, *, read_only=False, readable_paths=None):
     root=Path(root)
     if type(read_only)is not bool or not root.is_absolute() or '..'in root.parts:raise ServiceError('CODEX_PROFILE_REJECTED',status=503)
     # The entire disposable fixture is the grant scope. File-level writable
     # mounts are unsupported by this pinned Linux helper; real-project use
     # still requires its separately accepted exact-file/overlay boundary.
     entries={':root':'deny',':minimal':'read',':tmpdir':'deny',':slash_tmp':'deny',str(root):'read'if read_only else'write'}
+    if readable_paths is not None:
+        if (read_only is not True or type(readable_paths) is not list or not 1<=len(readable_paths)<=64
+                or any(type(value)is not str for value in readable_paths)
+                or len(set(readable_paths))!=len(readable_paths)):
+            raise ServiceError('CODEX_READ_SCOPE_REJECTED',status=503)
+        entries[str(root)]='deny'
+        for relative in readable_paths:
+            if (type(relative)is not str or not relative or Path(relative).is_absolute()
+                    or any(part in {'','.', '..'} for part in relative.split('/')) or '\\'in relative):
+                raise ServiceError('CODEX_READ_SCOPE_REJECTED',status=503)
+            target=root/relative
+            try:
+                if any(path.is_symlink() for path in (target,*target.parents)) or not target.is_file():
+                    raise ValueError('unsafe file')
+                info=target.stat()
+                if info.st_nlink!=1:raise ValueError('linked file')
+            except (OSError,ValueError):
+                raise ServiceError('CODEX_READ_SCOPE_REJECTED',status=503) from None
+            entries[str(target)]='read'
     if root==Path('/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007'):
         entries[str(root.parent)]='deny'
+    return entries
+
+
+def profile_arguments(root,*,read_only=False,readable_paths=None):
+    entries=_profile_entries(root,read_only=read_only,readable_paths=readable_paths)
     table='{'+','.join(json.dumps(k)+'='+json.dumps(v)for k,v in entries.items())+'}'
     profile=EVIDENCE_PERMISSION_PROFILE if read_only else PERMISSION_PROFILE
     return ('-c','default_permissions='+json.dumps(profile),
@@ -97,7 +121,7 @@ def config_fingerprint(config):
     except (OSError,ValueError):raise ServiceError('CODEX_CONFIG_DRIFT',status=503) from None
 
 
-def isolated_launch(command, *, config_path=None, root=Path('/fixture'), expected_config_sha256=None,read_only=False):
+def isolated_launch(command, *, config_path=None, root=Path('/fixture'), expected_config_sha256=None,read_only=False,readable_paths=None):
     """Process-local narrowing only. Never edit or export credential/config values."""
     config=Path(config_path)if config_path is not None else Path(child_environment()['HOME'])/'.codex/config.toml'
     if config_fingerprint(config)!=(expected_config_sha256 or REGISTERED_CONFIG_SHA256):
@@ -109,7 +133,7 @@ def isolated_launch(command, *, config_path=None, root=Path('/fixture'), expecte
     for name in names:args+=['-c','mcp_servers.'+name+'.enabled=false']
     for name in DISABLED_FEATURES:args+=['--disable',name]
     args+=['-c','web_search="disabled"']
-    args+=profile_arguments(root,read_only=read_only)
+    args+=profile_arguments(root,read_only=read_only,readable_paths=readable_paths)
     return tuple(args),names
 
 
@@ -123,9 +147,11 @@ def sanitized(value, limit=2000):
 class AppServerAdapter:
     transport = 'app_server_stdio'
 
-    def __init__(self, root, *, command=('codex','app-server','--stdio'), schemas=None,read_only=False):
+    def __init__(self, root, *, command=('codex','app-server','--stdio'), schemas=None,read_only=False,readable_paths=None):
         if type(read_only)is not bool:raise ServiceError('CODEX_PROFILE_REJECTED')
         self.read_only=read_only
+        if readable_paths is not None:_profile_entries(root,read_only=read_only,readable_paths=readable_paths)
+        self.readable_paths=list(readable_paths)if readable_paths is not None else None
         self.permission_profile=EVIDENCE_PERMISSION_PROFILE if read_only else PERMISSION_PROFILE
         self.root = Path(root)
         self.command = tuple(command)
@@ -169,11 +195,11 @@ class AppServerAdapter:
         return child_environment()
 
     def _profile_arguments(self):
-        return profile_arguments(self.root,read_only=self.read_only)
+        return profile_arguments(self.root,read_only=self.read_only,readable_paths=self.readable_paths)
 
     def _launch(self):
         return isolated_launch(self.command,root=self.root,
-            expected_config_sha256=self._configuration_hash(),read_only=self.read_only)
+            expected_config_sha256=self._configuration_hash(),read_only=self.read_only,readable_paths=self.readable_paths)
 
     def open(self):
         env=self._child_environment()
@@ -408,6 +434,49 @@ class AppServerAdapter:
         if type(value)is not dict or value.get('id')!=self.permission_profile or value.get('extends')is not None:
             raise ServiceError('CODEX_PROFILE_REJECTED',status=503)
         self.active_profile=self.permission_profile
+        if self.readable_paths is not None:
+            expected=_profile_entries(self.root,read_only=True,readable_paths=self.readable_paths)
+            effective=self.call('config/read',{'cwd':str(self.root),'includeLayers':False})['config']
+            if type(effective)is not dict or type(effective.get('permissions'))is not dict:
+                self.active_profile=None
+                raise ServiceError('CODEX_EXACT_READ_SCOPE_UNVERIFIED',status=503)
+            profile=effective['permissions'].get(self.permission_profile,{})
+            if type(profile)is not dict:
+                self.active_profile=None
+                raise ServiceError('CODEX_EXACT_READ_SCOPE_UNVERIFIED',status=503)
+            filesystem=profile.get('filesystem')
+            if type(filesystem)is dict and filesystem.get('glob_scan_max_depth')is None:
+                filesystem={key:item for key,item in filesystem.items()if key!='glob_scan_max_depth'}
+            if (filesystem!=expected or effective.get('default_permissions')!=self.permission_profile
+                    or type(profile.get('network'))is not dict or profile['network'].get('enabled')is not False
+                    or profile.get('extends')is not None):
+                self.active_profile=None
+                raise ServiceError('CODEX_EXACT_READ_SCOPE_UNVERIFIED',status=503)
+
+    def verify_parent_binding(self,thread_id,turn_id):
+        """Reconcile the latest native turn immediately before a continuation.
+
+        The read response stays local; only exact identity/status are inspected.
+        A historical completed turn cannot authorize continuing a newer thread.
+        """
+        def reject(reason):
+            raise ServiceError('CODEX_PARENT_BINDING_REJECTED',status=409,details={'reason':reason})
+        if type(thread_id)is not str or not thread_id or type(turn_id)is not str or not turn_id:
+            reject('invalid_expected_identity')
+        result=self.call('thread/read',{'threadId':thread_id,'includeTurns':True})
+        thread=result.get('thread')if type(result)is dict else None
+        if (type(thread)is not dict or thread.get('id')!=thread_id
+                or type(thread.get('cwd'))is not str or thread['cwd']!=str(self.root)):
+            reject('thread_binding_changed')
+        status=thread.get('status')
+        if type(status)is not dict or status.get('type')!='idle':
+            reject('thread_not_idle')
+        turns=thread.get('turns')
+        if type(turns)is not list or not turns:
+            reject('latest_turn_unavailable')
+        latest=turns[-1]
+        if type(latest)is not dict or latest.get('id')!=turn_id or latest.get('status')!='completed':
+            reject('latest_completed_turn_changed')
 
     def start(self,thread_id,text,image=None):
         if self.active_profile!=self.permission_profile:raise ServiceError('CODEX_PROFILE_REJECTED',status=503)

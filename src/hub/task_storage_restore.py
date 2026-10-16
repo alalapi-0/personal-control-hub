@@ -49,13 +49,17 @@ def _no_sidecars(store):
 
 
 def _snapshot(store, raw):
-    from .task_store import SCHEMA, SCHEMA_VERSION, MAX_TASKS, MAX_EVENTS, TERMINAL
+    from .task_store import SCHEMA, SCHEMA_VERSION, MAX_TASKS, MAX_EVENTS, TERMINAL, ORDINARY_DRAFT_TABLES
 
     with contextlib.closing(sqlite3.connect(':memory:')) as db, \
             contextlib.closing(sqlite3.connect(':memory:')) as expected:
         db.deserialize(raw)
         db.execute('PRAGMA trusted_schema=OFF')
         expected.executescript(SCHEMA)
+        optional=db.execute("SELECT name FROM sqlite_master WHERE type='table'AND name IN ('ordinary_drafts','ordinary_draft_requests')").fetchall()
+        if optional:
+            if len(optional)!=2:raise blocked('RESTORE_SCHEMA_UNSUPPORTED')
+            for statement in ORDINARY_DRAFT_TABLES.values():expected.execute(statement)
         schema = 'SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY type,name'
         # Only the known schema is eligible, excluding triggers, views and custom DDL.
         if db.execute(schema).fetchall() != expected.execute(schema).fetchall():
@@ -65,6 +69,9 @@ def _snapshot(store, raw):
         if db.execute('PRAGMA integrity_check').fetchall() != [('ok',)] or db.execute('PRAGMA foreign_key_check').fetchall():
             raise blocked('RESTORE_DATABASE_CORRUPT')
         db.row_factory = sqlite3.Row
+        if optional:
+            try:store._validate_ordinary_tables(db)
+            except (ServiceError,ValueError,TypeError,KeyError):raise blocked('RESTORE_DATABASE_CORRUPT') from None
         profiles = db.execute('SELECT body,hash FROM storage_profile').fetchall()
         if len(profiles) != 1:
             raise blocked('PROFILE_REJECTED')
@@ -83,8 +90,9 @@ def _snapshot(store, raw):
             body = store._decode(row['body'], row['hash'])
             if body.get('grant_id') != row['id'] or body.get('version') != row['version']:
                 raise blocked('RESTORE_DATABASE_CORRUPT')
+        tables=('meta','tasks','events','grants','sqlite_sequence')+tuple(ORDINARY_DRAFT_TABLES if optional else ())
         content = {table: [list(row) for row in db.execute('SELECT * FROM ' + table + ' ORDER BY rowid')]
-                   for table in ('meta', 'tasks', 'events', 'grants', 'sqlite_sequence')}
+                   for table in tables}
         # Also reject non-JSON SQLite values rather than alter their representation.
         canonical(content)
         return profile, content
