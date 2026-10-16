@@ -2,6 +2,7 @@ import {el, button, api, notify, navigate, validRefreshCommand, connectionState,
 import {renderDesigns} from './designs.js';
 import {renderBusinessPlan} from './business_tasks.mjs';
 import {renderManagement} from './management.mjs';
+import {renderRelations} from './relations.mjs';
 import {renderTimeline} from './timeline.mjs';
 import {projectDirectory, renderDirectoryTree} from './directory.mjs';
 import {watchLedger,replaceProjection} from './ledger_watch.mjs';
@@ -98,6 +99,15 @@ function relationCard(relation,currentProject,names){
       ? el('div',{className:'row'},...others.map(id=>el('a',{className:'button',href:`#projects/${encodeURIComponent(id)}`},names.get(id)||id)))
       : el('p',{className:'muted'},'没有其他已登记项目。')),
   );
+}
+function projectRelations(project){
+  const panel=renderRelations(project,{names:projectNames});
+  const proposals=el('details',{},el('summary',{},'关系提议 · 尚未确认'));
+  const rows=project.relations?.relations||[];
+  if(!rows.length)proposals.append(el('p',{className:'muted'},project.relations?.status==='unknown'?'提议来源未知或未配置。':'当前提议来源明确未列出关系。'));
+  for(const row of rows)proposals.append(relationCard(row,project.project_id,projectNames));
+  if(rows.length)proposals.append(el('a',{href:'#projects/'+encodeURIComponent(project.project_id)+'/schedule'},'在管理配置中核对并确认提议'));
+  panel.append(proposals);return panel;
 }
 function operationalSourceNotice(project){
   const facts=project.operational?.facts||[],latest=project.operational?.latest_attempt;
@@ -353,8 +363,15 @@ async function projectDetail(id,token,section='overview',reconcile=false){
         if(token!==generation)return;
         const visible=main.querySelector('[data-live-project-timeline]');
         if(visible?.dataset.liveProjectTimeline===id)visible.replaceChildren(renderTimeline([current],{total:1,context:'project'}));
+        const relationView=main.querySelector('[data-live-project-relations]');
+        if(relationView?.dataset.liveProjectRelations===id){
+          const x=scrollX,y=scrollY,open=[...relationView.querySelectorAll('details[open]')].map(node=>node.querySelector('summary')?.textContent);
+          const next=projectRelations(current);
+          for(const details of next.querySelectorAll('details'))if(open.includes(details.querySelector('summary')?.textContent))details.open=true;
+          relationView.replaceWith(next);window.scrollTo(x,y);
+        }
         notify('Hub 管理配置已保存。','success');
-      }).catch(()=>notify('配置已保存；当前排期读取暂不可用，请重新核对。','warning'));
+      }).catch(()=>{if(token===generation)notify('配置已保存；当前排期与关系读取暂不可用，请重新核对。','warning');});
     }});
   managementPanel.dataset.livePreserve='management:'+id;
   if(taskPanel)taskPanel.dataset.livePreserve='tasks:'+id;
@@ -369,9 +386,7 @@ async function projectDetail(id,token,section='overview',reconcile=false){
   if(p.operational?.last_success && !currentSourceAvailable(p) && p.declared.connection_read_allowed===true && p.freshness.local_presence!=='removed_local')sources.append(el('details',{},el('summary',{},'历史成功快照 · '+time(p.operational.last_success.observed_at)),el('p',{className:'warning'},'这是过去的项目记录，不能替代当前失败或未知。'),factsView(p,true),renderBusinessPlan(p,{history:true})));
   for(const path of p.source.entrypoints||[]){const copy=button('复制来源位置',async()=>{try{await navigator.clipboard.writeText(path);notify('来源位置已复制。','success');}catch{notify('无法访问剪贴板，可选中来源位置复制。','warning');}});sources.append(el('p',{},path),copy);}
   if(!p.source.entrypoints?.length)sources.append(el('p',{className:'muted'},p.declared.hub_connection_exception?'此项目已登记管理读取例外。':'来源未提供可打开的位置。'));
-  const relations=el('section',{className:'panel stack'},el('h2',{},'项目关联'));
-  if(!p.relations.relations.length)relations.append(el('p',{className:'muted'},p.relations.status==='unknown'?'尚未确认关联。':'当前没有已登记的关联。'));
-  for(const relation of p.relations.relations)relations.append(relationCard(relation,p.project_id,projectNames));
+  const relations=projectRelations(p);
   const designCount=p.design.references.filter(x=>x.kind==='candidate').length;
   const design=el('section',{className:'panel stack'},el('h2',{},'界面设计'),el('p',{className:'muted'},designCount?`${designCount} 个设计版本可查看`:'尚未登记设计候选'),el('a',{className:'button',href:`#designs/${encodeURIComponent(id)}`},designCount?'进入设计审核':'查看设计入口'));
   const exception=p.declared.hub_connection_exception;
@@ -380,7 +395,7 @@ async function projectDetail(id,token,section='overview',reconcile=false){
       el('a',{className:'button'+(key===section?' primary':''),href:base+(key==='overview'?'':'/'+key),
         'aria-current':key===section?'page':null},label)));
   let body;
-  if(section==='overview')body=[definitionView(p),el('section',{className:'panel stack'},el('h2',{},'当前工作与下一步'),summaryView(p))];
+  if(section==='overview')body=[definitionView(p),el('section',{className:'panel stack'},el('h2',{},'当前工作与下一步'),summaryView(p)),el('details',{},el('summary',{},'日期与排期'),timeView),relations];
   else if(section==='tasks')body=[taskPanel];
   else if(section==='schedule')body=[timeView,relations,managementPanel,renderBusinessPlan(p)];
   else body=[sources,el('section',{className:'panel stack'},el('h2',{},'全部来源字段'),fields),renderPageInventory(p),renderCaptures(p,captures),design,

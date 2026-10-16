@@ -26,7 +26,7 @@ FRESHNESS_FIELDS = {"max_age_seconds", "labels"}
 
 def management_contract_schema():
     return {
-        "schema_version": "1.3",
+        "schema_version": "1.4",
         "config_path": CONFIG_RELATIVE,
         "config_validator": "hub.metric_management.validate_management_config",
         "review_query": "hub.metric_management.query_review_records",
@@ -35,10 +35,11 @@ def management_contract_schema():
         "dimensions": list(DIMENSIONS),
         "history_rule": "current and historical candidates are queried separately; missing history is an empty page",
         "write_back_allowed": False,
-        "config_versions": ["1.0", "1.1", "1.2", "1.3"],
+        "config_versions": ["1.0", "1.1", "1.2", "1.3", "1.4"],
         "temporal_policy": "Literal planned calendar dates and explicit IANA timezone or null; milestones null means unconfigured, [] means explicitly empty; exact legacy payloads and request hashes remain unchanged",
         "rolling_estimate_policy": "Forecast windows are uncertain estimates, never deadlines or actual acceptance; explicit as_of/review, evidence hashes, conditions, and separate automatic/human windows with acyclic dependencies; Tokyo timezone is an explicit owner overlay, never inferred",
         "owner_overlays": "Hub-only priority/calendar dates/timezone/planned milestones/rolling estimates/layout/confirmed relations; revision CAS, no source or provider authority",
+        "proposal_policy": "Explicit related_to adoption binds the configured projection SHA, proposal row hash and registry SHA in the same versioned management history; inventory remains unverified; legacy hashes are unchanged",
         "ui_rule": "Existing local UI reads separate managed values; source imports never overwrite them",
     }
 
@@ -54,7 +55,7 @@ def validate_management_config(value):
     require(type(value) is dict, "management config object required")
     version = value.get("schema_version")
     exact(value, CONFIG_FIELDS if version == "1.0" else CONFIG_FIELDS | {"revision", "history"}, "management config")
-    require(version in {"1.0", "1.1", "1.2", "1.3"} and value["kind"] == "hub_management_config",
+    require(version in {"1.0", "1.1", "1.2", "1.3", "1.4"} and value["kind"] == "hub_management_config",
             "unsupported management config")
     require(value["write_back_allowed"] is False, "management config write-back is disabled")
     freshness = value["freshness"]

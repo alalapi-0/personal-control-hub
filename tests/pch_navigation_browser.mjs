@@ -122,7 +122,7 @@ await runBrowserJourney('o1',async({page,context,evidence,evidenceRoot,origin})=
   evidence.states.oneClickTasks=true;
   evidence.states.sections=[];
   for(const id of [A,B])for(const [section,label,content] of [['overview','概览','这是什么项目'],['tasks','任务','Hub 执行任务'],
-    ['schedule','排期与关系','项目关联'],['sources','来源与产物','状态来源']]){
+    ['schedule','排期与关系','项目关系'],['sources','来源与产物','状态来源']]){
     await go('#projects/'+id+'/'+section);
     await heading(content).waitFor();
     const nav=page.getByRole('navigation',{name:'项目内导航'});

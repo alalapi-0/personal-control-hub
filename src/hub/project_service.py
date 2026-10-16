@@ -6,6 +6,7 @@ explicitly historical whenever a newer attempt fails or its authority expires.
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import math
 import os
@@ -226,14 +227,15 @@ class ProjectService:
                     or row.get("access_profile") == "no_current_goal_access"
                     or row.get("current_state_status") == "removed_local"
                     or type(presence) is not dict or presence.get("status") == "removed_local"
-                    or row.get("project_type") in {"cloud", "cloud_project"}):
+                    or row.get("project_type") in {"cloud", "cloud_project"}
+                    or row.get('root_kind') == 'cloud'):
                 eligible.discard(project_id)
         options = [{"id": ident, "name": resolver.projects[ident]["name"]}
                    for ident in sorted(eligible)]
         return eligible, options
 
     @staticmethod
-    def _management_view(state, project_id, eligible, options):
+    def _management_view(state, project_id, eligible, options, project_rows=None, project_names=None):
         from .management_store import relation_warnings
         overlay = state["projects"].get(project_id)
         warnings = relation_warnings(state["projects"], project_id) if state["available"] else []
@@ -247,8 +249,71 @@ class ProjectService:
         return {**{key: state[key] for key in ("available", "reason", "revision", "config_hash", "source_sha256")},
                 "overlay": copy.deepcopy(overlay),
                 "relation_state": "owner_confirmed" if relations is not None else "unconfigured",
+                "relation_view": ProjectService._relation_view(state,project_id,eligible,options,
+                    warnings,project_rows=project_rows,project_names=project_names),
+                "proposals": [],
+                "history_recent": [{key:copy.deepcopy(entry[key]) for key in
+                    ('before','after','revision','request_id','operation','proposal_ref') if key in entry}
+                    for entry in state.get('history',[]) if entry['project_id']==project_id][-20:],
                 "warnings": warnings, "project_options": copy.deepcopy(options),
                 "editable": bool(state["available"] and project_id in eligible)}
+
+    @staticmethod
+    def _relation_view(state,project_id,eligible,options,warnings,*,project_rows=None,project_names=None):
+        """One owner snapshot plus existing business DTOs; never source collection."""
+        names=project_names or {row['id']:row['name'] for row in options}
+        relation=(state['projects'].get(project_id) or {}).get('relations') if state['available'] else None
+        status=('unavailable' if not state['available'] else 'unconfigured' if relation is None else
+                'explicit_empty' if relation['belongs_to'] is None and not relation['depends_on']
+                    and not relation['related_to'] and relation['independent'] is None else 'owner_confirmed')
+        outgoing=[];incoming=[]
+        def edge(kind,direction,target):
+            return {'relation':kind,'direction':direction,'project_id':target,
+                    'name':names.get(target,target),'eligible':target in eligible}
+        if state['available']:
+            for owner,overlay in sorted(state['projects'].items()):
+                confirmed=overlay.get('relations')
+                if confirmed is None:continue
+                for kind in ('belongs_to','depends_on','related_to'):
+                    targets=([confirmed[kind]] if confirmed[kind] is not None else []) if kind=='belongs_to' else confirmed[kind]
+                    for target in sorted(targets):
+                        if owner==project_id:outgoing.append(edge(kind,'outgoing',target))
+                        if target==project_id:incoming.append(edge(kind,'incoming',owner))
+        paths=[];truncated=False
+        rows=project_rows or {}
+        visited={project_id};queue=[(project_id,[project_id])];cursor=0
+        if state['available'] and project_rows is not None:
+            while cursor<len(queue):
+                owner,path=queue[cursor];cursor+=1
+                confirmed=(state['projects'].get(owner) or {}).get('relations')
+                for target in sorted(confirmed['depends_on'] if confirmed else []):
+                    if target in visited:continue
+                    if len(visited)>=256:
+                        truncated=True;continue
+                    visited.add(target);dependency_path=path+[target]
+                    row=rows.get(target)
+                    source_status=(row or {}).get('business',{}).get('normalized_status','unknown')
+                    source_freshness=(row or {}).get('freshness',{}).get('state','unknown')
+                    blocked=source_status=='blocked' and source_freshness=='fresh'
+                    unknown=(target not in eligible or row is None or source_status=='unknown' or source_freshness!='fresh')
+                    if blocked or unknown:
+                        provenance=(row or {}).get('provenance',{})
+                        paths.append({'path':dependency_path,'source_project_id':target,
+                            'source_status':source_status,'source_freshness':source_freshness,
+                            'source_version':{key:copy.deepcopy(provenance.get(key)) for key in
+                                ('ledger_head','latest_result_hash','registry_sha256')},
+                            'reason':'dependency_blocked' if blocked else 'dependency_state_unknown'})
+                    # Orphan/withheld endpoints never expand into hidden project graphs.
+                    if target in eligible:queue.append((target,dependency_path))
+        impact_status=('affected' if any(row['reason']=='dependency_blocked' for row in paths) else
+                       'unknown' if paths or truncated or project_rows is None or relation is None or not state['available'] else 'clear')
+        return {'available':state['available'],'state':status,
+                **{key:state[key] for key in ('revision','config_hash','source_sha256')},
+                'outgoing':outgoing,'incoming':incoming,
+                'independent':relation['independent'] if relation is not None else None,
+                'warnings':list(warnings),
+                'dependency_impact':{'classification':'derived','status':impact_status,
+                                     'paths':paths,'truncated':truncated}}
 
     def get_management(self, project_id):
         identifier(project_id, "management project")
@@ -257,18 +322,56 @@ class ProjectService:
             raise _error("PROJECT_NOT_FOUND", status=404)
         eligible, options = self._management_context(resolver)
         from .management_store import ManagementStore
-        return self._management_view(ManagementStore(self.root).snapshot(), project_id, eligible, options)
+        view=self._management_view(ManagementStore(self.root).snapshot(), project_id, eligible, options,
+            project_names={ident:row['name'] for ident,row in resolver.projects.items()})
+        projected,source_sha=self._relations(set(resolver.projects),with_identity=True)
+        view['proposals']=self._proposal_views(projected,source_sha,eligible,resolver.authority).get(project_id,[])
+        return view
 
     def save_management(self, command, *, authorize):
         resolver = self._resolver()
         eligible, _ = self._management_context(resolver)
         authority = copy.deepcopy(resolver.authority)
         from .management_store import ManagementStore
+        proposal_ref=command.get('proposal_ref') if type(command)is dict else None
+        if type(command)is dict and 'proposal_ref'in command:
+            from .management_store import validate_proposal_ref
+            try:
+                validate_proposal_ref(proposal_ref)
+                identifier(command.get('project_id'),'management project')
+                require(type(command.get('value'))is dict,'proposal overlay required')
+            except (ValueError,TypeError,KeyError):raise _error('MANAGEMENT_INVALID_COMMAND') from None
+        def check_proposal(current):
+            if proposal_ref is None:return
+            if proposal_ref['registry_sha256']!=current.authority['registry_hash']:
+                raise _error('MANAGEMENT_PROPOSAL_STALE',status=409)
+            # An exact durable receipt resolves an UNKNOWN response without a
+            # new adoption. Revalidate the proof on every authorization boundary.
+            from .management_store import _request_hash
+            expected_hash=_request_hash(command.get('request_id'),command.get('project_id'),
+                command.get('operation'),command.get('value'),proposal_ref)
+            history=ManagementStore(self.root).snapshot().get('history',[])
+            if any(entry['request_id']==command.get('request_id') and entry['request_hash']==expected_hash
+                   and entry.get('proposal_ref')==proposal_ref and entry['after']==command.get('value')
+                   and entry['project_id']==command.get('project_id') and entry['operation']==command.get('operation')
+                   for entry in history):return
+            projected,source_sha=self._relations(set(current.projects),with_identity=True)
+            candidates=self._proposal_views(projected,source_sha,eligible,current.authority).get(command.get('project_id'),[])
+            candidate=next((row for row in candidates if row['proposal_ref']==proposal_ref),None)
+            if candidate is None:raise _error('MANAGEMENT_PROPOSAL_STALE',status=409)
+            relations=(command.get('value') or {}).get('relations')
+            if (command.get('operation')!='set' or type(relations)is not dict or
+                    type(relations.get('related_to'))is not list or
+                    any(type(item)is not str for item in relations['related_to']) or
+                    not (set(candidate['project_ids'])-{command['project_id']})<=set(relations['related_to'])):
+                raise _error('MANAGEMENT_PROPOSAL_MAPPING_REJECTED',status=409)
+        check_proposal(resolver)
         def check():
             authorize()
             current = self._resolver()
             if current.authority != authority or self._management_context(current)[0] != eligible:
                 raise _error("MANAGEMENT_SCOPE_CHANGED", status=409)
+            check_proposal(current)
         receipt = ManagementStore(self.root).apply(command, project_ids=eligible, authorize=check)
         try:
             view = self.get_management(receipt["project_id"])
@@ -346,7 +449,7 @@ class ProjectService:
                 "relations": [], "program_link_authority": False,
                 "design_selection_authority": False}
 
-    def _read_local_json(self, path: Path) -> Any:
+    def _read_local_json(self, path: Path, *, with_identity=False) -> Any:
         try:
             relative = path.relative_to(self.root)
         except ValueError as exc:
@@ -387,26 +490,30 @@ class ProjectService:
                 file_descriptor = None
                 raw = stream.read(MAX_RELATIONS_BYTES + 1)
                 after = os.fstat(stream.fileno())
-            if (len(raw) > MAX_RELATIONS_BYTES
-                    or (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns)
-                    != (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns)):
+            named=os.stat(relative.parts[-1],dir_fd=descriptor,follow_symlinks=False)
+            def identity(info):return (info.st_dev,info.st_ino,info.st_mode,info.st_nlink,
+                                       info.st_size,info.st_mtime_ns,info.st_ctime_ns)
+            if (len(raw) > MAX_RELATIONS_BYTES or identity(before)!=identity(after)
+                    or identity(after)!=identity(named)):
                 raise ValueError("relation store changed during read")
-            return json.loads(raw)
+            loaded=json.loads(raw)
+            return (loaded,hashlib.sha256(raw).hexdigest()) if with_identity else loaded
         finally:
             if file_descriptor is not None:
                 os.close(file_descriptor)
             for item in reversed(opened):
                 os.close(item)
 
-    def _relations(self, project_ids: set[str]) -> dict[str, dict]:
+    def _relations(self, project_ids: set[str], *, with_identity=False) -> dict[str, dict]:
+        def result(rows,identity=None):return (rows,identity) if with_identity else rows
         if self.relations_path is None:
-            return {pid: self._unknown_relation(pid) for pid in project_ids}
+            return result({pid: self._unknown_relation(pid) for pid in project_ids})
         try:
             candidate = Path(self.relations_path)
             if not candidate.parts or ".." in candidate.parts:
                 raise ValueError("unsafe relation store")
             candidate = candidate if candidate.is_absolute() else self.root / candidate
-            loaded = self._read_local_json(candidate)
+            loaded,source_sha = self._read_local_json(candidate,with_identity=True)
             if type(loaded) is not dict:
                 raise ValueError("invalid relation store")
             rows = loaded.get("projects", loaded.get("relations"))
@@ -420,10 +527,49 @@ class ProjectService:
                 if pid in indexed:
                     raise ValueError("duplicate relation row")
                 indexed[pid] = copy.deepcopy(row)
-            return {pid: indexed.get(pid, self._unknown_relation(pid, "RELATION_NOT_RECORDED"))
-                    for pid in project_ids}
+            return result({pid: indexed.get(pid, self._unknown_relation(pid, "RELATION_NOT_RECORDED"))
+                    for pid in project_ids},source_sha)
         except (OSError, ValueError, TypeError, json.JSONDecodeError):
-            return {pid: self._unknown_relation(pid) for pid in project_ids}
+            return result({pid: self._unknown_relation(pid) for pid in project_ids})
+
+    @staticmethod
+    def _proposal_views(projected,source_sha,eligible,authority):
+        """Bind only this configured projection; inventory remains unverified."""
+        views={ident:[] for ident in projected}
+        if source_sha is None:return views
+        valid={};ambiguous=set()
+        fields={'id','project_ids','kind','status','shared_tasks','differences','not_shared','inventory_index','evidence_refs'}
+        for owner,projection in projected.items():
+            if projection.get('status')!='proposed' or type(projection.get('relations'))is not list:continue
+            if (set(projection)!={'project_id','status','reason','relations','program_link_authority','design_selection_authority'}
+                    or projection.get('project_id')!=owner or projection.get('program_link_authority') is not False
+                    or projection.get('design_selection_authority') is not False
+                    or (projection.get('reason') is not None and type(projection['reason'])is not str)):
+                continue
+            for proposal in projection['relations']:
+                try:
+                    exact(proposal,fields,'relation proposal');identifier(proposal['id'],'proposal')
+                    members=proposal['project_ids']
+                    require(type(members)is list and 2<=len(members)<=10000,'proposal members')
+                    for ident in members:identifier(ident,'proposal member')
+                    require(len(members)==len(set(members)) and set(members)<=eligible and owner in members,'proposal scope')
+                    require(proposal['status']=='proposed' and proposal['kind']in {'pipeline','shared_review_pattern','shared_visual_language'},'proposal status/kind')
+                    require(type(proposal['inventory_index'])is int and proposal['inventory_index']>=0,'proposal index')
+                    for key in ('shared_tasks','differences','not_shared','evidence_refs'):
+                        require(type(proposal[key])is list and bool(proposal[key]) and
+                                all(type(item)is str and bool(item.strip()) and len(item)<=2000 for item in proposal[key]),'proposal text')
+                    digest=content_hash(proposal)
+                    if proposal['id']in valid and valid[proposal['id']][1]!=digest:ambiguous.add(proposal['id'])
+                    valid[proposal['id']]=(proposal,digest)
+                except (ValueError,TypeError,KeyError):continue
+        for ident,(proposal,digest) in sorted(valid.items()):
+            if ident in ambiguous:continue
+            ref={'source_sha256':source_sha,'proposal_id':ident,'proposal_hash':digest,
+                 'registry_sha256':authority['registry_hash']}
+            for member in proposal['project_ids']:
+                views[member].append({'proposal_ref':copy.deepcopy(ref),'project_ids':list(proposal['project_ids']),
+                    'mapping':'related_to','evidence_scope':'configured_projection_only'})
+        return views
 
     @staticmethod
     def _scoped_to_project(value: Any, project_id: str) -> bool:
@@ -789,7 +935,7 @@ class ProjectService:
         except LedgerBusyError as exc:
             raise _error("LEDGER_BUSY", status=503, retryable=True) from exc
         project_ids = {row["id"] for row in resolver.registry["projects"]}
-        relations = self._relations(project_ids)
+        relations,relation_source_sha = self._relations(project_ids,with_identity=True)
         declared = {row["id"]: row for row in resolver.registry["projects"]}
         rows = [self._dto(declared[row["project_id"]], snapshot, row,
                           relations[row["project_id"]], design_snapshot)
@@ -798,13 +944,22 @@ class ProjectService:
             from .management_store import ManagementStore
             eligible, options = self._management_context(resolver)
             management = ManagementStore(self.root).snapshot()
+            proposals=self._proposal_views(relations,relation_source_sha,eligible,resolver.authority)
+            project_rows={row['project_id']:row for row in rows}
+            project_names={ident:row['name'] for ident,row in resolver.projects.items()}
             for row in rows:
-                row["management"] = self._management_view(management, row["project_id"], eligible, options)
+                row["management"] = self._management_view(management, row["project_id"], eligible, options,
+                    project_rows=project_rows,project_names=project_names)
+                row['management']['proposals']=proposals.get(row['project_id'],[])
         except ServiceError as exc:
             for row in rows:
                 row["management"] = {"available": False, "reason": exc.code, "revision": None,
                     "config_hash": None, "source_sha256": None, "overlay": None,
                     "relation_state": "unconfigured", "warnings": [], "project_options": [], "editable": False}
+                row['management'].update(proposals=[],history_recent=[])
+                row['management']['relation_view']=self._relation_view(
+                    {'available':False,'projects':{},'revision':None,'config_hash':None,'source_sha256':None},
+                    row['project_id'],set(),[],[],project_rows=None)
         return rows, snapshot
 
     def list_projects(self, query: dict[str, str] | None = None,

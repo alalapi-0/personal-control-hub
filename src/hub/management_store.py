@@ -25,6 +25,39 @@ HISTORY_FIELDS = {'request_id', 'request_hash', 'revision', 'project_id', 'opera
 COMMAND_FIELDS = {'request_id', 'expected_revision', 'expected_hash', 'project_id', 'operation', 'value'}
 
 
+def validate_proposal_ref(value):
+    exact(value,{'source_sha256','proposal_id','proposal_hash','registry_sha256'},'proposal reference')
+    identifier(value['proposal_id'],'proposal')
+    for key in ('source_sha256','proposal_hash','registry_sha256'):
+        require(type(value[key])is str and re.fullmatch('[0-9a-f]{64}',value[key]),'invalid proposal digest')
+    return copy.deepcopy(value)
+
+
+def _date_field_errors(value):
+    """Fixed diagnostics only; validate_overlay remains the complete authority."""
+    from .time_semantics import validate_calendar_date,validate_timezone
+    if type(value)is not dict:return []
+    errors=[]
+    def check(field,item,validator,message):
+        try:validator(item)
+        except (ValueError,TypeError):errors.append({'field':field,'message':message})
+    for field in ('start_date','end_date'):
+        if field in value:check(field,value[field],validate_calendar_date,'请输入有效日期')
+    if ('start_date'in value and 'end_date'in value and not errors
+            and value['start_date'] is not None and value['end_date'] is not None
+            and value['end_date']<value['start_date']):
+        errors.append({'field':'end_date','message':'结束日期不得早于开始日期'})
+    if 'timezone'in value:check('timezone',value['timezone'],validate_timezone,'请选择有效时区')
+    if type(value.get('milestones'))is list:
+        for index,item in enumerate(value['milestones'][:1000]):
+            if type(item)is not dict:continue
+            label=item.get('label')
+            if type(label)is not str or not label.strip() or len(label)>200:
+                errors.append({'field':f'milestones.{index}.label','message':'请输入有效里程碑名称'})
+            check(f'milestones.{index}.date',item.get('date'),validate_calendar_date,'请输入有效日期')
+    return errors
+
+
 def validate_overlay(value, project_id=None):
     from .time_semantics import validate_calendar_date, validate_timezone
 
@@ -76,7 +109,7 @@ def _validate_projects(projects, *, version="1.3"):
     require(type(projects) is dict and len(projects) <= 10000, 'invalid overlays')
     for project_id, overlay in projects.items():
         identifier(project_id, 'project'); validate_overlay(overlay, project_id)
-        require(version == '1.3' or set(overlay) != ROLLING_OVERLAY_FIELDS, 'rolling overlay requires management 1.3')
+        require(version in ('1.3','1.4') or set(overlay) != ROLLING_OVERLAY_FIELDS, 'rolling overlay requires management 1.3')
         require(version != '1.1' or set(overlay) == OVERLAY_FIELDS, 'temporal overlay requires management 1.2')
     done = set()
     for start in projects:
@@ -89,20 +122,25 @@ def _validate_projects(projects, *, version="1.3"):
         done.update(path)
 
 
-def _request_hash(request_id, project_id, operation, value):
-    return content_hash({'request_id': request_id, 'project_id': project_id, 'operation': operation, 'value': value})
+def _request_hash(request_id, project_id, operation, value, proposal_ref=None):
+    payload={'request_id': request_id, 'project_id': project_id, 'operation': operation, 'value': value}
+    if proposal_ref is not None:payload['proposal_ref']=proposal_ref
+    return content_hash(payload)
 
 
 def validate_management_state(config):
     """Replay exact versioned overlay payloads without normalizing historical values."""
     version = config['schema_version']
-    require(version in ('1.1', '1.2', '1.3'), 'unsupported management history version')
+    require(version in ('1.1', '1.2', '1.3','1.4'), 'unsupported management history version')
     require(type(config['revision']) is int and config['revision'] >= 0, 'invalid management revision')
     history = config['history']
     require(type(history) is list and len(history) == config['revision'], 'invalid management history')
     projects = {}; requests = set()
     for revision, entry in enumerate(history, 1):
-        exact(entry, HISTORY_FIELDS, 'management history entry')
+        exact(entry, HISTORY_FIELDS|({'proposal_ref'} if 'proposal_ref'in entry else set()), 'management history entry')
+        if 'proposal_ref'in entry:
+            require(version=='1.4' and entry['operation']=='set','proposal reference requires management 1.4 set')
+            validate_proposal_ref(entry['proposal_ref'])
         identifier(entry['request_id'], 'request'); identifier(entry['project_id'], 'project')
         require(entry['request_id'] not in requests, 'duplicate management request'); requests.add(entry['request_id'])
         require(type(entry['revision']) is int and entry['revision'] == revision, 'management history revision gap')
@@ -117,7 +155,7 @@ def validate_management_state(config):
             validate_overlay(entry['after'], project_id); projects[project_id] = copy.deepcopy(entry['after'])
         else:
             require(entry['after'] is None, 'retract must clear overlay'); projects.pop(project_id, None)
-        require(entry['request_hash'] == _request_hash(entry['request_id'], project_id, entry['operation'], entry['after']), 'management request hash mismatch')
+        require(entry['request_hash'] == _request_hash(entry['request_id'], project_id, entry['operation'], entry['after'],entry.get('proposal_ref')), 'management request hash mismatch')
         _validate_projects(projects, version=version)
     require(config['projects'] == projects, 'management history head mismatch')
     _validate_projects(config['projects'], version=version)
@@ -192,7 +230,7 @@ class ManagementStore:
             value = parse_source(raw, "yaml")
             from .metric_management import validate_management_config
             value = validate_management_config(value)
-            if value['schema_version'] in ('1.1', '1.2', '1.3'): validate_management_state(value)
+            if value['schema_version'] in ('1.1', '1.2', '1.3','1.4'): validate_management_state(value)
             return value, raw, before
         finally:
             if fd is not None: os.close(fd)
@@ -213,13 +251,18 @@ class ManagementStore:
 
     def apply(self, command, *, project_ids, authorize):
         try:
-            exact(command, COMMAND_FIELDS, 'management command')
+            exact(command, COMMAND_FIELDS|({'proposal_ref'} if 'proposal_ref'in command else set()), 'management command')
+            if 'proposal_ref'in command:
+                validate_proposal_ref(command['proposal_ref'])
+                require(command['operation']=='set','proposal reference requires set')
             identifier(command['request_id'], 'request'); identifier(command['project_id'], 'project')
             require(type(command['expected_revision']) is int and command['expected_revision'] >= 0, 'invalid revision')
             require(type(command['expected_hash']) is str and re.fullmatch('[0-9a-f]{64}', command['expected_hash']), 'invalid config hash')
             require(command['project_id'] in project_ids, 'project not permitted')
             require(command['operation'] in ('set', 'retract'), 'invalid management operation')
             if command['operation'] == 'set':
+                field_errors=_date_field_errors(command['value'])
+                if field_errors:raise ServiceError('MANAGEMENT_INVALID_COMMAND',details={'field_errors':field_errors})
                 validate_overlay(command['value'], command['project_id'])
                 relations = command['value']['relations']
                 references = ([relations['belongs_to']] if relations and relations['belongs_to'] else []) + (relations['depends_on'] + relations['related_to'] if relations else [])
@@ -237,7 +280,7 @@ class ManagementStore:
             try: fcntl.flock(parent, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError: raise ServiceError('MANAGEMENT_BUSY', status=409, retryable=True) from None
             config, raw, info = self._read(parent)
-            request_hash = _request_hash(command['request_id'], command['project_id'], command['operation'], command['value'])
+            request_hash = _request_hash(command['request_id'], command['project_id'], command['operation'], command['value'],command.get('proposal_ref'))
             for row in config.get('history', []):
                 if row['request_id'] == command['request_id']:
                     if row['request_hash'] != request_hash:
@@ -252,10 +295,12 @@ class ManagementStore:
             requested_version = ({7: '1.1', 9: '1.2', 10: '1.3'}[len(command['value'])]
                                  if command['operation'] == 'set' else '1.1')
             version = max(config['schema_version'], requested_version)
+            if 'proposal_ref'in command:version='1.4'
             next_config = copy.deepcopy(config); next_config.update(schema_version=version, revision=config.get('revision', 0) + 1)
             row = {'request_id': command['request_id'], 'request_hash': request_hash, 'revision': next_config['revision'],
                    'project_id': command['project_id'], 'operation': command['operation'], 'before': copy.deepcopy(config['projects'].get(command['project_id'])),
                    'after': command['value'], 'created_at': datetime.now(timezone.utc).isoformat()}
+            if 'proposal_ref'in command:row['proposal_ref']=copy.deepcopy(command['proposal_ref'])
             next_config['history'] = copy.deepcopy(config.get('history', [])) + [row]
             if command['operation'] == 'set': next_config['projects'][command['project_id']] = command['value']
             else: next_config['projects'].pop(command['project_id'], None)

@@ -32,6 +32,13 @@ test('business tree has exact current source proof and leaf-only ratio without p
   view.plan.nodes[0].id='detached';assert.equal(p.operational.latest_attempt.extensions.fact.task_plan.value.nodes[0].id,'a');
 });
 
+test('definition extension 1.4 retains source task plan under the same proof gate',()=>{
+  const p=fixture();p.operational.latest_attempt.extensions.schema_version='1.4';
+  assert.equal(businessPlan(p).state,'current');
+  p.operational.latest_attempt.extensions.fact.task_plan.proof.sha256='b'.repeat(64);
+  assert.notEqual(businessPlan(p).state,'current');
+});
+
 test('permission and removed guards cover current and historical modes',()=>{
   for(const change of [p=>p.declared.connection_read_allowed=false,p=>p.freshness.local_presence='removed_local',p=>p.freshness.state='removed_local']){
     const p=fixture();change(p);

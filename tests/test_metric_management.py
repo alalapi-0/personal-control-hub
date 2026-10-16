@@ -65,16 +65,16 @@ class MetricManagementTests(unittest.TestCase):
 
     def test_temporal_contract_and_versioned_config_are_read_only(self):
         contract = management_contract_schema()
-        self.assertEqual(contract['schema_version'], '1.3')
-        self.assertEqual(contract['config_versions'], ['1.0', '1.1', '1.2', '1.3'])
+        self.assertEqual(contract['schema_version'], '1.4')
+        self.assertEqual(contract['config_versions'], ['1.0', '1.1', '1.2', '1.3', '1.4'])
         self.assertIn('Literal planned calendar', contract['temporal_policy'])
         self.assertIn('never deadlines or actual acceptance', contract['rolling_estimate_policy'])
         base, _ = load_management_config(PROJECT_ROOT)
-        for version in ('1.1', '1.2', '1.3'):
+        for version in ('1.1', '1.2', '1.3', '1.4'):
             candidate = dict(base, schema_version=version, projects={}, revision=0, history=[])
             self.assertIs(validate_management_config(candidate), candidate)
             self.assertEqual(management_summary(candidate)['schema_version'], version)
-        unknown = dict(base, schema_version='1.4', revision=0, history=[])
+        unknown = dict(base, schema_version='1.5', revision=0, history=[])
         with self.assertRaises(RecordError): validate_management_config(unknown)
 
     def test_current_and_history_candidates_are_not_mixed(self):

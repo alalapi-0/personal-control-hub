@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {buildManagementCommand,renderManagement} from '../src/hub/web/management.mjs';
+import {buildManagementCommand,managementFieldErrors,renderManagement} from '../src/hub/web/management.mjs';
 const hash='a'.repeat(64);
 const overlay=()=>({priority:null,start_date:null,end_date:null,watch:null,order:null,layout:null,relations:null});
 const view=()=>({available:true,editable:true,revision:2,config_hash:hash,overlay:overlay(),relation_state:'unconfigured',warnings:[],project_options:[{id:'a',name:'A'},{id:'b',name:'B'},{id:'c',name:'C'}]});
@@ -20,9 +20,12 @@ function mount(v,opts){globalThis.document={createElement:t=>new N(t),createElem
 function all(n){return [n,...n.children.flatMap(all)];}
 function button(n,label){return all(n).find(x=>x.tagName==='button'&&x.textContent===label);}
 function input(n,label){const l=all(n).find(x=>x.tagName==='label'&&x.children[0]?.textContent===label);return l.children[1];}
-function status(n){return all(n).find(x=>x.attributes.role==='status').textContent;}
+function status(n){return all(n).find(x=>x.attributes['aria-label']==='管理配置保存状态').textContent;}
 async function change(n,v,type='input'){n.value=v;await n.fire(type);}
 function receipt(command,v=view()){return {receipt:{request_id:command.request_id,revision:v.revision,committed_revision:Math.min(3,v.revision),replayed:false},view:v};}
+const proposalRef=()=>({source_sha256:'d'.repeat(64),proposal_id:'synthetic-related',proposal_hash:'e'.repeat(64),registry_sha256:'f'.repeat(64)});
+const proposedView=()=>({...view(),proposals:[{proposal_ref:proposalRef(),project_ids:['a','b'],mapping:'related_to',evidence_scope:'configured_projection_only'}]});
+function feedback(n,control){const id=control.attributes['aria-describedby'];assert.ok(id,'field names its error description');const message=all(n).find(node=>node.attributes.id===id);assert.ok(message,'description resolves to an actual node');return message;}
 
 test('command uses exact overlay and semantic CAS; detached from source input',()=>{const v=view(),o=overlay();o.relations={belongs_to:'b',depends_on:['b'],related_to:['c'],independent:true};const c=buildManagementCommand(v,'a','set',o,'r1');assert.deepEqual(Object.keys(c),['request_id','expected_revision','expected_hash','project_id','operation','value']);assert.equal(c.expected_hash,hash);assert.equal(c.expected_revision,2);c.value.relations.depends_on.push('c');assert.deepEqual(o.relations.depends_on,['b']);assert.equal(o.relations.independent,true);assert.deepEqual(buildManagementCommand(v,'a','retract',null,'r2').value,null);});
 test('invalid dates, counters, layout, references and unknown keys refuse command',()=>{const mutations=[o=>o.start_date='2026-02-30',o=>o.start_date='0000-01-01',o=>{o.start_date='2026-10-15';o.end_date='2026-10-14';},o=>o.priority=-1,o=>o.order=0.5,o=>o.watch='false',o=>o.layout={x:321,y:0},o=>o.layout={x:NaN,y:0},o=>o.source_progress=100,o=>o.relations={belongs_to:'a',depends_on:[],related_to:[],independent:null},o=>o.relations={belongs_to:null,depends_on:['missing'],related_to:[],independent:null},o=>o.relations={belongs_to:null,depends_on:['b','b'],related_to:[],independent:null},o=>o.relations={belongs_to:null,depends_on:[],related_to:[],independent:'yes'}];for(const mutate of mutations){const o=overlay();mutate(o);assert.throws(()=>buildManagementCommand(view(),'a','set',o,'r'));}});
@@ -30,6 +33,168 @@ test('missing unavailable malformed version and target prevent effects',()=>{for
 test('guest and missing config disable mutations, programmatic submit cannot call save',async()=>{for(const [v,owner]of [[view(),false],[{...view(),available:false},true]]){let calls=0;const n=mount(v,{projectId:'a',owner,save:async()=>calls++});assert.equal(button(n,'保存配置').disabled,true);assert.equal(button(n,'撤回全部管理配置').disabled,true);await button(n,'保存配置').fire('click');assert.equal(calls,0);assert.match(status(n),/只读|不可编辑/);}});
 test('native draft controls, explicit independent with dependency and save are isolated',async()=>{const v=view(),before=structuredClone(v),sent=[];let refreshed=0;const n=mount(v,{projectId:'a',owner:true,save:async c=>{sent.push(c);return receipt(c,{...view(),revision:3,overlay:c.value});},onSaved:()=>refreshed++});assert.equal(input(n,'独立项目').disabled,true);await change(input(n,'关系配置'),'confirmed','change');await change(input(n,'独立项目'),'true','change');const dep=input(n,'依赖项目（可多选）');dep.children.find(o=>o.value==='b').selected=true;await dep.fire('change');await change(input(n,'优先级（数值）'),'4');assert.equal(sent.length,0);await button(n,'保存配置').fire('click');assert.equal(sent.length,1);assert.deepEqual(sent[0].value.relations,{belongs_to:null,depends_on:['b'],related_to:[],independent:true});assert.equal(sent[0].value.priority,4);assert.equal(refreshed,1);assert.deepEqual(v,before);assert.match(status(n),/当前版本 3，本次提交版本 3/);});
 test('invalid draft disables save and reset restores loaded overlay',async()=>{let calls=0;const n=mount(view(),{projectId:'a',owner:true,save:async()=>calls++});await change(input(n,'开始日期'),'2026-10-15');await change(input(n,'结束日期'),'2026-10-14');assert.equal(button(n,'保存配置').disabled,true);await button(n,'保存配置').fire('click');assert.equal(calls,0);await button(n,'还原草稿').fire('click');assert.equal(input(n,'开始日期').value,'');assert.equal(button(n,'保存配置').disabled,false);});
+
+test('reversed dates explain the end field, retain input and clear after correction before save',async()=>{
+  const sent=[],n=mount(view(),{projectId:'a',owner:true,save:async command=>{sent.push(command);return receipt(command,{...view(),revision:3,overlay:command.value});}});
+  const start=input(n,'开始日期'),end=input(n,'结束日期');
+  await change(start,'2026-12-31');await change(end,'2026-01-01');
+  assert.equal(end.attributes['aria-invalid'],'true');assert.match(feedback(n,end).textContent,/结束日期不能早于开始日期/);
+  assert.equal(feedback(n,end).hidden,false);assert.equal(start.value,'2026-12-31');assert.equal(end.value,'2026-01-01');
+  assert.match(n.textContent,/请修改配置：.*结束日期不能早于开始日期/);
+  await button(n,'保存配置').fire('click');assert.equal(sent.length,0);assert.match(status(n),/配置未保存：.*结束日期不能早于开始日期/);
+  await change(end,'2027-01-01');assert.equal(end.attributes['aria-invalid'],'false');assert.equal(feedback(n,end).hidden,true);
+  assert.equal(button(n,'保存配置').disabled,false);await button(n,'保存配置').fire('click');
+  assert.equal(sent.length,1);assert.equal(sent[0].value.end_date,'2027-01-01');assert.match(status(n),/已保存/);
+});
+
+test('each invalid date and native partial date input has a linked message and recoverable state',async()=>{
+  const n=mount(view(),{projectId:'a',owner:true,save:async()=>assert.fail('invalid date submitted')});
+  for(const [label,value] of [['开始日期','2026-02-30'],['结束日期','0000-01-01']]){
+    const control=input(n,label);await change(control,value);
+    assert.equal(control.attributes['aria-invalid'],'true');assert.match(feedback(n,control).textContent,/有效的日历日期/);
+    await change(control,'');assert.equal(control.attributes['aria-invalid'],'false');assert.equal(feedback(n,control).hidden,true);
+  }
+  // Browsers can keep value empty while a partially typed native date is bad.
+  const start=input(n,'开始日期');start.validity={badInput:true};await change(start,'');
+  assert.equal(button(n,'保存配置').disabled,true);assert.equal(start.attributes['aria-invalid'],'true');
+  assert.match(feedback(n,start).textContent,/完整有效/);await button(n,'保存配置').fire('click');
+  start.validity={badInput:false};await change(start,'2026-02-28');
+  assert.equal(start.attributes['aria-invalid'],'false');assert.equal(button(n,'保存配置').disabled,false);
+});
+
+test('timezone, numeric and layout fields explain their own limits without overwriting save status',async()=>{
+  const n=mount(view(),{projectId:'a',owner:true,save:async()=>{throw {status:409,outcome:'NOT_COMMITTED'};}});
+  for(const [label,bad,good,message] of [['计划时区（IANA，可留空）','Not/AZone','Asia/Tokyo',/IANA/],
+    ['优先级（数值）','-1','0',/非负整数/],['显示顺序','0.5','1',/非负整数/],['布局 X','321','320',/0 至 320/],['布局 Y','161','160',/0 至 160/]]){
+    const control=input(n,label);await change(control,bad);assert.equal(control.attributes['aria-invalid'],'true');
+    assert.match(feedback(n,control).textContent,message);assert.equal(button(n,'保存配置').disabled,true);
+    await change(control,good);assert.equal(control.attributes['aria-invalid'],'false');assert.equal(feedback(n,control).hidden,true);
+  }
+  await button(n,'保存配置').fire('click');assert.match(status(n),/配置版本已变化.*草稿保留/);
+  await change(input(n,'计划时区（IANA，可留空）'),'UTC');assert.match(status(n),/配置版本已变化.*草稿保留/);
+  assert.equal(button(n,'保存配置').disabled,true,'field correction cannot clear a CAS conflict');
+});
+
+test('dynamic milestone name and date feedback follow the current row after removal',async()=>{
+  const n=mount(view(),{projectId:'a',owner:true,save:async()=>assert.fail('draft auto-saved')});
+  await change(input(n,'计划里程碑配置'),'configured','change');await button(n,'添加计划里程碑').fire('click');await button(n,'添加计划里程碑').fire('click');
+  let labels=all(n).filter(node=>node.attributes['aria-label']?.startsWith('计划里程碑名称（'));
+  const first=labels[0],second=labels[1];
+  assert.notEqual(first.attributes['aria-describedby'],second.attributes['aria-describedby']);
+  await change(second,'   ');assert.equal(second.attributes['aria-invalid'],'true');assert.match(feedback(n,second).textContent,/名称不能为空/);
+  const remove=all(n).find(node=>node.tagName==='button'&&node.attributes['aria-label']?.startsWith('删除计划里程碑（'));
+  await remove.fire('click');labels=all(n).filter(node=>node.attributes['aria-label']?.startsWith('计划里程碑名称（'));
+  assert.equal(labels.length,1);assert.equal(labels[0].value,'   ');assert.equal(labels[0].attributes['aria-invalid'],'true');
+  await change(labels[0],'发布包');const dateControl=all(n).find(node=>node.attributes['aria-label']?.startsWith('计划里程碑日期（'));
+  await change(dateControl,'2026-02-30');assert.match(feedback(n,dateControl).textContent,/里程碑日期必须是有效/);
+  await change(dateControl,'');assert.equal(dateControl.attributes['aria-invalid'],'false');assert.equal(button(n,'保存配置').disabled,false);
+});
+
+test('relation self references, duplicate and unavailable targets have linked actionable errors',async()=>{
+  const o=overlay();o.relations={belongs_to:'a',depends_on:['b','b'],related_to:['unavailable'],independent:null};
+  const n=mount({...view(),overlay:o},{projectId:'a',owner:true,save:async()=>assert.fail('invalid relation submitted')});
+  for(const [label,message] of [['归属项目',/不能指向项目自身/],['依赖项目（可多选）',/重复项目/],['关联项目（可多选）',/不可用或未获允许/]]){
+    const control=input(n,label);assert.equal(control.attributes['aria-invalid'],'true');assert.match(feedback(n,control).textContent,message);
+  }
+  await change(input(n,'归属项目'),'b','change');
+  for(const label of ['依赖项目（可多选）','关联项目（可多选）']){
+    const control=input(n,label);for(const option of control.children)option.selected=option.value==='b';await control.fire('change');
+    assert.equal(control.attributes['aria-invalid'],'false');assert.equal(feedback(n,control).hidden,true);
+  }
+  assert.equal(button(n,'保存配置').disabled,false);assert.equal(input(n,'归属项目').attributes['aria-invalid'],'false');
+});
+
+test('field diagnostics preserve accepted empty/partial dates and do not reject independent dependencies',()=>{
+  for(const o of [overlay(),{...overlay(),start_date:'2026-12-31'},{...overlay(),end_date:'2027-01-01'},
+    {...overlay(),relations:{belongs_to:null,depends_on:['b'],related_to:['b'],independent:true}}]){
+    const before=structuredClone(o);assert.deepEqual(managementFieldErrors(o,'a',new Set(['a','b'])),[]);assert.deepEqual(o,before);
+    assert.doesNotThrow(()=>buildManagementCommand(view(),'a','set',o,'valid'));
+  }
+  const o={...overlay(),relations:{belongs_to:null,depends_on:['a','a','missing'],related_to:[],independent:null}};
+  const errors=managementFieldErrors(o,'a',new Set(['b']));
+  assert.ok(errors.every(error=>error.field==='relations.depends_on'));
+  assert.match(errors.map(error=>error.message).join(' '),/重复.*自身.*不可用/);
+});
+
+test('proposal command carries an exact detached reference only on explicit set confirmation',()=>{
+  const ref=proposalRef(),command=buildManagementCommand(view(),'a','set',overlay(),'proposal-set',ref);
+  assert.deepEqual(command.proposal_ref,ref);command.proposal_ref.proposal_id='changed';assert.equal(ref.proposal_id,'synthetic-related');
+  assert.ok(!Object.hasOwn(buildManagementCommand(view(),'a','set',overlay(),'ordinary'),'proposal_ref'));
+  assert.throws(()=>buildManagementCommand(view(),'a','retract',null,'retract',ref),/MANAGEMENT_PROPOSAL_INVALID/);
+  for(const invalid of [{...ref,extra:true},{...ref,source_sha256:'bad'},{...ref,proposal_id:'../bad'}])
+    assert.throws(()=>buildManagementCommand(view(),'a','set',overlay(),'invalid',invalid),/MANAGEMENT_PROPOSAL_INVALID/);
+});
+
+test('explicit proposal confirmation unions related targets and saves the complete current draft',async()=>{
+  const v=proposedView();v.overlay={...overlay(),priority:4,start_date:'2026-10-01',end_date:'2026-10-31',
+    timezone:'Asia/Tokyo',milestones:[{id:'release',label:'Release',date:'2026-10-20'}],
+    relations:{belongs_to:'c',depends_on:['b'],related_to:['c'],independent:true}};
+  const before=structuredClone(v),sent=[],n=mount(v,{projectId:'a',owner:true,save:async command=>{sent.push(command);return receipt(command,{...v,revision:3,overlay:command.value});}});
+  await change(input(n,'优先级（数值）'),'7');assert.equal(sent.length,0);
+  assert.match(n.textContent,/会保存当前全部草稿/);assert.match(n.textContent,/不代表原始清单已完整验证/);
+  await button(n,'按相关项目确认 · synthetic-related').fire('click');
+  assert.equal(sent.length,1);assert.deepEqual(sent[0].proposal_ref,proposalRef());
+  assert.equal(sent[0].value.priority,7);assert.equal(sent[0].value.timezone,'Asia/Tokyo');
+  assert.equal(sent[0].value.start_date,'2026-10-01');assert.deepEqual(sent[0].value.milestones,v.overlay.milestones);
+  assert.deepEqual(sent[0].value.relations,{belongs_to:'c',depends_on:['b'],related_to:['c','b'],independent:true});
+  assert.deepEqual(v,before,'reading and accepting never mutates the proposal DTO');
+  await change(input(n,'显示顺序'),'2');await button(n,'保存配置').fire('click');
+  assert.equal(sent.length,2);assert.ok(!Object.hasOwn(sent[1],'proposal_ref'),'ordinary later save is not a second proposal confirmation');
+});
+
+test('invalid proposal references or unavailable targets expose no confirmation action',async()=>{
+  for(const mutate of [p=>delete p.proposal_ref,p=>p.proposal_ref.proposal_hash='invalid',p=>p.project_ids=['a','missing'],
+    p=>p.project_ids=['b','c'],p=>p.project_ids=['a','b','b'],p=>p.mapping='depends_on',p=>p.evidence_scope='inventory_accepted']){
+    const v=proposedView();mutate(v.proposals[0]);const n=mount(v,{projectId:'a',owner:true,save:async()=>assert.fail('invalid proposal submitted')});
+    assert.equal(all(n).filter(node=>node.tagName==='button'&&node.textContent.startsWith('按相关项目确认')).length,0);
+    assert.match(n.textContent,/不能据此确认关系/);
+  }
+  const guest=mount(proposedView(),{projectId:'a',owner:false,save:async()=>assert.fail('guest proposal submitted')});
+  assert.equal(button(guest,'按相关项目确认 · synthetic-related').disabled,true);
+  await button(guest,'按相关项目确认 · synthetic-related').fire('click');
+});
+
+test('proposal UNKNOWN retries the exact accepted request and blocks history or relation changes',async()=>{
+  const v=proposedView();v.history_recent=[{revision:1,request_id:'history',before:null,after:overlay()}];
+  const sent=[],n=mount(v,{projectId:'a',owner:true,save:async command=>{sent.push(command);if(sent.length===1)throw {outcome:'UNKNOWN'};return receipt(command,{...v,revision:3,overlay:command.value});}});
+  await button(n,'按相关项目确认 · synthetic-related').fire('click');
+  assert.match(status(n),/结果未知/);assert.equal(button(n,'撤销本项目关系').disabled,true);
+  assert.equal(button(n,'恢复为版本 1 的配置').disabled,true);assert.equal(button(n,'按相关项目确认 · synthetic-related').disabled,true);
+  await button(n,'恢复为版本 1 的配置').fire('click');await button(n,'撤销本项目关系').fire('click');
+  await button(n,'重试确认提交').fire('click');assert.deepEqual(sent[1],sent[0]);assert.deepEqual(sent[1].proposal_ref,proposalRef());
+});
+
+test('proposal CAS conflict preserves acceptance intent through explicit reload and fresh-CAS save',async()=>{
+  const v=proposedView(),sent=[],n=mount(v,{projectId:'a',owner:true,save:async command=>{sent.push(command);if(sent.length===1)throw {status:409,outcome:'NOT_COMMITTED'};return receipt(command,{...v,revision:5,overlay:command.value});},reload:async()=>({...v,revision:4,config_hash:'b'.repeat(64)})});
+  await button(n,'按相关项目确认 · synthetic-related').fire('click');assert.match(status(n),/配置版本已变化/);
+  assert.equal(button(n,'保存配置').disabled,true);await button(n,'重新读取当前版本').fire('click');
+  await button(n,'保存配置').fire('click');assert.equal(sent[1].expected_revision,4);assert.equal(sent[1].expected_hash,'b'.repeat(64));
+  assert.notEqual(sent[1].request_id,sent[0].request_id);assert.deepEqual(sent[1].proposal_ref,proposalRef());
+  assert.deepEqual(sent[1].value.relations.related_to,['b']);
+});
+
+test('history restore is only a detached draft and saves a new version without replaying old provenance',async()=>{
+  const v=proposedView(),historic=rolling();historic.priority=8;historic.start_date='2026-10-05';
+  v.revision=7;v.history_recent=[{revision:3,request_id:'old-request',before:null,after:historic,proposal_ref:proposalRef()},
+    {revision:4,request_id:'withdrawn',before:historic,after:null}];
+  const before=structuredClone(v),sent=[],n=mount(v,{projectId:'a',owner:true,save:async command=>{sent.push(command);return receipt(command,{...v,revision:8,overlay:command.value});}});
+  assert.match(n.textContent,/历史未配置/);assert.match(n.textContent,/提议确认来源：synthetic-related/);
+  assert.equal(button(n,'恢复为版本 4 的配置'),undefined,'withdrawn whole overlay is displayed without silently converting null into a configured blank overlay');
+  await button(n,'恢复为版本 3 的配置').fire('click');assert.equal(sent.length,0);
+  assert.equal(input(n,'优先级（数值）').value,'8');assert.equal(input(n,'开始日期').value,'2026-10-05');assert.match(status(n),/当前版本仍为 7/);
+  await button(n,'保存配置').fire('click');assert.equal(sent[0].expected_revision,7);
+  assert.notEqual(sent[0].request_id,'old-request');assert.ok(!Object.hasOwn(sent[0],'proposal_ref'));
+  assert.deepEqual(sent[0].value.rolling_plan,historic.rolling_plan);assert.deepEqual(v,before);
+});
+
+test('relation-only withdrawal retains all other draft fields and requires a separate save',async()=>{
+  const v=proposedView();v.overlay={...rolling(),priority:5,relations:{belongs_to:'b',depends_on:['b'],related_to:['c'],independent:false}};
+  const before=structuredClone(v.overlay),sent=[],n=mount(v,{projectId:'a',owner:true,save:async command=>{sent.push(command);return receipt(command,{...v,revision:3,overlay:command.value});}});
+  await button(n,'撤销本项目关系').fire('click');assert.equal(sent.length,0);assert.match(status(n),/仅撤销.*草稿.*日期和其他配置保留/);
+  assert.equal(input(n,'关系配置').value,'unconfigured');assert.equal(input(n,'优先级（数值）').value,'5');
+  await button(n,'保存配置').fire('click');assert.equal(sent[0].operation,'set');assert.equal(sent[0].value.relations,null);
+  assert.deepEqual({...sent[0].value,relations:before.relations},before);assert.ok(!Object.hasOwn(sent[0],'proposal_ref'));
+});
 test('409 preserves draft and requires explicit current-version reload before save',async()=>{const sent=[];let reads=0;const n=mount(view(),{projectId:'a',owner:true,save:async c=>{sent.push(c);if(sent.length===1)throw {status:409,code:'MANAGEMENT_CONFLICT',outcome:'NOT_COMMITTED'};return receipt(c,{...view(),revision:5,overlay:c.value});},reload:async()=>{reads++;return {...view(),revision:4,config_hash:'b'.repeat(64)};}});await change(input(n,'优先级（数值）'),'7');await button(n,'保存配置').fire('click');assert.equal(input(n,'优先级（数值）').value,'7');assert.equal(button(n,'保存配置').disabled,true);assert.equal(reads,0);await button(n,'重新读取当前版本').fire('click');assert.equal(input(n,'优先级（数值）').value,'7');assert.equal(reads,1);await button(n,'保存配置').fire('click');assert.equal(sent[1].expected_revision,4);assert.equal(sent[1].expected_hash,'b'.repeat(64));assert.notEqual(sent[0].request_id,sent[1].request_id);});
 test('unknown commit retries exact request and body, blocks competing edits and withdrawal',async()=>{const sent=[];const n=mount(view(),{projectId:'a',owner:true,save:async c=>{sent.push(c);if(sent.length===1)throw {outcome:'UNKNOWN',details:{private:'secret'}};return {...receipt(c,{...view(),revision:8,overlay:c.value}),receipt:{request_id:c.request_id,revision:8,committed_revision:3,replayed:true}};},reload:async()=>view()});await change(input(n,'显示顺序'),'9');await button(n,'保存配置').fire('click');assert.equal(input(n,'显示顺序').disabled,true);assert.equal(button(n,'还原草稿').disabled,true);assert.equal(button(n,'重新读取当前版本').disabled,true);assert.equal(button(n,'撤回全部管理配置').disabled,true);assert.doesNotMatch(status(n),/secret/);await button(n,'重试确认提交').fire('click');assert.deepEqual(sent[0],sent[1]);assert.match(status(n),/当前版本 8，本次提交版本 3（重试已确认）/);});
 test('in-flight save disables editing and double submission',async()=>{let release,calls=0;const waiting=new Promise(r=>release=r);const n=mount(view(),{projectId:'a',owner:true,save:async c=>{calls++;await waiting;return receipt(c);}});const p=button(n,'保存配置').fire('click');assert.equal(button(n,'保存配置').disabled,true);assert.equal(input(n,'关注').disabled,true);await button(n,'保存配置').fire('click');assert.equal(calls,1);release();await p;});

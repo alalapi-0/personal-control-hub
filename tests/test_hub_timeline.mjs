@@ -32,6 +32,13 @@ const button=(n,label)=>all(n).find(x=>x.tagName==='button'&&x.textContent===lab
 const articles=n=>all(n).filter(x=>x.tagName==='article');
 const status=n=>all(n).find(x=>x.attributes.role==='status').textContent;
 
+test('definition extension 1.4 retains proven actual dates and rejects mismatched proof',()=>{
+ const p=fixture();p.operational.latest_attempt.extensions.schema_version='1.4';
+ assert.equal(timelineRows([p])[0].actual.points.length,2);
+ p.business.timeline.proof={...p.business.timeline.proof,sha256:'b'.repeat(64)};
+ assert.equal(timelineRows([p])[0].actual.points.length,0);
+});
+
 test('complete pagination-fed 243-row identity set includes unknown failed removed; input remains untouched',()=>{
  const pages=[100,100,43].map((size,page)=>Array.from({length:size},(_,i)=>fixture('id-'+(page*100+i))));const projects=pages.flat();projects[140].freshness.state='removed_local';projects[180].operational.latest_attempt.success=false;projects[220].business.timeline={available:false,reason:'unknown',role:'current',value:null,proof:null};
  const before=structuredClone(projects),rows=timelineRows(projects);assert.equal(rows.length,243);assert.deepEqual(rows.map(r=>r.id),projects.map(p=>p.project_id));assert.equal(rows[140].actual.points.length,0);assert.equal(rows[180].actual.points.length,0);assert.equal(rows[220].actual.points.length,0);assert.deepEqual(projects,before);

@@ -72,7 +72,9 @@ export async function runBrowserJourney(name,journey,{directorySize=2}={}){
       if(request.method()==='POST'&&new URL(request.url()).pathname==='/api/tasks')evidence.tasks.push(request.postDataJSON());
     });
     async function loginOwner(){
-      assert.ok(owner,'synthetic owner already consumed');
+      // The isolated restart journey reauthenticates through the real UI using
+      // only this fixture's in-memory synthetic proof, never a provider secret.
+      owner=secret;
       await page.getByRole('button',{name:'连接所有者',exact:true}).click();
       await page.getByLabel('所有者凭据',{exact:true}).fill(owner);
       await page.getByRole('button',{name:'认证',exact:true}).click();

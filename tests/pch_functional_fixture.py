@@ -275,13 +275,55 @@ class FunctionalFixture:
         assembly = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(assembly)
         self.materials = MaterialService(self.projects, self.designs)
-        self.server, observer, preview = assembly.assemble_server(self.root, host='127.0.0.1', port=0, services={
+        self.assembly = assembly
+        self._start_server()
+
+    def _start_server(self):
+        self.server, observer, preview = self.assembly.assemble_server(self.root, host='127.0.0.1', port=0, services={
             'projects': self.projects, 'designs': self.designs, 'previews': self.previews, 'tasks': self.tasks,
             'session_view': self.sessions, 'host_observer': self.host, 'materials': self.materials,
             'owner_auth': OwnerAuth(provider=lambda: self.owner)})
         assert observer is self.host and preview is None
         self.thread = threading.Thread(target=self.server.serve_forever, kwargs={'poll_interval': .01}, name='functional-fixture-http')
         self.thread.start()
+
+    def management_sample(self):
+        """Explicit O3 setup; default O0/O1 data remains unchanged."""
+        a, b = 'fixture-project-a', 'fixture-project-b'
+        proposal = {'id': 'synthetic-a-b-related', 'project_ids': [a, b], 'kind': 'pipeline',
+                    'status': 'proposed', 'shared_tasks': ['Synthetic shared review'],
+                    'differences': ['Separate synthetic ownership'], 'not_shared': ['Source authority'],
+                    'inventory_index': 0, 'evidence_refs': ['fixture://synthetic-o3-evidence']}
+        projection = {'projects': [{'project_id': project, 'status': 'proposed', 'reason': None,
+                                   'relations': [proposal], 'program_link_authority': False,
+                                   'design_selection_authority': False} for project in (a, b)]}
+        path = self.root / 'data/connections/fixture-relations.json'
+        raw = json.dumps(projection, sort_keys=True).encode()
+        if path.exists():
+            if path.is_symlink() or path.read_bytes() != raw: raise RuntimeError('Synthetic relation file changed')
+        else:
+            with path.open('xb') as stream: stream.write(raw)
+        self.projects.relations_path = path
+        state_path = self.roots[b] / 'STATE.yaml'
+        state = yaml.safe_load(state_path.read_text())
+        state['current_work'].update(status='blocked', completed=False, objective='Synthetic blocked source dependency')
+        state_path.write_text(yaml.safe_dump(state, sort_keys=False))
+        synced = self.sync(b)
+        if synced['exit_code'] != 0: raise RuntimeError('Synthetic blocked source could not be collected')
+        return {'management_ready': True, 'project_ids': [a, b], 'proposal_id': proposal['id'],
+                'proposal_source_sha256': hashlib.sha256(raw).hexdigest(), 'blocked_project': b,
+                'proposals': self.projects.get_management(a).get('proposals', [])}
+
+    def restart_server(self):
+        if any(thread.is_alive() for thread in self.workers):
+            raise RuntimeError('Cannot restart fixture with active owned worker')
+        previous_origin, previous_instance = self.origin, self.server.backend_instance
+        self.server.shutdown(); self.server.server_close(); self.thread.join(3)
+        if self.thread.is_alive(): raise RuntimeError('Old fixture HTTP remains active')
+        self.cookie = self.csrf = None
+        self._start_server()
+        return {'restarted': True, 'origin': self.origin, 'backend_instance': self.server.backend_instance,
+                'previous_origin': previous_origin, 'previous_backend_instance': previous_instance}
 
     def _host(self):
         proc = self.root / 'synthetic-proc'; proc.mkdir()
@@ -532,6 +574,8 @@ def main():
             if action == 'handshake': result = fixture.handshake()
             elif action == 'run': result = {'ran': fixture.run_worker(command.get('project_id', 'fixture-project-a'))}
             elif action == 'health': result = {'status': fixture.call(path='/api/health')[0]}
+            elif action == 'management-sample': result = fixture.management_sample()
+            elif action == 'restart': result = fixture.restart_server()
             elif action == 'source': result = fixture.update_source(command.get('project_id'), completed=command.get('completed'), objective=command.get('objective'))
             elif action == 'sync': result = fixture.sync(command.get('only_project_id'))
             elif action == 'hold-batch': result = fixture.hold_batch()
