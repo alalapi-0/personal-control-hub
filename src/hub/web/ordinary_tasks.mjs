@@ -42,9 +42,11 @@ export function renderOrdinaryTaskResult(task){
       el('div',{},el('dt',{},label),el('dd',{},value||'原指令尚不可用')))),
     el('p',{className:'caption'},'本次请求：'+task.id),
     el('a',{href:'#projects/'+encodeURIComponent(spec.project_id||task.project)+'/tasks'},'返回项目任务区'));
-  if(typeof task.result?.response==='string')panel.append(el('h3',{},'执行回复'),
-    el('pre',{'aria-label':'普通任务执行回复'},task.result.response||'执行器返回了空回复。'),
-    task.result.response_truncated===true?el('p',{className:'warning'},'回复超过后台保留上限，当前记录已截断；不能视为完整回复。'):null);
+  if(typeof task.result?.response==='string'){
+    panel.append(el('h3',{},'执行回复'),
+      el('pre',{'aria-label':'普通任务执行回复'},task.result.response||'执行器返回了空回复。'));
+    if(task.result.response_truncated===true)panel.append(el('p',{className:'warning'},'回复超过后台保留上限，当前记录已截断；不能视为完整回复。'));
+  }
   else panel.append(el('p',{},'尚无已记录的执行回复，请读取原请求核对。'));
   if(id(task.id)&&id(spec.project_id)&&spec.project_id===task.project)panel.append(el('a',{
     href:'#projects/'+encodeURIComponent(task.project)+'/tasks?parent_task_id='+encodeURIComponent(task.id)},'继续此普通任务'));

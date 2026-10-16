@@ -1,10 +1,10 @@
 # PCH 功能优化审核包
 
-状态：**with_gaps**。工程候选可审核，原生 live、正式运行切换、真实设备及所有者最终接受仍未完成。98 项原始预期及分母全部保留，G10 单独记录。
+状态：**with_gaps**。真实 provider 的合成目标读取、追问、取消并行和重开已有证据；正式运行切换、其余实际分支、真实设备及所有者最终接受仍未完成。98 项原始预期及分母全部保留，G10 单独记录。
 
 ## 候选与入口
 
-工程代码基于已交付的 `047e0e678b5e08d9492457ca2f74ff3ede06963e`，含自身来源 2 MiB 兼容修复、Owner 凭据准备及 Root 显式选择任务内执行文件的内部入口；更早的基线及其证据保留。执行文件入口核对内容与身份，版本、schema 和运行时探测使用同一文件，默认服务启动路径与权限表保持不变。本次补充真实读取、追问、重开、取消测试失败和恢复限制，未改变产品代码。最终远端提交及当前本地演示 URL 以唯一 State 的 delivery / review_entry 为准。
+工程候选在已交付代码上修复普通任务回复下方多余的 `null` 文本，截断警告保留；当前结果模块 SHA-256 为 `5e37e5ecca64eb0cfeee03dcb92411bf805e4834c137e5d8a1330d6d3f32892f`。后端执行文件资格与绑定实现沿用 `047e0e678b5e08d9492457ca2f74ff3ede06963e` 的已核验字节，私有完整 CLI/配套程序与真实通道证据另行冻结。本次新增实际取消并行、只读刷新及列表重开验证。最终远端提交及当前本地演示 URL 以唯一 State 的 delivery / review_entry 为准。
 
 独立演示为真实 HTTP/静态资源配合合成来源的只读访客实例，已验证资源哈希、停止和重启；未配置可登录的 owner，没有模型、worker 或 timer。正式 `8766` 服务保持旧版本。演示数据不能证明正式业务或真实 provider 通过。
 
@@ -25,6 +25,8 @@
 - 后续真实 provider 页面测试确实发送并完成了 1 个合成只读任务，收到实际回复；读取工具在启动配套 `codex-code-mode-host` 前因文件不存在失败，marker 验证未通过。首次零效果的页面刷新失败也保留。配套程序已从同一冻结源码和锁文件构建，V8 产物按上游固定摘要验证；精确程序的 EOF、stdio 握手、JS 固定代理调用、输出和关闭检查通过，新增模型调用及原生线程均为 0。这些无模型局部检查与下述实际页面结果分别记录。
 - 所有者明确增加 1 个会话、1 个回合后，完整包实际页面补测已执行：A/B 分别读取正确 marker、线程隔离、A 同线程追问及重开结果页通过。取消 A 的 HTTP 请求返回 200 并持久化标记，但测试脚本立即要求终态，错误地触发收尾，B 先被收尾中断；“取消 A、B 继续完成”失败。现有无模型并行取消测试通过，证实应等待 worker 的异步取消结果。后续只读原生查询确认 A/B 忙碌回合均 interrupted、线程 notLoaded；A 在 Hub 中仍需对账，未篡改旧记录或重新入队。最终桌面/移动回复截图未执行，已有 A 截图只展示结果页上部，不能证明回复在屏内。业务输入和配置未变，精确 adapter、测试浏览器和显示均终止。
 
+- 后续取消补测已通过：仅 A 的精确 thread/turn 收到中断，B 独立完成且 cancel=0。原 r3 的提前断言与 B 收尾中断失败完整保留。随后复用同一真实任务库，仅查看、刷新、回列表并点链接重开，TaskStore 身份/内容/行数、业务输入、配置及 native B 的 completed turn 列表均未变；新增模型、线程和中断均为 0。桌面/390×844 实际页面已核对回复可见、无多余 null、无横向溢出，252 项 Node 检查通过。
+
 ## F01–F09
 
 | 问题 | 工程结果与证据 | 仍需的实际分支 |
@@ -41,7 +43,7 @@
 
 ## 98 项结果
 
-当前结果：**30 PASS、17 BLOCKED、51 UNVERIFIED；0 FAIL、0 NOT_APPLICABLE**。每 ID 仅有一个总结果；PASS 只用于该项实际所需的隔离或效果边界已满足的情况。正式/live 未完成的条目保留 BLOCKED/UNVERIFIED。原始 23 PASS / 18 FAIL / 25 BLOCKED / 32 UNVERIFIED 不覆盖、不改写。此计数不是 Goal 完成率。
+当前结果：**35 PASS、12 BLOCKED、51 UNVERIFIED；0 FAIL、0 NOT_APPLICABLE**。T-04、T-06、T-07、T-10、N-03 按其原始 C/C-I 语义补齐；旧 30/17/51 记录保留，不为这些条目另加正式 owner 或正式业务对象门槛。每 ID 仅有一个总结果；PASS 只用于该项实际所需的隔离或效果边界已满足的情况。正式/live 未完成的条目保留 BLOCKED/UNVERIFIED。原始 23 PASS / 18 FAIL / 25 BLOCKED / 32 UNVERIFIED 不覆盖、不改写。此计数不是 Goal 完成率。
 
 | ID | 原始场景及预期 | 原结果 | 当前总结果 | 观察与限制；确定性证据入口 |
 | --- | --- | --- | --- | --- |
@@ -96,13 +98,13 @@
 | T-01 | A/B分别从项目上下文找“下指令”；不必先有截图/图像批注才能表达普通项目任务；没有可用入口记缺口 | BLOCKED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.oneClickTasks、ordinary.drafts、keyboard.keyboardDraft |
 | T-02 | 编写只读指令，核对项目/新建或继续/任务范围；用户看得懂接收对象与效果；后台绑定吻合；无歧义默认目标 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：ordinary.drafts、ordinary.idleContinuation、u:ordinary_api.py |
 | T-03 | 存草稿、离开、回到同一任务；内容可恢复且明确未发送；不偷偷创建模型任务 | BLOCKED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：ordinary.unsavedDraft、ordinary.drafts、parallel.activeDraftIsolation |
-| T-04 | 经页面真实发送一次有界只读任务；页面请求走真实通道，正确项目/会话真实接收；非后台替代调用 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：ordinary.unknownReconciled、lifecycle.restartQueueRecovery、parallel.simultaneousRunning |
+| T-04 | 经页面真实发送一次有界只读任务；页面请求走真实通道，正确项目/会话真实接收；非后台替代调用 | BLOCKED | PASS | 真实页面POST→TaskStore→正确owned native thread/turn关联及A/B marker通过；原C范围不要求正式业务对象。 证据：native.r3、native.r4、native.reopen；各自适用范围分别记录。 |
 | T-05 | 观察发送到回应的各阶段；草稿/接收/排队/执行/完成/失败不混；正在等待有解释 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：lifecycle.restartQueueRecovery、lifecycle.inputAnswerReceiptRecovery、keyboard.quietPolling、edge.T12TerminalBranches、u:task_lifecycle.py |
-| T-06 | 打开真实回复及对应产物；结果与指令、项目、会话对应；导入/历史结果不冒充本次生成 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：preview.pinnedTaskReopen、preview.materialReturn、responsive.longReplies、resilience.longReplyIsolation |
-| T-07 | 对自己任务追问一句并回看历史；继续正确上下文；回应不丢且时间顺序合理 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：ordinary.idleContinuation、parallel.followupIsolation、u:ordinary_worker.py |
+| T-06 | 打开真实回复及对应产物；结果与指令、项目、会话对应；导入/历史结果不冒充本次生成 | BLOCKED | PASS | 真实原始回复、请求/项目/thread/turn一致；固定结果版本与桌面/390可见回复通过。 证据：native.r3、native.r4、native.reopen；各自适用范围分别记录。 |
+| T-07 | 对自己任务追问一句并回看历史；继续正确上下文；回应不丢且时间顺序合理 | BLOCKED | PASS | 真实A追问同thread新turn，回复保留且历史可重开；不代替最终所有者接受。 证据：native.r3、native.r4、native.reopen；各自适用范围分别记录。 |
 | T-08 | 对自己的忙碌测试任务反馈/新建另一任务；用户理解排队与继续含义；不打断别人的任务，不能向未知writer投递 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：ordinary.busyFeedback、parallel.explicitRetryIsolation、u:ordinary_parallel_claim.py |
 | T-09 | 双击发送或同request重试；不重复执行同一意图；冲突/重放反馈可理解 | BLOCKED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：ordinary.unknownReconciled、parallel.unknownReceiptReconciliation、u:ordinary_api.py、u:ordinary_drafts.py |
-| T-10 | 刷新页面、返回列表再开任务；仍能找到指令、进度、回复；不重发、不把掉线当任务失败 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：ordinary.drafts、lifecycle.restartQueueRecovery、preview.pinnedTaskReopen |
+| T-10 | 刷新页面、返回列表再开任务；仍能找到指令、进度、回复；不重发、不把掉线当任务失败 | BLOCKED | PASS | 原真实任务只读补验reload→任务列表→点击同一B重开；task/thread/turn/result_version/marker与前后native状态一致，0新任务。 证据：native.r3、native.r4、native.reopen；各自适用范围分别记录。 |
 | T-11 | 请求送达后网络断开/回执丢失；结果未知有核对路径，先对账再重试；不生成重复任务 | BLOCKED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：ordinary.unknownReconciled、parallel.unknownReceiptReconciliation、resilience.taskReceiptUnknown |
 | T-12 | 自己测试任务失败、超时、执行者不可用；保留指令和错误摘要，可辨重试条件；失败不包装为完成 | BLOCKED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：ordinary.runtimeAndRevocation、lifecycle.inputTimeout、edge.T12TerminalBranches |
 | T-13 | 取消自己测试任务，与迟到完成竞态；只影响精确任务；取消已请求/已生效/完成明确；B不受影响 | BLOCKED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：lifecycle.exactCancellation、parallel.cancelIsolation、u:task_runtime.py#test_cancel_committed_after_final_read_before_success_publication、u:task_runtime.py#test_late_cancel_and_wrong_provider_identity_never_publish_success |
@@ -111,7 +113,7 @@
 | T-16 | 核对“执行结束、工程通过、业务合格、用户接受”；四种状态有区别；无需先把故事/角色作品做满意才评Hub分发 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：u:task_lifecycle.py、u:task_review.py、u:connection_view.mjs、u:business_tasks.mjs |
 | N-01 | 观察一个本来就在推进的任务，同时浏览A/B；其他任务无需暂停；记录精确身份和自然进展，测试不发控制指令 | PASS | UNVERIFIED | 未向未知真实任务发消息或控制；本次没有新的自然任务推进链。 证据：Root 版本/资源/限制核对 |
 | N-02 | 自然来源更新与Hub读取交错；来源→采集→显示有版本链；无混合快照；未遇更新不写PASS | UNVERIFIED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：refresh.manualSource、refresh.cycles、u:source_atomicity.py |
-| N-03 | 自己的A测试任务与B任务状态同时变化；所选项目、状态和回复隔离；错误不会污染另一项 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：parallel.simultaneousRunning、parallel.independentCompletion |
+| N-03 | 自己的A测试任务与B任务状态同时变化；所选项目、状态和回复隔离；错误不会污染另一项 | BLOCKED | PASS | 真实A/B同时running；精确取消A，B完成正确marker，状态/回复归属独立。 证据：native.r3、native.r4、native.reopen；各自适用范围分别记录。 |
 | N-04 | A/B快速切换且请求乱序；旧页面响应不覆盖当前页面；loading/error属于正确项目 | PASS | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：nav.lateResponse、parallel.lateResponseIsolation |
 | N-05 | 同时自然刷新与手动刷新；忙碌边界在副本；无双写/错误回退，能理解合并、排队或忙碌 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：refresh.busyRecovery、refresh.cycles、u:refresh_concurrency.py |
 | N-06 | 观察来源业务文件与本次Hub效果归属；采集不写业务源；自然业务写入不误算测试破坏；不要求全树不变 | PASS | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：parallel.sourceIsolation、resilience.overlap、u:sources.py、u:source_atomicity.py |
@@ -163,7 +165,7 @@
 
 下表用于工程复核，最终审核无需所有者重新组织测试。浏览器脚本需要本任务私有 CDP、独立 fixture 和明确的 Python/Playwright 路径，不能指向日常浏览器或正式 8766。
 
-| 证据别名 | 仓库入口 | 额外配置 |
+| 证据别名 | 入口或本地证据 | 额外配置与边界 |
 | --- | --- | --- |
 | functional | `tests/pch_functional_browser.mjs` | 默认 |
 | nav | `tests/pch_navigation_browser.mjs` | 默认 |
@@ -177,6 +179,9 @@
 | resilience | `tests/pch_resilience_browser.mjs` | 默认及 `PCH_RESILIENCE_MODE=empty` |
 | edge | `tests/pch_edge_browser.mjs` | `PCH_EDGE_MODE=management/source/runtime/definition` 各自独立运行 |
 | helper | `tests/pch_browser_runtime.mjs` | 原始 network、console、fixture 和 browser 收尾证据 |
+| native.r3 | 本地唯一 State 指向冻结的真实通道旅程与原始回执 | A/B 读取、A 追问和重开有效；取消脚本误判失败保留 |
+| native.r4 | 本地唯一 State 指向取消并行补测与原 TaskStore | 只取消精确 A，B 完成；累计历史效果保留，不重复计算原 PASS |
+| native.reopen | 本地只读重装配、浏览器及 native 前后查询 | 真实刷新、回列表并点链接重开；DB 与 native 不变，0 新模型，桌面/窄屏仅为模拟窗口 |
 
 ## 本地证据索引与恢复
 
@@ -191,7 +196,7 @@
 ## 最少剩余事项
 
 1. 口述项目身份已由所有者明确确认，身份歧义解除；现有正式任务绑定仍未核验。所有者继续审核独立只读候选的项目理解、导航、关系和信息表达。
-2. 任务内沙箱修复已有 165 项库检查、完整 CLI 自带 helper 的 22 项只读拒绝、设备/PTY/proc、版本/schema 和初始化证据；完整包的实际读取、追问和重开分支通过，取消并行分支仍未通过。原合成登录证明只在内存中，收尾后不能从页面续接旧任务；业务根、TaskStore、会话和全部失败均保留，不伪造身份、改写旧任务或重置计数。当前已消耗所有者批准的累计 3 个线程、6 个回合、1 次中断；仅补缺失的忙碌取消/另一任务完成分支还需 2 个新合成只读会话、2 个回合及 1 次本任务中断，尚未授权或执行。修正方案将取消接收与异步终态分开等待，并核对精确中断对象。任务内构建未安装全局 CLI、修改全局配置或扩大目录/写授权；执行文件检查仍有路径检查与执行之间的竞态局限。
+2. 任务内沙箱修复已有 165 项库检查、完整 CLI 自带 helper 的 22 项只读拒绝、设备/PTY/proc、版本/schema 和初始化证据；真实合成目标的读取、追问、精确取消、另一任务继续完成及完整刷新/列表重开分支通过。第一次缺配套程序、r3 取消脚本误判及只读重装配的首次字段错误全部保留，未把失败改成通过。当前累计消耗 5 个线程、8 个回合、2 次本任务中断。所有者对本任务三个上限各增加 10 次的口述及更正按同一次授权记录为 15/18/12，旧运行的授权和计数不变。其余 C 路径及正式 R/H 分支继续按原预期验证；不消耗额度来重复已通过分支。任务内构建未安装全局 CLI、修改全局配置或扩大目录/写授权；执行文件检查仍有路径检查与执行之间的竞态局限。
 3. 正式服务尚未配置 owner。当前候选新增显式 OS 凭据投影模式、只读配置准备命令和人工 TTY 密文录入入口；默认环境模式兼容，OS 模式失败不回退，不自动启用执行。准备结果保留 `ready_to_install: false`，含候选代码与既有数据根；真实 OS 提供者资格验证、可能需要的主机密钥初始化、隐藏录入和正式切换尚未执行，须在具体方案审核后分别处理。操作与边界见日常文档，这与原生沙箱故障分别处理。
 4. 当前代码候选沿既有 Hub 自身适配器使用固定 2 MiB 上限，已只读解析约 1.19 MB 的真实 canonical State，读取前后哈希一致；普通来源及声明继续默认 1 MiB。原 1 MiB 失败保留为历史，正式 `8766` 仍运行旧版，尚未用此候选采集或切换账本。边界与适用条件见日常操作文档。
 5. 正式服务/账本切换仍需确切写责、完整兼容与恢复依据；本次已核对的结构和身份没有发现版本迁移需求，不能代替正式切换验收，现有 8766 未切换。自然更新、真实手机/读屏及最终所有者接受继续保留未验。
