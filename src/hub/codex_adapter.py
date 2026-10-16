@@ -18,6 +18,7 @@ from pathlib import Path
 import jsonschema
 
 from .service_contract import ServiceError
+from .task_executable import TaskExecutable
 from .workbench_store import canonical
 
 VERSION = 'codex-cli 0.159.3'
@@ -55,7 +56,7 @@ APPROVAL_RESPONSE='CommandExecutionRequestApprovalResponse'
 INPUT_RESPONSE='ToolRequestUserInputResponse'
 
 
-def _profile_entries(root, *, read_only=False, readable_paths=None):
+def _profile_entries(root, *, read_only=False, readable_paths=None, runtime_executable=None):
     root=Path(root)
     if type(read_only)is not bool or not root.is_absolute() or '..'in root.parts:raise ServiceError('CODEX_PROFILE_REJECTED',status=503)
     # The entire disposable fixture is the grant scope. File-level writable
@@ -81,13 +82,23 @@ def _profile_entries(root, *, read_only=False, readable_paths=None):
             except (OSError,ValueError):
                 raise ServiceError('CODEX_READ_SCOPE_REJECTED',status=503) from None
             entries[str(target)]='read'
-    if root==Path('/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007'):
+    if runtime_executable is not None:
+        if (type(runtime_executable) is not TaskExecutable or read_only is not True
+                or readable_paths is None or runtime_executable.path.is_relative_to(root)):
+            raise ServiceError('CODEX_EXECUTABLE_SCOPE_REJECTED',status=503)
+        runtime_executable.check()
+        # The patched helper freezes its empty scaffold after mounting the
+        # exact leaves. Redundant descendant deny mounts would hide the leaves.
+        entries={':root':'deny',':minimal':'read',
+                 **{str(root/relative):'read' for relative in readable_paths},
+                 str(runtime_executable.path):'read'}
+    elif root==Path('/home/alalapi/Temp/personal-control-hub/linux-workbench/csp-css-trial-20261007'):
         entries[str(root.parent)]='deny'
     return entries
 
 
-def profile_arguments(root,*,read_only=False,readable_paths=None):
-    entries=_profile_entries(root,read_only=read_only,readable_paths=readable_paths)
+def profile_arguments(root,*,read_only=False,readable_paths=None,runtime_executable=None):
+    entries=_profile_entries(root,read_only=read_only,readable_paths=readable_paths,runtime_executable=runtime_executable)
     table='{'+','.join(json.dumps(k)+'='+json.dumps(v)for k,v in entries.items())+'}'
     profile=EVIDENCE_PERMISSION_PROFILE if read_only else PERMISSION_PROFILE
     return ('-c','default_permissions='+json.dumps(profile),
@@ -122,7 +133,7 @@ def config_fingerprint(config):
     except (OSError,ValueError):raise ServiceError('CODEX_CONFIG_DRIFT',status=503) from None
 
 
-def isolated_launch(command, *, config_path=None, root=Path('/fixture'), expected_config_sha256=None,read_only=False,readable_paths=None):
+def isolated_launch(command, *, config_path=None, root=Path('/fixture'), expected_config_sha256=None,read_only=False,readable_paths=None,runtime_executable=None):
     """Process-local narrowing only. Never edit or export credential/config values."""
     config=Path(config_path)if config_path is not None else Path(child_environment()['HOME'])/'.codex/config.toml'
     if config_fingerprint(config)!=(expected_config_sha256 or REGISTERED_CONFIG_SHA256):
@@ -134,7 +145,7 @@ def isolated_launch(command, *, config_path=None, root=Path('/fixture'), expecte
     for name in names:args+=['-c','mcp_servers.'+name+'.enabled=false']
     for name in DISABLED_FEATURES:args+=['--disable',name]
     args+=['-c','web_search="disabled"']
-    args+=profile_arguments(root,read_only=read_only,readable_paths=readable_paths)
+    args+=profile_arguments(root,read_only=read_only,readable_paths=readable_paths,runtime_executable=runtime_executable)
     return tuple(args),names
 
 
@@ -148,10 +159,16 @@ def sanitized(value, limit=2000):
 class AppServerAdapter:
     transport = 'app_server_stdio'
 
-    def __init__(self, root, *, command=('codex','app-server','--stdio'), schemas=None,read_only=False,readable_paths=None):
+    def __init__(self, root, *, command=('codex','app-server','--stdio'), schemas=None,read_only=False,readable_paths=None,runtime_executable=None):
         if type(read_only)is not bool:raise ServiceError('CODEX_PROFILE_REJECTED')
         self.read_only=read_only
-        if readable_paths is not None:_profile_entries(root,read_only=read_only,readable_paths=readable_paths)
+        self.runtime_executable=runtime_executable
+        if runtime_executable is not None:
+            if (type(runtime_executable) is not TaskExecutable
+                    or tuple(command)!=(str(runtime_executable.path),'app-server','--stdio')):
+                raise ServiceError('CODEX_EXECUTABLE_SCOPE_REJECTED',status=503)
+        if readable_paths is not None or runtime_executable is not None:
+            _profile_entries(root,read_only=read_only,readable_paths=readable_paths,runtime_executable=runtime_executable)
         self.readable_paths=list(readable_paths)if readable_paths is not None else None
         self.permission_profile=EVIDENCE_PERMISSION_PROFILE if read_only else PERMISSION_PROFILE
         self.root = Path(root)
@@ -198,22 +215,29 @@ class AppServerAdapter:
         return child_environment()
 
     def _profile_arguments(self):
-        return profile_arguments(self.root,read_only=self.read_only,readable_paths=self.readable_paths)
+        return profile_arguments(self.root,read_only=self.read_only,readable_paths=self.readable_paths,runtime_executable=self.runtime_executable)
 
     def _launch(self):
         return isolated_launch(self.command,root=self.root,
-            expected_config_sha256=self._configuration_hash(),read_only=self.read_only,readable_paths=self.readable_paths)
+            expected_config_sha256=self._configuration_hash(),read_only=self.read_only,readable_paths=self.readable_paths,runtime_executable=self.runtime_executable)
+
+    def _check_executable(self):
+        if self.runtime_executable is not None:
+            self.runtime_executable.check()
 
     def open(self):
+        self._check_executable()
         env=self._child_environment()
         self.launch_command,self.disabled_servers=self._launch()
         if self.schemas is None:
-            run = subprocess.run(['codex','--version'],capture_output=True,timeout=5,text=True,env=env)
+            self._check_executable()
+            run = subprocess.run([self.command[0],'--version'],capture_output=True,timeout=5,text=True,env=env)
             if run.returncode or run.stdout.strip()!=VERSION:
                 raise ServiceError('CODEX_VERSION_UNSUPPORTED',status=503)
             self.schemas={}
             with tempfile.TemporaryDirectory(prefix='hub-protocol-schema-') as directory:
-                run=subprocess.run(['codex','app-server','generate-json-schema','--experimental','--out',directory],capture_output=True,timeout=10,env=env)
+                self._check_executable()
+                run=subprocess.run([self.command[0],'app-server','generate-json-schema','--experimental','--out',directory],capture_output=True,timeout=10,env=env)
                 if run.returncode:raise ServiceError('CODEX_SCHEMA_UNAVAILABLE',status=503)
                 for name in set(PARAMS.values())|set(RESPONSES.values())|set(NOTIFICATIONS.values())|{'ServerNotification','ServerRequest',APPROVAL_RESPONSE,INPUT_RESPONSE}:
                     paths=list(Path(directory).rglob(name+'.json'))
@@ -225,6 +249,7 @@ class AppServerAdapter:
                     self.schemas[name]=json.loads(raw)
         if config_fingerprint(Path(env['HOME'])/'.codex/config.toml')!=self._configuration_hash():
             raise ServiceError('CODEX_CONFIG_DRIFT',status=503)
+        self._check_executable()
         self.proc=subprocess.Popen(self.launch_command,cwd=self.root,env=env,stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,stderr=subprocess.PIPE,start_new_session=True)
         self.reader=threading.Thread(target=self._read,name='hub-codex-stdout',daemon=True)
@@ -386,6 +411,8 @@ class AppServerAdapter:
     def call(self,method,params,timeout=15):
         if method not in PARAMS:raise ServiceError('CODEX_METHOD_REJECTED')
         self._validate(PARAMS[method],params)
+        if method in {'thread/start','thread/resume','turn/start','command/exec'}:
+            self._check_executable()
         self.next_id+=1;ident=self.next_id;self.pending_ids.add(ident)
         self._send({'id':ident,'method':method,'params':params})
         deadline=time.monotonic()+timeout
@@ -456,9 +483,8 @@ class AppServerAdapter:
         value=result.get('activePermissionProfile')
         if type(value)is not dict or value.get('id')!=self.permission_profile or value.get('extends')is not None:
             raise ServiceError('CODEX_PROFILE_REJECTED',status=503)
-        self.active_profile=self.permission_profile
         if self.readable_paths is not None:
-            expected=_profile_entries(self.root,read_only=True,readable_paths=self.readable_paths)
+            expected=_profile_entries(self.root,read_only=True,readable_paths=self.readable_paths,runtime_executable=self.runtime_executable)
             effective=self.call('config/read',{'cwd':str(self.root),'includeLayers':False})['config']
             if type(effective)is not dict or type(effective.get('permissions'))is not dict:
                 self.active_profile=None
@@ -475,6 +501,8 @@ class AppServerAdapter:
                     or profile.get('extends')is not None):
                 self.active_profile=None
                 raise ServiceError('CODEX_EXACT_READ_SCOPE_UNVERIFIED',status=503)
+
+        self.active_profile=self.permission_profile
 
     def verify_parent_binding(self,thread_id,turn_id):
         """Reconcile the latest native turn immediately before a continuation.
