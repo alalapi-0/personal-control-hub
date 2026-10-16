@@ -967,9 +967,11 @@ class ProjectService:
         try:
             ledger = RefreshLedger(self.root, self.ledger_path,
                                    result_validator=validate_result)
-            coordinator_started = True
-            outcome = refresh_projects(ledger, resolver, request_id, project_ids,
-                                       expected_head=expected)
+            from hub.connection_sync import sync_mutex
+            with sync_mutex(ledger):
+                coordinator_started = True
+                outcome = refresh_projects(ledger, resolver, request_id, project_ids,
+                                           expected_head=expected)
             try:
                 current = SourceResolver(self.root)
                 state = "matched" if current.authority == resolver.authority else "drifted"
@@ -986,6 +988,11 @@ class ProjectService:
                         project["freshness"] = "stale"
                         project["stale_reason"] = "Current Hub source authority is unavailable or drifted."
             return outcome
+        except ServiceError as exc:
+            if exc.code=='SYNC_BATCH_BUSY':
+                raise _error('REFRESH_BATCH_BUSY',status=409,retryable=True,
+                             details={'request_id':request_id}) from exc
+            raise
         except HeadConflictError as exc:
             raise _error("REFRESH_HEAD_CONFLICT", status=409, retryable=True) from exc
         except RequestConflictError as exc:

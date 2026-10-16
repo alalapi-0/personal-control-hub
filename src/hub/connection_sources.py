@@ -126,7 +126,8 @@ class SourceResolver:
                 raise SourceFailure("removed_local", "已从本地移除；保留登记身份，不扫描、不写入、不重试。")
             if (project.get("connection_read_allowed", project.get("enabled")) is not True
                     or project.get("access_profile") == "no_current_goal_access"
-                    or project.get("project_type") in {"cloud", "cloud_project"}):
+                    or project.get("project_type") in {"cloud", "cloud_project"}
+                    or project.get("root_kind") == "cloud"):
                 raise SourceFailure("disabled", "Registry currently disables this source route.")
             self._check_registry()
             registered = Path(project["root_path"]).expanduser()

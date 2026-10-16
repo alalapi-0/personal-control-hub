@@ -2,7 +2,8 @@
 
 Run ``python tests/pch_functional_fixture.py --serve``. JSON stdin commands:
 health, handshake (runs real owner handshake in memory), run (optional project_id),
-stop. Only nonsensitive summaries go to stdout; no proof/cookie is exported.
+source (A/B only; no collection), sync (optional only_project_id), timer-start,
+timer-status, timer-stop, stop. Timer operations are explicit fixture-only effects. Only nonsensitive summaries go to stdout; no proof/cookie is exported.
 For browser owner authentication supply --owner-fd N and write a temporary
 synthetic proof through that inherited pipe; the fixture never prints it.
 """
@@ -16,7 +17,10 @@ import json
 import os
 from pathlib import Path
 import secrets
+import select
 import struct
+import subprocess
+from datetime import datetime, timezone
 import sys
 import threading
 import time
@@ -29,6 +33,8 @@ from connection_fixtures import Fixture
 from hub.codex_adapter import DISCOVERY_SCHEMA_PINS
 from hub.connection_sources import SourceResolver
 from hub.connection_refresh import RefreshLedger, refresh
+from hub.connection_sync import sync_request
+from hub.systemd_refresh import render_units
 from hub.connection_records import validate_result
 from hub.metric_management import REVIEW_AXES, DIMENSIONS, validate_management_config
 from hub.design_cli import _artifact, _baseline, _candidate
@@ -120,6 +126,13 @@ class FunctionalFixture:
         self.cookie = self.csrf = None
         self.server = self.thread = None
         self.closed = False
+        self.timer_units = {}
+        self.timer_created = {}
+        self.timer_prefix = None
+        self.timer_since = None
+        self.timer_loaded = False
+        self.command_run = subprocess.run
+        self.batch_child = None
         try:
             self._assemble()
         except BaseException:
@@ -326,7 +339,163 @@ class FunctionalFixture:
             self.workers.append(thread); thread.start(); return thread
         return worker.run_one()
 
+    def update_source(self, project_id, *, completed, objective):
+        if project_id not in self.roots:
+            raise ValueError('Only synthetic task projects A/B may change')
+        if type(completed) is not int or completed < 0 or type(objective) is not str or not objective.strip():
+            raise ValueError('Invalid synthetic source values')
+        path = self.roots[project_id] / 'STATE.yaml'
+        old = path.read_bytes()
+        data = yaml.safe_load(old)
+        data['progress']['completed'] = completed
+        data['current_work']['objective'] = objective
+        updated_at = datetime.now(timezone.utc).isoformat()
+        data['updated_at'] = updated_at
+        raw = yaml.safe_dump(data, sort_keys=False).encode()
+        temporary = path.with_name('.STATE-fixture-' + secrets.token_hex(8))
+        try:
+            with temporary.open('xb') as stream:
+                stream.write(raw); stream.flush(); os.fsync(stream.fileno())
+            os.replace(temporary, path)
+        finally:
+            if temporary.exists(): temporary.unlink()
+        return {'project_id': project_id, 'old_sha256': hashlib.sha256(old).hexdigest(),
+                'new_sha256': hashlib.sha256(raw).hexdigest(), 'updated_at': updated_at,
+                'source': {'completed': data['progress']['completed'], 'objective': data['current_work']['objective']},
+                'collected': False}
+
+    def sync(self, only_project_id=None):
+        if only_project_id is not None and only_project_id not in self.roots:
+            raise ValueError('Only synthetic task projects A/B may be selected')
+        resolver = self.projects._resolver()
+        ledger = RefreshLedger(self.root, result_validator=validate_result)
+        result, code = sync_request(self.root, resolver, ledger, 'fixture-control-' + secrets.token_hex(8),
+                                   project_ids=[only_project_id] if only_project_id else None)
+        return {'exit_code': code, 'result': result}
+
+    def _control(self, argv, *, check=True):
+        result = self.command_run(argv, capture_output=True, text=True, timeout=15, check=False)
+        if check and result.returncode:
+            raise RuntimeError('Fixture unit command failed: ' + argv[0] + ' exit=' + str(result.returncode))
+        return result
+
+    def hold_batch(self):
+        if self.batch_child is not None: raise RuntimeError('Fixture batch already held')
+        program = ('import fcntl,os,sys; '
+                   'fd=os.open(sys.argv[1],os.O_CREAT|os.O_RDWR|os.O_NOFOLLOW,0o600); '
+                   'fcntl.flock(fd,fcntl.LOCK_EX); print("held",flush=True); '
+                   'sys.stdin.read(); os.close(fd)')
+        self.batch_child = subprocess.Popen([sys.executable, '-c', program,
+            str(self.refresh_ledger.path.with_name('.sync.lock'))],
+            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        ready, _, _ = select.select([self.batch_child.stdout], [], [], 3)
+        if not ready or self.batch_child.stdout.readline().strip() != 'held':
+            self.release_batch(); raise RuntimeError('Fixture batch handshake failed')
+        raw = Path('/proc', str(self.batch_child.pid), 'stat').read_text()
+        return {'batch_held': True, 'pid': self.batch_child.pid,
+                'start_ticks': int(raw.rsplit(') ', 1)[1].split()[19])}
+
+    def release_batch(self):
+        if self.batch_child is not None:
+            self.batch_child.stdin.close()
+            self.batch_child.wait(timeout=3)
+            self.batch_child.stdout.close(); self.batch_child.stderr.close()
+            if self.batch_child.returncode != 0: raise RuntimeError('Fixture batch child failed')
+            self.batch_child = None
+        return {'batch_released': True}
+
+    def timer_start(self, *, unit_dir=None):
+        if self.timer_prefix is not None: raise RuntimeError('Fixture timer already configured')
+        # No default production identity and no credential/environment copying.
+        prefix = 'pch-fixture-' + secrets.token_hex(12)
+        directory = Path(unit_dir) if unit_dir is not None else Path(os.environ.get('XDG_CONFIG_HOME', str(Path.home() / '.config'))) / 'systemd/user'
+        if not directory.is_absolute() or any(path.is_symlink() for path in (directory, *directory.parents)):
+            raise ValueError('Unsafe fixture unit directory')
+        directory.mkdir(parents=True, exist_ok=True)
+        if directory.stat().st_uid != os.getuid(): raise ValueError('Foreign fixture unit directory')
+        units = render_units(self.root, Path(__file__).resolve().parents[1], Path(sys.executable),
+                             incremental=True, unit_prefix=prefix)
+        if any((directory / name).exists() or (directory / name).is_symlink() for name in units):
+            raise FileExistsError('Fixture unit collision')
+        self.timer_prefix, self.timer_units = prefix, units
+        self.timer_since = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
+        try:
+            for name, content in units.items():
+                path = directory / name
+                with path.open('x', encoding='utf-8') as stream:
+                    os.fchmod(stream.fileno(), 0o600); stream.write(content); stream.flush(); os.fsync(stream.fileno())
+                self.timer_created[name] = path
+            self.timer_loaded = True
+            self._control(['systemctl', '--user', 'daemon-reload'])
+            # Start the timer only. The service is invoked exclusively by systemd.
+            self._control(['systemctl', '--user', 'start', prefix + '.timer'])
+        except BaseException:
+            self.timer_stop()
+            raise
+        return {'classification': self.classification, 'unit_prefix': prefix,
+                'timer': prefix + '.timer', 'service': prefix + '.service',
+                'interval_seconds': 60, 'daily': '09:00 Asia/Tokyo', 'started': True}
+
+    def timer_status(self):
+        if self.timer_prefix is None: return {'configured': False, 'invocations': []}
+        prefix = self.timer_prefix
+        properties = 'Id,ActiveState,SubState,InvocationID,MainPID,ExecMainPID,ExecMainStartTimestamp,ExecMainStartTimestampMonotonic,ExecMainCode,ExecMainStatus,LastTriggerUSec,NextElapseUSecRealtime'
+        show = self._control(['systemctl', '--user', 'show', prefix + '.timer', prefix + '.service', '--property=' + properties], check=False)
+        units = []
+        for block in show.stdout.strip().split('\n\n'):
+            fields = dict(line.split('=', 1) for line in block.splitlines() if '=' in line)
+            if fields.get('Id') in self.timer_units: units.append(fields)
+        journal = self._control(['journalctl', '--user', '--unit=' + prefix + '.service', '--since=' + self.timer_since,
+                                 '--output=json', '--no-pager', '-n', '3000'], check=False)
+        groups = {}
+        journal_reason = None
+        if journal.returncode:
+            journal_reason = 'JOURNAL_UNAVAILABLE_EXIT_' + str(journal.returncode)
+        elif len(journal.stdout) > 1024 * 1024:
+            journal_reason = 'JOURNAL_OUTPUT_LIMIT'
+        else:
+            for line in journal.stdout.splitlines():
+                try: row = json.loads(line)
+                except (ValueError, TypeError): continue
+                if row.get('_SYSTEMD_USER_UNIT') != prefix + '.service': continue
+                invocation = row.get('_SYSTEMD_INVOCATION_ID')
+                if not invocation: continue
+                group = groups.setdefault(invocation, {'invocation_id': invocation, 'pid': row.get('_PID'),
+                    'first_journal_realtime_us': row.get('__REALTIME_TIMESTAMP'), 'first_journal_monotonic_us': row.get('__MONOTONIC_TIMESTAMP'),
+                    'start_ticks': None, 'messages': []})
+                if row.get('_TRANSPORT') == 'stdout' and type(row.get('MESSAGE')) is str:
+                    group['messages'].append(row['MESSAGE'])
+        invocations = []
+        for group in groups.values():
+            try: payload = json.loads('\n'.join(group.pop('messages')))
+            except (ValueError, TypeError): payload = {}
+            for key in ('request_id', 'mode', 'scheduled_at', 'status', 'appended_count', 'unchanged_count', 'head', 'failure_code_counts'):
+                if key in payload: group[key] = payload[key]
+            group['result_readable'] = bool(payload)
+            invocations.append(group)
+        if not invocations and journal_reason is None: journal_reason = 'NO_READABLE_INVOCATIONS'
+        return {'configured': True, 'unit_prefix': prefix, 'systemctl_exit': show.returncode,
+                'units': units, 'journal_exit': journal.returncode, 'journal_reason': journal_reason,
+                'invocations': invocations, 'ledger_head': self.projects.ledger_head()}
+
+    def timer_stop(self):
+        if self.timer_prefix is None: return {'stopped': True, 'configured': False}
+        prefix = self.timer_prefix
+        # Preserve the temp data root if service shutdown or file ownership fails.
+        if self.timer_loaded:
+            self._control(['systemctl', '--user', 'stop', prefix + '.timer', prefix + '.service'])
+        for name, path in list(self.timer_created.items()):
+            if path.is_symlink() or path.read_text() != self.timer_units[name]:
+                raise RuntimeError('Fixture unit changed; preserved for reconciliation')
+            path.unlink()
+            del self.timer_created[name]
+        self._control(['systemctl', '--user', 'daemon-reload'])
+        self.timer_prefix, self.timer_units, self.timer_loaded = None, {}, False
+        return {'stopped': True, 'unit_prefix': prefix, 'removed_owned_units': True}
+
     def close(self):
+        self.timer_stop()
+        self.release_batch()
         self.release.set()
         for thread in self.workers: thread.join(3)
         if any(thread.is_alive() for thread in self.workers): raise RuntimeError('fixture worker remains active')
@@ -363,6 +532,13 @@ def main():
             if action == 'handshake': result = fixture.handshake()
             elif action == 'run': result = {'ran': fixture.run_worker(command.get('project_id', 'fixture-project-a'))}
             elif action == 'health': result = {'status': fixture.call(path='/api/health')[0]}
+            elif action == 'source': result = fixture.update_source(command.get('project_id'), completed=command.get('completed'), objective=command.get('objective'))
+            elif action == 'sync': result = fixture.sync(command.get('only_project_id'))
+            elif action == 'hold-batch': result = fixture.hold_batch()
+            elif action == 'release-batch': result = fixture.release_batch()
+            elif action == 'timer-start': result = fixture.timer_start()
+            elif action == 'timer-status': result = fixture.timer_status()
+            elif action == 'timer-stop': result = fixture.timer_stop()
             elif action == 'runtime':
                 for key in ('worker_runtime', 'provider'):
                     if key in command:
