@@ -210,6 +210,12 @@ class TaskStore:
             target = Path(str(self.path) + suffix)
             try: info = target.lstat()
             except FileNotFoundError: continue
+            # SQLite can unlink a sidecar after pathname lookup but before
+            # getattr, exposing its detached (zero-link) inode. Reobserve that
+            # narrow race once; the ledger and every unsafe file still fail.
+            if suffix and stat.S_ISREG(info.st_mode) and info.st_nlink == 0 and info.st_size <= MAX_DATABASE_BYTES:
+                try: info = target.lstat()
+                except FileNotFoundError: continue
             if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > MAX_DATABASE_BYTES:
                 raise ServiceError('TASK_LOCATION_REJECTED', status=503)
         return self.path.exists()
