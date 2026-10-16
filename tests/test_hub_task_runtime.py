@@ -344,6 +344,21 @@ class TaskRuntimeTests(unittest.TestCase):
 
 
 class ProtocolBoundaryTests(unittest.TestCase):
+    def test_native_sandbox_setup_failure_exposes_categories_without_private_body(self):
+        adapter=AppServerAdapter('/fixture',schemas={'ThreadStartParams':{}})
+        message=('Error creating thread: failed to load AGENTS.md instructions for /synthetic/private: '
+                 'fs sandbox helper failed with status exit status: 1:\n'
+                 "bwrap: Can't mkdir parents for /synthetic/owned/README.md: Read-only file system")
+        adapter._send=mock.Mock()
+        adapter._message=lambda timeout:{'id':1,'error':{'code':-32603,'message':message}}
+        with self.assertRaises(ServiceError)as caught:adapter.call('thread/start',{})
+        self.assertEqual(caught.exception.code,'CODEX_RPC_REJECTED')
+        details=caught.exception.details
+        self.assertEqual(details['error_categories'],['filesystem_sandbox_setup','read_only_filesystem'])
+        self.assertEqual(details['message_sha256'],hashlib.sha256(message.encode()).hexdigest())
+        self.assertFalse(details['raw_message_retained']);self.assertNotIn('/synthetic',repr(details))
+        self.assertEqual(adapter.pending_ids,set())
+
     def test_profiles_are_consistent_and_missing_echo_never_dispatches(self):
         adapter=AppServerAdapter('/fixture',schemas={})
         adapter.call=mock.Mock(return_value={'thread':{'id':'owned','cwd':'/fixture'},
@@ -355,9 +370,30 @@ class ProtocolBoundaryTests(unittest.TestCase):
             adapter.call.reset_mock();adapter.call.return_value={'thread':{'id':'owned','cwd':'/fixture'},'activePermissionProfile':echo}
             with self.assertRaises(ServiceError):adapter.thread()
             self.assertIsNone(adapter.active_profile)
+            self.assertEqual(adapter.thread_binding,{'thread_id':'owned','cwd':'/fixture','operation':'thread/start'})
             with self.assertRaises(ServiceError):adapter.start('owned','synthetic')
             with self.assertRaises(ServiceError):adapter.check(['/usr/bin/true'])
             self.assertEqual(adapter.call.call_count,1)
+
+    def test_rejected_thread_binding_clears_previous_receipt(self):
+        adapter=AppServerAdapter('/fixture',schemas={})
+        good={'thread':{'id':'owned','cwd':'/fixture'},
+              'activePermissionProfile':{'id':codex_module.PERMISSION_PROFILE}}
+        for thread in ({'id':'foreign','cwd':'/other'}, {'id':'','cwd':'/fixture'},
+                       {'id':'x'*257,'cwd':'/fixture'}, {'id':None,'cwd':'/fixture'}):
+            with self.subTest(thread=thread):
+                adapter.call=mock.Mock(return_value=good)
+                self.assertEqual(adapter.thread(),'owned')
+                adapter.call.return_value={**good,'thread':thread}
+                with self.assertRaises(ServiceError):adapter.thread()
+                self.assertIsNone(adapter.thread_binding)
+                self.assertIsNone(adapter.active_profile)
+        def wrong_resume(method,params):
+            return ({'thread':{'id':'owned','cwd':'/fixture','status':{'type':'idle'}}}
+                    if method=='thread/read'else{**good,'thread':{'id':'other','cwd':'/fixture'}})
+        adapter.call=wrong_resume
+        with self.assertRaises(ServiceError):adapter.thread(previous='owned')
+        self.assertIsNone(adapter.thread_binding)
 
     def test_profile_resume_turn_command_and_config_drift_have_no_legacy_fallback(self):
         adapter=AppServerAdapter('/fixture',schemas={});calls=[]

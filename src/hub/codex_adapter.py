@@ -48,7 +48,7 @@ DISABLED_FEATURES=('apps','plugins','remote_plugin','browser_use','browser_use_e
     'browser_use_full_cdp_access','computer_use','in_app_browser','hooks',
     'image_generation','multi_agent','multi_agent_v2','goals','memories')
 REGISTERED_SERVERS=('chrome-devtools','context7','github','node_repl','openaiDeveloperDocs','playwright')
-REGISTERED_CONFIG_SHA256='eca316513d41a987288204749d1d909295749020565f08cfe576add370acde52'
+REGISTERED_CONFIG_SHA256='628181e108a2d019cbbafe7d3cbc9f8038270a326986aaca4a26a2919f0c27f9'
 PERMISSION_PROFILE='hub_lwb_fixture_v1'
 EVIDENCE_PERMISSION_PROFILE='hub_lwb_evidence_v11'
 APPROVAL_RESPONSE='CommandExecutionRequestApprovalResponse'
@@ -174,6 +174,7 @@ class AppServerAdapter:
         self.capability_evidence = None
         self.capability_thread = None
         self.active_profile = None
+        self.thread_binding = None
         self.request_handler = None
         self.owned_completion = None
         self.remote_control_status = None
@@ -404,6 +405,8 @@ class AppServerAdapter:
                         ('thread_unavailable',r'not found|no rollout|no saved|not persisted|not materialized|not loaded|unavailable|does not exist|has no|not initialized|unknown thread|unknown conversation'),
                         ('unsupported_store_operation',r'^[a-z_]+ is not supported yet$'),
                         ('method_unsupported',r'method not found|unknown method|unsupported method'),
+                        ('filesystem_sandbox_setup',r'fs sandbox helper failed[\s\S]*bwrap:'),
+                        ('read_only_filesystem',r'read-only file system'),
                         ('invalid_parameters',r'invalid param|invalid request|deserialize|missing field|expected|unknown variant'))
                         if re.search(pattern,lowered)]
                     raise ServiceError('CODEX_RPC_REJECTED',status=503,details={
@@ -425,7 +428,7 @@ class AppServerAdapter:
         return value
 
     def thread(self, *, previous=None):
-        self.active_profile=None;self.capability_thread=None
+        self.active_profile=None;self.capability_thread=None;self.thread_binding=None
         if previous:
             read=self.call('thread/read',{'threadId':previous,'includeTurns':False})['thread']
             # notLoaded is never an idle fact. Only a separately retained owned
@@ -438,8 +441,13 @@ class AppServerAdapter:
         else:
             result=self.call('thread/start',{'cwd':str(self.root),'permissions':self.permission_profile,'approvalPolicy':'on-request'})
         thread=result['thread']
-        if previous and thread['id']!=previous or Path(thread['cwd'])!=self.root:
+        if (type(thread.get('id'))is not str or not 1<=len(thread['id'])<=256
+                or previous and thread['id']!=previous or Path(thread['cwd'])!=self.root):
             raise ServiceError('CODEX_THREAD_BINDING_REJECTED',status=409)
+        # Keep only the verified owned identity, even if the following profile
+        # check refuses to send a turn. Never retain the native response body.
+        self.thread_binding={'thread_id':thread['id'],'cwd':str(self.root),
+                             'operation':'thread/resume'if previous else'thread/start'}
         self._profile_echo(result)
         return thread['id']
 

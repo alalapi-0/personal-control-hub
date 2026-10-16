@@ -354,6 +354,18 @@ class TaskWorker:
             if self.store.task(ident)['cancel']:raise ServiceError('TASK_CANCEL_AFTER_EFFECT')
             self.store.update(ident,self.owner,status='checks_complete'if all(c['exit']==0 for c in checks)else'failed',result=result)
         except (ServiceError,OSError,ValueError,TypeError,KeyError)as error:
+            pre_turn_binding=None
+            if ordinary and thread_id is None and adapter is not None:
+                binding=getattr(adapter,'thread_binding',None)
+                previous=task['thread_id']or task['intent']['previous_thread']
+                if (type(binding)is dict and set(binding)=={'thread_id','cwd','operation'}
+                        and type(binding['thread_id'])is str and 1<=len(binding['thread_id'])<=256
+                        and binding['cwd']==str(Path(task['intent']['grant']['root']))
+                        and binding['operation']==('thread/resume'if previous else'thread/start')
+                        and (not previous or binding['thread_id']==previous)):
+                    thread_id=binding['thread_id']
+                    pre_turn_binding={'thread_id':thread_id,'operation':binding['operation'],
+                                      'binding_verified':True,'turn_started':False}
             if thread_id is None and 'css_trial'in task['intent']['grant']:
                 thread_id=self.store.task(ident)['thread_id']
             code=error.code if isinstance(error,ServiceError)else'TASK_WORKER_ERROR'
@@ -362,7 +374,8 @@ class TaskWorker:
             if adapter is not None and thread_id and turn_id and not interrupted:
                 try:adapter.interrupt(thread_id,turn_id)
                 except ServiceError:pass
-            try:self.store.update(ident,self.owner,status=state,result={'error_class':code,'details':error.details if isinstance(error,ServiceError)else{},'effects_rolled_back':False,'request_denials':adapter.denials if adapter is not None else [],
+            try:self.store.update(ident,self.owner,**({'thread_id':thread_id}if pre_turn_binding else{}),status=state,result={'error_class':code,'details':error.details if isinstance(error,ServiceError)else{},'effects_rolled_back':False,'request_denials':adapter.denials if adapter is not None else [],
+                **({'pre_turn_binding':pre_turn_binding}if pre_turn_binding else{}),
                 'stream_observation':{**stream,'sha256_chain':stream_hash.hexdigest()}})
             except ServiceError:pass  # Lost fence/unknown commit is read/reconcile only.
         finally:

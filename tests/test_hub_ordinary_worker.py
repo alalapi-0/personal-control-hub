@@ -113,6 +113,57 @@ class OrdinaryWorkerTests(unittest.TestCase):
         self.assertEqual(self.source.read_bytes(), before)
         self.assertEqual(task['result']['stream_observation']['count'], 2)
 
+    def test_native_profile_rejection_retains_owned_thread_without_turn_or_retry(self):
+        adapter=AppServerAdapter(self.root,read_only=True,readable_paths=['README.md'],schemas={})
+        adapter.open=lambda:adapter;adapter.close=lambda:None
+        adapter.call=mock.Mock(return_value={'thread':{'id':'owned-native-thread','cwd':str(self.root)},
+                                            'activePermissionProfile':None})
+        adapter.start=mock.Mock(side_effect=AssertionError('profile rejection must not send turn'))
+        self.store.admit(self.spec,self.intent)
+        TaskWorker(self.store,adapter_factory=lambda root:adapter,writer_check=lambda _:True).run_one()
+        task=self.store.task('ordinary-task')
+        self.assertEqual(task['status'],'requires_reconcile')
+        self.assertEqual(task['thread_id'],'owned-native-thread');self.assertIsNone(task['turn_id'])
+        self.assertEqual(task['result']['error_class'],'CODEX_PROFILE_REJECTED')
+        self.assertEqual(task['result']['pre_turn_binding'],{'thread_id':'owned-native-thread',
+            'operation':'thread/start','binding_verified':True,'turn_started':False})
+        adapter.start.assert_not_called();self.assertEqual(adapter.call.call_count,1)
+        self.assertIsNone(self.store.claim('another-worker'))
+
+    def test_native_wrong_root_rejection_does_not_adopt_stale_identity(self):
+        adapter=AppServerAdapter(self.root,read_only=True,readable_paths=['README.md'],schemas={})
+        adapter.open=lambda:adapter;adapter.close=lambda:None
+        adapter.thread_binding={'thread_id':'stale-owned','cwd':str(self.root),'operation':'thread/start'}
+        adapter.call=mock.Mock(return_value={'thread':{'id':'foreign','cwd':str(self.root/'other')},
+                                            'activePermissionProfile':None})
+        adapter.start=mock.Mock(side_effect=AssertionError('foreign binding must not dispatch'))
+        self.store.admit(self.spec,self.intent)
+        TaskWorker(self.store,adapter_factory=lambda root:adapter,writer_check=lambda _:True).run_one()
+        task=self.store.task('ordinary-task')
+        self.assertEqual(task['status'],'failed');self.assertIsNone(task['thread_id']);self.assertIsNone(task['turn_id'])
+        self.assertEqual(task['result']['error_class'],'CODEX_THREAD_BINDING_REJECTED')
+        self.assertNotIn('pre_turn_binding',task['result']);adapter.start.assert_not_called()
+
+    def test_native_exact_read_scope_rejection_keeps_thread_and_never_starts_turn(self):
+        adapter=AppServerAdapter(self.root,read_only=True,readable_paths=['README.md'],schemas={})
+        adapter.open=lambda:adapter;adapter.close=lambda:None
+        calls=[]
+        def rpc(method,params):
+            calls.append(method)
+            if method=='thread/start':return {'thread':{'id':'bound-before-scope-check','cwd':str(self.root)},
+                'activePermissionProfile':{'id':EVIDENCE_PERMISSION_PROFILE}}
+            if method=='config/read':return {'config':{'default_permissions':EVIDENCE_PERMISSION_PROFILE,
+                'permissions':{EVIDENCE_PERMISSION_PROFILE:{'filesystem':{str(self.root):'read'},'network':{'enabled':False}}}}}
+            raise AssertionError('no turn may follow unverified scope')
+        adapter.call=rpc
+        self.store.admit(self.spec,self.intent)
+        TaskWorker(self.store,adapter_factory=lambda root:adapter,writer_check=lambda _:True).run_one()
+        task=self.store.task('ordinary-task')
+        self.assertEqual(task['status'],'requires_reconcile');self.assertEqual(task['thread_id'],'bound-before-scope-check')
+        self.assertIsNone(task['turn_id']);self.assertEqual(task['result']['error_class'],'CODEX_EXACT_READ_SCOPE_UNVERIFIED')
+        self.assertFalse(task['result']['pre_turn_binding']['turn_started'])
+        self.assertEqual(calls,['thread/start','config/read']);self.assertIsNone(adapter.active_profile)
+
     def test_long_multibyte_and_json_escaped_response_is_bounded_and_explicit(self):
         for text in ('文' * 40000, 'answer\n' * 12000):
             with self.subTest(shape='multibyte' if text[0] == '文' else 'escaped'):
