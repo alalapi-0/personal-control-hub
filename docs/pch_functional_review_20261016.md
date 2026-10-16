@@ -4,7 +4,7 @@
 
 ## 候选与入口
 
-工程代码基于已交付的 `047e0e678b5e08d9492457ca2f74ff3ede06963e`，含自身来源 2 MiB 兼容修复、Owner 凭据准备及 Root 显式选择任务内执行文件的内部入口；更早的基线及其证据保留。执行文件入口核对内容与身份，版本、schema 和运行时探测使用同一文件，默认服务启动路径与权限表保持不变。本次补充原生通道失败、配套程序修复及恢复限制，未改变产品代码。最终远端提交及当前本地演示 URL 以唯一 State 的 delivery / review_entry 为准。
+工程代码基于已交付的 `047e0e678b5e08d9492457ca2f74ff3ede06963e`，含自身来源 2 MiB 兼容修复、Owner 凭据准备及 Root 显式选择任务内执行文件的内部入口；更早的基线及其证据保留。执行文件入口核对内容与身份，版本、schema 和运行时探测使用同一文件，默认服务启动路径与权限表保持不变。本次补充真实读取、追问、重开、取消测试失败和恢复限制，未改变产品代码。最终远端提交及当前本地演示 URL 以唯一 State 的 delivery / review_entry 为准。
 
 独立演示为真实 HTTP/静态资源配合合成来源的只读访客实例，已验证资源哈希、停止和重启；未配置可登录的 owner，没有模型、worker 或 timer。正式 `8766` 服务保持旧版本。演示数据不能证明正式业务或真实 provider 通过。
 
@@ -22,7 +22,8 @@
 
 - 后续正式存储只读核验：刷新库 schema 2.0、任务库 schema 2、注册 profile 2、设计库 1.0、工作台 1、管理配置 1.3；任务注册、库内 profile、数据库和物理目录身份一致。六个精确文件读取前后内容与身份稳定，无 SQLite 侧文件；未查询任务或消息正文。这只证明已检查的结构与身份，不代表完整记录、事务、正式重启或可写迁移验收。
 - 正式每日刷新最近一次已提交 39 条结果，其中 Hub 自身一条 invalid 导致退出 2，timer 仍等待下一日历触发。失败记录只保存通用错误；对当前旧代码的独立只读复现捕获了自身 State 超过 1 MiB 读取预算。不能把当前复现当成已恢复调度，也不能由通用历史错误反推当时所有细节。
-- 后续真实 provider 页面测试确实发送并完成了 1 个合成只读任务，收到实际回复；读取工具在启动配套 `codex-code-mode-host` 前因文件不存在失败，marker 验证未通过。首次零效果的页面刷新失败也保留。配套程序已从同一冻结源码和锁文件构建，V8 产物按上游固定摘要验证；精确程序的 EOF、stdio 握手、JS 固定代理调用、输出和关闭检查通过，新增模型调用及原生线程均为 0。完整页面复试尚未执行，不能把这些局部检查当成 live 验收。
+- 后续真实 provider 页面测试确实发送并完成了 1 个合成只读任务，收到实际回复；读取工具在启动配套 `codex-code-mode-host` 前因文件不存在失败，marker 验证未通过。首次零效果的页面刷新失败也保留。配套程序已从同一冻结源码和锁文件构建，V8 产物按上游固定摘要验证；精确程序的 EOF、stdio 握手、JS 固定代理调用、输出和关闭检查通过，新增模型调用及原生线程均为 0。这些无模型局部检查与下述实际页面结果分别记录。
+- 所有者明确增加 1 个会话、1 个回合后，完整包实际页面补测已执行：A/B 分别读取正确 marker、线程隔离、A 同线程追问及重开结果页通过。取消 A 的 HTTP 请求返回 200 并持久化标记，但测试脚本立即要求终态，错误地触发收尾，B 先被收尾中断；“取消 A、B 继续完成”失败。现有无模型并行取消测试通过，证实应等待 worker 的异步取消结果。后续只读原生查询确认 A/B 忙碌回合均 interrupted、线程 notLoaded；A 在 Hub 中仍需对账，未篡改旧记录或重新入队。最终桌面/移动回复截图未执行，已有 A 截图只展示结果页上部，不能证明回复在屏内。业务输入和配置未变，精确 adapter、测试浏览器和显示均终止。
 
 ## F01–F09
 
@@ -51,7 +52,7 @@
 | A-05 | 从A到B再返回列表，用浏览器后退/前进；返回位置/筛选/项目上下文可理解；不反复迷路 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.history、management.confirmedForwardReverse |
 | A-06 | 打开项目/任务深链接、刷新，再访问不存在ID；合法链接可恢复对应对象；不存在有可理解返回路径 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.sections、nav.errors、preview.pinnedTaskReopen、ordinary.drafts |
 | A-07 | 从项目找任务/会话入口，再找对应产物；不依赖源码或外部提示；导航高亮和返回路径与用户任务一致 | BLOCKED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.oneClickTasks、nav.taskNavigationBefore、preview.materialReturn、u:sessions.py |
-| A-08 | 无身份、合法身份、权限不足分别看同一路径；状态与实际能力一致；不会“已连接”即暗示能执行；认证说明可理解 | BLOCKED | BLOCKED | 正式 owner/当前合法 live 通道未就绪；隔离证据不能替代正式或原生链。 证据：functional.guestDisabled、functional.ownerEnabled、ordinary.authenticationReasons、ordinary.runtimeAndRevocation |
+| A-08 | 无身份、合法身份、权限不足分别看同一路径；状态与实际能力一致；不会“已连接”即暗示能执行；认证说明可理解 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：functional.guestDisabled、functional.ownerEnabled、ordinary.authenticationReasons、ordinary.runtimeAndRevocation |
 | B-01 | A/B各自用一句话回答项目用途和主要产出；页面支持回答；无需把技术阶段、路径或任务编号翻译成用途 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.definitions、u:project_definition.py |
 | B-02 | 辨认业务项目/Agent/基座/连接器/工作副本等角色；角色可说明、可多重；技术栈标签不代替本质角色 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：u:project_definition.py、responsive.layoutMatrix、edge.B02B03B05R03Definitions |
 | B-03 | 比较主项目与分支/工作副本；归属可见，不把同一项目副本重复当独立业务；能进入正确实例 | UNVERIFIED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：u:project_definition.py、u:relations.mjs、nav.directoryMatrix、edge.B02B03B05R03Definitions |
@@ -64,7 +65,7 @@
 | B-10 | 检查来源/管理/Agent建议相互矛盾的样本；权威层次和冲突可辨；建议不悄悄成为事实或已接受关系 | UNVERIFIED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：management.proposalAndHistory、u:management_proposals.py、u:relations.mjs、edge.B02B03B05R03Definitions |
 | D-01 | 核对A/B合法来源到Hub采集再到页面的关键字段；同一版本值和语义对应；不以读源成功替代字段正确 | PASS | UNVERIFIED | 正式两源 SHA 与逐字段值相同；8766 仍是旧运行候选。 证据：refresh.manualSource、refresh.cycles、u:project_service.py |
 | D-02 | 观察现有自动采集的一次实际运行；无需Agent代读即可出现可核对的新数据/采集结果；仅手动刷新不算自动 | UNVERIFIED | UNVERIFIED | 隔离真实 timer 三触发通过；当前正式运行版本与自然批次链分开。 证据：refresh.timer、refresh.cycles、refresh.timerCleanup、u:refresh_timer_fixture.py |
-| D-03 | 对A单项目刷新并查看B和全局反馈；请求只作用允许范围；B不被意外启动；反馈区分已接收/完成/失败 | BLOCKED | BLOCKED | 正式 owner/当前合法 live 通道未就绪；隔离证据不能替代正式或原生链。 证据：refresh.manualSource、refresh.editorPreserved、parallel.sourceIsolation |
+| D-03 | 对A单项目刷新并查看B和全局反馈；请求只作用允许范围；B不被意外启动；反馈区分已接收/完成/失败 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：refresh.manualSource、refresh.editorPreserved、parallel.sourceIsolation |
 | D-04 | 来源自然更新后再次查看/按既有机制刷新；新值实际出现；只改变“读取时间”不算更新成功 | UNVERIFIED | UNVERIFIED | 本次未遇到新的自然源 SHA；受控修改不替代自然更新。 证据：refresh.manualSource、refresh.cycles |
 | D-05 | 合法运行配置不具模型执行能力时浏览与采集；边界在副本补测；基础功能可独立工作；无隐式模型/业务进程启动 | UNVERIFIED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：refresh.manualSource、functional.workerDisabled、functional.providerDisabled |
 | D-06 | 来源文件缺失/损坏/不可读；仅受影响项目降级；错误可理解，其他项目仍可浏览 | PASS | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：edge.D06D07SourceFailures、u:source_atomicity.py |
@@ -93,27 +94,27 @@
 | S-07 | 依赖改变但计划尚未调整；影响有依据；不未经操作改别人的安排或捏造实际完成时间 | UNVERIFIED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：management.confirmedForwardReverse、management.relationsOnlyRetraction、u:relations.mjs |
 | S-08 | 两个编辑者基于不同版本保存排期；冲突可恢复，不静默覆盖；测试只在隔离副本模拟 | PASS | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：management.twoEditors、parallel.managementIsolation |
 | T-01 | A/B分别从项目上下文找“下指令”；不必先有截图/图像批注才能表达普通项目任务；没有可用入口记缺口 | BLOCKED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.oneClickTasks、ordinary.drafts、keyboard.keyboardDraft |
-| T-02 | 编写只读指令，核对项目/新建或继续/任务范围；用户看得懂接收对象与效果；后台绑定吻合；无歧义默认目标 | BLOCKED | BLOCKED | 正式 owner/当前合法 live 通道未就绪；隔离证据不能替代正式或原生链。 证据：ordinary.drafts、ordinary.idleContinuation、u:ordinary_api.py |
+| T-02 | 编写只读指令，核对项目/新建或继续/任务范围；用户看得懂接收对象与效果；后台绑定吻合；无歧义默认目标 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：ordinary.drafts、ordinary.idleContinuation、u:ordinary_api.py |
 | T-03 | 存草稿、离开、回到同一任务；内容可恢复且明确未发送；不偷偷创建模型任务 | BLOCKED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：ordinary.unsavedDraft、ordinary.drafts、parallel.activeDraftIsolation |
-| T-04 | 经页面真实发送一次有界只读任务；页面请求走真实通道，正确项目/会话真实接收；非后台替代调用 | BLOCKED | BLOCKED | 正式 owner/当前合法 live 通道未就绪；隔离证据不能替代正式或原生链。 证据：ordinary.unknownReconciled、lifecycle.restartQueueRecovery、parallel.simultaneousRunning |
-| T-05 | 观察发送到回应的各阶段；草稿/接收/排队/执行/完成/失败不混；正在等待有解释 | BLOCKED | BLOCKED | 正式 owner/当前合法 live 通道未就绪；隔离证据不能替代正式或原生链。 证据：lifecycle.restartQueueRecovery、lifecycle.inputAnswerReceiptRecovery、keyboard.quietPolling、edge.T12TerminalBranches、u:task_lifecycle.py |
-| T-06 | 打开真实回复及对应产物；结果与指令、项目、会话对应；导入/历史结果不冒充本次生成 | BLOCKED | BLOCKED | 正式 owner/当前合法 live 通道未就绪；隔离证据不能替代正式或原生链。 证据：preview.pinnedTaskReopen、preview.materialReturn、responsive.longReplies、resilience.longReplyIsolation |
-| T-07 | 对自己任务追问一句并回看历史；继续正确上下文；回应不丢且时间顺序合理 | BLOCKED | BLOCKED | 正式 owner/当前合法 live 通道未就绪；隔离证据不能替代正式或原生链。 证据：ordinary.idleContinuation、parallel.followupIsolation、u:ordinary_worker.py |
-| T-08 | 对自己的忙碌测试任务反馈/新建另一任务；用户理解排队与继续含义；不打断别人的任务，不能向未知writer投递 | BLOCKED | BLOCKED | 正式 owner/当前合法 live 通道未就绪；隔离证据不能替代正式或原生链。 证据：ordinary.busyFeedback、parallel.explicitRetryIsolation、u:ordinary_parallel_claim.py |
+| T-04 | 经页面真实发送一次有界只读任务；页面请求走真实通道，正确项目/会话真实接收；非后台替代调用 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：ordinary.unknownReconciled、lifecycle.restartQueueRecovery、parallel.simultaneousRunning |
+| T-05 | 观察发送到回应的各阶段；草稿/接收/排队/执行/完成/失败不混；正在等待有解释 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：lifecycle.restartQueueRecovery、lifecycle.inputAnswerReceiptRecovery、keyboard.quietPolling、edge.T12TerminalBranches、u:task_lifecycle.py |
+| T-06 | 打开真实回复及对应产物；结果与指令、项目、会话对应；导入/历史结果不冒充本次生成 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：preview.pinnedTaskReopen、preview.materialReturn、responsive.longReplies、resilience.longReplyIsolation |
+| T-07 | 对自己任务追问一句并回看历史；继续正确上下文；回应不丢且时间顺序合理 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：ordinary.idleContinuation、parallel.followupIsolation、u:ordinary_worker.py |
+| T-08 | 对自己的忙碌测试任务反馈/新建另一任务；用户理解排队与继续含义；不打断别人的任务，不能向未知writer投递 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：ordinary.busyFeedback、parallel.explicitRetryIsolation、u:ordinary_parallel_claim.py |
 | T-09 | 双击发送或同request重试；不重复执行同一意图；冲突/重放反馈可理解 | BLOCKED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：ordinary.unknownReconciled、parallel.unknownReceiptReconciliation、u:ordinary_api.py、u:ordinary_drafts.py |
-| T-10 | 刷新页面、返回列表再开任务；仍能找到指令、进度、回复；不重发、不把掉线当任务失败 | BLOCKED | BLOCKED | 正式 owner/当前合法 live 通道未就绪；隔离证据不能替代正式或原生链。 证据：ordinary.drafts、lifecycle.restartQueueRecovery、preview.pinnedTaskReopen |
+| T-10 | 刷新页面、返回列表再开任务；仍能找到指令、进度、回复；不重发、不把掉线当任务失败 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：ordinary.drafts、lifecycle.restartQueueRecovery、preview.pinnedTaskReopen |
 | T-11 | 请求送达后网络断开/回执丢失；结果未知有核对路径，先对账再重试；不生成重复任务 | BLOCKED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：ordinary.unknownReconciled、parallel.unknownReceiptReconciliation、resilience.taskReceiptUnknown |
 | T-12 | 自己测试任务失败、超时、执行者不可用；保留指令和错误摘要，可辨重试条件；失败不包装为完成 | BLOCKED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：ordinary.runtimeAndRevocation、lifecycle.inputTimeout、edge.T12TerminalBranches |
 | T-13 | 取消自己测试任务，与迟到完成竞态；只影响精确任务；取消已请求/已生效/完成明确；B不受影响 | BLOCKED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：lifecycle.exactCancellation、parallel.cancelIsolation、u:task_runtime.py#test_cancel_committed_after_final_read_before_success_publication、u:task_runtime.py#test_late_cancel_and_wrong_provider_identity_never_publish_success |
-| T-14 | 执行门关闭、无合法身份、缺授权；解释真实原因；按钮/状态一致；不改门控、盗用会话或直接SDK补过 | BLOCKED | BLOCKED | 正式 owner/当前合法 live 通道未就绪；隔离证据不能替代正式或原生链。 证据：ordinary.initialOwnerGate、ordinary.authenticationReasons、ordinary.runtimeAndRevocation、lifecycle.approvalBoundary |
+| T-14 | 执行门关闭、无合法身份、缺授权；解释真实原因；按钮/状态一致；不改门控、盗用会话或直接SDK补过 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：ordinary.initialOwnerGate、ordinary.authenticationReasons、ordinary.runtimeAndRevocation、lifecycle.approvalBoundary |
 | T-15 | A编辑指令期间切B并等待A迟到响应；草稿/目标/回复不串位；发送前目标明确；B不收到A指令 | BLOCKED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：parallel.activeDraftIsolation、parallel.lateResponseIsolation、ordinary.unsavedDraft |
-| T-16 | 核对“执行结束、工程通过、业务合格、用户接受”；四种状态有区别；无需先把故事/角色作品做满意才评Hub分发 | BLOCKED | BLOCKED | 正式 owner/当前合法 live 通道未就绪；隔离证据不能替代正式或原生链。 证据：u:task_lifecycle.py、u:task_review.py、u:connection_view.mjs、u:business_tasks.mjs |
+| T-16 | 核对“执行结束、工程通过、业务合格、用户接受”；四种状态有区别；无需先把故事/角色作品做满意才评Hub分发 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：u:task_lifecycle.py、u:task_review.py、u:connection_view.mjs、u:business_tasks.mjs |
 | N-01 | 观察一个本来就在推进的任务，同时浏览A/B；其他任务无需暂停；记录精确身份和自然进展，测试不发控制指令 | PASS | UNVERIFIED | 未向未知真实任务发消息或控制；本次没有新的自然任务推进链。 证据：Root 版本/资源/限制核对 |
-| N-02 | 自然来源更新与Hub读取交错；来源→采集→显示有版本链；无混合快照；未遇更新不写PASS | UNVERIFIED | BLOCKED | 正式 owner/当前合法 live 通道未就绪；隔离证据不能替代正式或原生链。 证据：refresh.manualSource、refresh.cycles、u:source_atomicity.py |
-| N-03 | 自己的A测试任务与B任务状态同时变化；所选项目、状态和回复隔离；错误不会污染另一项 | BLOCKED | BLOCKED | 正式 owner/当前合法 live 通道未就绪；隔离证据不能替代正式或原生链。 证据：parallel.simultaneousRunning、parallel.independentCompletion |
+| N-02 | 自然来源更新与Hub读取交错；来源→采集→显示有版本链；无混合快照；未遇更新不写PASS | UNVERIFIED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：refresh.manualSource、refresh.cycles、u:source_atomicity.py |
+| N-03 | 自己的A测试任务与B任务状态同时变化；所选项目、状态和回复隔离；错误不会污染另一项 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：parallel.simultaneousRunning、parallel.independentCompletion |
 | N-04 | A/B快速切换且请求乱序；旧页面响应不覆盖当前页面；loading/error属于正确项目 | PASS | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：nav.lateResponse、parallel.lateResponseIsolation |
-| N-05 | 同时自然刷新与手动刷新；忙碌边界在副本；无双写/错误回退，能理解合并、排队或忙碌 | BLOCKED | BLOCKED | 正式 owner/当前合法 live 通道未就绪；隔离证据不能替代正式或原生链。 证据：refresh.busyRecovery、refresh.cycles、u:refresh_concurrency.py |
-| N-06 | 观察来源业务文件与本次Hub效果归属；采集不写业务源；自然业务写入不误算测试破坏；不要求全树不变 | PASS | BLOCKED | 正式 owner/当前合法 live 通道未就绪；隔离证据不能替代正式或原生链。 证据：parallel.sourceIsolation、resilience.overlap、u:sources.py、u:source_atomicity.py |
+| N-05 | 同时自然刷新与手动刷新；忙碌边界在副本；无双写/错误回退，能理解合并、排队或忙碌 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：refresh.busyRecovery、refresh.cycles、u:refresh_concurrency.py |
+| N-06 | 观察来源业务文件与本次Hub效果归属；采集不写业务源；自然业务写入不误算测试破坏；不要求全树不变 | PASS | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：parallel.sourceIsolation、resilience.overlap、u:sources.py、u:source_atomicity.py |
 | N-07 | 测试结束只清理自己创建的任务/临时记录；不回滚别人的新进展，不取消未知任务，不删除原始材料 | PASS | PASS | 113 份已登记 fixture PID 全部不存在；浏览器/私有显示已终止，测试单元与子 Agent 已收齐。仅保留明确交付的只读演示 HTTP 服务。 证据：helper.fixtureExit、helper.browserClose、refresh.timerCleanup |
 | N-08 | 别的任务在同一仓库修改无关文件；继续独立只读测试；重叠写入只阻塞对应组，不stash/reset/改分支 | UNVERIFIED | UNVERIFIED | 本任务的协调子写者只操作互不重叠文件；未出现另一独立任务对重叠文件写入的真实事件，不能据此完成原 R 用例。 证据：Root 版本/资源/限制核对 |
 | N-09 | 测试期间正式代码被正常更新；识别新候选并拆分证据；旧结果保留版本，不为冻结停别的任务 | UNVERIFIED | UNVERIFIED | 正式进程与候选不同且原样保留；未发生正式切换，切换时浏览中的行为未验。 证据：Root 版本/资源/限制核对 |
@@ -139,7 +140,7 @@
 | E-05 | 提交校验失败或网络失败后再次编辑；输入保留；错误定位；不重复提交，不静默清空 | PASS | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：management.dateRecovery、management.twoEditors、keyboard.keyboardAnswerRecovery、resilience.offlineDraftRecovery、resilience.admittedSave500 |
 | E-06 | 浏览器离线/重连边界；可读旧数据标历史；在线恢复可核对；不调整工作站网络/VPN | PASS | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：nav.errors、resilience.offlineDraftRecovery |
 | E-07 | 打开reduced-motion观察状态变化；非必要动效减少，状态和功能仍完整 | UNVERIFIED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：responsive.reducedMotion |
-| E-08 | 全程检查console异常和network关键交换；新旧错误分开；请求目标、方法、授权、返回处理匹配实际动作 | UNVERIFIED | BLOCKED | 正式 owner/当前合法 live 通道未就绪；隔离证据不能替代正式或原生链。 证据：nav.errors、parallel.expectedBrowserErrors、parallel.secondaryNetwork、resilience.runtimeDiagnostics、edge.edgeDiagnostics、helper.console、helper.network |
+| E-08 | 全程检查console异常和network关键交换；新旧错误分开；请求目标、方法、授权、返回处理匹配实际动作 | UNVERIFIED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：nav.errors、parallel.expectedBrowserErrors、parallel.secondaryNetwork、resilience.runtimeDiagnostics、edge.edgeDiagnostics、helper.console、helper.network |
 | E-09 | 空项目/无任务/无关系/无排期/服务未启用；各自说明和下一步正确；入口缺失不写NOT_APPLICABLE | UNVERIFIED | UNVERIFIED | 合成真空目录、无任务/关系/排期及禁用服务通过；正式已有状态在当前候选上的页面分支未复核。 证据：resilience.trueEmpty、resilience.emptyVersusUnavailable、ordinary.runtimeAndRevocation |
 | E-10 | 回看测试产生的本地效果和原始证据；不公开DB/消息/凭据/私密路径/敏感截图；不误改/清理其他任务 | PASS | PASS | 只交付审阅过的安全代码/测试/此摘要；原始 State、DB、消息、凭据、路径清单与截图留本地。 证据：u:materials.py、u:preview_policy.py、helper.fixtureExit |
 
@@ -190,7 +191,7 @@
 ## 最少剩余事项
 
 1. 口述项目身份已由所有者明确确认，身份歧义解除；现有正式任务绑定仍未核验。所有者继续审核独立只读候选的项目理解、导航、关系和信息表达。
-2. 任务内沙箱修复已有 165 项库检查、完整 CLI 自带 helper 的 22 项只读拒绝、设备/PTY/proc、版本/schema 和初始化证据；首次真实页面任务仍因运行包缺配套程序失败，修复后的完整包尚待页面复试。原合成登录证明只在内存中，测试收尾后不能合法续接原 A 任务；其业务根、TaskStore、会话和失败证据均保留，不伪造身份或改写旧任务。当前累计为 1 个线程、1 个回合、0 次中断。已准备的新 A/B 旅程需要累计 3 个线程、6 个回合、1 次精确中断，超过原 2 线程及冻结的 5 回合边界，须所有者明确增加 1 个线程和 1 个回合后执行。任务内构建未安装全局 CLI、修改全局配置或扩大目录/写授权；执行文件检查仍有路径检查与执行之间的竞态局限。全部先前失败与限制保留。
+2. 任务内沙箱修复已有 165 项库检查、完整 CLI 自带 helper 的 22 项只读拒绝、设备/PTY/proc、版本/schema 和初始化证据；完整包的实际读取、追问和重开分支通过，取消并行分支仍未通过。原合成登录证明只在内存中，收尾后不能从页面续接旧任务；业务根、TaskStore、会话和全部失败均保留，不伪造身份、改写旧任务或重置计数。当前已消耗所有者批准的累计 3 个线程、6 个回合、1 次中断；仅补缺失的忙碌取消/另一任务完成分支还需 2 个新合成只读会话、2 个回合及 1 次本任务中断，尚未授权或执行。修正方案将取消接收与异步终态分开等待，并核对精确中断对象。任务内构建未安装全局 CLI、修改全局配置或扩大目录/写授权；执行文件检查仍有路径检查与执行之间的竞态局限。
 3. 正式服务尚未配置 owner。当前候选新增显式 OS 凭据投影模式、只读配置准备命令和人工 TTY 密文录入入口；默认环境模式兼容，OS 模式失败不回退，不自动启用执行。准备结果保留 `ready_to_install: false`，含候选代码与既有数据根；真实 OS 提供者资格验证、可能需要的主机密钥初始化、隐藏录入和正式切换尚未执行，须在具体方案审核后分别处理。操作与边界见日常文档，这与原生沙箱故障分别处理。
 4. 当前代码候选沿既有 Hub 自身适配器使用固定 2 MiB 上限，已只读解析约 1.19 MB 的真实 canonical State，读取前后哈希一致；普通来源及声明继续默认 1 MiB。原 1 MiB 失败保留为历史，正式 `8766` 仍运行旧版，尚未用此候选采集或切换账本。边界与适用条件见日常操作文档。
 5. 正式服务/账本切换仍需确切写责、完整兼容与恢复依据；本次已核对的结构和身份没有发现版本迁移需求，不能代替正式切换验收，现有 8766 未切换。自然更新、真实手机/读屏及最终所有者接受继续保留未验。
