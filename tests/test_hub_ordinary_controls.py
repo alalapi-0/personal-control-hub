@@ -1,9 +1,7 @@
-"""Local ordinary controls, including generated provider protocol wire validation."""
+"""Local controls and pinned exported protocol validation, portable without CLI."""
 import copy
 import json
 from pathlib import Path
-import subprocess
-import tempfile
 import sys
 import threading
 import time
@@ -12,7 +10,7 @@ from unittest.mock import patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 
-from hub.codex_adapter import AppServerAdapter, INPUT_RESPONSE
+from hub.codex_adapter import AppServerAdapter, INPUT_RESPONSE, VERSION
 from hub.service_contract import ServiceError
 from hub.task_service import TaskService
 from hub.task_worker import TaskWorker
@@ -156,12 +154,10 @@ class WorkerInputTests(unittest.TestCase):
 class InputProtocolTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.temp=tempfile.TemporaryDirectory()
-        result=subprocess.run(['codex','app-server','generate-json-schema','--experimental','--out',cls.temp.name],capture_output=True,timeout=10)
-        if result.returncode:raise RuntimeError('Provider schema export failed')
-        cls.schemas={name:json.loads(next(Path(cls.temp.name).rglob(name+'.json')).read_text())for name in ('ServerRequest',INPUT_RESPONSE)}
-    @classmethod
-    def tearDownClass(cls):cls.temp.cleanup()
+        # Exported by the exact supported CLI; live export is not a CI dependency.
+        fixture=json.loads((Path(__file__).parent/'fixtures/codex_input_protocol_0_159_3.json').read_text())
+        if fixture['version']!=VERSION:raise AssertionError('Pinned protocol fixture needs a version-matched export')
+        cls.schemas=fixture['schemas']
     def adapter(self,handler):
         adapter=AppServerAdapter('/fixture',schemas=self.schemas,read_only=True);adapter.request_handler=handler
         sent=[];adapter._send=sent.append;return adapter,sent
