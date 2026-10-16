@@ -87,6 +87,8 @@ PY
 
 来源读取使用 no-follow 描述符，核对文件身份、类型、链接数、大小、mtime/ctime，以及目录和文件名仍绑定到已打开对象。规范化结束前复读同一允许来源，核对内容版本与 mtime，再核对映射声明；期间变化归为当次失败。旧成功保留为历史，其他项目继续采集。业务文件不加锁；这是有版本证据的读取快照，不是跨文件写事务或持续实时观察。
 
+普通来源和 `hub.connection.yaml` 声明的单文件读取上限为 1 MiB。既有 Hub 自身适配器仅在登记 ID 为 `personal-control-hub`、登记规范根等于当前读取器根、来源路径恰为 `STATE.yaml` 且格式为 `yaml` 时使用固定 2 MiB 上限；仍要求 `metadata.authority: canonical`，并对首次读取和规范化后的复读应用同一上限及身份核对。外部同名项目、其他路径或格式继续使用 1 MiB；超限保留失败及历史成功，不自动提高上限。
+
 ```sh
 python scripts/hub_sync.py --root "$PCH_ROOT" discover
 python scripts/hub_sync.py --root "$PCH_ROOT" sync --request-id UNIQUE_ID

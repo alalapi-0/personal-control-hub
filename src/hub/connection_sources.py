@@ -16,6 +16,7 @@ from hub.connection_records import (FIELDS, VERSION, RecordError, content_hash,
 from hub.connections import parse_owned_hub_state, parse_source, select_value, validate_registry_value
 
 MAX_SOURCE_BYTES = 1024 * 1024
+MAX_OWNED_HUB_STATE_BYTES = 2 * 1024 * 1024
 DECLARATION_PATH = "hub.connection.yaml"
 
 
@@ -41,7 +42,7 @@ def _safe_relative_read(root: Path, relative: str, *, authority_check: Callable[
                         max_bytes: int = MAX_SOURCE_BYTES) -> tuple[bytes, dict]:
     """No-follow read with stable file metadata and descriptor-to-path bindings."""
     relative_path(relative)
-    require(type(max_bytes) is int and 0 < max_bytes <= MAX_SOURCE_BYTES, "invalid read budget")
+    require(type(max_bytes) is int and 0 < max_bytes <= MAX_OWNED_HUB_STATE_BYTES, "invalid read budget")
     authority_check()
     descriptor = os.open(root.anchor, os.O_RDONLY | os.O_DIRECTORY)
     opened = [descriptor]
@@ -199,10 +200,14 @@ class SourceResolver:
             require(source["path"] in allowed, "source is not a registered current-state route")
             result["freshness"]["root_binding"] = content_hash({"root": binding, "routes": [(str(a), str(b)) for a, b in route_bindings]})
             stage = "source"
-            data, metadata = _safe_relative_read(root, source["path"], authority_check=check)
+            owned_hub_state = (project_id == "personal-control-hub"
+                               and root == self.root.resolve(strict=True)
+                               and source["path"] == "STATE.yaml" and source["format"] == "yaml")
+            source_budget = MAX_OWNED_HUB_STATE_BYTES if owned_hub_state else MAX_SOURCE_BYTES
+            data, metadata = _safe_relative_read(root, source["path"], authority_check=check,
+                                                 max_bytes=source_budget)
             result["sources"] = [{**source, **metadata}]
-            if (project_id == 'personal-control-hub' and root == self.root.resolve(strict=True)
-                    and source['path'] == 'STATE.yaml' and source['format'] == 'yaml'):
+            if owned_hub_state:
                 parsed = parse_owned_hub_state(data)
             else:
                 parsed = parse_source(data, source["format"])
@@ -240,7 +245,8 @@ class SourceResolver:
                     "format": source["format"], "data": parsed}})
             # Keep normalization bound to a stable source version, then verify
             # that the declaration used for its mapping still agrees.
-            _, source_metadata = _safe_relative_read(root, source["path"], authority_check=check)
+            _, source_metadata = _safe_relative_read(root, source["path"], authority_check=check,
+                                                     max_bytes=source_budget)
             require(source_metadata == metadata, "source changed during normalization")
             recheck, _ = _safe_relative_read(root, DECLARATION_PATH, authority_check=check)
             require(hashlib.sha256(recheck).hexdigest() == result["declaration"]["sha256"], "declaration changed during read")
