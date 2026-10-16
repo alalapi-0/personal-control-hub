@@ -51,6 +51,28 @@ export function renderOrdinaryTaskResult(task){
   if(id(task.id)&&id(spec.project_id)&&spec.project_id===task.project)panel.append(el('a',{
     href:'#projects/'+encodeURIComponent(task.project)+'/tasks?parent_task_id='+encodeURIComponent(task.id)},'继续此普通任务'));
   if(['waiting_input','waiting_approval'].includes(task.status))panel.append(el('p',{className:'warning'},'请在下方处理这个任务的待答复请求；任务和原指令会继续保留。'));
+  const nativeLabels={completed:'执行已完成',inProgress:'正在执行',failed:'执行失败',interrupted:'执行已中断'};
+  panel.append(el('h3',{},'原生执行结果'),el('p',{'aria-label':'普通任务原生执行结果'},
+    Object.hasOwn(nativeLabels,task.provider_status)?nativeLabels[task.provider_status]:'尚未确认原生执行结果，请核对原请求。'));
+  const checks=Array.isArray(task.result?.checks)?task.result.checks:[];
+  const meanings={
+    ordinary_declared_inputs_unchanged:['声明输入未变化','核对本次声明输入清单中的内容在执行前后是否一致；不涵盖未声明文件，也不判断答复正确性。'],
+    ordinary_response_present:['回复非空','核对保留的回复是否含有非空白内容；不判断答复是否完整、正确或符合业务要求。']
+  };
+  const checksPanel=el('section',{className:'stack','aria-label':'普通任务工程检查'},el('h3',{},'实际工程检查'));
+  if(!checks.length)checksPanel.append(el('p',{},'尚无已记录的工程检查，不能视为检查通过。'));
+  for(const check of checks){
+    const meaning=Object.hasOwn(meanings,check?.id)?meanings[check.id]:null;
+    const outcome=check?.exit===0?'通过':Number.isInteger(check?.exit)?'未通过':'结果待核对';
+    checksPanel.append(el('section',{className:'stack'},el('h4',{},(meaning?.[0]||'其他工程检查')+' · '+outcome),
+      el('p',{},meaning?.[1]||'本页未提供这项检查的含义说明，请展开技术详情核对；不能据此判断业务或答复质量。'),
+      el('details',{},el('summary',{},'检查技术详情'),el('pre',{},JSON.stringify(check,null,2)))));
+  }
+  panel.append(checksPanel,el('h3',{},'业务与答复质量'),
+    el('p',{'aria-label':'普通任务质量结论'},'本页没有独立记录的业务正确性或答复质量结论。工程检查通过不能证明答复正确或符合业务要求；请结合任务目标审阅回复。'));
+  const acceptanceLabels={pending:'待决定',accepted:'已接受此次结果',changes_requested:'需要修改',deferred:'暂缓验收'};
+  panel.append(el('h3',{},'用户验收'),el('p',{'aria-label':'普通任务用户验收'},
+    '用户验收：'+(Object.hasOwn(acceptanceLabels,task.human_acceptance)?acceptanceLabels[task.human_acceptance]:'验收状态待核对')+'。'));
   return panel;
 }
 

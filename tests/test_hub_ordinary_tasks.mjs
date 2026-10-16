@@ -189,6 +189,71 @@ test('ordinary result preserves bounded full response and instruction identity w
   assert.equal(validOrdinarySpec({...original,extra:'not allowed'}),false);assert.equal(renderOrdinaryTaskResult({...task,kind:'story_exchange'}),null);
 }));
 
+test('ordinary result separates completed native execution, limited checks, quality and pending acceptance',()=>setup(async()=>{
+  const task={...taskFor(spec()),status:'checks_complete',provider_status:'completed',human_acceptance:'pending',
+    result:{response:'A recorded reply',checks:[{id:'ordinary_declared_inputs_unchanged',exit:0},
+      {id:'ordinary_response_present',exit:0}]}};
+  const node=renderOrdinaryTaskResult(task),checks=field(node,'普通任务工程检查');
+  assert.equal(field(node,'普通任务原生执行结果').textContent,'执行已完成');
+  assert.deepEqual(walk(checks).filter(n=>n.tag==='h4').map(n=>n.textContent),['声明输入未变化 · 通过','回复非空 · 通过']);
+  assert.match(checks.textContent,/声明输入清单.*执行前后是否一致.*不涵盖未声明文件/);
+  assert.match(checks.textContent,/非空白内容.*不判断答复是否完整、正确或符合业务要求/);
+  assert.match(field(node,'普通任务质量结论').textContent,/没有独立记录.*工程检查通过不能证明答复正确/);
+  assert.equal(field(node,'普通任务用户验收').textContent,'用户验收：待决定。');
+  const details=walk(checks).filter(n=>n.tag==='details');assert.equal(details.length,2);
+  assert.equal(details[0].children[0].textContent,'检查技术详情');
+  assert.deepEqual(JSON.parse(details[0].children[1].textContent),task.result.checks[0]);
+}));
+
+test('ordinary result never infers native completion from check success or task lifecycle',()=>setup(async()=>{
+  const base={...taskFor(spec()),result:{checks:[{id:'ordinary_response_present',exit:0}]}};
+  for(const [status,provider,expected]of [['queued',null,'尚未确认'],['running','inProgress','正在执行'],
+    ['checks_complete','future_status','尚未确认'],['checks_complete','__proto__','尚未确认'],
+    ['failed','failed','执行失败'],['cancelled','interrupted','执行已中断'],['lost',undefined,'尚未确认']]){
+    const node=renderOrdinaryTaskResult({...base,status,provider_status:provider});
+    assert.match(field(node,'普通任务原生执行结果').textContent,new RegExp(expected));
+    assert.notEqual(field(node,'普通任务原生执行结果').textContent,'执行已完成');
+  }
+  for(const result of [undefined,{}, {checks:[]},{checks:null}]){
+    const node=renderOrdinaryTaskResult({...base,result});
+    assert.match(field(node,'普通任务工程检查').textContent,/尚无已记录.*不能视为检查通过/);
+  }
+}));
+
+test('failed and unknown ordinary checks preserve all technical evidence without inventing success',()=>setup(async()=>{
+  const checks=[{id:'ordinary_response_present',exit:1,stdout:'<b>out</b>',stderr:'err',stdout_truncated:true},
+    {id:'legacy_custom_check',exit:null,stderr:'legacy detail',response_truncated:true},
+    {id:'ordinary_declared_inputs_unchanged',exit:'0'},null];
+  const node=renderOrdinaryTaskResult({...taskFor(spec()),status:'failed',provider_status:'completed',result:{checks}});
+  const panel=field(node,'普通任务工程检查');
+  assert.deepEqual(walk(panel).filter(n=>n.tag==='h4').map(n=>n.textContent),
+    ['回复非空 · 未通过','其他工程检查 · 结果待核对','声明输入未变化 · 结果待核对','其他工程检查 · 结果待核对']);
+  assert.match(panel.textContent,/未提供这项检查的含义说明/);
+  assert.deepEqual(walk(panel).filter(n=>n.tag==='details').map(n=>JSON.parse(n.children[1].textContent)),checks);
+  assert.equal(walk(panel).filter(n=>n.tag==='b').length,0);
+  assert.equal(field(node,'普通任务原生执行结果').textContent,'执行已完成','native completion is separate from failed engineering checks');
+}));
+
+test('ordinary acceptance reports actual decisions without creating a quality verdict or effects',()=>setup(async({storage})=>{
+  const labels={pending:'待决定',accepted:'已接受此次结果',changes_requested:'需要修改',deferred:'暂缓验收'};
+  const previousFetch=globalThis.fetch;globalThis.fetch=()=>{throw new Error('result rendering must not request or mutate');};
+  try{
+    for(const [human_acceptance,label]of [...Object.entries(labels),[undefined,'验收状态待核对'],['future','验收状态待核对'],['__proto__','验收状态待核对']]){
+      const task={...taskFor(spec()),provider_status:'completed',human_acceptance,result:{response:'Reply',checks:[]}};
+      const before=structuredClone(task);Object.freeze(task.task_spec);Object.freeze(task.result.checks);Object.freeze(task.result);Object.freeze(task);
+      const node=renderOrdinaryTaskResult(task);
+      assert.equal(field(node,'普通任务用户验收').textContent,'用户验收：'+label+'。');
+      assert.match(field(node,'普通任务质量结论').textContent,/本页没有独立记录/);
+      assert.doesNotMatch(node.textContent,/从未.*审阅|质量已通过|质量评分/);
+      assert.deepEqual(task,before);assert.equal(walk(node).filter(n=>n.tag==='button').length,0);
+      assert.equal(walk(node).some(n=>Object.keys(n.events).length),false);
+      assert.equal(renderOrdinaryTaskResult({...task,kind:'story_exchange'}),null);
+      assert.equal(renderOrdinaryTaskResult({...task,kind:'css_trial'}),null);
+    }
+    assert.equal(storage.size,0);
+  }finally{globalThis.fetch=previousFetch;}
+}));
+
 test('unsaved and incomplete text survives route changes and refresh without crossing project or owner scope',()=>setup(async({storage,identity})=>{
   const state=service();let node=await state.render();field(node,'任务目标').value='Unsaved A objective';await field(node,'任务目标').fire('input');
   assert.equal(state.calls.filter(call=>call.body).length,0,'browser backup does not start a backend operation');

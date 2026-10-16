@@ -244,14 +244,16 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true,expecte
   }
   if(task.result?.transport&&task.result.transport!=='app_server_stdio')root.append(el('p',{className:'warning'},'模拟执行结果 · 验收仅针对这份测试记录。'));
   if(task.result){
-    for(const check of task.result.checks||[])root.append(el('section',{className:'panel stack'},el('h3',{},check.id+' · 退出码 '+check.exit),el('pre',{},check.stdout||check.stderr||'无输出')));
+    if(task.kind!=='ordinary_project')for(const check of task.result.checks||[])root.append(el('section',{className:'panel stack'},el('h3',{},check.id+' · 退出码 '+check.exit),el('pre',{},check.stdout||check.stderr||'无输出')));
     if(task.result.diff)root.append(el('section',{className:'panel'},el('h3',{},'实际差异'),el('pre',{},task.result.diff)));
     if(task.result.error_class)root.append(el('p',{className:'warning'},'失败类别：'+task.result.error_class));
     root.append(el('details',{},el('summary',{},'执行证据'),el('pre',{},JSON.stringify(task.result,null,2))));
   }
   if(task.status==='checks_complete'&&task.result_version){
     const reviewPanel=el('section',{className:'panel stack'},el('h3',{},'审阅此次结果'),
-      el('p',{},'请核对本次差异与实际检查。接受结果会保存验收记录；Git 交付另行核对。'));
+      el('p',{},task.kind==='ordinary_project'
+        ?'请阅读回复，按原指令核对内容与业务要求。工程检查的通过不代表答复质量已核验。接受结果会保存用户验收记录；Git 交付另行核对。'
+        :'请核对本次差异与实际检查。接受结果会保存验收记录；Git 交付另行核对。'));
     const reviewMessage=el('p',{role:'status','aria-live':'polite'});
     const reviewButtons=[];
     for(const [decision,label]of [['accept','接受此次结果'],['request_changes','需要修改'],['defer','暂缓验收']]){
