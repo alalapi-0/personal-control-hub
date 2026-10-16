@@ -114,9 +114,14 @@ def main(argv=None):
                         default='environment', help='Explicit Owner proof provider; OS mode has no environment fallback')
     parser.add_argument("--readonly-preview", choices=["computer-study-plan"],
                         help="Start the explicitly granted read-only development fixture")
-    parser.add_argument('--ordinary-readonly-grant', action='append', default=[],
+    ordinary = parser.add_mutually_exclusive_group()
+    ordinary.add_argument('--ordinary-readonly-grant', action='append', default=[],
                         help='Explicit existing synthetic ordinary grant ID; starts its owned read-only executor')
+    ordinary.add_argument('--ordinary-real-readonly-grant', action='append', default=[],
+                        help='Explicit existing real ordinary grant ID; starts its owned serial read-only executor')
     args = parser.parse_args(argv)
+    if args.ordinary_real_readonly_grant and args.readonly_preview:
+        parser.error('Real ordinary execution cannot start a preview runtime')
     server = None
     observer = None
     preview = None
@@ -125,18 +130,23 @@ def main(argv=None):
                     if args.owner_auth == 'systemd-credential' else None)
         server, observer, preview = assemble_server(args.root, host=args.host, port=args.port,
                                                     services=services)
-        if args.ordinary_readonly_grant:
+        grant_ids = args.ordinary_real_readonly_grant or args.ordinary_readonly_grant
+        if grant_ids:
             from hub.ordinary_runtime import OrdinaryRuntime
             from hub.ordinary_tasks import check_registration, validate_grant
-            grants = [server.tasks.store.grant(ident) for ident in args.ordinary_readonly_grant]
+            classification = 'real' if args.ordinary_real_readonly_grant else 'synthetic_fixture'
+            if len(set(grant_ids)) != len(grant_ids):
+                raise ServiceError('ORDINARY_RUNTIME_SCOPE_REJECTED')
+            grants = [server.tasks.store.grant(ident) for ident in grant_ids]
             for grant in grants:
-                if (type(grant) is not dict or grant.get('classification') != 'synthetic_fixture'
+                if (type(grant) is not dict or grant.get('classification') != classification
                         or grant.get('kind') != 'ordinary_project' or grant.get('effect') != 'read_only'):
                     raise ServiceError('ORDINARY_RUNTIME_SCOPE_REJECTED')
                 check_registration(grant, server.tasks.store.root)
                 validate_grant(grant, live=True)
             runtime = OrdinaryRuntime(server.tasks.store, grants=grants,
-                                      provider_status=ordinary_provider_status())
+                                      provider_status=ordinary_provider_status(),
+                                      grant_classification=classification)
             attach_ordinary_runtime(server, runtime)
             runtime.start()
         if args.readonly_preview:

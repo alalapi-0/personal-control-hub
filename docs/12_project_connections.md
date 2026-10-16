@@ -296,6 +296,16 @@ python3 scripts/hub_owner_credential.py prepare --code-root "$PCH_CODE_ROOT" --r
 
 当前交付只证明代码、合成提供者和合成 HTTP/浏览器行为。真实 OS 加解密资格验证、可能需要的主机密钥初始化、真实 Owner 录入以及正式服务切换分别保留未验；Agent 未执行这些操作。配置命令不会安装 unit、重启 Hub 或开启任务执行。
 
+## 显式普通只读执行器
+
+默认 Web 启动和 Owner 登录均不启用任务执行。普通文本任务可显式选择已有的服务端授权：测试授权继续使用 `--ordinary-readonly-grant ID`；真实只读授权使用 `--ordinary-real-readonly-grant ID`。两个选项互斥，真实模式不能同时启动 readonly preview。入口不创建授权、初始化存储或接管其他 owner 已 claim 的任务；必须先核对既有任务库/profile、登记资格、准确输入清单与哈希、授权版本/有效期，以及该授权下已准入的队列与运行状态。
+
+真实模式只接受明确列出的 `classification=real`、`effect=read_only` 注册授权；无效、混合类别、过期、来源登记或输入变化在 provider 就绪查询前拒绝。启动后仍逐次核对授权、物理存储、输入和原生绑定，不允许浏览器提交任意 grant。worker capability 报告真实模式；真实任务保持原 TaskStore 的全局串行规则，测试模式的两槽例外不扩展到真实项目。
+
+准备正式方案时，Web 与采集器必须固定同一份已验证代码及静态资源，并单独核对解释器、数据根和单元前像。仅升级 Web/collector 不会自动选择真实授权。显式执行器启动会处理该精确授权下已经合法准入的 queued 任务，因此须先核对这些任务的归属与效果授权；未知原生状态或 `requires_reconcile` 不自动重派。停止仅取消本 runtime 已 claim 的精确任务，保留未启动队列和其他 owner；再次启动使用新 runtime，并重新验证全部前提。
+
+此入口补齐产品装配能力，不构成真实业务执行授权。实际输入注册、模型回合、Owner 本机录入及正式服务切换仍分别需要对应授权；隔离数据和受控 adapter 的验证不能替代真实业务/provider 或本人验收。
+
 ## 仓库检查与本机可用性
 
 ```sh

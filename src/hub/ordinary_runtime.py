@@ -1,4 +1,4 @@
-"""Explicitly started executor for exact, server-owned synthetic read grants.
+"""Explicitly started executor for exact, server-owned read-only grants.
 
 The existing TaskStore remains the only queue and claim authority. Observing this
 object never opens a provider, registers storage, or adds execution authority.
@@ -18,11 +18,14 @@ from .task_worker import TaskWorker
 
 class OrdinaryRuntime:
     def __init__(self, store, *, grants, provider_status, adapter_factory=AppServerAdapter,
-                 poll_interval=.1, request_timeout=30):
+                 poll_interval=.1, request_timeout=30, grant_classification='synthetic_fixture'):
         if (type(grants) is not list or not grants or any(type(g) is not dict for g in grants)
                 or type(provider_status) is not dict
                 or type(provider_status.get('available')) is not bool
                 or provider_status.get('classification') not in {'synthetic_fixture', 'real', 'unknown'}
+                or type(grant_classification) is not str
+                or grant_classification not in {'synthetic_fixture', 'real'}
+                or (grant_classification == 'real' and provider_status.get('classification') != 'real')
                 or type(poll_interval) not in (int, float) or not 0 < poll_interval <= 10
                 or type(request_timeout) is not int or not 1 <= request_timeout <= 30):
             raise ServiceError('ORDINARY_RUNTIME_CONFIG_REJECTED')
@@ -30,8 +33,12 @@ class OrdinaryRuntime:
         self._grants = copy.deepcopy(grants)
         if (len({g.get('grant_id') for g in grants}) != len(grants)
                 or any(g.get('kind') != KIND or g.get('effect') != 'read_only'
-                       or g.get('classification') != 'synthetic_fixture' for g in grants)):
+                       or g.get('classification') != grant_classification for g in grants)):
             raise ServiceError('ORDINARY_RUNTIME_SCOPE_REJECTED', status=403)
+        self._classification = grant_classification
+        # Real tasks keep the existing global serial claim boundary. The
+        # synthetic two-slot exception is never used to enable real parallelism.
+        self._capacity = 1 if grant_classification == 'real' else 2
         self._provider = copy.deepcopy(provider_status)
         self._adapter_factory = adapter_factory
         self._poll_interval = poll_interval
@@ -72,7 +79,7 @@ class OrdinaryRuntime:
         with self._lock:
             ready = self._state == 'running' and self._thread is not None and self._thread.is_alive()
             reason = None if ready else self._error or 'TASK_WORKER_UNCONFIGURED'
-            return {'worker_runtime': self._capability(ready, 'synthetic_fixture', reason, self._state),
+            return {'worker_runtime': self._capability(ready, self._classification, reason, self._state),
                     'provider': self._capability(self._provider['available'], self._provider['classification'],
                                                 None if self._provider['available'] else 'TASK_PROVIDER_UNAVAILABLE')}
 
@@ -146,7 +153,7 @@ class OrdinaryRuntime:
                 launched = False
                 for task in sorted(self.store.tasks(), key=lambda row: row['sequence']):
                     with self._lock:
-                        if self._stop.is_set() or len(self._handles) >= 2:
+                        if self._stop.is_set() or len(self._handles) >= self._capacity:
                             break
                         if task['id'] in self._handles or task['id'] in rejected:
                             continue
