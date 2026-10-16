@@ -181,7 +181,7 @@ function syncOverview(){
     pendingRefresh?el('p',{className:'warning'},pendingRefresh.project_ids.every(id=>syncStatus.eligible_project_ids.includes(id))?'已保存原刷新请求，可按原请求重试；不会扩大范围。':'已保存的原刷新请求包含当前无资格项目，重试已停用。原请求完整保留，请先核对资格。'):null,
     Object.keys(syncStatus.core_field_gaps).length?el('p',{className:'caption'},'当前字段缺口：'+coreGapSummary(syncStatus)):null,
     Object.keys(syncStatus.failure_codes).length?diagnostic(syncStatus.failure_codes,'查看批次失败原因'):null,
-    c.excluded?el('details',{},el('summary',{},'查看排除项及原因'),el('ul',{},...syncStatus.excluded.map(row=>el('li',{},`${projectNames.get(row.project_id)||row.project_id}：${({missing_registration:'缺少当前登记',removed_local:'已从本地移除',removed_local_no_probe:'已从本地移除，禁止探测',disabled:'接入已停用',summary_disabled:'汇总已停用',connection_read_disabled:'当前来源读取未获允许',legacy_noncurrent_root:'历史入口，不属于当前范围'})[row.reason]||row.reason}`)))):null,
+    c.excluded?el('details',{},el('summary',{},'查看排除项及原因'),el('ul',{},...syncStatus.excluded.map(row=>el('li',{},`${projectNames.get(row.project_id)||row.project_id}：${({missing_registration:'缺少当前登记',removed_local:'已从本地移除',removed_local_no_probe:'已从本地移除，禁止探测',disabled:'接入已停用',summary_disabled:'汇总已停用',connection_read_disabled:'当前来源读取未获允许',cloud:'云项目，不读取本地来源',outside_frozen_scope:'不属于当前固定范围',legacy_noncurrent_root:'历史入口，不属于当前范围'})[row.reason]||row.reason}`)))):null,
     el('details',{},el('summary',{},'自动刷新与请求恢复'),
       el('p',{className:'caption'},scheduleSummary(syncStatus.schedule)),
       el('p',{},'最近成功读取（不代表业务验收）：'+requestSummary(syncStatus.recovery?.last_success)),

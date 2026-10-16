@@ -36,6 +36,126 @@ class FunctionalFixtureTests(unittest.TestCase):
             self.assertEqual(f.task_store.tasks(), [])
             self.assertEqual(f.effects, [])
 
+    def test_edge_cli_controls_keep_original_project_scope_and_bounded_grant(self):
+        commands = [{'action': 'source-fault', 'project_id': 'fixture-project-a', 'kind': 'invalid'},
+            {'action': 'source-restore', 'project_id': 'fixture-project-a'}, {'action': 'excluded-sample'},
+            {'action': 'ordinary-sample', 'max_turn_seconds': 10},
+            {'action': 'ordinary-scenario', 'project_id': 'fixture-project-a', 'scenario': 'failed_turn'},
+            {'action': 'stop'}]
+        result = subprocess.run([sys.executable, str(Path(__file__).with_name('pch_functional_fixture.py')),
+            '--serve', '--directory-size', '6'], input=''.join(json.dumps(command) + '\n' for command in commands),
+            capture_output=True, text=True, timeout=10)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        rows = [json.loads(line) for line in result.stdout.splitlines()]
+        self.assertEqual(rows[1]['source_fault'], 'invalid')
+        self.assertTrue(rows[2]['source_restored'])
+        self.assertTrue(rows[3]['excluded_ready'])
+        self.assertEqual(rows[3]['excluded_probe_count'], 0)
+        self.assertEqual(rows[4]['max_turn_seconds'], 10)
+        self.assertEqual(rows[5], {'ordinary_scenario': 'failed_turn'})
+        self.assertEqual(rows[6], {'stopped': True})
+
+    def test_source_faults_real_collection_last_success_restore_and_b_isolation(self):
+        for kind, disposition in [('missing', 'missing_source'), ('invalid', 'invalid'), ('permission', 'permission_denied')]:
+            with self.subTest(kind=kind), FunctionalFixture() as f:
+                f.handshake()
+                a, b = 'fixture-project-a', 'fixture-project-b'
+                path = f.roots[a] / 'STATE.yaml'
+                original, mode = path.read_bytes(), path.stat().st_mode & 0o777
+                before_a = f.call(path='/api/projects/' + a)[2]['data']
+                before_b = f.call(path='/api/projects/' + b)[2]['data']
+                metadata = f.source_fault(a, kind)
+                self.assertEqual(metadata, {'project_id': a, 'source_fault': kind, 'collected': False})
+                with self.assertRaises(ValueError):f.source_fault(a, 'missing')
+                synced = f.sync(a)
+                self.assertNotEqual(synced['exit_code'], 0)
+                failed = f.call(path='/api/projects/' + a)[2]['data']
+                self.assertEqual(failed['source']['availability'], disposition)
+                self.assertFalse(failed['source']['latest_observation']['success'])
+                self.assertEqual(failed['source']['last_success_at'], before_a['source']['last_success_at'])
+                self.assertEqual(f.call(path='/api/projects/' + b)[2]['data']['source'], before_b['source'])
+                self.assertEqual(f.source_restore(a), {'source_restored': True, 'project_id': a, 'collected': False})
+                self.assertEqual(path.read_bytes(), original)
+                self.assertEqual(path.stat().st_mode & 0o777, mode)
+                self.assertEqual(f.sync(a)['exit_code'], 0)
+                restored = f.call(path='/api/projects/' + a)[2]['data']
+                self.assertTrue(restored['source']['latest_observation']['success'])
+                self.assertEqual(restored['source']['availability'], 'resolved')
+                with self.assertRaises(ValueError):f.source_restore(a)
+                for foreign in ('fixture-directory-002', 'foreign'):
+                    with self.assertRaises(ValueError):f.source_fault(foreign, kind)
+                    with self.assertRaises(ValueError):f.source_restore(foreign)
+                self.assertEqual(f.effects, [])
+
+    def test_source_fault_restore_refuses_replacement_and_symlink(self):
+        with FunctionalFixture() as f:
+            project = 'fixture-project-a'
+            path = f.roots[project] / 'STATE.yaml'
+            original = path.read_bytes()
+            f.source_fault(project, 'missing')
+            path.write_text('Concurrent fixture edit must remain')
+            with self.assertRaises(ValueError):f.source_restore(project)
+            self.assertEqual(path.read_text(), 'Concurrent fixture edit must remain')
+            path.unlink()
+            f.source_restore(project)
+            retained = path.with_name('retained-state.yaml')
+            path.rename(retained)
+            path.symlink_to(retained)
+            with self.assertRaises(ValueError):f.source_fault(project, 'invalid')
+            self.assertEqual(retained.read_bytes(), original)
+
+    def test_excluded_sample_uses_real_registry_flags_frozen_scope_and_no_collection_probes(self):
+        with FunctionalFixture(directory_size=6) as f:
+            f.handshake()
+            scope = f.root / 'data/connections/sync_scope.yaml'
+            before = scope.read_bytes()
+            metadata = f.excluded_sample()
+            self.assertTrue(metadata['excluded_ready'])
+            self.assertEqual(metadata['scope_total'], 6)
+            self.assertEqual(len(metadata['excluded']), 4)
+            self.assertEqual(metadata['eligible_project_ids'], ['fixture-project-a', 'fixture-project-b'])
+            self.assertEqual([row['reason'] for row in metadata['excluded']],
+                ['removed_local', 'cloud', 'connection_read_disabled', 'connection_read_disabled'])
+            self.assertEqual(metadata['excluded_probe_count'], 0)
+            self.assertEqual(metadata['sync']['exit_code'], 0)
+            marker = len(f.probes)
+            self.assertEqual(f.sync()['exit_code'], 0)
+            excluded_roots = {f.directory_roots[row['project_id']] for row in metadata['excluded']}
+            self.assertFalse(any(kind == 'source-refresh' and root in excluded_roots for kind, root in f.probes[marker:]))
+            status, _, body = f.call(path='/api/sync-status')
+            self.assertEqual(status, 200)
+            self.assertEqual(scope.read_bytes(), before)
+            self.assertEqual(len(f.source.projects), 6)
+            with self.assertRaises(ValueError):f.excluded_sample()
+        with FunctionalFixture() as f:
+            with self.assertRaises(ValueError):f.excluded_sample()
+
+    def test_ordinary_failed_turn_is_provider_failure_and_duration_only_changes_before_admission(self):
+        with FunctionalFixture() as f:
+            for invalid in (True, 10.0, 9, 11, 121, '10'):
+                with self.subTest(invalid=invalid), self.assertRaises(ValueError):f.ordinary_sample(invalid)
+            metadata = f.ordinary_sample(max_turn_seconds=10)
+            self.assertEqual(metadata['max_turn_seconds'], 10)
+            self.assertTrue(all(grant['max_turn_seconds'] == 10 for grant in f.ordinary_grants.values()))
+            f.handshake()
+            project = 'fixture-project-a'
+            f.scenarios[project] = 'failed_turn'
+            payload = {'kind': 'ordinary_project', 'request_id': 'failed-provider-turn', 'project_id': project,
+                'objective': 'Synthetic native-terminal failure', 'scope': 'Registered readonly inputs',
+                'effect': 'read_only', 'input_version': f.ordinary_grants[project]['input_version'],
+                'mode': 'new', 'parent_task_id': None}
+            self.assertEqual(f.call('POST', '/api/tasks', payload)[0], 200)
+            with self.assertRaises(ValueError):f.ordinary_sample(120)
+            self.assertTrue(f.run_worker(project, task_id=payload['request_id']))
+            task = f.call(path='/api/tasks/' + payload['request_id'])[2]['data']['task']
+            self.assertEqual(task['status'], 'failed')
+            self.assertEqual(task['provider_status'], 'failed')
+            self.assertEqual(task['result']['provider_status'], 'failed')
+            self.assertNotIn('checks', task['result'])
+            self.assertEqual(f.effects, [])
+        with FunctionalFixture() as f:
+            self.assertEqual(f.ordinary_sample()['max_turn_seconds'], 120)
+
     def test_empty_directory_is_real_authenticated_http_and_retains_ledger_sources_scope(self):
         with FunctionalFixture() as f:
             f.handshake()
@@ -155,6 +275,30 @@ class FunctionalFixtureTests(unittest.TestCase):
                 self.assertNotEqual(project['management']['relation_view']['state'], 'owner_confirmed')
             self.assertEqual(f.effects, [])
             self.assertEqual(f.task_store.tasks(), [])
+
+    def test_active_blocked_stress_is_explicit_and_preserves_local_failure_semantics(self):
+        with FunctionalFixture() as f:
+            for invalid in (1, "true", None):
+                with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                    f.stress_sample(invalid)
+            self.assertIsNone(f.stress_metadata)
+            metadata = f.stress_sample(True)
+            self.assertTrue(metadata['active_blocked'])
+            self.assertEqual(f.stress_sample(True), metadata)
+            with self.assertRaises(ValueError):
+                f.stress_sample(False)
+            f.handshake()
+            a = f.call(path='/api/projects/fixture-project-a')[2]['data']
+            b = f.call(path='/api/projects/fixture-project-b')[2]['data']
+            self.assertEqual(a['business']['normalized_status'], 'active')
+            self.assertFalse(a['business']['fields']['current_work']['completed'])
+            self.assertEqual(a['business']['fields']['blockers'][0]['reason'], 'Candidate has changed')
+            self.assertEqual(a['business']['fields']['blockers'][0]['recovery_condition'], 'Review B')
+            self.assertEqual(b['business']['normalized_status'], 'unknown')
+            self.assertIsNone(b['business']['fields']['blockers'])
+            self.assertEqual(len(a['business']['unknown_fields']), metadata['projects'][0]['unknown_business_fields'])
+            self.assertEqual(f.task_store.tasks(), [])
+            self.assertEqual(f.effects, [])
 
     def test_stress_readonly_responses_follow_http_worker_and_exact_project_lineage(self):
         with FunctionalFixture() as f:

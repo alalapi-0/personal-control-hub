@@ -19,6 +19,7 @@ from pathlib import Path
 import secrets
 import select
 import struct
+import stat
 import subprocess
 from datetime import datetime, timezone
 import sys
@@ -33,7 +34,7 @@ from connection_fixtures import Fixture
 from hub.codex_adapter import DISCOVERY_SCHEMA_PINS
 from hub.connection_sources import SourceResolver
 from hub.connection_refresh import RefreshLedger, refresh
-from hub.connection_sync import sync_request
+from hub.connection_sync import scope_plan, sync_request
 from hub.systemd_refresh import render_units
 from hub.connection_records import FIELDS, validate_result
 from hub.metric_management import REVIEW_AXES, DIMENSIONS, validate_management_config
@@ -110,6 +111,8 @@ class ControlledAdapter:
                 'type': 'agentMessage', 'text': self.fixture.stress_replies.get(self.ident,
                     'Synthetic read-only response for ' + self.ident + '.') if self.ordinary else
                     'Synthetic read-only response for ' + self.ident + '.'}))
+        if self.ordinary and self.scenario == 'failed_turn':
+            self.events[-1]['params']['turn']['status'] = 'failed'
         if self.scenario == 'out_of_order': self.events.reverse()
         return turn
     def poll(self, timeout):
@@ -160,6 +163,8 @@ class FunctionalFixture:
         self.owner = owner or secrets.token_urlsafe(40)
         self.probes, self.effects, self.interrupts = [], [], []
         self.scenarios, self.workers = {}, []
+        self.source_faults = {}
+        self.excluded_ids = set()
         self.ordinary_turns = {}
         self.ordinary_lock = threading.RLock()
         self.ordinary_adapters = []
@@ -225,6 +230,8 @@ class FunctionalFixture:
         fixture = self
         class IsolatedResolver(SourceResolver):
             def refresh(self, project_id):
+                if project_id in fixture.excluded_ids:
+                    raise AssertionError('excluded source refresh must not probe its root')
                 if project_id not in fixture.directory_roots:
                     raise AssertionError('foreign source refresh')
                 assert Path(self.projects[project_id]['root_path']) == fixture.directory_roots[project_id]
@@ -471,12 +478,16 @@ class FunctionalFixture:
             'sync': {'exit_code': synced['exit_code'], 'status': result['status'], 'appended_count': 0},
             'ledger_head': current_head, 'ledger_unchanged': True, 'scope_project_ids': scope['project_ids']}
 
-    def stress_sample(self):
+    def stress_sample(self, active_blocked=False):
+        if type(active_blocked) is not bool:
+            raise ValueError('active_blocked must be an explicit boolean')
         """Opt-in synthetic data; collect sources before registering ordinary grants."""
         if (getattr(self, 'ordinary_grants', None) is not None or self.ordinary_runtime is not None
                 or self.task_store.tasks() or self.workers or self.ordinary_adapters):
             raise ValueError('Stress sample must precede all task admission and ordinary grants')
         if self.stress_metadata is not None:
+            if self.stress_metadata.get('active_blocked', False) != active_blocked:
+                raise ValueError('Stress sample variant is already frozen')
             return copy.deepcopy(self.stress_metadata)
         a, b = 'fixture-project-a', 'fixture-project-b'
         known = lambda value: {'value': value, 'state': 'known', 'reason': None}
@@ -490,6 +501,7 @@ class FunctionalFixture:
                     row.update(name=name, description=None)
             state_path = self.roots[project] / 'STATE.yaml'
             state = yaml.safe_load(state_path.read_text())
+            local_blockers = copy.deepcopy(state['blockers'])
             for field in FIELDS:
                 parts = field.split('.')
                 target = state
@@ -497,6 +509,9 @@ class FunctionalFixture:
                     target = target[part]
                 target[parts[-1]] = None
             state['current_work']['objective'] = 'Synthetic stress objective ' + suffix + ': ' + '只读范围与未知事实分别保留。' * 12
+            if active_blocked and project == a:
+                state['current_work'].update(status='active', completed=False)
+                state['blockers'] = local_blockers
             state['definition'] = {
                 'official_name': known(name),
                 'purpose': unknown('Synthetic source intentionally does not publish its long-term purpose.'),
@@ -527,7 +542,7 @@ class FunctionalFixture:
             projects.append({'project_id': project, 'name': name, 'reply_marker': marker,
                 'reply_unbroken_marker': unbroken, 'reply_bytes': reply_bytes,
                 'reply_sha256': hashlib.sha256(reply.encode()).hexdigest(),
-                'unknown_business_fields': len(FIELDS) - 1})
+                'unknown_business_fields': len(FIELDS) - (4 if active_blocked and project == a else 1)})
         self.source.save_registry()
         proposals = [{'id': 'synthetic-stress-' + kind, 'project_ids': [a, b], 'kind': kind,
             'status': 'proposed', 'shared_tasks': ['Synthetic bounded review; no shared execution authority.'],
@@ -546,12 +561,16 @@ class FunctionalFixture:
         if synced['exit_code'] != 0:
             raise RuntimeError('Synthetic stress sources could not be collected')
         self.stress_metadata = {'stress_ready': True, 'classification': self.classification,
-            'projects': projects, 'proposal_ids': [proposal['id'] for proposal in proposals]}
+            'projects': projects, 'proposal_ids': [proposal['id'] for proposal in proposals], 'active_blocked': active_blocked}
         return copy.deepcopy(self.stress_metadata)
 
-    def ordinary_sample(self):
+    def ordinary_sample(self, max_turn_seconds=120):
         """Explicit O4 trusted grants; no ordinary authority in default fixtures."""
         from hub.ordinary_tasks import make_grant
+        if type(max_turn_seconds) is not int or max_turn_seconds not in {10, 120}:
+            raise ValueError('Only bounded synthetic turn durations 10 or 120 are allowed')
+        if self.ordinary_runtime is not None or self.task_store.tasks():
+            raise ValueError('Ordinary grants must precede runtime and task admission')
         self.ordinary_grants = {}
         registry = self.root / 'data/registry/external_projects.yaml'
         registry_hash = hashlib.sha256(registry.read_bytes()).hexdigest()
@@ -560,12 +579,12 @@ class FunctionalFixture:
             if not readme.exists(): readme.write_text('Synthetic read-only project ' + project + '\n')
             grant = make_grant(root, project, registry_hash, project + '-ordinary-grant',
                                input_paths=['AGENTS.md', 'README.md'], classification='synthetic_fixture',
-                               version=1, max_turn_seconds=120)
+                               version=1, max_turn_seconds=max_turn_seconds)
             self.task_store.register_grant(grant)
             self.ordinary_grants[project] = grant
         self.tasks.ordinary_enabled = True
         return {'ordinary_ready': True, 'project_ids': list(self.ordinary_grants),
-                'classification': self.classification}
+                'max_turn_seconds': max_turn_seconds, 'classification': self.classification}
 
     def ordinary_input(self, project_id):
         if project_id not in getattr(self, 'ordinary_grants', {}):
@@ -706,6 +725,102 @@ class FunctionalFixture:
             thread = threading.Thread(target=worker.run_one, name='functional-fixture-worker')
             self.workers.append(thread); thread.start(); return thread
         return worker.run_one()
+
+    def _owned_state(self, project_id):
+        if project_id not in self.roots:
+            raise ValueError('Only owned synthetic task projects A/B may change')
+        root = self.roots[project_id]
+        base = Path(self.source.temporary.name).absolute()
+        if (self.source.base != base or not root.is_relative_to(base) or root.resolve(strict=True) != root):
+            raise ValueError('Synthetic source root is redirected or foreign')
+        return root / 'STATE.yaml'
+
+    def source_fault(self, project_id, kind):
+        if kind not in {'missing', 'invalid', 'permission'} or project_id in self.source_faults:
+            raise ValueError('Invalid or already active synthetic source fault')
+        path = self._owned_state(project_id)
+        info = path.lstat()
+        if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+            raise ValueError('Synthetic source must be an original single-link file')
+        original = path.read_bytes()
+        mode = stat.S_IMODE(info.st_mode)
+        if kind == 'permission' and os.geteuid() == 0:
+            raise RuntimeError('Real permission-denial fixture requires an unprivileged process')
+        if kind == 'missing':
+            path.unlink()
+        elif kind == 'invalid':
+            path.write_bytes(b'progress: [unterminated synthetic YAML\n')
+        else:
+            path.chmod(0)
+        self.source_faults[project_id] = {'bytes': original, 'mode': mode, 'kind': kind,
+            'identity': (info.st_dev, info.st_ino)}
+        return {'source_fault': kind, 'project_id': project_id, 'collected': False}
+
+    def source_restore(self, project_id):
+        path = self._owned_state(project_id)
+        previous = self.source_faults.get(project_id)
+        if previous is None:
+            raise ValueError('No active owned synthetic source fault')
+        try:
+            current = path.lstat()
+        except FileNotFoundError:
+            current = None
+        if previous['kind'] == 'missing':
+            if current is not None:
+                raise ValueError('Synthetic missing source was replaced before restore')
+        elif (current is None or not stat.S_ISREG(current.st_mode) or current.st_nlink != 1
+              or (current.st_dev, current.st_ino) != previous['identity']
+              or stat.S_IMODE(current.st_mode) != (0 if previous['kind'] == 'permission' else previous['mode'])):
+            raise ValueError('Synthetic fault source identity or mode changed')
+        elif previous['kind'] == 'invalid' and path.read_bytes() != b'progress: [unterminated synthetic YAML\n':
+            raise ValueError('Synthetic invalid source changed before restore')
+        temporary = path.with_name('.source-restore-' + secrets.token_hex(8))
+        try:
+            fd = os.open(temporary, os.O_CREAT | os.O_EXCL | os.O_WRONLY | os.O_NOFOLLOW, previous['mode'])
+            with os.fdopen(fd, 'wb') as stream:
+                stream.write(previous['bytes']);stream.flush();os.fchmod(stream.fileno(), previous['mode']);os.fsync(stream.fileno())
+            os.replace(temporary, path)
+        finally:
+            if temporary.exists():temporary.unlink()
+        del self.source_faults[project_id]
+        return {'source_restored': True, 'project_id': project_id, 'collected': False}
+
+    def excluded_sample(self):
+        if (self.directory_size < 6 or self.excluded_ids or getattr(self, 'ordinary_grants', None) is not None
+                or self.ordinary_runtime is not None or self.task_store.tasks()):
+            raise ValueError('Excluded sample requires four extras before task authority')
+        extras = [row for row in self.source.projects if row['id'] not in self.roots][:4]
+        if len(extras) != 4:
+            raise ValueError('Four original synthetic extra projects required')
+        categories = [('removed', {'local_presence': {'status': 'removed_local'}}, 'removed_local'),
+            ('cloud', {'project_type': 'cloud'}, 'cloud'),
+            ('read-disabled', {'connection_read_allowed': False}, 'connection_read_disabled'),
+            ('no_current_goal_access', {'access_profile': 'no_current_goal_access'}, 'connection_read_disabled')]
+        scope_path = self.root / 'data/connections/sync_scope.yaml'
+        scope_bytes = scope_path.read_bytes()
+        rows = []
+        for row, (category, changes, reason) in zip(extras, categories):
+            root = self.directory_roots[row['id']]
+            base = Path(self.source.temporary.name).absolute()
+            if (Path(row['root_path']) != root or not root.is_relative_to(base) or root.resolve(strict=True) != root):
+                raise ValueError('Excluded sample refuses foreign or redirected roots')
+            row.update(changes)
+            rows.append({'project_id': row['id'], 'category': category, 'reason': reason})
+        self.source.save_registry()
+        self.excluded_ids = {row['project_id'] for row in rows}
+        marker = len(self.probes)
+        synced = self.sync()
+        plan = scope_plan(self.root, self.projects._resolver())
+        expected = {row['project_id']: row['reason'] for row in rows}
+        actual = {row['project_id']: row['reason'] for row in plan['excluded']}
+        excluded_probes = [probe for probe in self.probes[marker:] if probe[0] == 'source-refresh'
+            and probe[1] in {self.directory_roots[ident] for ident in self.excluded_ids}]
+        if (scope_path.read_bytes() != scope_bytes or actual != expected
+                or self.excluded_ids & set(plan['eligible_project_ids']) or excluded_probes):
+            raise RuntimeError('Synthetic excluded roots were not kept outside collection')
+        return {'excluded_ready': True, 'classification': self.classification, 'excluded': rows,
+            'scope_total': plan['scope_total'], 'eligible_project_ids': plan['eligible_project_ids'],
+            'sync': {'exit_code': synced['exit_code'], **{key: synced['result'][key] for key in ('status', 'appended_count')}}, 'excluded_probe_count': len(excluded_probes)}
 
     def update_source(self, project_id, *, completed, objective):
         if project_id not in self.roots:
@@ -913,15 +1028,15 @@ def main():
             elif action == 'preview-drift': result = fixture.drift_preview_materials()
             elif action == 'preview-invalidate': result = fixture.invalidate_preview(command.get('project_id'), command.get('kind'))
             elif action == 'empty-directory': result = fixture.empty_directory()
-            elif action == 'stress-sample': result = fixture.stress_sample()
-            elif action == 'ordinary-sample': result = fixture.ordinary_sample()
+            elif action == 'stress-sample': result = fixture.stress_sample(command.get('active_blocked', False))
+            elif action == 'ordinary-sample': result = fixture.ordinary_sample(command.get('max_turn_seconds', 120))
             elif action == 'ordinary-runtime-start': result = fixture.start_ordinary_runtime(command.get('request_timeout', 10))
             elif action == 'ordinary-observations': result = fixture.ordinary_observations()
             elif action == 'ordinary-input': result = fixture.ordinary_input(command.get('project_id'))
             elif action == 'ordinary-regrant': result = fixture.ordinary_regrant(command.get('project_id'))
             elif action == 'ordinary-scenario':
                 project = command.get('project_id')
-                if project not in fixture.roots or command.get('scenario') not in {'normal', 'delay', 'disconnect', 'input', 'secret_input', 'approval', 'timeout_input'}:
+                if project not in fixture.roots or command.get('scenario') not in {'normal', 'delay', 'disconnect', 'input', 'secret_input', 'approval', 'timeout_input', 'failed_turn'}:
                     raise ValueError('Invalid synthetic ordinary scenario')
                 fixture.scenarios[fixture.roots[project].name] = command['scenario']
                 result = {'ordinary_scenario': command['scenario']}
@@ -936,6 +1051,9 @@ def main():
                 fixture.task_store.register_grant(grant)
                 result = {'ordinary_revoked': True, 'project_id': project}
             elif action == 'restart': result = fixture.restart_server()
+            elif action == 'source-fault': result = fixture.source_fault(command.get('project_id'), command.get('kind'))
+            elif action == 'source-restore': result = fixture.source_restore(command.get('project_id'))
+            elif action == 'excluded-sample': result = fixture.excluded_sample()
             elif action == 'source': result = fixture.update_source(command.get('project_id'), completed=command.get('completed'), objective=command.get('objective'))
             elif action == 'sync': result = fixture.sync(command.get('only_project_id'))
             elif action == 'hold-batch': result = fixture.hold_batch()

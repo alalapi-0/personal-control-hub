@@ -362,6 +362,45 @@ except Exception as exc:
         labels = sorted(stdout.strip() for stdout, _stderr in outputs)
         self.assertEqual(["EXPECTED_HEAD_CONFLICT", "OK"], labels)
 
+    def test_head_verification_pins_snapshot_during_concurrent_wal_commit(self) -> None:
+        ledger = self.ledger()
+        ledger.begin_request("original", ["a"], self.capsule)
+        old_head = ledger.head
+        self.enable_wal()
+        writer = self.ledger()
+        connection = ledger._connect()
+        committed = []
+
+        def commit_between_row_reads(statement: str) -> None:
+            if statement == "SELECT * FROM refresh_requests" and not committed:
+                committed.append(True)
+                self.append(writer, "original", "a", success=True)
+
+        connection.set_trace_callback(commit_between_row_reads)
+        with mock.patch.object(ledger, "_connect", return_value=connection):
+            observed = ledger.head
+        self.assertEqual([True], committed)
+        self.assertEqual(old_head, observed)
+        self.assertEqual(old_head["sequence"] + 1, ledger.head["sequence"])
+
+    def test_head_return_stays_with_verified_snapshot_after_wal_commit(self) -> None:
+        ledger = self.ledger()
+        ledger.begin_request("original", ["a"], self.capsule)
+        old_head = ledger.head
+        self.enable_wal()
+        writer = self.ledger()
+        verified_rows = ledger._verified_rows
+
+        def commit_after_verification(connection: sqlite3.Connection):
+            rows = verified_rows(connection)
+            writer.begin_request("concurrent", ["b"], self.capsule)
+            return rows
+
+        with mock.patch.object(ledger, "_verified_rows", side_effect=commit_after_verification):
+            observed = ledger.head
+        self.assertEqual(old_head, observed)
+        self.assertEqual(old_head["sequence"] + 1, ledger.head["sequence"])
+
     def test_history_is_one_snapshot_across_concurrent_wal_commit(self) -> None:
         ledger = self.ledger()
         ledger.begin_request("original", ["a"], self.capsule)

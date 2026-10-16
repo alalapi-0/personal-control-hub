@@ -327,6 +327,9 @@ class RefreshLedger:
     def head(self) -> dict[str, Any]:
         connection = self._connect()
         try:
+            # Verification rows and the returned head must share one snapshot,
+            # including while a WAL writer commits the next project result.
+            connection.execute("BEGIN")
             self._verified_rows(connection)
             return self._head_in(connection)
         except sqlite3.Error as exc:

@@ -50,7 +50,9 @@ export async function runBrowserJourney(name,journey,{directorySize=2}={}){
     if(action)fixture.child.stdin.write(JSON.stringify(action)+'\n');
     try{return await within(promise);}finally{fixture.waiters=fixture.waiters.filter(w=>w!==waiter);}
   }
-  const evidence={classification:'synthetic_fixture',states:{},tasks:[],network:[],console:[],consoleWarnings:[]};
+  const evidence={classification:'synthetic_fixture',states:{},tasks:[],network:[],console:[],consoleWarnings:[],
+    browserTransport:{consoleErrors:[],requestFailed:[]}};
+  let observationPhase='journey';
   let browser,page;
   try{
     const info=fixture.messages.find(m=>m.ready)||await waitMessage(m=>m.ready);
@@ -68,7 +70,11 @@ export async function runBrowserJourney(name,journey,{directorySize=2}={}){
     page.on('pageerror',error=>evidence.console.push(sanitize(error)));
     page.on('console',message=>{
       if(message.type()==='warning')evidence.consoleWarnings.push(sanitize(message.text()));
+      if(message.type()==='error')evidence.browserTransport.consoleErrors.push({phase:observationPhase,
+        url:message.location().url,text:sanitize(message.text())});
     });
+    page.on('requestfailed',request=>evidence.browserTransport.requestFailed.push({phase:observationPhase,
+      method:request.method(),url:request.url(),reason:request.failure()?.errorText}));
     page.on('response',response=>{
       const url=new URL(response.url());
       if(url.origin===info.origin)evidence.network.push({method:response.request().method(),path:url.pathname,status:response.status()});
@@ -108,6 +114,7 @@ export async function runBrowserJourney(name,journey,{directorySize=2}={}){
       evidence.historyWrites=await page.evaluate(()=>window.historyWrites||null);}catch{}
     if(fixture.stderr)evidence.fixtureError=fixture.stderr;
   }finally{
+    observationPhase='teardown';
     owner=null;
     if(fixture.child.exitCode===null){
       const exited=once(fixture.child,'exit');
