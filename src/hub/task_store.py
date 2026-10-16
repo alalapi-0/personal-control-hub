@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import json
 import os
 import secrets
@@ -368,9 +369,14 @@ class TaskStore:
             row = connection.execute('SELECT * FROM grants WHERE id=?', (grant_id,)).fetchone() if connection else None
             return self._decode(row['body'], row['hash']) if row else None
 
-    def grants(self):
+    def grants(self, *, project_id=None):
+        if project_id is not None:stable_id(project_id)
         with self._connection() as connection:
-            return [self._decode(row['body'],row['hash'])for row in connection.execute('SELECT * FROM grants ORDER BY id')]if connection else []
+            query='SELECT * FROM grants'
+            if project_id is not None:
+                query+=" WHERE CASE WHEN json_valid(body) THEN json_extract(body,'$.project_id') END=?"
+            return [self._decode(row['body'],row['hash'])for row in connection.execute(
+                query+' ORDER BY id',(project_id,)if project_id is not None else())]if connection else []
 
     @staticmethod
     def _ordinary_key(owner_context,project_id,parent_task_id):
@@ -514,15 +520,28 @@ class TaskStore:
         task['human_acceptance'] = 'pending'
         return task
 
-    def task(self, ident):
+    @staticmethod
+    def _selected_scope(selected_grant_ids):
+        if selected_grant_ids is None:return '', ()
+        if (type(selected_grant_ids) not in (list,tuple) or not selected_grant_ids
+                or len(selected_grant_ids)>MAX_TASKS):
+            raise ServiceError('ORDINARY_RUNTIME_SCOPE_REJECTED',status=403)
+        ids=tuple(stable_id(ident)for ident in selected_grant_ids)
+        return (" AND CASE WHEN json_valid(intent) THEN json_extract(intent,'$.grant.grant_id') END IN ("
+                +','.join('?'for _ in ids)+')'),ids
+
+    def task(self, ident, *, selected_grant_ids=None):
         stable_id(ident)
         with self._connection() as connection:
-            row = connection.execute('SELECT * FROM tasks WHERE id=?', (ident,)).fetchone() if connection else None
+            scope,ids=self._selected_scope(selected_grant_ids)
+            row = connection.execute('SELECT * FROM tasks WHERE id=?'+scope, (ident,*ids)).fetchone() if connection else None
             return self._task(row) if row else None
 
-    def tasks(self):
+    def tasks(self, *, selected_grant_ids=None):
+        scope,ids=self._selected_scope(selected_grant_ids)
         with self._connection() as connection:
-            return [self._task(row) for row in connection.execute('SELECT * FROM tasks ORDER BY sequence DESC')] if connection else []
+            return [self._task(row) for row in connection.execute(
+                'SELECT * FROM tasks WHERE 1=1'+scope+' ORDER BY sequence DESC',ids)] if connection else []
 
     def _parallel_read_claim(self, connection, tasks):
         """Narrow concurrency exception, revalidated inside the atomic claim.
@@ -563,30 +582,124 @@ class TaskStore:
         except (ServiceError,OSError,ValueError,TypeError,KeyError):
             return False
 
-    def claim(self, owner, now=None, *, only_task_id=None):
+    def _foreign_fence_scopes(self, connection, row):
+        """Read administrative metadata only; never decode a foreign task body.
+
+        Exact recorded/current grant equality is required before any workspace
+        identity probe. Unknown registrations keep the global fence closed.
+        Expiry does not release a fence or authorize historical execution.
+        """
+        from .ordinary_tasks import check_registration
+        from .task_service import root_identity
+        from .writer_handoff import workspace_identity
+        connection.create_function('scope_sha256',1,
+            lambda value: hashlib.sha256(value.encode('utf-8')).hexdigest())
+        metadata=connection.execute("""
+            SELECT g.id,g.version,
+              json_extract(g.body,'$.project_id') AS project,
+              json_extract(g.body,'$.kind') AS kind,
+              json_type(g.body,'$.kind') AS kind_type,
+              json_extract(g.body,'$.checks') AS checks,
+              json_extract(g.body,'$.isolated_root') AS isolated_root,
+              json_extract(g.body,'$.writable_scope') AS writable_scope,
+              json_extract(g.body,'$.prohibited') AS prohibited,
+              json_extract(g.body,'$.root') AS root,
+              json_extract(g.body,'$.root_identity') AS root_identity,
+              json_extract(g.body,'$.registry_hash') AS registry_hash,
+              json_extract(g.body,'$.story_exchange.canonical_root') AS canonical_root,
+              json_extract(g.body,'$.story_exchange.canonical_root_identity') AS canonical_identity,
+              json_extract(g.body,'$.story_exchange.registry_hash') AS canonical_registry
+            FROM tasks t JOIN grants g ON g.id=CASE WHEN json_valid(t.intent)
+                THEN json_extract(t.intent,'$.grant.grant_id') END
+            WHERE t.id=? AND json_valid(g.body)
+              AND json_extract(t.intent,'$.grant')=g.body
+              AND json_extract(t.intent,'$.grant_hash')=g.hash
+              AND scope_sha256(g.body)=g.hash
+              AND scope_sha256(t.intent)=t.intent_hash
+              AND json_extract(g.body,'$.grant_id')=g.id
+              AND json_extract(g.body,'$.version')=g.version
+              AND json_extract(g.body,'$.source')='verified_owner_decision'
+              AND json_extract(g.body,'$.auth')='ChatGPT'
+        """,(row['id'],)).fetchone()
+        if not metadata or metadata['project']!=row['project']:
+            raise ServiceError('TASK_FOREIGN_SCOPE_UNKNOWN',status=409)
+        stable_id(metadata['project']);stable_id(metadata['id'])
+        if metadata['kind']=='ordinary_project':
+            roots=[(metadata['root'],metadata['root_identity'])]
+            registry_hash=metadata['registry_hash'];canonical_root=metadata['root']
+        elif metadata['kind']=='story_exchange':
+            roots=[(metadata['root'],metadata['root_identity']),
+                   (metadata['canonical_root'],metadata['canonical_identity'])]
+            registry_hash=metadata['canonical_registry'];canonical_root=metadata['canonical_root']
+        elif metadata['kind_type'] is None:
+            # Supported legacy fixture grants predate a kind/registry hash.
+            # This only proves a conservative unresolved-workspace fence; it
+            # never validates a task, command, fingerprint or historical result.
+            from .task_service import GRANT_FIELDS
+            keys={item[0]for item in connection.execute(
+                'SELECT key FROM grants,json_each(grants.body) WHERE grants.id=?',(metadata['id'],))}
+            if (keys not in (GRANT_FIELDS,GRANT_FIELDS|{'approved_commands'})
+                    or metadata['checks']!='["fixture_sample"]' or metadata['isolated_root']!=1
+                    or metadata['writable_scope']!='["."]' or metadata['prohibited']!='[]'):
+                raise ServiceError('TASK_FOREIGN_SCOPE_UNKNOWN',status=409)
+            from .project_service import ProjectService
+            service=ProjectService(self.root);resolver=service._resolver();resolver._check_registry()
+            eligible,_=service._management_context(resolver)
+            project=resolver.projects.get(metadata['project'])
+            if (metadata['project']not in eligible or not project
+                    or project.get('root_path')!=metadata['root']):
+                raise ServiceError('TASK_FOREIGN_SCOPE_UNKNOWN',status=409)
+            roots=[(metadata['root'],metadata['root_identity'])]
+            canonical_root=metadata['root'];registry_hash=resolver.authority['registry_hash']
+        else:raise ServiceError('TASK_FOREIGN_SCOPE_UNKNOWN',status=409)
+        for root,identity in roots:
+            if (type(root)is not str or not Path(root).is_absolute() or '..'in Path(root).parts
+                    or type(identity)is not str or len(identity)!=64):
+                raise ServiceError('TASK_FOREIGN_SCOPE_UNKNOWN',status=409)
+        check_registration({'project_id':metadata['project'],'root':canonical_root,
+                            'registry_hash':registry_hash},self.root)
+        scopes=[]
+        for root,identity in roots:
+            if root_identity(root)!=identity:raise ServiceError('TASK_FOREIGN_SCOPE_UNKNOWN',status=409)
+            scopes.append(workspace_identity(root))
+        return scopes
+
+    def claim(self, owner, now=None, *, only_task_id=None, selected_grant_ids=None):
         stable_id(owner); now = time.time() if now is None else now
+        selection,ids=self._selected_scope(selected_grant_ids)
         self.check_storage()
         with self._connection(True) as connection:
             # Expired claims never become queued: dispatch effects may already exist.
-            connection.execute("UPDATE tasks SET status='requires_reconcile' WHERE status IN ('running','validating','waiting_input','waiting_approval') AND lease_until<?", (now,))
+            connection.execute("UPDATE tasks SET status='requires_reconcile' WHERE status IN ('running','validating','waiting_input','waiting_approval') AND lease_until<?"+selection, (now,*ids))
             if only_task_id is not None:stable_id(only_task_id)
             rows = connection.execute("SELECT * FROM tasks WHERE status='queued'"+
-                (" AND id=?"if only_task_id is not None else"")+" ORDER BY sequence",
-                (only_task_id,)if only_task_id is not None else()).fetchall()
+                (" AND id=?"if only_task_id is not None else"")+selection+" ORDER BY sequence",
+                (*((only_task_id,)if only_task_id is not None else()),*ids)).fetchall()
             for row in rows:
-                parent = connection.execute('SELECT * FROM tasks WHERE id=?', (row['parent'],)).fetchone() if row['parent'] else None
+                parent = connection.execute('SELECT id,status,thread_id,turn_id,provider_status,cancel FROM tasks WHERE id=?'+selection, (row['parent'],*ids)).fetchone() if row['parent'] else None
                 task = self._task(row)
                 if (row['parent'] or task['payload']['mode'] == 'busy_feedback') and not parent_binding_matches(task['intent'], parent):
                     connection.execute("UPDATE tasks SET status='requires_reconcile' WHERE id=?", (row['id'],)); continue
                 if parent and parent['status'] not in TERMINAL: continue
                 if connection.execute("SELECT 1 FROM tasks WHERE project=? AND status IN ('running','validating','waiting_input','waiting_approval','requires_reconcile') LIMIT 1", (row['project'],)).fetchone(): continue
+                if selected_grant_ids is not None and not self._parallel_read_claim(connection,[task]):
+                    continue
                 # SQLite serializes claim decisions, including the real two-task
                 # bound across executors. Only fully verified, same-class read
                 # participants may execute in disjoint workspaces together.
                 # An unresolved task fences its actual workspace, including
                 # differently named projects and shared Git worktrees.
-                active=connection.execute("SELECT * FROM tasks WHERE status IN ('running','validating','waiting_input','waiting_approval','requires_reconcile')").fetchall()
-                running=[self._task(other)for other in active if other['status']!='requires_reconcile']
+                active=connection.execute("SELECT "+("*"if selected_grant_ids is None else"id,project,status")+" FROM tasks WHERE status IN ('running','validating','waiting_input','waiting_approval','requires_reconcile')").fetchall()
+                owned_active=active
+                if selected_grant_ids is not None:
+                    owned_ids={other['id']for other in connection.execute(
+                        'SELECT id FROM tasks WHERE 1=1'+selection,ids)}
+                    owned_active=connection.execute(
+                        "SELECT * FROM tasks WHERE status IN ('running','validating','waiting_input','waiting_approval','requires_reconcile')"+selection,ids).fetchall()
+                    owned_rows={other['id']:other for other in owned_active}
+                    if any(other['id']not in owned_ids and other['status']!='requires_reconcile'for other in active):
+                        continue
+                running=[self._task(other)for other in owned_active if other['status']!='requires_reconcile']
                 if running and not self._parallel_read_claim(connection,[task,*running]):continue
                 if active:
                     from .writer_handoff import workspace_identity,workspaces_overlap
@@ -595,7 +708,15 @@ class TaskStore:
                         connection.execute("UPDATE tasks SET status='requires_reconcile' WHERE id=?",(row['id'],));continue
                     conflict=False
                     for other in active:
-                        other_root=_effect_root(self._task(other)['intent']['grant'])
+                        if selected_grant_ids is not None and other['id']not in owned_ids:
+                            try:foreign_scopes=self._foreign_fence_scopes(connection,other)
+                            except (ServiceError,OSError,ValueError,TypeError,KeyError):
+                                conflict=True;break
+                            if any(workspaces_overlap(scope,foreign)for foreign in foreign_scopes):
+                                conflict=True;break
+                            continue
+                        own_row=other if selected_grant_ids is None else owned_rows[other['id']]
+                        other_root=_effect_root(self._task(own_row)['intent']['grant'])
                         if other_root==scope['canonical_root']:conflict=True;break
                         try:other_scope=workspace_identity(other_root)
                         except FileNotFoundError:

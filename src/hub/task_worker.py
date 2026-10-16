@@ -41,9 +41,10 @@ def fixture_prompt(annotation, control_root):
 
 
 class TaskWorker:
-    def __init__(self,store, *, adapter_factory=AppServerAdapter, writer_check=None, fault=None, request_timeout=30, only_task_id=None):
+    def __init__(self,store, *, adapter_factory=AppServerAdapter, writer_check=None, fault=None, request_timeout=30, only_task_id=None, selected_grant_ids=None):
         self.store,self.adapter_factory=store,adapter_factory
         self.only_task_id=only_task_id
+        self.selected_grant_ids=selected_grant_ids
         self.writer_check=writer_check or (lambda _:False)
         self.fault=fault or (lambda _:None)
         if type(request_timeout)is not int or not 1<=request_timeout<=30:raise ServiceError('TASK_CONTROL_REJECTED')
@@ -53,7 +54,7 @@ class TaskWorker:
         self.identity={'owner':self.owner,'pid':os.getpid(),'start_ticks':Path('/proc/self/stat').read_text().rsplit(')',1)[1].split()[19]}
 
     def run_one(self):
-        task=self.store.claim(self.owner,only_task_id=self.only_task_id)
+        task=self.store.claim(self.owner,only_task_id=self.only_task_id,selected_grant_ids=self.selected_grant_ids)
         if task is None:return False
         ident=task['id'];adapter=None;stop=threading.Event();lease_lost=threading.Event()
         def heartbeat():
@@ -141,7 +142,7 @@ class TaskWorker:
                 self.store.update(ident,self.owner,status='cancelled');return True
             parent=None
             if task['parent'] or task['payload']['mode']=='busy_feedback':
-                parent=self.store.task(task['parent']) if task['parent'] else None
+                parent=self.store.task(task['parent'],selected_grant_ids=self.selected_grant_ids) if task['parent'] else None
                 if not parent_binding_matches(task['intent'],parent) or parent['status']!='checks_complete' or parent['provider_status']!='completed':
                     raise ServiceError('TASK_PARENT_NOT_IDLE',status=409,outcome='UNKNOWN')
             if parent and (ordinary != (parent['payload'].get('kind') == 'ordinary_project')):

@@ -35,6 +35,7 @@ class OrdinaryRuntime:
                 or any(g.get('kind') != KIND or g.get('effect') != 'read_only'
                        or g.get('classification') != grant_classification for g in grants)):
             raise ServiceError('ORDINARY_RUNTIME_SCOPE_REJECTED', status=403)
+        self._grant_ids = tuple(g['grant_id'] for g in self._grants)
         self._classification = grant_classification
         # The store independently revalidates every participant and enforces
         # the real two-task bound inside its atomic claim transaction.
@@ -151,7 +152,7 @@ class OrdinaryRuntime:
                 self.store.check_storage()
                 rejected.update(self._observe_handles())
                 launched = False
-                for task in sorted(self.store.tasks(), key=lambda row: row['sequence']):
+                for task in sorted(self.store.tasks(selected_grant_ids=self._grant_ids), key=lambda row: row['sequence']):
                     with self._lock:
                         if self._stop.is_set() or len(self._handles) >= self._capacity:
                             break
@@ -163,7 +164,7 @@ class OrdinaryRuntime:
                         continue
                     if not self.writer_check(grant):
                         continue
-                    parent = self.store.task(task['parent']) if task['parent'] else None
+                    parent = self.store.task(task['parent'], selected_grant_ids=self._grant_ids) if task['parent'] else None
                     if task['parent'] or task['payload']['mode'] == 'busy_feedback':
                         if (not parent_binding_matches(task['intent'], parent)
                                 or parent['status'] != 'checks_complete' or parent['provider_status'] != 'completed'
@@ -173,7 +174,8 @@ class OrdinaryRuntime:
                         if self._stop.is_set():
                             break
                         worker = TaskWorker(self.store, adapter_factory=self._adapter_factory,
-                            writer_check=self.writer_check, request_timeout=self._request_timeout, only_task_id=task['id'])
+                            writer_check=self.writer_check, request_timeout=self._request_timeout, only_task_id=task['id'],
+                            selected_grant_ids=self._grant_ids)
                         handle = {'worker': worker}
                         handle['thread'] = threading.Thread(target=self._execute, args=(handle,),
                             name='hub-ordinary-task-' + worker.owner, daemon=False)

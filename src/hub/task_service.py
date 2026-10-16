@@ -178,7 +178,7 @@ class TaskService:
 
     def _ordinary_grant(self,resolver,project, *, live=True):
         candidates=[]
-        for grant in self.store.grants():
+        for grant in self.store.grants(project_id=project['id']):
             if grant.get('kind')=='ordinary_project' and grant.get('project_id')==project['id']:
                 candidates.append(grant)
         if not candidates:raise ServiceError('ORDINARY_PROJECT_GRANT_REQUIRED',status=403)
