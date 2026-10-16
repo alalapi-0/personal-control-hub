@@ -433,6 +433,44 @@ class FunctionalFixture:
                 'proposal_source_sha256': hashlib.sha256(raw).hexdigest(), 'blocked_project': b,
                 'proposals': self.projects.get_management(a).get('proposals', [])}
 
+    def empty_directory(self):
+        """Explicit empty-registry fixture; retained sources/ledger are not erased."""
+        if (getattr(self, 'ordinary_grants', None) is not None or self.ordinary_runtime is not None
+                or self.task_store.tasks() or self.workers or self.ordinary_adapters
+                or self.task_store.grants() != sorted(self.grants.values(), key=lambda grant: grant['grant_id'])):
+            raise ValueError('Empty directory must precede task admission and additional grants')
+        base = Path(self.source.temporary.name).absolute()
+        if self.source.base != base or self.root != self.source.hub:
+            raise ValueError('Empty directory requires this fixture owned root')
+        owned = [self.root, *self.directory_roots.values()]
+        for root in owned:
+            if not root.is_absolute() or not root.is_relative_to(base) or root.resolve(strict=True) != root:
+                raise ValueError('Empty directory cannot inspect foreign or redirected roots')
+        registry = self.root / 'data/registry/external_projects.yaml'
+        scope_path = self.root / 'data/connections/sync_scope.yaml'
+        if any(path.resolve(strict=True) != path or not path.is_relative_to(self.root)
+               for path in (registry, scope_path)):
+            raise ValueError('Empty directory requires original fixture control files')
+        for row in self.source.projects:
+            if self.directory_roots.get(row['id']) != Path(row['root_path']):
+                raise ValueError('Empty directory registry root is not owned')
+        scope_bytes = scope_path.read_bytes()
+        scope = yaml.safe_load(scope_bytes)
+        head = self.projects.ledger_head()
+        self.source.projects.clear()
+        self.source.save_registry()
+        synced = self.sync()
+        result = synced['result']
+        current_head = self.projects.ledger_head()
+        directory = self.projects.list_projects()
+        if (synced['exit_code'] != 2 or result['status'] != 'NO_ELIGIBLE_PROJECTS'
+                or result['appended_count'] != 0 or current_head != head
+                or scope_path.read_bytes() != scope_bytes or directory['total'] != 0 or directory['projects']):
+            raise RuntimeError('Synthetic empty directory did not preserve its ledger and scope')
+        return {'empty_directory_ready': True, 'classification': self.classification, 'total': 0,
+            'sync': {'exit_code': synced['exit_code'], 'status': result['status'], 'appended_count': 0},
+            'ledger_head': current_head, 'ledger_unchanged': True, 'scope_project_ids': scope['project_ids']}
+
     def stress_sample(self):
         """Opt-in synthetic data; collect sources before registering ordinary grants."""
         if (getattr(self, 'ordinary_grants', None) is not None or self.ordinary_runtime is not None
@@ -672,12 +710,14 @@ class FunctionalFixture:
     def update_source(self, project_id, *, completed, objective):
         if project_id not in self.roots:
             raise ValueError('Only synthetic task projects A/B may change')
-        if type(completed) is not int or completed < 0 or type(objective) is not str or not objective.strip():
+        if (completed is not None and (type(completed) is not int or completed < 0)
+                or type(objective) is not str or not objective.strip()):
             raise ValueError('Invalid synthetic source values')
         path = self.roots[project_id] / 'STATE.yaml'
         old = path.read_bytes()
         data = yaml.safe_load(old)
-        data['progress']['completed'] = completed
+        if completed is not None:
+            data['progress']['completed'] = completed
         data['current_work']['objective'] = objective
         updated_at = datetime.now(timezone.utc).isoformat()
         data['updated_at'] = updated_at
@@ -872,6 +912,7 @@ def main():
             elif action == 'preview-sample': result = fixture.preview_sample()
             elif action == 'preview-drift': result = fixture.drift_preview_materials()
             elif action == 'preview-invalidate': result = fixture.invalidate_preview(command.get('project_id'), command.get('kind'))
+            elif action == 'empty-directory': result = fixture.empty_directory()
             elif action == 'stress-sample': result = fixture.stress_sample()
             elif action == 'ordinary-sample': result = fixture.ordinary_sample()
             elif action == 'ordinary-runtime-start': result = fixture.start_ordinary_runtime(command.get('request_timeout', 10))

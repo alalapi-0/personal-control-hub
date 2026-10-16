@@ -14,6 +14,107 @@ from hub.local_service import WEB_ASSETS
 
 
 class FunctionalFixtureTests(unittest.TestCase):
+    def test_objective_only_stress_update_preserves_unknown_counts_and_collects(self):
+        with FunctionalFixture() as f:
+            f.stress_sample()
+            before_a = f.projects.get_project('fixture-project-a')['business']['fields']
+            before_b = f.projects.get_project('fixture-project-b')['business']['fields']
+            self.assertIsNone(before_a['progress']['counting_basis'])
+            self.assertIsNone(before_a['progress']['completed'])
+            changed = f.update_source('fixture-project-a', completed=None,
+                                     objective='Synthetic objective-only source update')
+            self.assertFalse(changed['collected'])
+            self.assertNotEqual(changed['old_sha256'], changed['new_sha256'])
+            self.assertIsNone(changed['source']['completed'])
+            self.assertEqual(f.sync('fixture-project-a')['exit_code'], 0)
+            after_a = f.projects.get_project('fixture-project-a')
+            self.assertEqual(after_a['freshness']['state'], 'fresh')
+            self.assertEqual(after_a['business']['fields']['progress'], before_a['progress'])
+            self.assertEqual(after_a['business']['fields']['current_work']['objective'],
+                             'Synthetic objective-only source update')
+            self.assertEqual(f.projects.get_project('fixture-project-b')['business']['fields'], before_b)
+            self.assertEqual(f.task_store.tasks(), [])
+            self.assertEqual(f.effects, [])
+
+    def test_empty_directory_is_real_authenticated_http_and_retains_ledger_sources_scope(self):
+        with FunctionalFixture() as f:
+            f.handshake()
+            before = f.call()[2]['data']
+            self.assertEqual(before['total'], 2)
+            head = f.projects.ledger_head()
+            scope = f.root / 'data/connections/sync_scope.yaml'
+            scope_before = scope.read_bytes()
+            sources_before = {project: (root / 'STATE.yaml').read_bytes() for project, root in f.roots.items()}
+            metadata = f.empty_directory()
+            self.assertTrue(metadata['empty_directory_ready'])
+            self.assertEqual(metadata['classification'], 'synthetic_fixture')
+            self.assertEqual(metadata['sync'], {'exit_code': 2, 'status': 'NO_ELIGIBLE_PROJECTS', 'appended_count': 0})
+            self.assertEqual(metadata['scope_project_ids'], ['fixture-project-a', 'fixture-project-b'])
+            self.assertEqual(metadata['ledger_head'], head)
+            self.assertTrue(metadata['ledger_unchanged'])
+            self.assertEqual(f.projects._resolver().projects, {})
+            status, _, response = f.call(path='/api/projects')
+            self.assertEqual(status, 200)
+            self.assertEqual((response['data']['total'], response['data']['projects']), (0, []))
+            status, _, response = f.call(path='/api/projects/fixture-project-a')
+            self.assertEqual((status, response['error']['code']), (404, 'PROJECT_NOT_FOUND'))
+            self.assertEqual(f.call(path='/api/sync-status')[0], 200)
+            self.assertEqual(f.projects.ledger_head(), head)
+            self.assertEqual(scope.read_bytes(), scope_before)
+            self.assertEqual(sources_before, {project: (root / 'STATE.yaml').read_bytes() for project, root in f.roots.items()})
+            self.assertEqual(f.empty_directory(), metadata)
+            self.assertEqual(f.task_store.tasks(), [])
+            self.assertEqual(f.effects, [])
+            root = f.root
+        self.assertTrue(f.closed)
+        self.assertFalse(f.thread.is_alive())
+        self.assertFalse(root.exists())
+        with FunctionalFixture() as fresh:
+            fresh.handshake()
+            default = fresh.call()[2]['data']
+            self.assertEqual(default['total'], 2)
+            self.assertEqual([p['project_id'] for p in default['projects']], ['fixture-project-a', 'fixture-project-b'])
+
+    def test_empty_directory_rejects_late_grants_tasks_and_foreign_roots_without_changes(self):
+        for phase in ('ordinary-grants', 'task', 'additional-grant', 'foreign-root'):
+            with self.subTest(phase=phase), FunctionalFixture() as f:
+                registry = f.root / 'data/registry/external_projects.yaml'
+                before = registry.read_bytes()
+                roots = dict(f.directory_roots)
+                if phase == 'ordinary-grants':
+                    f.ordinary_sample()
+                elif phase == 'task':
+                    f.tasks.submit(f.payloads['fixture-project-a'])
+                elif phase == 'additional-grant':
+                    f.task_store.register_grant({'grant_id': 'additional-synthetic-grant', 'version': 1})
+                else:
+                    f.directory_roots['foreign'] = Path('/never-probe-this-foreign-root')
+                try:
+                    with self.assertRaises(ValueError):
+                        f.empty_directory()
+                    self.assertEqual(registry.read_bytes(), before)
+                    self.assertEqual(len(f.source.projects), 2)
+                finally:
+                    f.directory_roots = roots
+
+    def test_empty_directory_cli_control_and_103_project_default_remain_separate(self):
+        result = subprocess.run([sys.executable, str(Path(__file__).with_name('pch_functional_fixture.py')), '--serve'],
+            input='{"action":"empty-directory"}\n{"action":"stop"}\n', capture_output=True, text=True, timeout=10)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        rows = [json.loads(line) for line in result.stdout.splitlines()]
+        self.assertTrue(rows[1]['empty_directory_ready'])
+        self.assertEqual(rows[1]['total'], 0)
+        self.assertEqual(rows[1]['sync']['appended_count'], 0)
+        self.assertEqual(rows[2], {'stopped': True})
+        with FunctionalFixture(directory_size=103) as f:
+            f.handshake()
+            status, _, listing = f.call()
+            self.assertEqual(status, 200)
+            self.assertEqual(listing['data']['total'], 103)
+            self.assertEqual(len(f.source.projects), 103)
+            self.assertEqual(len(f.roots), 2)
+            self.assertEqual(len(f.directory_roots), 103)
+
     def test_stress_opt_in_collects_long_names_roles_proposals_and_honest_unknowns(self):
         with FunctionalFixture() as f:
             f.handshake()

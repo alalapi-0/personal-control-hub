@@ -179,7 +179,9 @@ class HubHTTPServer(ThreadingHTTPServer):
         return client_address[0] == "127.0.0.1"
 
     def process_request(self, request, client_address):
-        if not self._slots.acquire(blocking=False):
+        # A browser can briefly overlap asset loads with existing API requests.
+        # Keep the same eight workers, allowing a short bounded slot handoff.
+        if not self._slots.acquire(timeout=0.1):
             self.shutdown_request(request)
             return
         try:

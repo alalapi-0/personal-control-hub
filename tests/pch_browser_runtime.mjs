@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {randomBytes} from 'node:crypto';
 import {createRequire} from 'node:module';
-import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {readFile,writeFile,mkdir,readlink,realpath} from 'node:fs/promises';
 import {once} from 'node:events';
 import path from 'node:path';
 
@@ -25,7 +25,9 @@ export async function runBrowserJourney(name,journey,{directorySize=2}={}){
   const secret=owner;
   const sanitize=value=>String(value).replaceAll(secret,'[redacted]');
   const fixture={messages:[],waiters:[],stderr:''};
-  fixture.child=spawn('/usr/bin/python3',['tests/pch_functional_fixture.py','--serve','--owner-fd','3',
+  const python=process.env.PCH_PYTHON_EXECUTABLE||'/usr/bin/python3';
+  assert.ok(path.isAbsolute(python),'Fixture interpreter must be explicitly absolute');
+  fixture.child=spawn(python,['tests/pch_functional_fixture.py','--serve','--owner-fd','3',
     '--directory-size',String(directorySize)],{cwd:path.resolve(import.meta.dirname,'..'),stdio:['pipe','pipe','pipe','pipe']});
   let buffered='',parseFailure;
   fixture.child.stdout.on('data',chunk=>{
@@ -53,8 +55,11 @@ export async function runBrowserJourney(name,journey,{directorySize=2}={}){
   try{
     const info=fixture.messages.find(m=>m.ready)||await waitMessage(m=>m.ready);
     const stat=await readFile('/proc/'+fixture.child.pid+'/stat','utf8');
+    const pythonExecutable=await readlink('/proc/'+fixture.child.pid+'/exe');
+    assert.equal(pythonExecutable,await realpath(python),'Fixture interpreter identity must match its launch');
     await writeFile(path.join(evidenceRoot,'active-fixture.json'),JSON.stringify({pid:fixture.child.pid,
-      start_ticks:stat.slice(stat.lastIndexOf(') ')+2).split(' ')[19],origin:info.origin}));
+      start_ticks:stat.slice(stat.lastIndexOf(') ')+2).split(' ')[19],origin:info.origin,python_executable:pythonExecutable}));
+    evidence.pythonExecutable=pythonExecutable;
     browser=await chromium.connectOverCDP(cdp,{timeout:3000});
     const context=browser.contexts()[0];
     await context.clearCookies();
