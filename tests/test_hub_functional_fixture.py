@@ -14,6 +14,39 @@ from hub.local_service import WEB_ASSETS
 
 
 class FunctionalFixtureTests(unittest.TestCase):
+    def test_saved_previews_are_version_bound_historical_and_exactly_invalidated(self):
+        with FunctionalFixture() as f:
+            source_hashes = {p: hashlib.sha256((root / 'STATE.yaml').read_bytes()).hexdigest()
+                             for p, root in f.roots.items()}
+            f.handshake()
+            self.assertEqual(f.preview_sample()['materials'], 6)
+            self.assertEqual(f.preview_sample()['materials'], 6)
+            catalog = f.call(path='/api/materials')[2]['data']['materials']
+            self.assertEqual(len(catalog), 6)
+            self.assertTrue(all(row['available'] for row in catalog))
+            image = next(row for row in catalog if row['artifact_id'] == 'fixture-project-a-image')
+            self.assertEqual(f.call(path=image['read_url'])[0], 200)
+            capture_url = '/api/projects/fixture-project-a/captures'
+            capture = f.call(path=capture_url)[2]['data']['previews'][0]
+            self.assertEqual(capture['version_state'], 'historical')
+            self.assertIsNone(capture['captured_at'])
+            self.assertFalse(capture['runtime_verified'])
+            self.assertEqual(f.call(path=capture['image_url'])[0], 200)
+            f.drift_preview_materials()
+            self.assertEqual(f.call(path=image['read_url'])[0], 409)
+            current = next(row for row in f.call(path='/api/materials')[2]['data']['materials'] if row['id'] == image['id'])
+            self.assertNotEqual(current['version'], image['version'])
+            self.assertEqual(f.call(path=current['read_url'])[0], 200)
+            f.invalidate_preview('fixture-project-a', 'material_image')
+            self.assertEqual(f.call(path=current['read_url'])[0], 404)
+            f.invalidate_preview('fixture-project-a', 'saved_capture')
+            self.assertEqual(f.call(path=capture['image_url'])[0], 409)
+            b = next(row for row in f.call(path='/api/materials')[2]['data']['materials'] if row['artifact_id'] == 'fixture-project-b-image')
+            self.assertEqual(f.call(path=b['read_url'])[0], 200)
+            for project, root in f.roots.items():
+                self.assertEqual(hashlib.sha256((root / 'STATE.yaml').read_bytes()).hexdigest(), source_hashes[project])
+            self.assertEqual(f.effects, [])
+
     def test_ordinary_two_workers_have_independent_exact_release_latches(self):
         with FunctionalFixture() as f:
             f.handshake();f.ordinary_sample()

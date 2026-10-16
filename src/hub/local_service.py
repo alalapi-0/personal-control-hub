@@ -430,12 +430,16 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                     self.server.tasks.draft(path[len('/api/task-drafts/'):]))
             self.server.sessions.validate(self._one_header('Cookie'),require_owner=True,credential_version=self.server.owner_auth.version)
         elif path == '/api/tasks' or path.startswith('/api/tasks/'):
-            if query:raise ServiceError('INVALID_QUERY')
             self.server.sessions.validate(self._one_header('Cookie'),require_owner=True,credential_version=self.server.owner_auth.version)
+            single_task = path.startswith('/api/tasks/') and ID.fullmatch(path[len('/api/tasks/'):])
+            if query and (not single_task or set(query) != {'expected_result_version'}
+                          or not query['expected_result_version']):
+                raise ServiceError('INVALID_QUERY')
             if self.server.tasks is None:raise ServiceError('TASK_RUNTIME_UNAVAILABLE',status=503)
             if path=='/api/tasks':result=self.server.tasks.list()
             elif path.startswith('/api/tasks/options/'):result=self.server.tasks.options(path[len('/api/tasks/options/'):])
-            elif path.endswith('/preview'):result=self.server.tasks.business_preview(path[len('/api/tasks/'):-len('/preview')])
+            elif path.endswith('/preview') and not single_task:result=self.server.tasks.business_preview(path[len('/api/tasks/'):-len('/preview')])
+            elif query:result=self.server.tasks.get(path[len('/api/tasks/'):],expected_result_version=query['expected_result_version'])
             else:result=self.server.tasks.get(path[len('/api/tasks/'):])
             self.server.sessions.validate(self._one_header('Cookie'),require_owner=True,credential_version=self.server.owner_auth.version)
         elif path == '/api/materials' or path.startswith('/api/materials/'):

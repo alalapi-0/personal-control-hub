@@ -245,8 +245,8 @@ async function projectTaskPanel(project,token){
     panel.append(el('p',{className:'muted'},data.capabilities?.ordinary_execution?.available?'普通只读任务通道已配置；发送仍需逐项核对。':data.test_gate?'隔离测试记录；真实项目执行仍需独立授权。':'执行入口尚未开放。'));
     if(!tasks.length)panel.append(el('p',{className:'muted'},'尚无这个项目的已接收任务。'));
     else{
-      const {taskLabels}=await import('./tasks.js');
-      for(const task of tasks)panel.append(el('a',{className:'project-row',href:'#tasks/'+encodeURIComponent(task.id)},
+      const {taskLabels,taskResultLink}=await import('./tasks.js');
+      for(const task of tasks)panel.append(el('a',{className:'project-row',href:taskResultLink(task)},
         el('h3',{},taskLabels[task.status]||'任务状态未知'),el('p',{className:'caption'},task.id),
         el('p',{},'用户验收：待决定')));
     }
@@ -414,7 +414,7 @@ async function projectDetail(id,token,section='overview',reconcile=false){
 }
 async function route(focus=true){
   stopDirectoryObservation();stopDirectoryObservation=()=>{};reconcileVisible=null;routeAuthRequired=false;
-  const token=++generation,{parts,kind}=parseHubRoute(location.hash);
+  const token=++generation,{parts,kind,query}=parseHubRoute(location.hash);
   for(const name of ['projects','designs','workbench','materials','host']){const nav=document.querySelector(`#nav-${name}`);if(name===(['tasks','sessions'].includes(kind)?'workbench':kind))nav.setAttribute('aria-current','page');else nav.removeAttribute('aria-current');}
   main.setAttribute('aria-busy','true');main.replaceChildren(el('p',{role:'status'},'正在读取…'));
   try{
@@ -422,14 +422,18 @@ async function route(focus=true){
       const {renderWorkbench}=await import('./workbench.js');
       await renderWorkbench(main,{previewId:parts[1]||null,isCurrent:()=>token===generation});
     }else if(kind==='tasks'){
-      const {renderTasks}=await import('./tasks.js');
-      await renderTasks(main,{taskId:parts[1]||null,isCurrent:()=>token===generation});
+      const {renderTasks,taskResultQuery}=await import('./tasks.js');
+      const expectedResultVersion=taskResultQuery(query);
+      if(expectedResultVersion&&!parts[1])throw Object.assign(new Error('INVALID_QUERY'),{code:'INVALID_QUERY',status:400});
+      await renderTasks(main,{taskId:parts[1]||null,expectedResultVersion,isCurrent:()=>token===generation});
     }else if(kind==='sessions'){
       const {renderSessions}=await import('./sessions.js');
       await renderSessions(main,{isCurrent:()=>token===generation});
     }else if(kind==='materials'){
-      const {renderMaterials}=await import('./materials.js');
-      await renderMaterials(main,{materialId:parts[1]||null,isCurrent:()=>token===generation});
+      const {renderMaterials,materialVersionQuery}=await import('./materials.js');
+      const expectedVersion=materialVersionQuery(query);
+      if(expectedVersion&&!parts[1])throw Object.assign(new Error('INVALID_QUERY'),{code:'INVALID_QUERY',status:400});
+      await renderMaterials(main,{materialId:parts[1]||null,expectedVersion,isCurrent:()=>token===generation});
     }else if(kind==='host'){
       const {renderHost}=await import('./host.js');
       const data=await api('/api/host');if(token!==generation)return;

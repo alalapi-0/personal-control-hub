@@ -46,6 +46,23 @@ export function renderCaptures(project,catalog){
   section.append(el('p',{className:'caption'},'这里只读取已保存截图；不会采集页面、启动项目、Agent 或模型。截图与当前版本核对不代表本人验收。'));
   if(view.reason)section.append(el('p',{className:'caption'},view.reason));
   if(view.latestAttempt?.status==='failed'&&view.previews.length)section.append(el('p',{className:'warning'},'最近采集失败；以下保留成功截图，并分别标明当前性。'));
-  for(const p of view.previews)section.append(el('article',{className:'stack'},el('h3',{},p.label),el('p',{className:p.version_state==='current'?'caption':'warning'},states[p.version_state]+(p.version_state==='current'?' · 运行版本已核对，非本人验收':'')),el('p',{},'实际采集时间：'+(p.captured_at??'未知')),p.provenance.reported_at?el('p',{className:'caption'},'历史报告时间：'+p.provenance.reported_at+'；报告时间不替代实际采集时间。'):null,p.method==='existing_desktop'?el('p',{className:'caption'},'已保存桌面截图；未证明当前运行版本。'):null,el('div',{className:'image-stage'},el('img',{src:p.image_url,alt:p.label+'的已保存截图',loading:'lazy',decoding:'async',referrerPolicy:'no-referrer',width:p.width,height:p.height})),el('details',{className:'diagnostics'},el('summary',{},'截图版本与来源诊断'),el('pre',{},JSON.stringify(p,null,2)))));
+  for(const p of view.previews){
+    const version=el('p',{className:p.version_state==='current'?'caption':'warning'},states[p.version_state]+(p.version_state==='current'?' · 运行版本已核对，非本人验收':''));
+    const image=el('img',{src:p.image_url,alt:p.label+'的已保存截图',loading:'lazy',decoding:'async',referrerPolicy:'no-referrer',width:p.width,height:p.height});
+    const stage=el('div',{className:'image-stage'},image);
+    const status=el('p',{role:'status','aria-live':'polite'},'正在读取已保存截图…');let failed=false;
+    image.addEventListener('load',()=>{if(!failed)status.textContent='已保存截图已读取；图像不提供页面操作，也不代表本人验收。';});
+    image.addEventListener('error',()=>{
+      failed=true;image.removeAttribute('src');image.setAttribute('hidden','');stage.setAttribute('hidden','');version.className='warning';
+      version.textContent='截图内容不可读取；版本状态无法核实。';
+      status.textContent='请重新核对来源与截图记录；保留采集时间和来源说明，不会自动重试失效图像。';
+    });
+    section.append(el('article',{className:'stack'},el('h3',{},p.label),version,
+      el('p',{},'实际采集时间：'+(p.captured_at??'未知')),
+      p.provenance.reported_at?el('p',{className:'caption'},'历史报告时间：'+p.provenance.reported_at+'；报告时间不替代实际采集时间。'):null,
+      p.method==='existing_desktop'?el('p',{className:'caption'},'已保存桌面截图；未证明当前运行版本。'):null,
+      stage,status,
+      el('details',{className:'diagnostics'},el('summary',{},'截图版本与来源诊断'),el('pre',{},JSON.stringify(p,null,2)))));
+  }
   if(view.latestAttempt)section.append(el('details',{className:'diagnostics'},el('summary',{},'最近采集记录诊断'),el('pre',{},JSON.stringify(view.latestAttempt,null,2))));return section;
 }

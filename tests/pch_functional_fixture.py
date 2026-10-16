@@ -43,6 +43,7 @@ from hub.design_service import DesignService
 from hub.design_store import DesignStore
 from hub.host_observer import HostObserver
 from hub.material_service import MaterialService
+from hub.capture_store import CaptureStore
 from hub.owner_auth import OwnerAuth
 from hub.preview_service import PreviewService
 from hub.project_service import ProjectService
@@ -329,6 +330,77 @@ class FunctionalFixture:
         assert observer is self.host and preview is None
         self.thread = threading.Thread(target=self.server.serve_forever, kwargs={'poll_interval': .01}, name='functional-fixture-http')
         self.thread.start()
+
+    def preview_sample(self):
+        """Opt-in saved synthetic media; never a real capture or task artifact."""
+        if hasattr(self, 'preview_paths'):
+            return {'preview_ready': True, 'materials': len(self.preview_paths),
+                    'classification': self.classification}
+        material = self.root / 'docs/reports/ui_design_governance/functional-fixture'
+        self.preview_paths, self.saved_capture_paths = {}, {}
+        for project, root in self.roots.items():
+            self.preview_paths[project + '-image'] = material / (project + '.png')
+            evidence = []
+            for suffix, body in [('report.md', 'Synthetic saved report for ' + project + '\n'),
+                                 ('source.html', '<script>window.syntheticExecuted=true</script>\nSynthetic HTML source ' + project)]:
+                path = material / (project + '-' + suffix)
+                path.write_text(body)
+                aid = project + '-' + suffix.replace('.', '-') + '-' + 'long-name-' * 7 + 'end'
+                artifact = _artifact(aid, path.relative_to(self.root).as_posix(), hashlib.sha256(path.read_bytes()).hexdigest())
+                artifact['scope']['members'][0]['project_id'] = project
+                self.design_store.append_fact(artifact, expected_revision=self.design_store.read()['revision'], request_id=aid)
+                self.preview_paths[aid] = path
+                evidence.append(aid)
+            candidate = copy.deepcopy(next(f for f in self.design_store.read()['facts']
+                if f['kind'] == 'candidate' and f['id'] == project + '-candidate'))
+            candidate['revision'] += 1
+            candidate['evidence_refs'] = evidence
+            candidate = with_content_hash(candidate)
+            self.design_store.append_fact(candidate, expected_revision=self.design_store.read()['revision'],
+                                          request_id=project + '-preview-candidate')
+            image = (root / 'fixture.png').read_bytes()
+            sha = hashlib.sha256(image).hexdigest()
+            # The sample has no actual capture time or runtime proof. Both API
+            # and UI must keep this imported synthetic screenshot historical.
+            record = {'schema_version': '1.0', 'request_id': project + '-saved',
+                'request_sha256': digest([project, 'synthetic-saved-preview']),
+                'project_id': project, 'page_id': 'synthetic-saved-page', 'domain': 'implementation',
+                'status': 'success', 'reason': None, 'method': 'existing_desktop',
+                'captured_at': None, 'observed_at': '2026-10-16T00:00:00Z',
+                'source_sha256': None, 'build_sha256': None, 'source_proof_sha256': None,
+                'runtime_verified': False, 'artifact_ref': 'data/previews/images/' + project + '/' + sha + '.png',
+                'artifact_sha256': sha, 'media_type': 'image/png', 'width': 32, 'height': 32,
+                'expires_at': '2099-10-16T00:00:00Z',
+                'provenance': {'kind': 'existing_desktop', 'report_sha256': digest(['synthetic', project]),
+                    'reported_at': '2026-10-15T00:00:00Z', 'historical_candidate': digest(['synthetic-candidate', project])}}
+            CaptureStore(self.root).commit(record, image)
+            self.saved_capture_paths[project] = self.root / record['artifact_ref']
+        self.materials.prepare_fixture(set(self.preview_paths))
+        return {'preview_ready': True, 'materials': len(self.preview_paths), 'classification': self.classification}
+
+    def drift_preview_materials(self):
+        if not hasattr(self, 'preview_paths') or getattr(self, 'preview_drifted', False):
+            raise ValueError('Synthetic preview drift requires one prepared sample')
+        project = 'fixture-project-a'
+        path = self.preview_paths[project + '-image']
+        artifact = _artifact('synthetic-preview-revision', path.relative_to(self.root).as_posix(),
+                             hashlib.sha256(path.read_bytes()).hexdigest())
+        artifact['scope']['members'][0]['project_id'] = project
+        self.design_store.append_fact(artifact, expected_revision=self.design_store.read()['revision'],
+                                      request_id=artifact['id'])
+        self.materials.prepare_fixture(set(self.preview_paths))
+        self.preview_drifted = True
+        return {'preview_drifted': True, 'classification': self.classification}
+
+    def invalidate_preview(self, project_id, kind):
+        if project_id not in self.roots or not hasattr(self, 'preview_paths'):
+            raise ValueError('Only prepared synthetic project previews may change')
+        if kind == 'material_image': path = self.preview_paths[project_id + '-image']
+        elif kind == 'saved_capture': path = self.saved_capture_paths[project_id]
+        else: raise ValueError('Unknown synthetic preview kind')
+        if path.is_symlink() or not path.is_file(): raise ValueError('Synthetic preview already changed')
+        path.unlink()
+        return {'preview_invalidated': True, 'project_id': project_id, 'kind': kind}
 
     def management_sample(self):
         """Explicit O3 setup; default O0/O1 data remains unchanged."""
@@ -715,6 +787,9 @@ def main():
                           'background': isinstance(ran, threading.Thread)}
             elif action == 'health': result = {'status': fixture.call(path='/api/health')[0]}
             elif action == 'management-sample': result = fixture.management_sample()
+            elif action == 'preview-sample': result = fixture.preview_sample()
+            elif action == 'preview-drift': result = fixture.drift_preview_materials()
+            elif action == 'preview-invalidate': result = fixture.invalidate_preview(command.get('project_id'), command.get('kind'))
             elif action == 'ordinary-sample': result = fixture.ordinary_sample()
             elif action == 'ordinary-runtime-start': result = fixture.start_ordinary_runtime(command.get('request_timeout', 10))
             elif action == 'ordinary-observations': result = fixture.ordinary_observations()

@@ -512,12 +512,18 @@ class TaskService:
                     'capabilities':capabilities,'storage':storage}
         return {'tasks':tasks,'tasks_available':True,**readiness,'test_gate':self.test_gate,'storage':storage}
 
-    def get(self,ident):
+    def get(self,ident, *, expected_result_version=None):
+        if expected_result_version is not None and (
+                type(expected_result_version) is not str or len(expected_result_version) != 64
+                or any(char not in '0123456789abcdef' for char in expected_result_version)):
+            raise ServiceError('INVALID_RESULT_VERSION')
         storage=self.store.storage_status()
         if storage['state']=='blocked' and storage['reason_code'] not in {'LOW_SPACE','SPACE_UNAVAILABLE'}:
             raise ServiceError('TASK_STORAGE_BLOCKED',status=503,details={'reason_code':storage['reason_code']})
         task=self.store.task(ident)
         if task is None:raise ServiceError('TASK_NOT_FOUND',status=404)
+        if expected_result_version is not None and self.store.result_version(task) != expected_result_version:
+            raise ServiceError('RESULT_VERSION_STALE',status=409)
         fields={'method','digest','thread_id','turn_id','source_emitted_ms','phase','action','original_status'}
         events=[]
         for row in self.store.events(ident):

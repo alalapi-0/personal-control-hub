@@ -2,7 +2,7 @@ import {el,button,api,navigate} from './common.js';
 import {renderBusinessPreview} from './business_preview.mjs';
 import {renderOrdinaryTaskResult} from './ordinary_tasks.mjs';
 
-export async function renderBusinessTaskPreview(target,task,{isCurrent=()=>true}={}){
+export async function renderBusinessTaskPreview(target,task,{isCurrent=()=>true,expectedResultVersion=null,onVersionStale=()=>{}}={}){
   if(task.kind!=='story_exchange')return;
   const panel=el('section',{className:'panel stack','aria-label':'本次写作任务'},el('h2',{},'本次写作任务'));
   const specification=el('dl',{});
@@ -25,10 +25,24 @@ export async function renderBusinessTaskPreview(target,task,{isCurrent=()=>true}
   try{
     const preview=await api('/api/tasks/'+encodeURIComponent(task.id)+'/preview');
     if(!isCurrent())return;
+    if(expectedResultVersion){
+      const source=task.result?.source_binding,actual=preview?.binding;
+      const expected=source&&{...source,output_sha256:task.result.output_sha256};
+      if(!expected||!resultHash(expected.output_sha256)||!actual
+        ||Object.keys(actual).length!==Object.keys(expected).length
+        ||Object.keys(expected).some(key=>actual[key]!==expected[key])){
+        message.textContent='无法核实预览属于此固定结果；没有展示其他版本的正文。';return false;
+      }
+      const checked=await api(taskReadPath(task.id,expectedResultVersion));
+      if(!isCurrent())return false;
+      if(checked.task?.result_version!==expectedResultVersion){onVersionStale();return false;}
+    }
     panel.replaceChildren(el('h2',{},'本次写作任务'),specification,renderBusinessPreview(preview));
-  }catch{
+  }catch(error){
     if(!isCurrent())return;
+    if(expectedResultVersion&&error.status===409&&error.code==='RESULT_VERSION_STALE'){onVersionStale();return false;}
     message.textContent='暂时无法核实完整故事候选。保留原任务，请重新对账；不会重新执行写作。';
+    if(expectedResultVersion)return false;
   }
 }
 
@@ -67,13 +81,45 @@ export function recoveryState(task,storage){
     needsReconcile:['lost','requires_reconcile'].includes(task?.status)||task?.worker_state==='lease_expired',canRetry:false};
 }
 
-export async function renderTasks(target,{taskId=null,isCurrent=()=>true}={}){
-  const data=await api(taskId?'/api/tasks/'+encodeURIComponent(taskId):'/api/tasks');
+const resultHash=value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
+export function taskResultQuery(query){
+  if([...query.keys()].some(key=>key!=='result_version')||query.getAll('result_version').length>1
+      ||query.has('result_version')&&!resultHash(query.get('result_version')))
+    throw Object.assign(new Error('INVALID_QUERY'),{code:'INVALID_QUERY',status:400});
+  return query.get('result_version');
+}
+export function taskResultLink(task){
+  const base='#tasks/'+encodeURIComponent(task.id);
+  return resultHash(task.result_version)?base+'?result_version='+task.result_version:base;
+}
+export function taskReadPath(taskId,expectedResultVersion=null){
+  return '/api/tasks/'+encodeURIComponent(taskId)+(expectedResultVersion?'?expected_result_version='+expectedResultVersion:'');
+}
+
+export async function renderTasks(target,{taskId=null,isCurrent=()=>true,expectedResultVersion=null}={}){
+  const options={taskId,isCurrent,expectedResultVersion};
+  function stale(){
+    if(!isCurrent())return;
+    const previous=target.querySelector?.('[data-task-record="'+taskId+'"]');
+    const notice=el('section',{className:'panel stack','aria-label':'固定任务结果已变化'},
+      el('h2',{},'固定任务结果已变化'),el('p',{role:'status'},previous?.getAttribute('data-result-visible')==='true'
+        ?'原结果仍保留在下方；固定版本已无法重新读取，不会自动替换为新版。'
+        :'原结果版本已变化，旧正文无法从当前记录恢复；没有展示新版结果。'),
+      el('a',{href:'#tasks/'+encodeURIComponent(taskId)},'查看当前任务'),
+      button('重新核对固定结果',()=>renderTasks(target,options)));
+    if(previous){previous.inert=true;for(const action of previous.querySelectorAll('button'))action.disabled=true;
+      const old=target.querySelector('[aria-label="固定任务结果已变化"]');old?.remove();target.prepend(notice);
+    }else target.replaceChildren(notice);
+  }
+  let data;
+  try{data=await api(taskId?taskReadPath(taskId,expectedResultVersion):'/api/tasks');}
+  catch(error){if(expectedResultVersion&&error.status===409&&error.code==='RESULT_VERSION_STALE'){stale();return;}throw error;}
+  if(expectedResultVersion&&data.task?.result_version!==expectedResultVersion){stale();return;}
   if(!isCurrent())return;
   const root=el('section',{className:'stack'},el('h1',{},'任务与结果'),el('a',{href:'#workbench'},'← 可视化工作台'),
     el('p',{className:'muted'},'浏览器关闭后读取同一请求核对结果。执行回复、实际检查与用户验收分别记录。'),
     el('a',{href:'#sessions'},'核对既有 Codex 会话'));
-  const refresh=button('重新对账',async()=>{refresh.disabled=true;try{await renderTasks(target,{taskId,isCurrent});if(isCurrent())target.querySelector('button')?.focus();}catch{root.append(el('p',{role:'status'},'连接暂不可用；保留当前记录，请重连后核对。'));refresh.disabled=false;refresh.focus();}});
+  const refresh=button('重新对账',async()=>{refresh.disabled=true;try{await renderTasks(target,options);if(isCurrent())target.querySelector('button')?.focus();}catch{root.append(el('p',{role:'status'},'连接暂不可用；保留当前记录，请重连后核对。'));refresh.disabled=false;refresh.focus();}});
   root.append(refresh);target.replaceChildren(root);
   const recovery=recoveryState(data.task,data.storage);
   if(recovery.blocked)root.append(el('section',{className:'panel stack'},el('h2',{},'存储写入暂停'),el('p',{},recovery.reason),
@@ -82,11 +128,12 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true}={}){
     root.append(el('p',{className:'warning'},data.test_gate?'隔离测试入口；不代表真实项目执行授权。':'执行入口尚未开放；需要有效的项目授权、隔离与后台配置。'));
     if(data.tasks_available===false)root.append(el('p',{className:'warning'},'目前无法读取任务账本；原记录未被初始化或覆盖。'));
     else if(!data.tasks.length)root.append(el('div',{className:'empty'},el('h2',{},'尚无已接收任务')));
-    for(const t of data.tasks)root.append(el('a',{href:'#tasks/'+encodeURIComponent(t.id),className:'panel stack'},el('h2',{},t.project),el('p',{},t.id),el('p',{},lifecycleLabel(t)),
+    for(const t of data.tasks)root.append(el('a',{href:taskResultLink(t),className:'panel stack'},el('h2',{},t.project),el('p',{},t.id),el('p',{},lifecycleLabel(t)),
       t.kind==='ordinary_project'?el('p',{},'普通只读任务：'+(t.task_spec?.objective||'原指令待核对')):null));
     return;
   }
-  const task=data.task;
+  const task=data.task;root.setAttribute('data-task-record',task.id);
+  if(task.result_version)root.append(el('a',{href:taskResultLink(task)},'本次结果固定链接'));
   let owner=!recovery.blocked;const actions=[];
   root.append(...[el('h2',{},task.id),el('p',{className:task.status==='checks_complete'?'success':'warning'},lifecycleLabel(task)),
     task.worker_state==='lease_expired'?el('p',{className:'warning'},'执行器租约已过期；需要核对精确进程与会话，不能重新发送。'):null,
@@ -104,8 +151,9 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true}={}){
       el('p',{className:'caption'},'顺序 '+task.feedback.sequence+' · 绑定前序回合 '+(task.feedback.parent_binding?.turn_id||'尚未确认')),
       task.feedback.writer_status==='unknown'?el('p',{className:'warning'},'外部写者状态未确认；保留意见，禁止启动竞争任务。'):null));
   }
-  await renderBusinessTaskPreview(root,task,{isCurrent});
-  if(!isCurrent())return;
+  const previewAccepted=await renderBusinessTaskPreview(root,task,{isCurrent,expectedResultVersion,onVersionStale:stale});
+  if(!isCurrent()||expectedResultVersion&&previewAccepted===false)return;
+  if(task.result)root.setAttribute('data-result-visible','true');
   const ordinary=renderOrdinaryTaskResult(task);if(ordinary)root.append(ordinary);
   for(const control of data.controls||[]){
     const state=controlState(control,task,owner),label=el('h3',{},state.label),section=el('section',{className:'panel stack'},label,
@@ -131,7 +179,7 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true}={}){
         if(!fields.length||fields.some(field=>!field.input.value.trim())){message.textContent='请回答每个问题。';fields.find(field=>!field.input.value.trim())?.input.focus();return;}
         const answers=Object.fromEntries(fields.map(({question,input})=>[question.id,{answers:[input.value.trim()]}]));
         responding=true;controlButtons.forEach(action=>action.disabled=true);fields.forEach(field=>field.input.disabled=true);message.textContent='正在保存本次答复…';
-        try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/respond',{control_id:control.id,version:control.version,decision:'answer',answers});await renderTasks(target,{taskId,isCurrent});}
+        try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/respond',{control_id:control.id,version:control.version,decision:'answer',answers});await renderTasks(target,options);}
         catch{message.textContent='答复结果需要核对。保留当前输入，请重新读取原任务；不会另建任务。';refresh.focus();}
       });
       answer.disabled=!state.canAnswer;controlButtons.push(answer);actions.push({button:answer,allowed:()=>!responding&&controlState(control,task,owner).canAnswer});section.append(answer,message);
@@ -139,13 +187,13 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true}={}){
     if(control.kind==='approval'&&control.allowed_decisions.includes('accept')){
       const accept=button('仅本次允许',async()=>{
         responding=true;controlButtons.forEach(action=>action.disabled=true);const message=el('p',{role:'status'},'正在保存本次答复…');section.append(message);
-        try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/respond',{control_id:control.id,version:control.version,decision:'accept'});await renderTasks(target,{taskId,isCurrent});if(isCurrent())target.querySelector('button')?.focus();}
+        try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/respond',{control_id:control.id,version:control.version,decision:'accept'});await renderTasks(target,options);if(isCurrent())target.querySelector('button')?.focus();}
         catch(error){message.textContent='答复结果需要核对：'+(error.code||'连接不可用')+'。请读取原任务，勿重复创建请求。';refresh.focus();}
       });accept.disabled=!state.canAccept;controlButtons.push(accept);actions.push({button:accept,allowed:()=>!responding&&controlState(control,task,owner).canAccept});section.append(accept);
     }
     const decline=button('拒绝本次请求',async()=>{
       responding=true;controlButtons.forEach(action=>action.disabled=true);const message=el('p',{role:'status'},'正在保存拒绝…');section.append(message);
-      try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/respond',{control_id:control.id,version:control.version,decision:'decline'});await renderTasks(target,{taskId,isCurrent});if(isCurrent())target.querySelector('button')?.focus();}
+      try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/respond',{control_id:control.id,version:control.version,decision:'decline'});await renderTasks(target,options);if(isCurrent())target.querySelector('button')?.focus();}
       catch(error){message.textContent='答复结果需要核对：'+(error.code||'连接不可用')+'。请读取原任务，勿重复创建请求。';decline.disabled=true;refresh.focus();}
     });decline.disabled=!state.canDecline;controlButtons.push(decline);actions.push({button:decline,allowed:()=>!responding&&controlState(control,task,owner).canDecline});section.append(decline);root.append(section);
   }
@@ -166,7 +214,7 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true}={}){
         reviewButtons.forEach(b=>b.disabled=true);reviewMessage.textContent='正在保存验收记录…';
         const command={request_id:'review-'+crypto.randomUUID(),expected_result_version:task.result_version,
           expected_review_revision:task.result_review?.revision||0,decision};
-        try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/review',command);await renderTasks(target,{taskId,isCurrent});if(isCurrent())target.querySelector('button')?.focus();}
+        try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/review',command);await renderTasks(target,options);if(isCurrent())target.querySelector('button')?.focus();}
         catch{reviewMessage.textContent='验收结果需要核对。请重新读取此次任务，再决定；不会重新执行。';refresh.focus();}
       });
       action.disabled=!owner;reviewButtons.push(action);actions.push({button:action,allowed:()=>owner});reviewPanel.append(action);
@@ -174,7 +222,7 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true}={}){
     reviewPanel.append(reviewMessage);root.append(reviewPanel);
   }
   if(['queued','running','waiting_input','waiting_approval','validating'].includes(task.status)){
-    const cancel=button('取消这个任务',async()=>{cancel.disabled=true;try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/cancel',{});await renderTasks(target,{taskId,isCurrent});if(isCurrent())target.querySelector('button')?.focus();}catch{root.append(el('p',{role:'status'},'取消结果待核对；请读取原任务，不会重新执行。'));cancel.disabled=false;cancel.focus();}});
+    const cancel=button('取消这个任务',async()=>{cancel.disabled=true;try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/cancel',{});await renderTasks(target,options);if(isCurrent())target.querySelector('button')?.focus();}catch{root.append(el('p',{role:'status'},'取消结果待核对；请读取原任务，不会重新执行。'));cancel.disabled=false;cancel.focus();}});
     cancel.disabled=!owner;
     actions.push({button:cancel,allowed:()=>owner});
     root.append(cancel);
@@ -193,13 +241,14 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true}={}){
       if(!root.isConnected||!isCurrent()){window.removeEventListener('hub:identity',identity);return;}
       if(document.hidden||navigator.onLine===false){setTimeout(observe,5000);return;}
       try{
-        const next=await api('/api/tasks/'+encodeURIComponent(task.id));
+        const next=await api(taskReadPath(task.id,expectedResultVersion));
         if(!root.isConnected||!isCurrent())return;
         if(next.task?.id!==task.id||next.task?.project!==task.project)throw new Error('TASK_RESPONSE_BINDING_REJECTED');
-        if(signature(next)!==original){await renderTasks(target,{taskId,isCurrent});return;}
+        if(signature(next)!==original){await renderTasks(target,options);return;}
         observation.textContent='本任务状态已核对；尚无新的执行结果。';
       }catch(error){
         if(!root.isConnected||!isCurrent())return;
+        if(expectedResultVersion&&error.status===409&&error.code==='RESULT_VERSION_STALE'){stale();return;}
         observation.textContent='暂时无法核对本任务；保留当前回复和原请求，重连后继续读取。';
         if(error.status===401||error.status===403){owner=false;actions.forEach(action=>action.button.disabled=true);}
       }

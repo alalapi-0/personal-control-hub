@@ -7,12 +7,19 @@ export function materialUrl(row){
 export function reviewLink(reference){
   try{const u=new URL(reference);return u.protocol==='https:'&&u.hostname==='www.figma.com'&&!u.username&&!u.password&&!u.port?u.href:null;}catch{return null;}
 }
-export async function renderMaterials(target,{materialId=null,isCurrent=()=>true}={}){
+export function materialVersionQuery(query){
+  if([...query.keys()].some(key=>key!=='version')||query.getAll('version').length>1
+      ||query.has('version')&&!/^[a-f0-9]{64}$/.test(query.get('version')))
+    throw Object.assign(new Error('INVALID_QUERY'),{code:'INVALID_QUERY',status:400});
+  return query.get('version');
+}
+export function materialLink(row){return materialUrl(row)?'#materials/'+encodeURIComponent(row.id)+'?version='+row.version:null;}
+export async function renderMaterials(target,{materialId=null,isCurrent=()=>true,expectedVersion=null}={}){
   const notice=el('p',{role:'status',className:'warning'});
   const section=el('section',{className:'stack'},el('h1',{},'授权产物'),
     el('p',{className:'muted'},'登记内容与审核记录按版本读取。此视图没有执行权限。'),notice);
   target.replaceChildren(section);
-  const reload=button('重新核对产物',async()=>{await renderMaterials(target,{materialId,isCurrent});if(isCurrent())target.querySelector('button')?.focus();});
+  const reload=button('重新核对产物',async()=>{await renderMaterials(target,{materialId,isCurrent,expectedVersion});if(isCurrent())target.querySelector('button')?.focus();});
   section.append(reload,el('p',{role:'status'},'正在读取产物记录…'));
   let data;
   try{data=await api('/api/materials');}
@@ -21,7 +28,7 @@ export async function renderMaterials(target,{materialId=null,isCurrent=()=>true
   section.append(el('p',{className:'caption'},`审核记录版本：${data.store_revision} · ${data.classification==='synthetic_fixture'?'隔离样本':'登记记录'} · 内容缓存关闭`));
   if(!data.materials.length){section.append(el('p',{className:'muted'},'当前没有可展示的登记产物。'));return;}
   if(!materialId){
-    for(const row of data.materials)section.append(el('a',{className:'project-row',href:'#materials/'+encodeURIComponent(row.id)},
+    for(const row of data.materials)section.append(el('a',{className:'project-row',href:materialLink(row)},
       el('h2',{},row.artifact_id),el('p',{},`${row.project_name} · ${{text:'文本',html_source:'HTML 源码',image:'图片',video:'短视频',review_reference:'专业审核引用'}[row.kind]||'类型未知'}`),
       el('p',{className:row.available?'caption':'warning'},row.available?'已核对登记版本':'尚未开放内容读取')));
     return;
@@ -31,7 +38,12 @@ export async function renderMaterials(target,{materialId=null,isCurrent=()=>true
   if(!row||!url){notice.textContent='产物记录已变化或不可用，请重新核对。';return;}
   section.append(el('h2',{},row.artifact_id),el('p',{},row.project_name),
     el('p',{className:'caption'},`方案 ${row.candidate_id} · 修订 ${row.candidate_revision}`),
-    el('a',{href:'#designs/'+encodeURIComponent(row.project_id)+'/'+encodeURIComponent(row.candidate_id)},'查看原审核记录'));
+    el('a',{href:'#designs/'+encodeURIComponent(row.project_id)+'/'+encodeURIComponent(row.candidate_id)},'查看原审核记录'),
+    el('a',{href:'#projects/'+encodeURIComponent(row.project_id)+'/sources'},'返回项目来源与产物'));
+  if(!expectedVersion||expectedVersion!==row.version){
+    notice.textContent=expectedVersion?'固定产物版本已变化；旧内容无法从当前登记恢复，没有读取新版内容。':'此链接未指定产物版本，请明确选择当前登记版本后读取内容。';
+    section.append(el('a',{href:materialLink(row)},'打开当前登记版本'));return;
+  }
   if(!row.available){notice.textContent='这个版本尚未开放内容读取。';return;}
   if(row.kind==='review_reference'){
     section.append(el('pre',{},row.review_reference));

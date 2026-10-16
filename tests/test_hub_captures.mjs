@@ -12,7 +12,7 @@ function fixture(){
  const catalog={project_id:'project',classification:'available',reason:null,previews:[{...copy(capture),version_state:'current',image_url:'/api/projects/project/captures/request/image'}],latest_attempt:copy(capture),capture_performed:false,execution_allowed:false};
  return {project,catalog};
 }
-class N{constructor(tag){this.tagName=tag;this.children=[];this.attributes={};this._text='';}appendChild(n){this.children.push(n);return n;}append(...ns){for(const n of ns)this.appendChild(n);}setAttribute(k,v){this.attributes[k]=v;}addEventListener(){}get textContent(){return this._text+this.children.map(n=>n.textContent).join('');}set textContent(v){this._text=String(v);this.children=[];}}
+class N{constructor(tag){this.tagName=tag;this.children=[];this.attributes={};this._text='';this.listeners={};}appendChild(n){this.children.push(n);return n;}append(...ns){for(const n of ns)this.appendChild(n);}setAttribute(k,v){this.attributes[k]=v;}removeAttribute(k){delete this.attributes[k];}addEventListener(type,handler){this.listeners[type]=handler;}dispatch(type){this.listeners[type]?.();}get textContent(){return this._text+this.children.map(n=>n.textContent).join('');}set textContent(v){this._text=String(v);this.children=[];}}
 function render(project,catalog){globalThis.document={createElement:t=>new N(t),createTextNode:t=>{const n=new N('#text');n.textContent=t;return n;}};return renderCaptures(project,catalog);}
 const all=n=>[n,...n.children.flatMap(all)];
 const ordinary=n=>n.tagName==='details'?'':n._text+n.children.map(ordinary).join('');
@@ -37,3 +37,17 @@ test("unrelated source document updates preserve equal implementation code versi
 
 
 test('explicit Markdown boolean source proof classifies real CLI as noUI while malformed proof stays unavailable',()=>{const {project,catalog}=fixture(),r=project.operational.latest_attempt;catalog.classification='not_applicable';catalog.reason='SOURCE_HAS_UI_FALSE';catalog.previews=[];catalog.latest_attempt=null;const proof={...copy(r.extensions.fact.page_inventory.proof),selector:{heading:'当前应用界面审计',boolean_label:'has_ui'}};r.extensions.fact.has_ui={value:false,unknown_reason:null,proof};assert.equal(captureView(project,catalog,{now}).classification,'not_applicable');assert.match(ordinary(render(project,catalog)),/来源明确声明没有界面/);for(const selector of [{heading:'Interface',boolean_label:''},{heading:'Interface',boolean_label:'has_ui',extra:true}]){r.extensions.fact.has_ui.proof.selector=selector;assert.equal(captureView(project,catalog,{now}).classification,'unavailable');}});
+
+test('image load announces saved content; error removes current claim and source without losing provenance',()=>{
+  const {project,catalog}=fixture(),node=render(project,catalog),image=all(node).find(n=>n.tagName==='img');
+  assert.match(ordinary(node),/正在读取已保存截图/);
+  image.dispatch('load');assert.match(ordinary(node),/已保存截图已读取/);
+  image.dispatch('error');assert.equal(image.attributes.src,undefined);
+  assert.equal(image.attributes.hidden,'');
+  assert.equal(all(node).find(n=>n.children.includes(image)).attributes.hidden,'');
+  assert.match(ordinary(node),/截图内容不可读取；版本状态无法核实/);
+  assert.doesNotMatch(ordinary(node),/运行版本已核对/);
+  assert.match(ordinary(node),/实际采集时间：2026-10-15T11:00:00Z/);
+  assert.match(ordinary(node),/不会自动重试/);
+  image.dispatch('load');assert.doesNotMatch(ordinary(node),/已保存截图已读取/);
+});
