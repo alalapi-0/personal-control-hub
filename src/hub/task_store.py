@@ -533,13 +533,15 @@ class TaskStore:
         """
         from .ordinary_tasks import check_registration, validate_grant, validate_spec
         from .writer_handoff import workspace_identity, workspaces_overlap
-        scopes=[]; projects=set()
+        scopes=[]; projects=set(); classification=None
         try:
             for task in tasks:
                 grant=task['intent']['grant']; payload=task['payload']
                 if (payload.get('kind')!='ordinary_project' or payload.get('effect')!='read_only'
                         or grant.get('kind')!='ordinary_project' or grant.get('effect')!='read_only'
-                        or grant.get('classification')!='synthetic_fixture'
+                        or grant.get('classification') not in {'synthetic_fixture','real'}
+                        or (classification is not None and grant.get('classification')!=classification)
+                        or (grant.get('classification')=='real' and len(tasks)>2)
                         or task['project']!=grant.get('project_id') or task['project']in projects
                         or payload.get('project_id')!=task['project']
                         or payload.get('input_version')!=grant.get('input_version')
@@ -547,6 +549,7 @@ class TaskStore:
                         or task['intent'].get('registry_hash')!=grant.get('registry_hash')
                         or task['intent'].get('task_spec')!=payload):
                     return False
+                classification=grant['classification']
                 validate_spec(payload)
                 current=connection.execute('SELECT * FROM grants WHERE id=?',(grant['grant_id'],)).fetchone()
                 if (not current or current['version']!=grant['version']
@@ -577,8 +580,9 @@ class TaskStore:
                     connection.execute("UPDATE tasks SET status='requires_reconcile' WHERE id=?", (row['id'],)); continue
                 if parent and parent['status'] not in TERMINAL: continue
                 if connection.execute("SELECT 1 FROM tasks WHERE project=? AND status IN ('running','validating','waiting_input','waiting_approval','requires_reconcile') LIMIT 1", (row['project'],)).fetchone(): continue
-                # SQLite serializes claim decisions. Only fully verified synthetic
-                # read participants may execute in disjoint workspaces together.
+                # SQLite serializes claim decisions, including the real two-task
+                # bound across executors. Only fully verified, same-class read
+                # participants may execute in disjoint workspaces together.
                 # An unresolved task fences its actual workspace, including
                 # differently named projects and shared Git worktrees.
                 active=connection.execute("SELECT * FROM tasks WHERE status IN ('running','validating','waiting_input','waiting_approval','requires_reconcile')").fetchall()

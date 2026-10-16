@@ -1,4 +1,4 @@
-"""Atomic claims only parallelize current, disjoint synthetic read grants."""
+"""Atomic claims parallelize only current, disjoint reads of one trusted class."""
 import copy
 from concurrent.futures import ThreadPoolExecutor
 import hashlib
@@ -20,6 +20,8 @@ from hub.workbench_store import digest
 
 
 class OrdinaryParallelClaimTests(unittest.TestCase):
+    classification = 'synthetic_fixture'
+
     def setUp(self):
         self.fixture = fixtures.OrdinaryWorkerTests()
         self.fixture.setUp()
@@ -32,22 +34,23 @@ class OrdinaryParallelClaimTests(unittest.TestCase):
         (self.b / 'README.md').write_text('Second synthetic input\n')
         self.configure(self.a, self.b)
 
-    def configure(self, a, b):
+    def configure(self, a, b, c=None):
         version = getattr(self, '_grant_version', 9) + 1
         self._grant_version = version
+        roots = [('project-a', a), ('project-b', b)] + ([('project-c', c)] if c is not None else [])
         registry = {'projects': [
             {'id': project, 'name': project, 'enabled': True,
              'connection_read_allowed': True, 'root_path': str(root),
              'current_state_paths': ['README.md']}
-            for project, root in [('project-a', a), ('project-b', b)]]}
+            for project, root in roots]}
         self.fixture.registry_path.write_text(yaml.safe_dump(registry))
         hashed = hashlib.sha256(self.fixture.registry_path.read_bytes()).hexdigest()
         (self.store.root / 'data/connections/sync_scope.yaml').write_text(yaml.safe_dump({
-            'schema_version': '1.0', 'scope_id': 'parallel-synthetic', 'baseline_total': 2,
-            'project_ids': ['project-a', 'project-b'], 'excluded_project_ids': {}}))
+            'schema_version': '1.0', 'scope_id': 'parallel-controlled', 'baseline_total': len(roots),
+            'project_ids': [project for project, _ in roots], 'excluded_project_ids': {}}))
         self.grants = [make_grant(root, project, hashed, 'grant-' + project,
-                                 input_paths=['README.md'], version=version)
-                       for project, root in [('project-a', a), ('project-b', b)]]
+                                 input_paths=['README.md'], version=version, classification=self.classification)
+                       for project, root in roots]
         for grant in self.grants:
             self.store.register_grant(grant)
 
@@ -145,7 +148,7 @@ class OrdinaryParallelClaimTests(unittest.TestCase):
 
     def test_mixed_unknown_write_and_forged_markers_remain_serial(self):
         for participant in [0, 1]:
-            for alteration in ['unknown_kind', 'write', 'real', 'unknown_classification', 'forged_hash',
+            for alteration in ['unknown_kind', 'write', 'opposite_classification', 'unknown_classification', 'forged_hash',
                                'unregistered', 'wrong_project', 'expired', 'input_changed', 'forged_spec', 'forged_registry']:
                 with self.subTest(participant=participant, alteration=alteration):
                     fixture = type(self)(); fixture.setUp()
@@ -155,8 +158,8 @@ class OrdinaryParallelClaimTests(unittest.TestCase):
                             if index == participant:
                                 if alteration == 'unknown_kind': extra['kind'] = 'unknown'
                                 elif alteration == 'write': extra['effect'] = 'write'
-                                elif alteration in {'real', 'unknown_classification'}:
-                                    grant['classification'] = 'real' if alteration == 'real' else 'unknown'
+                                elif alteration in {'opposite_classification', 'unknown_classification'}:
+                                    grant['classification'] = ('synthetic_fixture' if self.classification == 'real' else 'real') if alteration == 'opposite_classification' else 'unknown'
                                 elif alteration == 'forged_hash': intent['grant_hash'] = '0' * 64
                                 elif alteration == 'forged_registry': intent['registry_hash'] = '0' * 64
                                 elif alteration == 'forged_spec': intent['task_spec'] = {'effect': 'write'}
@@ -172,7 +175,7 @@ class OrdinaryParallelClaimTests(unittest.TestCase):
 
     def test_trusted_registration_of_mixed_effect_never_widens_exception(self):
         for participant in [0, 1]:
-            for field, value in [('kind', 'other'), ('effect', 'write'), ('classification', 'real'),
+            for field, value in [('kind', 'other'), ('effect', 'write'), ('classification', 'synthetic_fixture' if self.classification == 'real' else 'real'),
                                  ('classification', 'unknown')]:
                 with self.subTest(participant=participant, field=field, value=value):
                     fixture = type(self)(); fixture.setUp()
@@ -209,6 +212,37 @@ class OrdinaryParallelClaimTests(unittest.TestCase):
             'parent_binding': {'thread_id': 'thread-a', 'turn_id': 'other-turn'}})
         self.assertIsNone(self.store.claim('stale-owner', only_task_id='stale-child'))
         self.assertEqual(self.store.task('stale-child')['status'], 'requires_reconcile')
+
+
+class RealOrdinaryParallelClaimTests(OrdinaryParallelClaimTests):
+    """Apply every physical/metadata failure guard to real-classified temp inputs."""
+    classification = 'real'
+
+    def test_three_competing_real_owners_claim_only_two_then_release_slot(self):
+        third = self.base / 'third'; third.mkdir()
+        (third / 'README.md').write_text('Third controlled input\n')
+        self.configure(self.a, self.b, third)
+        for index, ident in enumerate(('task-a','task-b','task-c')):
+            self.admit(ident, index)
+        barrier = threading.Barrier(3)
+        def claim(ident):
+            store = TaskStore(self.store.root)
+            barrier.wait(timeout=5)
+            return store.claim('owner-' + ident, only_task_id=ident)
+        with ThreadPoolExecutor(max_workers=3) as workers:
+            claims = list(workers.map(claim, ('task-a','task-b','task-c')))
+        active = [task for task in claims if task is not None]
+        self.assertEqual(len(active), 2)
+        self.assertEqual(len({task['owner'] for task in active}), 2)
+        waiting = next(task for task in self.store.tasks() if task['status']=='queued')
+        self.assertIsNone(TaskStore(self.store.root).claim('fourth-owner', only_task_id=waiting['id']))
+        finished = active[0]
+        self.store.update(finished['id'], finished['owner'], status='validating', provider_status='completed')
+        self.store.update(finished['id'], finished['owner'], status='checks_complete')
+        released = TaskStore(self.store.root).claim('after-release', only_task_id=waiting['id'])
+        self.assertIsNotNone(released)
+        self.assertEqual(released['id'], waiting['id'])
+        self.assertEqual(sum(task['status']=='running' for task in self.store.tasks()),2)
 
 
 if __name__ == '__main__':

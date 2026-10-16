@@ -36,9 +36,9 @@ class OrdinaryRuntime:
                        or g.get('classification') != grant_classification for g in grants)):
             raise ServiceError('ORDINARY_RUNTIME_SCOPE_REJECTED', status=403)
         self._classification = grant_classification
-        # Real tasks keep the existing global serial claim boundary. The
-        # synthetic two-slot exception is never used to enable real parallelism.
-        self._capacity = 1 if grant_classification == 'real' else 2
+        # The store independently revalidates every participant and enforces
+        # the real two-task bound inside its atomic claim transaction.
+        self._capacity = 2
         self._provider = copy.deepcopy(provider_status)
         self._adapter_factory = adapter_factory
         self._poll_interval = poll_interval

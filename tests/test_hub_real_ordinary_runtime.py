@@ -5,6 +5,8 @@ Owner, or provider acceptance. No Codex process or external source is opened.
 """
 import copy
 import hashlib
+from pathlib import Path
+import yaml
 import time
 import unittest
 from unittest import mock
@@ -31,18 +33,25 @@ class RealOrdinaryRuntimeTests(unittest.TestCase):
         class Adapter(self.f.Adapter):
             created, interrupts, closed = [], [], []
             hold = False
+            def thread(self, previous=None):
+                self.bound_thread = previous or 'controlled-thread-' + str(id(self))
+                self.bound_turn = 'controlled-turn-' + str(id(self))
+                return self.bound_thread
+            def event(self, method, **extra):
+                return {'method':method,'params':{'threadId':self.bound_thread,'turnId':self.bound_turn,**extra}}
             def start(self, thread, text, image):
                 if image is not None: raise AssertionError('ordinary text must not send an image')
-                self.events = [self.event('turn/started', turn={'id':'ordinary-turn','status':'inProgress'}),
+                self.events = [self.event('turn/started', turn={'id':self.bound_turn,'status':'inProgress'}),
                     self.event('item/completed', item={'id':'reply','type':'agentMessage','text':'Controlled component answer'}),
-                    self.event('turn/completed', turn={'id':'ordinary-turn','status':'completed'})]
-                return 'ordinary-turn'
+                    self.event('turn/completed', turn={'id':self.bound_turn,'status':'completed'})]
+                return self.bound_turn
             def poll(self, timeout):
                 if self.hold and self.events[0]['method'] != 'turn/started':
                     time.sleep(.005)
                     return None
                 return self.events.pop(0)
             def interrupt(self, thread, turn):
+                self.interrupted = True
                 self.hold = False
                 super().interrupt(thread, turn)
             def close(self): self.closed.append(self)
@@ -71,7 +80,7 @@ class RealOrdinaryRuntimeTests(unittest.TestCase):
             time.sleep(.01)
         self.fail('controlled runtime did not reach the expected state')
 
-    def test_real_queue_is_serial_and_reopened_result_retains_classification(self):
+    def test_same_real_project_stays_serial_and_reopened_result_retains_classification(self):
         runtime = self.runtime()
         self.Adapter.hold = True
         self.admit('first'); self.admit('second')
@@ -81,7 +90,7 @@ class RealOrdinaryRuntimeTests(unittest.TestCase):
         time.sleep(.08)
         self.assertEqual(len(self.Adapter.created), 1)
         self.assertEqual(self.store.task('second')['status'], 'queued')
-        # TaskStore's existing fixture-only parallel exception must stay closed.
+        # Sharing one project never qualifies for the parallel read exception.
         self.assertIsNone(self.store.claim('foreign-worker', only_task_id='second'))
         self.Adapter.hold = False
         self.Adapter.created[0].hold = False
@@ -97,6 +106,108 @@ class RealOrdinaryRuntimeTests(unittest.TestCase):
         self.assertEqual(len(self.Adapter.closed), 2)
         self.assertEqual(self.f.source.read_text(), 'Synthetic exact input\n')
 
+    def parallel_runtime(self, count=2):
+        roots = [self.f.root]
+        for index in range(1,count):
+            root = Path(self.f.temp.name) / ('independent-' + str(index))
+            root.mkdir(); (root/'README.md').write_text('Controlled independent input\n')
+            roots.append(root)
+        projects = [('real-project-'+str(index),root) for index,root in enumerate(roots)]
+        self.f.registry_path.write_text(yaml.safe_dump({'projects':[
+            {'id':ident,'name':ident,'enabled':True,'connection_read_allowed':True,
+             'root_path':str(root),'current_state_paths':['README.md']} for ident,root in projects]}))
+        registry_hash = hashlib.sha256(self.f.registry_path.read_bytes()).hexdigest()
+        (self.store.root/'data/connections/sync_scope.yaml').write_text(yaml.safe_dump({
+            'schema_version':'1.0','scope_id':'controlled-real-parallel','baseline_total':count,
+            'project_ids':[ident for ident,_ in projects],'excluded_project_ids':{}}))
+        self.f.intent['registry_hash'] = registry_hash
+        grants = [make_grant(root,ident,registry_hash,'grant-'+ident,input_paths=['README.md'],
+                             classification='real') for ident,root in projects]
+        for grant in grants: self.store.register_grant(grant)
+        self.grant = grants[0]
+        self.Adapter.hold = True
+        return self.runtime(grants=grants), grants
+
+    def both_started(self):
+        return all(self.store.task(ident)['turn_id'] is not None and
+                   any(e['data'].get('method')=='turn/started' for e in self.store.events(ident))
+                   for ident in ('a','b'))
+
+    def test_two_real_projects_start_together_exact_cancel_preserves_b_and_result_reopens(self):
+        runtime,grants = self.parallel_runtime()
+        self.admit('a',grants[0]);self.admit('b',grants[1]);runtime.start()
+        self.wait(self.both_started)
+        self.assertEqual(len(self.Adapter.created),2)
+        self.assertNotEqual(self.store.task('a')['thread_id'],self.store.task('b')['thread_id'])
+        self.assertNotEqual(self.store.task('a')['turn_id'],self.store.task('b')['turn_id'])
+        a = next(adapter for adapter in self.Adapter.created if adapter.root==Path(grants[0]['root']))
+        b = next(adapter for adapter in self.Adapter.created if adapter.root==Path(grants[1]['root']))
+        self.store.cancel('a',worker_owner=self.store.task('a')['owner'])
+        self.wait(lambda:self.store.task('a')['status']=='cancelled')
+        self.assertTrue(a.interrupted)
+        self.assertFalse(getattr(b,'interrupted',False));self.assertFalse(b in self.Adapter.closed)
+        self.assertEqual(self.store.task('b')['status'],'running')
+        self.assertFalse(self.store.task('b')['cancel'])
+        b.hold=False
+        self.wait(lambda:self.store.task('b')['status']=='checks_complete')
+        task = TaskStore(self.store.root).task('b')
+        self.assertEqual(task['result']['provider_reply'],'Controlled component answer')
+        self.assertEqual(task['result']['classification'],'real')
+        self.assertEqual(task['human_acceptance'],'pending')
+        self.assertEqual(len(self.Adapter.interrupts),1)
+
+    def test_real_slot_bound_is_two_and_completion_releases_third(self):
+        runtime,grants = self.parallel_runtime(3)
+        for ident,grant in zip(('a','b','c'),grants):self.admit(ident,grant)
+        runtime.start();self.wait(self.both_started)
+        time.sleep(.06)
+        self.assertEqual(len(self.Adapter.created),2)
+        self.assertEqual(self.store.task('c')['status'],'queued')
+        next(adapter for adapter in self.Adapter.created if adapter.root==Path(grants[0]['root'])).hold=False
+        self.wait(lambda:self.store.task('c')['turn_id'] is not None)
+        self.assertEqual(self.store.task('b')['status'],'running')
+        self.assertEqual(len(self.Adapter.created),3)
+        self.assertEqual(sum(task['status']=='running' for task in self.store.tasks()),2)
+
+    def test_real_a_revocation_or_lease_loss_preserves_running_b(self):
+        for fault in ('revocation','lease'):
+            with self.subTest(fault=fault):
+                other=RealOrdinaryRuntimeTests();other.setUp()
+                try:
+                    runtime,grants=other.parallel_runtime()
+                    other.admit('a',grants[0]);other.admit('b',grants[1]);runtime.start()
+                    other.wait(other.both_started)
+                    heartbeat=other.store.heartbeat
+                    def fenced(ident,owner):
+                        if ident=='a':raise ServiceError('TASK_LEASE_LOST')
+                        return heartbeat(ident,owner)
+                    if fault=='revocation':
+                        other.store.register_grant({**grants[0],'version':2})
+                        other.wait(lambda:other.store.task('a')['status']=='requires_reconcile')
+                    else:
+                        with mock.patch.object(other.store,'heartbeat',side_effect=fenced):
+                            other.wait(lambda:other.store.task('a')['status']=='requires_reconcile')
+                    self.assertEqual(other.store.task('b')['status'],'running')
+                    self.assertFalse(other.store.task('b')['cancel'])
+                    b=next(adapter for adapter in other.Adapter.created if adapter.root==Path(grants[1]['root']))
+                    b.hold=False
+                    other.wait(lambda:other.store.task('b')['status']=='checks_complete')
+                    self.assertTrue(runtime.status()['worker_runtime']['available'])
+                finally:other.doCleanups()
+
+    def test_stop_joins_both_real_owned_workers_and_leaves_waiting_task(self):
+        runtime,grants = self.parallel_runtime(3)
+        for ident,grant in zip(('a','b','c'),grants):self.admit(ident,grant)
+        runtime.start();self.wait(self.both_started)
+        runtime.stop(timeout=2)
+        self.assertTrue(all(self.store.task(ident)['cancel'] for ident in ('a','b')))
+        self.assertEqual(self.store.task('c')['status'],'queued')
+        self.assertFalse(self.store.task('c')['cancel'])
+        self.assertEqual(len(self.Adapter.closed),2)
+        self.assertEqual(len(self.Adapter.interrupts),2)
+        self.assertFalse(runtime.status()['worker_runtime']['available'])
+        with self.assertRaises(ServiceError):runtime.start()
+
     def test_stop_cancels_owned_only_and_runtime_cannot_restart(self):
         runtime = self.runtime()
         self.Adapter.hold = True
@@ -107,7 +218,7 @@ class RealOrdinaryRuntimeTests(unittest.TestCase):
         self.assertTrue(self.store.task('owned')['cancel'])
         self.assertFalse(self.store.task('waiting')['cancel'])
         self.assertEqual(self.store.task('waiting')['status'], 'queued')
-        self.assertEqual(self.Adapter.interrupts, [('ordinary-thread','ordinary-turn')])
+        self.assertEqual(self.Adapter.interrupts, [(self.store.task('owned')['thread_id'],self.store.task('owned')['turn_id'])])
         self.assertEqual(len(self.Adapter.closed), 1)
         with self.assertRaises(ServiceError) as error: runtime.start()
         self.assertEqual(error.exception.code, 'ORDINARY_RUNTIME_RESTART_REJECTED')
@@ -169,6 +280,7 @@ class RealOrdinaryRuntimeTests(unittest.TestCase):
         f = FunctionalFixture(); self.addCleanup(f.close)
         f.ordinary_sample(); f.handshake()
         f.scenarios['fixture-project-a']='delay'
+        f.scenarios['fixture-project-b']='delay'
         grants = [{**g,'classification':'real','version':2} for g in f.ordinary_grants.values()]
         for grant in grants: f.task_store.register_grant(grant)
         runtime = OrdinaryRuntime(f.task_store, grants=grants, grant_classification='real',
@@ -192,12 +304,14 @@ class RealOrdinaryRuntimeTests(unittest.TestCase):
         second = {**spec,'request_id':'real-contract-http-b','project_id':'fixture-project-b',
                   'input_version':next(g['input_version'] for g in grants if g['project_id']=='fixture-project-b')}
         self.assertEqual(f.call('POST','/api/tasks',second)[0],200)
-        time.sleep(.08)
-        self.assertEqual(f.task_store.task(second['request_id'])['status'],'queued')
-        self.assertEqual(len(f.ordinary_adapters),1)
-        self.assertIsNone(f.task_store.claim('foreign-worker',only_task_id=second['request_id']))
-        f.release_ordinary(spec['request_id'])
+        self.wait(lambda:f.task_store.task(second['request_id'])['turn_id'] is not None)
+        self.assertEqual(f.task_store.task(spec['request_id'])['status'],'running')
+        self.assertEqual(f.task_store.task(second['request_id'])['status'],'running')
+        self.assertEqual(len(f.ordinary_adapters),2)
+        f.release_ordinary(second['request_id'])
         self.wait(lambda:f.task_store.task(second['request_id'])['status']=='checks_complete')
+        self.assertEqual(f.task_store.task(spec['request_id'])['status'],'running')
+        f.release_ordinary(spec['request_id'])
         self.wait(lambda:f.task_store.task(spec['request_id'])['status']=='checks_complete')
         status, _, reopened = f.call(path='/api/tasks/'+spec['request_id'])
         self.assertEqual(status, 200, reopened)
@@ -219,6 +333,15 @@ class RealOrdinaryEntryTests(unittest.TestCase):
 
     def run_entry(self, flag='--ordinary-real-readonly-grant', ident=None):
         return self.entry.run_entry(['--root',str(self.f.store.root),flag,ident or self.grant['grant_id']])
+
+    def test_existing_real_registration_never_enables_default_server(self):
+        with mock.patch.object(self.entry.entry,'ordinary_provider_status',side_effect=AssertionError('implicit provider probe')), \
+             mock.patch('hub.ordinary_runtime.OrdinaryRuntime',side_effect=AssertionError('implicit runtime')):
+            code,state=self.entry.run_entry(['--root',str(self.f.store.root)])
+        self.assertEqual(code,0);self.assertTrue(state['served'])
+        self.assertFalse(state['tasks'].ordinary_enabled)
+        self.assertFalse(state['tasks'].capabilities()['ordinary_execution']['available'])
+        self.assertEqual(self.f.store.tasks(),[])
 
     def test_explicit_real_flag_binds_exact_existing_grant_and_real_mode(self):
         runtimes=[]
