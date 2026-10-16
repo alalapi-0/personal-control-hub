@@ -86,10 +86,23 @@ await runBrowserJourney('o61-edge-'+mode,async({page,context,origin,evidence,evi
     await go('#projects/'+B+'/schedule',names[B]);
     const parent=source().getByRole('link',{name:names[A],exact:true});assert.equal(await parent.getAttribute('href'),'#projects/'+A);await parent.click();
     await page.getByRole('heading',{name:names[A],exact:true}).waitFor();assert.equal(new URL(page.url()).hash,'#projects/'+A);
+    await go('#projects/'+B+'/schedule',names[B]);
+    const management=page.getByRole('region',{name:'Hub 管理配置',exact:true});
+    await management.getByLabel('关系配置',{exact:true}).selectOption('confirmed');
+    const other='fixture-directory-002';await management.getByLabel('归属项目',{exact:true}).selectOption(other);
+    const [saved]=await Promise.all([page.waitForResponse(r=>new URL(r.url()).pathname==='/api/management/project'&&r.request().method()==='POST'),
+      management.getByRole('button',{name:'保存配置',exact:true}).click()]);assert.equal(saved.status(),200);
+    await source().getByText('来源主项目与管理归属不同；两项声明均保留，请核对各自依据。',{exact:true}).waitFor();
+    const divergent=await readProject(B);assert.equal(divergent.definition.fields.primary_project_id.value,A);
+    assert.equal(divergent.management.overlay.relations.belongs_to,other);
+    assert.ok(divergent.relations.relations.every(row=>row.status==='proposed'));
+    assert.equal(await source().getByRole('link',{name:names[A],exact:true}).getAttribute('href'),'#projects/'+A);
+    await page.getByRole('region',{name:'已确认管理关系',exact:true}).getByRole('link',{name:other,exact:true}).waitFor();
+    await go('#projects/'+A+'/overview',names[A]);
     const final=await readProject(A);assert.equal(final.business.normalized_status,'active');assert.equal(final.business.fields.blockers[0].recovery_condition,'Review B');
     assert.equal(evidence.tasks.length,0);
     evidence.states.B02B03B05R03Definitions={definitions,threeProposals:['流程衔接','相似审核方式','相似视觉语言'],workingCopyRoundTrip:true,
-      exactProjectIDs:true,activeWithLocalBlocker:true,blockerReason:'Candidate has changed',recovery:'Review B',noTaskDispatch:true};
+      exactProjectIDs:true,sourceManagedProposalConflict:{sourceParent:A,managedParent:'fixture-directory-002',proposalState:'proposed',allLayersPreserved:true},activeWithLocalBlocker:true,blockerReason:'Candidate has changed',recovery:'Review B',noTaskDispatch:true};
     await page.screenshot({path:path.join(evidenceRoot,'edge-definition-active-blocked.png')});
   }else if(mode==='management'){
     const management=()=>page.getByRole('region',{name:'Hub 管理配置',exact:true});
@@ -275,4 +288,4 @@ await runBrowserJourney('o61-edge-'+mode,async({page,context,origin,evidence,evi
   evidence.finalDOM=await main.innerText();epoch++;await page.goto('about:blank');await sleep(100);
   assert.deepEqual(diagnostics.consoleErrors,[]);assert.deepEqual(diagnostics.warnings,[]);
   assert.deepEqual(diagnostics.pageErrors,[]);assert.deepEqual(diagnostics.requestFailed,[]);
-},{directorySize:mode==='source'?103:2});
+},{directorySize:mode==='source'?103:mode==='definition'?6:2});
