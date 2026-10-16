@@ -52,6 +52,7 @@ REGISTERED_CONFIG_SHA256='eca316513d41a987288204749d1d909295749020565f08cfe576ad
 PERMISSION_PROFILE='hub_lwb_fixture_v1'
 EVIDENCE_PERMISSION_PROFILE='hub_lwb_evidence_v11'
 APPROVAL_RESPONSE='CommandExecutionRequestApprovalResponse'
+INPUT_RESPONSE='ToolRequestUserInputResponse'
 
 
 def _profile_entries(root, *, read_only=False, readable_paths=None):
@@ -163,6 +164,7 @@ class AppServerAdapter:
         self.notifications = []
         self.denials = []
         self.approvals = []
+        self.inputs = []
         self.stderr_hash = hashlib.sha256()
         self.stderr_bytes = 0
         self.next_id = 0
@@ -212,7 +214,7 @@ class AppServerAdapter:
             with tempfile.TemporaryDirectory(prefix='hub-protocol-schema-') as directory:
                 run=subprocess.run(['codex','app-server','generate-json-schema','--experimental','--out',directory],capture_output=True,timeout=10,env=env)
                 if run.returncode:raise ServiceError('CODEX_SCHEMA_UNAVAILABLE',status=503)
-                for name in set(PARAMS.values())|set(RESPONSES.values())|set(NOTIFICATIONS.values())|{'ServerNotification','ServerRequest',APPROVAL_RESPONSE}:
+                for name in set(PARAMS.values())|set(RESPONSES.values())|set(NOTIFICATIONS.values())|{'ServerNotification','ServerRequest',APPROVAL_RESPONSE,INPUT_RESPONSE}:
                     paths=list(Path(directory).rglob(name+'.json'))
                     if len(paths)!=1:raise ServiceError('CODEX_SCHEMA_UNAVAILABLE',status=503)
                     raw=paths[0].read_bytes()
@@ -309,10 +311,23 @@ class AppServerAdapter:
             if accepted:
                 try:self._validate(APPROVAL_RESPONSE,{'decision':'accept'})
                 except ServiceError as caught:error=caught;accepted=False
-            observation={'method':sanitized(method,120),'digest':request_digest,**control}
-            (self.approvals if accepted else self.denials).append(observation)
+            answered=False;answers={}
+            if error is None and method=='item/tool/requestUserInput' and control.get('decision')=='answer' and control.get('status')=='answered' and control.get('request_digest')==request_digest:
+                from .task_inputs import input_policy, validate_answers
+                policy=input_policy(value,value.get('params',{}).get('threadId'),value.get('params',{}).get('turnId'))
+                try:
+                    if 'answer'not in policy['decisions']:raise ServiceError('TASK_INPUT_ANSWER_REJECTED',outcome='UNKNOWN')
+                    answers=validate_answers(policy['questions'],control.get('answers'))
+                    self._validate(INPUT_RESPONSE,{'answers':answers});answered=True
+                except ServiceError as caught:error=caught;answers={}
+            observation={'method':sanitized(method,120),'digest':request_digest,
+                         **{k:v for k,v in control.items()if k in {'control_id','status','decision','request_digest','operation_sha256'}}}
+            if answered:
+                observation['answer_sha256']=hashlib.sha256(canonical(answers)).hexdigest()
+                self.inputs.append(observation)
+            else:(self.approvals if accepted else self.denials).append(observation)
             if method in {'item/commandExecution/requestApproval','item/fileChange/requestApproval'}:response={'id':value['id'],'result':{'decision':'accept'if accepted else'decline'}}
-            elif method=='item/tool/requestUserInput':response={'id':value['id'],'result':{'answers':{}}}
+            elif method=='item/tool/requestUserInput':response={'id':value['id'],'result':{'answers':answers if answered else {}}}
             else:response={'id':value['id'],'error':{'code':-32601,'message':'Hub denies unsupported server request'}}
             self._send(response)
             if error is not None:raise error

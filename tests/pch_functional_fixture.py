@@ -80,6 +80,7 @@ class ControlledAdapter:
         self.ident = self.root.name
         self.fixture.probes.append(('worker-root', self.root))
         self.release = fixture.release
+        self.requested = False
 
     def open(self): return self
     def thread(self, previous=None):
@@ -92,6 +93,7 @@ class ControlledAdapter:
             self.fixture.effects.append(self.root)
             (self.root / 'index.html').write_text(AFTER)
         turn = 'turn-' + self.ident + ('-' + secrets.token_hex(6) if self.ordinary else '')
+        self.bound_thread, self.bound_turn = thread, turn
         if self.ordinary:
             self.fixture.ordinary_turns[thread] = (self.root, turn, 'inProgress')
         def event(method, **extra):
@@ -105,6 +107,22 @@ class ControlledAdapter:
         if self.scenario == 'out_of_order': self.events.reverse()
         return turn
     def poll(self, timeout):
+        if self.ordinary and self.scenario in {'input', 'secret_input', 'approval', 'timeout_input'} and not self.requested:
+            self.requested = True
+            method = 'item/commandExecution/requestApproval' if self.scenario == 'approval' else 'item/tool/requestUserInput'
+            params = {'threadId': self.bound_thread, 'turnId': self.bound_turn, 'itemId': 'synthetic-control-item'}
+            if self.scenario == 'approval':
+                params.update(startedAtMs=1, command='/bin/echo synthetic', cwd=str(self.root))
+            else:
+                params.update(isBlocking=True, questions=[{'id': 'focus', 'header': '检查关注点',
+                    'question': '请补充本次只读检查的关注点', 'isSecret': self.scenario == 'secret_input'}])
+            request = {'id': 'synthetic-control', 'method': method, 'params': params}
+            response = self.request_handler(request)
+            self.fixture.control_observations.append({'thread_id': self.bound_thread, 'turn_id': self.bound_turn,
+                'decision': response.get('decision'), 'status': response.get('status'),
+                'question_ids': list(response.get('answers', {})), 'request_digest': digest(request)})
+            if response.get('decision') != 'answer':
+                self.denials.append({'method': method, 'digest': digest(request)})
         if self.scenario == 'delay':
             if not self.release.wait(min(timeout, .05)): return None
         if self.scenario in {'disconnect', 'lost_receipt'}:
@@ -137,6 +155,8 @@ class FunctionalFixture:
         self.probes, self.effects, self.interrupts = [], [], []
         self.scenarios, self.workers = {}, []
         self.ordinary_turns = {}
+        self.ordinary_runtime = None
+        self.control_observations = []
         self.runtime = {key: {'available': True, 'classification': 'synthetic_fixture'}
                         for key in ('worker_runtime', 'provider')}
         self.release = threading.Event()
@@ -300,7 +320,7 @@ class FunctionalFixture:
         self.server, observer, preview = self.assembly.assemble_server(self.root, host='127.0.0.1', port=0, services={
             'projects': self.projects, 'designs': self.designs, 'previews': self.previews, 'tasks': self.tasks,
             'session_view': self.sessions, 'host_observer': self.host, 'materials': self.materials,
-            'owner_auth': OwnerAuth(provider=lambda: self.owner)})
+            'owner_auth': OwnerAuth(provider=lambda: self.owner)}, ordinary_runtime=self.ordinary_runtime)
         assert observer is self.host and preview is None
         self.thread = threading.Thread(target=self.server.serve_forever, kwargs={'poll_interval': .01}, name='functional-fixture-http')
         self.thread.start()
@@ -357,6 +377,18 @@ class FunctionalFixture:
         path.write_text(path.read_text() + 'Synthetic input version changed.\n')
         return {'ordinary_input_changed': True, 'project_id': project_id}
 
+    def start_ordinary_runtime(self, request_timeout=10):
+        from hub.ordinary_runtime import OrdinaryRuntime
+        if not getattr(self, 'ordinary_grants', None) or self.ordinary_runtime is not None:
+            raise ValueError('Explicit synthetic grants required; runtime cannot be replaced')
+        self.ordinary_runtime = OrdinaryRuntime(self.task_store, grants=list(self.ordinary_grants.values()),
+            provider_status={'available': True, 'classification': 'synthetic_fixture'},
+            adapter_factory=lambda root: ControlledAdapter(self, root, ordinary=True),
+            request_timeout=request_timeout)
+        self.assembly.attach_ordinary_runtime(self.server, self.ordinary_runtime)
+        self.ordinary_runtime.start()
+        return {'ordinary_runtime_started': True, 'classification': 'synthetic_fixture'}
+
     def ordinary_regrant(self, project_id):
         from hub.ordinary_tasks import make_grant
         if project_id not in getattr(self, 'ordinary_grants', {}):
@@ -374,10 +406,14 @@ class FunctionalFixture:
     def restart_server(self):
         if any(thread.is_alive() for thread in self.workers):
             raise RuntimeError('Cannot restart fixture with active owned worker')
+        if self.ordinary_runtime is not None and any(task['status'] in {'running', 'validating', 'waiting_input', 'waiting_approval'}
+                                                    for task in self.task_store.tasks()):
+            raise RuntimeError('Cannot restart fixture with active owned ordinary worker')
         previous_origin, previous_instance = self.origin, self.server.backend_instance
         self.server.shutdown(); self.server.server_close(); self.thread.join(3)
         if self.thread.is_alive(): raise RuntimeError('Old fixture HTTP remains active')
         self.cookie = self.csrf = None
+        self.ordinary_runtime = None  # A new executor requires another explicit start.
         self._start_server()
         return {'restarted': True, 'origin': self.origin, 'backend_instance': self.server.backend_instance,
                 'previous_origin': previous_origin, 'previous_backend_instance': previous_instance}
@@ -643,11 +679,14 @@ def main():
             elif action == 'health': result = {'status': fixture.call(path='/api/health')[0]}
             elif action == 'management-sample': result = fixture.management_sample()
             elif action == 'ordinary-sample': result = fixture.ordinary_sample()
+            elif action == 'ordinary-runtime-start': result = fixture.start_ordinary_runtime(command.get('request_timeout', 10))
+            elif action == 'ordinary-observations': result = {'ordinary_control_observations': fixture.control_observations,
+                'interrupts': fixture.interrupts, 'effects': len(fixture.effects)}
             elif action == 'ordinary-input': result = fixture.ordinary_input(command.get('project_id'))
             elif action == 'ordinary-regrant': result = fixture.ordinary_regrant(command.get('project_id'))
             elif action == 'ordinary-scenario':
                 project = command.get('project_id')
-                if project not in fixture.roots or command.get('scenario') not in {'normal', 'delay', 'disconnect'}:
+                if project not in fixture.roots or command.get('scenario') not in {'normal', 'delay', 'disconnect', 'input', 'secret_input', 'approval', 'timeout_input'}:
                     raise ValueError('Invalid synthetic ordinary scenario')
                 fixture.scenarios[fixture.roots[project].name] = command['scenario']
                 fixture.release.clear()

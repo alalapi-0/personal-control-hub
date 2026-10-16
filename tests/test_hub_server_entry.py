@@ -38,6 +38,7 @@ class ServerEntryTests(unittest.TestCase):
             origin = 'http://127.0.0.1:8766'
             def __init__(self, projects, designs, **values):
                 captured.update(projects=projects, designs=designs, **values)
+                self.tasks = values['tasks']
             def serve_forever(self, **values):
                 captured['served'] = True
             def server_close(self):
@@ -78,6 +79,38 @@ class ServerEntryTests(unittest.TestCase):
         self.assertEqual(state['projects'].root, self.data)
         self.assertEqual((state['host'], state['port']), ('127.0.0.1', 8766))
         self.assertFalse(list(self.data.iterdir()))
+
+    def test_missing_ordinary_grant_never_probes_provider_or_initializes_storage(self):
+        with patch.object(self.entry, 'ordinary_provider_status', side_effect=AssertionError('unexpected auth probe')):
+            code, state = self.run_entry(['--root', str(self.data), '--ordinary-readonly-grant', 'missing-grant'])
+        self.assertEqual(code, 1)
+        self.assertTrue(state['closed'])
+        self.assertNotIn('served', state)
+        self.assertFalse(list(self.data.iterdir()))
+
+    def test_provider_readiness_reduces_native_status_without_retaining_output(self):
+        import subprocess
+        for text, expected in [(b'Logged in using ChatGPT\n', True), (b'Not logged in', False)]:
+            result = subprocess.CompletedProcess([], 0, b'', text)
+            with patch.object(self.entry.subprocess, 'run', return_value=result) as command:
+                self.assertEqual(self.entry.ordinary_provider_status(), {'available': expected, 'classification': 'real'})
+            self.assertEqual(command.call_args.args[0], ['codex', 'login', 'status'])
+            self.assertNotIn('shell', command.call_args.kwargs)
+
+    def test_explicit_runtime_attachment_does_not_start_and_close_owns_its_handle(self):
+        from types import SimpleNamespace
+        store = object(); calls = []
+        tasks = SimpleNamespace(store=store)
+        server = SimpleNamespace(tasks=tasks, server_close=lambda: calls.append('http-close'))
+        runtime = SimpleNamespace(store=store, writer_check=lambda _: False,
+                                  status=lambda: {}, stop=lambda: calls.append('runtime-stop'))
+        self.entry.attach_ordinary_runtime(server, runtime)
+        self.assertTrue(tasks.ordinary_enabled)
+        self.assertEqual(calls, [])
+        server.server_close()
+        self.assertEqual(calls, ['runtime-stop', 'http-close'])
+        with self.assertRaises(Exception):
+            self.entry.attach_ordinary_runtime(server, runtime)
 
     def test_missing_or_aliased_root_fails_before_startup_and_does_not_initialize(self):
         missing = self.data / 'absent'

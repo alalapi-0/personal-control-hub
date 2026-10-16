@@ -100,6 +100,9 @@ class TaskWorker:
                 control=next(c for c in self.store.controls(ident) if c['id']==control_id)
                 if control['version']==2:break
                 current=self.store.task(ident)
+                if ordinary:
+                    from .ordinary_tasks import check_registration
+                    check_registration(grant,self.store.root)
                 reason='cancelled' if current['cancel'] else 'expired' if time.time()>=control['expires_at'] else None
                 if self.store.grant(grant['grant_id'])!=grant:reason='grant_revoked'
                 if reason:
@@ -109,11 +112,21 @@ class TaskWorker:
             # The native callback is resolved only against the durable, exact
             # request. Recheck revocation/cancellation at the response boundary.
             current=self.store.task(ident)
+            if ordinary:
+                from .ordinary_tasks import check_registration
+                check_registration(grant,self.store.root)
+                validate_grant(grant,live=True)
             if (current['cancel'] or lease_lost.is_set() or self.store.grant(grant['grant_id'])!=grant
-                    or time.time()>=control['expires_at'] or current['thread_id']!=thread_id or current['turn_id']!=turn_id):
+                    or not current['lease_until'] or current['lease_until']<=time.time() or current['owner']!=self.owner
+                    or grant['expires_at']<=time.time() or time.time()>=control['expires_at'] or current['thread_id']!=thread_id or current['turn_id']!=turn_id):
+                raise ServiceError('TASK_CONTROL_VERSION_STALE',outcome='UNKNOWN')
+            self.store.update(ident,self.owner,status='running')
+            current=self.store.task(ident)
+            if current['cancel'] or self.store.grant(grant['grant_id'])!=grant:
                 raise ServiceError('TASK_CONTROL_VERSION_STALE',outcome='UNKNOWN')
             return {'control_id':control_id,'status':control['status'],'decision':control.get('decision','decline'),
-                    'request_digest':request_hash,'operation_sha256':control.get('operation_sha256')}
+                    'request_digest':request_hash,'operation_sha256':control.get('operation_sha256'),
+                    **({'answers':control['answers']}if control.get('decision')=='answer'else{})}
         try:
             ordinary=type(task['intent'].get('grant'))is dict and task['intent']['grant'].get('kind')=='ordinary_project'
             if ordinary:

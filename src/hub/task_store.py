@@ -678,10 +678,18 @@ class TaskStore:
                 (canonical({'data':result,'hash':digest(result)}).decode(),ident))
             if cursor.rowcount!=1:raise ServiceError('TASK_LOCAL_FINALIZATION_REJECTED',status=409)
 
-    def cancel(self, ident):
-        with self._connection(True) as connection:
-            row = connection.execute('SELECT status FROM tasks WHERE id=?', (stable_id(ident),)).fetchone()
+    def cancel(self, ident, *, owner_context=None, authorize=None, worker_owner=None):
+        if authorize is not None:authorize()
+        with self._connection(True,guard=authorize) as connection:
+            row = connection.execute('SELECT * FROM tasks WHERE id=?', (stable_id(ident),)).fetchone()
             if not row: raise ServiceError('TASK_NOT_FOUND', status=404)
+            task=self._task(row)
+            if worker_owner is not None and (row['owner']!=worker_owner or not row['lease_until'] or row['lease_until']<=time.time()):
+                raise ServiceError('TASK_LEASE_LOST',status=409)
+            if task['intent'].get('grant',{}).get('kind')=='ordinary_project':
+                if worker_owner is None and (owner_context is None or authorize is None):
+                    raise ServiceError('OWNER_AUTH_REQUIRED',status=403)
+                if owner_context is not None and task['intent'].get('owner_context')!=owner_context:raise ServiceError('TASK_CONTROL_OWNER_REJECTED',status=403)
             if row['status'] not in TERMINAL:
                 connection.execute("UPDATE tasks SET cancel=1,status=CASE WHEN status='queued' THEN 'cancelled' ELSE status END WHERE id=?",(ident,))
 
@@ -1065,8 +1073,17 @@ class TaskStore:
     def controls(self, ident):
         with self._connection() as connection:return self._controls(connection,stable_id(ident)) if connection else []
 
+    def _ordinary_control_check(self, connection, task):
+        grant=task['intent']['grant']
+        if grant.get('kind')!='ordinary_project':return
+        from .ordinary_tasks import check_registration, validate_grant
+        check_registration(grant,self.root);validate_grant(grant,live=True)
+        current=connection.execute('SELECT hash FROM grants WHERE id=?',(grant['grant_id'],)).fetchone()
+        if not current or current['hash']!=task['intent']['grant_hash']:
+            raise ServiceError('TASK_CONTROL_VERSION_STALE',status=409)
+
     def open_control(self, ident, owner, *, request_hash, method, thread_id, turn_id, expires_at, provider_request=None):
-        """Worker-only request record. Never retain provider command, form, or path."""
+        """Worker-only request record; retain only bounded nonsecret input forms."""
         kinds={'item/commandExecution/requestApproval':'approval','item/fileChange/requestApproval':'approval','item/tool/requestUserInput':'input'}
         if method not in kinds or not isinstance(request_hash,str) or len(request_hash)!=64 or any(c not in '0123456789abcdef' for c in request_hash):raise ServiceError('TASK_CONTROL_REJECTED')
         now=time.time()
@@ -1075,7 +1092,7 @@ class TaskStore:
         with self._connection(True) as connection:
             row=connection.execute('SELECT * FROM tasks WHERE id=? AND owner=?',(stable_id(ident),stable_id(owner))).fetchone()
             if not row or row['lease_until']<now or row['cancel'] or row['status']!='running' or row['thread_id']!=thread_id or row['turn_id']!=turn_id:raise ServiceError('TASK_CONTROL_BINDING_REJECTED',status=409)
-            task=self._task(row);grant=task['intent']['grant'];current=connection.execute('SELECT hash FROM grants WHERE id=?',(grant['grant_id'],)).fetchone()
+            task=self._task(row);self._ordinary_control_check(connection,task);grant=task['intent']['grant'];current=connection.execute('SELECT hash FROM grants WHERE id=?',(grant['grant_id'],)).fetchone()
             if not current or current['hash']!=task['intent']['grant_hash'] or grant['expires_at']<=now:raise ServiceError('GRANT_VERSION_STALE',status=409)
             policy={'decisions':['decline'],'reason':'provider_request_unavailable'}
             if provider_request is not None:
@@ -1086,20 +1103,25 @@ class TaskStore:
                 policy=approval_policy(grant,provider_request,thread_id=thread_id,turn_id=turn_id,
                     item_id=params.get('itemId')if type(params)is dict else None,
                     request_id=provider_request.get('id'),grant_root=grant['root'],now=now)
+            if grant.get('kind')=='ordinary_project' and method=='item/tool/requestUserInput':
+                from .task_inputs import input_policy
+                policy=input_policy(provider_request,thread_id,turn_id)
             value={'id':control_id,'version':1,'kind':kinds[method],'method':method,'request_digest':request_hash,
                    'thread_id':thread_id,'turn_id':turn_id,'worker_owner':owner,'owner_context':task['intent'].get('owner_context','trusted_local_owner'),
                    'grant_hash':task['intent']['grant_hash'],'expires_at':min(expires_at,grant['expires_at']),
                    'status':'pending','permissions':'unverified_beyond_grant' if kinds[method]=='approval' else 'input_unavailable',
                    'allowed_decisions':policy['decisions'],'reason':policy['reason']}
+            if 'questions'in policy:
+                value.update(questions=policy['questions'],isBlocking=policy['isBlocking'],permissions='bounded_local_text_input')
             if 'operation_sha256'in policy:
                 value.update(operation_sha256=policy['operation_sha256'],permissions='exact_registered_command')
             self._append_event(connection,ident,'control-open-'+request_hash,value)
             connection.execute('UPDATE tasks SET status=? WHERE id=?',('waiting_approval' if kinds[method]=='approval' else 'waiting_input',ident))
         return control_id
 
-    def respond_control(self, ident, control_id, version, decision, *, owner_context='trusted_local_owner', authorize=None):
+    def respond_control(self, ident, control_id, version, decision, *, owner_context='trusted_local_owner', authorize=None, answers=None):
         """Authenticated single-decision CAS against the frozen request policy."""
-        if decision not in ('accept','decline') or type(version)is not int or version!=1:raise ServiceError('TASK_CONTROL_DECISION_REJECTED',status=409)
+        if decision not in ('accept','decline','answer') or type(version)is not int or version!=1:raise ServiceError('TASK_CONTROL_DECISION_REJECTED',status=409)
         if authorize is not None:authorize()
         with self._connection(True,guard=authorize) as connection:
             row=connection.execute('SELECT * FROM tasks WHERE id=?',(stable_id(ident),)).fetchone()
@@ -1107,12 +1129,25 @@ class TaskStore:
             if not row or not control:raise ServiceError('TASK_CONTROL_NOT_FOUND',status=404)
             if control['owner_context']!=owner_context:raise ServiceError('TASK_CONTROL_OWNER_REJECTED',status=403)
             if decision not in control['allowed_decisions']:raise ServiceError('TASK_CONTROL_DECISION_REJECTED',status=409)
+            task=self._task(row);self._ordinary_control_check(connection,task)
+            saved_answers=None
+            if decision=='answer':
+                from .task_inputs import validate_answers
+                saved_answers=validate_answers(control.get('questions',[]),answers)
+            elif answers is not None:raise ServiceError('TASK_INPUT_ANSWER_REJECTED',status=409)
             if control['version']==2:
-                if control.get('decision')==decision:return True
+                if control.get('decision')==decision and (decision!='answer' or control.get('answer_sha256')==digest(saved_answers)):
+                    if task['intent']['grant'].get('kind')=='ordinary_project':
+                        now=time.time()
+                        if row['cancel'] or not row['lease_until'] or row['lease_until']<=now or control['expires_at']<=now or row['owner']!=control['worker_owner'] or row['thread_id']!=control['thread_id'] or row['turn_id']!=control['turn_id']:
+                            raise ServiceError('TASK_CONTROL_VERSION_STALE',status=409)
+                    return True
                 raise ServiceError('TASK_CONTROL_VERSION_STALE',status=409)
             now=time.time();task=self._task(row);current=connection.execute('SELECT hash FROM grants WHERE id=?',(task['intent']['grant']['grant_id'],)).fetchone()
             if row['owner']!=control['worker_owner'] or row['lease_until']<now or row['cancel'] or row['status'] not in {'waiting_input','waiting_approval'} or row['thread_id']!=control['thread_id'] or row['turn_id']!=control['turn_id'] or control['expires_at']<=now or task['intent']['grant']['expires_at']<=now or task['intent']['grant_hash']!=control['grant_hash'] or not current or current['hash']!=control['grant_hash']:raise ServiceError('TASK_CONTROL_VERSION_STALE',status=409)
-            self._append_event(connection,ident,'control-decision-'+control['request_digest'],{'id':control_id,'decision':decision,'status':'accepted'if decision=='accept'else'declined','at':now})
+            result={'id':control_id,'decision':decision,'status':'answered'if decision=='answer'else'accepted'if decision=='accept'else'declined','at':now}
+            if saved_answers is not None:result.update(answers=saved_answers,answer_sha256=digest(saved_answers))
+            self._append_event(connection,ident,'control-decision-'+control['request_digest'],result)
         if authorize is not None:authorize()
         return False
 

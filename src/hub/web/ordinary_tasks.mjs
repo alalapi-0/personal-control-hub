@@ -48,7 +48,7 @@ export function renderOrdinaryTaskResult(task){
   else panel.append(el('p',{},'尚无已记录的执行回复，请读取原请求核对。'));
   if(id(task.id)&&id(spec.project_id)&&spec.project_id===task.project)panel.append(el('a',{
     href:'#projects/'+encodeURIComponent(task.project)+'/tasks?parent_task_id='+encodeURIComponent(task.id)},'继续此普通任务'));
-  if(['waiting_input','waiting_approval'].includes(task.status))panel.append(el('p',{className:'warning'},'本入口尚未开放补充输入或审批答复协议，请保留原请求并核对任务状态。'));
+  if(['waiting_input','waiting_approval'].includes(task.status))panel.append(el('p',{className:'warning'},'请在下方处理这个任务的待答复请求；任务和原指令会继续保留。'));
   return panel;
 }
 

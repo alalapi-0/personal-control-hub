@@ -527,8 +527,13 @@ class TaskService:
         controls=[]
         for control in self.store.controls(ident):
             public={key:control[key] for key in ('id','version','kind','method','thread_id','turn_id','expires_at','status','permissions','allowed_decisions')}
+            public['questions']=control.get('questions',[])
+            if 'isBlocking'in control:public['isBlocking']=control['isBlocking']
+            public['input_available']=control['kind']=='input' and 'answer'in control['allowed_decisions'] and control['status']=='pending'
             if public['status']=='pending' and public['expires_at']<=time.time():public['status']='expired'
             if task['status'] in {'checks_complete','failed','cancelled','lost','requires_reconcile'}:public['allowed_decisions']=[]
+            if public['status']!='pending' or task['cancel']:
+                public['allowed_decisions']=[];public['input_available']=False
             controls.append(public)
         return {'task':self.public(task),'events':events,'controls':controls,'storage':self.store.storage_status()}
 
@@ -538,13 +543,33 @@ class TaskService:
         if authorize is not None:authorize()
         return {**self.get(ident),**saved}
 
+    def _control_enabled(self,ident,owner_context,authorize):
+        task=self.store.task(ident)
+        ordinary=bool(task and task['intent'].get('grant',{}).get('kind')=='ordinary_project')
+        if ordinary:
+            if not self.ordinary_enabled:raise ServiceError('ORDINARY_EXECUTION_DISABLED',status=403)
+            if authorize is None:raise ServiceError('OWNER_AUTH_REQUIRED',status=403)
+            authorize()
+            if task['intent'].get('owner_context')!=owner_context:raise ServiceError('TASK_CONTROL_OWNER_REJECTED',status=403)
+        elif not self.test_gate:raise ServiceError('EXECUTION_DISABLED',status=403)
+
     def respond_control(self,ident,command, *, owner_context='trusted_local_owner',authorize=None):
-        if not self.test_gate:raise ServiceError('EXECUTION_DISABLED',status=403)
-        if type(command)is not dict or set(command)!={'control_id','version','decision'}:raise ServiceError('INVALID_TASK_CONTROL')
-        if type(command['decision'])is not str or command['decision']not in {'accept','decline'}:raise ServiceError('TASK_CONTROL_DECISION_REJECTED',status=409)
-        replayed=self.store.respond_control(ident,command['control_id'],command['version'],command['decision'],owner_context=owner_context,authorize=authorize)
+        if type(command)is not dict or set(command) not in ({'control_id','version','decision'},{'control_id','version','decision','answers'}):raise ServiceError('INVALID_TASK_CONTROL')
+        if type(command['decision'])is not str or command['decision']not in {'accept','decline','answer'}:raise ServiceError('TASK_CONTROL_DECISION_REJECTED',status=409)
+        if ('answers'in command)!=(command['decision']=='answer'):raise ServiceError('INVALID_TASK_CONTROL')
+        self._control_enabled(ident,owner_context,authorize)
+        extra={'answers':command['answers']}if command['decision']=='answer'else{}
+        replayed=self.store.respond_control(ident,command['control_id'],command['version'],command['decision'],owner_context=owner_context,authorize=authorize,**extra)
         return {**self.get(ident),'replayed':replayed}
 
-    def cancel(self,ident):
-        if not self.test_gate:raise ServiceError('EXECUTION_DISABLED',status=403)
-        self.store.cancel(ident);return self.get(ident)
+    def cancel(self,ident, *, owner_context='trusted_local_owner',authorize=None):
+        task=self.store.task(ident)
+        if task and task['intent'].get('grant',{}).get('kind')=='ordinary_project':
+            # Stop existing work even after admission has been disabled/revoked.
+            if authorize is None:raise ServiceError('OWNER_AUTH_REQUIRED',status=403)
+            authorize()
+            if task['intent'].get('owner_context')!=owner_context:raise ServiceError('TASK_CONTROL_OWNER_REJECTED',status=403)
+        elif not self.test_gate:raise ServiceError('EXECUTION_DISABLED',status=403)
+        self.store.cancel(ident,owner_context=owner_context,authorize=authorize)
+        if authorize is not None:authorize()
+        return self.get(ident)

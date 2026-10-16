@@ -37,13 +37,14 @@ const lifecycleLabels={queued:'已接收 · 排队中',preparing:'正在核对�
 export const lifecycleLabel=task=>lifecycleLabels[task.lifecycle?.stage]||taskLabels[task.status]||'状态未知';
 const reviewLabels={pending:'待决定',accepted:'已接受此次结果',changes_requested:'需要修改',deferred:'暂缓验收'};
 export function controlState(control,task,owner=true,now=Date.now()/1000){
-  const labels={pending:control.kind==='input'?'等待补充输入':'等待审批',accepted:'仅本次已允许',declined:'已拒绝',expired:'已过期',cancelled:'已取消',grant_revoked:'授权已撤销'};
+  const labels={pending:control.kind==='input'?'等待补充输入':'等待审批',accepted:'仅本次已允许',answered:'已提交补充输入',declined:'已拒绝',expired:'已过期',cancelled:'已取消',grant_revoked:'授权已撤销'};
   const active=['waiting_input','waiting_approval'].includes(task.status);
   const pending=control.status==='pending'&&control.expires_at>now;
   const current=owner&&active&&pending&&control.version===1&&control.thread_id===task.thread_id&&control.turn_id===task.turn_id;
   return {label:control.status==='pending'&&!pending?'已过期':labels[control.status]||'需要对账',
     canDecline:current&&control.allowed_decisions.includes('decline'),
-    canAccept:current&&control.kind==='approval'&&control.allowed_decisions.includes('accept')};
+    canAccept:current&&control.kind==='approval'&&control.allowed_decisions.includes('accept'),
+    canAnswer:current&&control.kind==='input'&&control.allowed_decisions.includes('answer')};
 }
 export function feedbackState(status){
   if(status==='cancelled')return {label:'排队意见已取消',detail:'意见记录仍保存在 Linux，这条反馈不会执行。'};
@@ -106,11 +107,35 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true}={}){
   await renderBusinessTaskPreview(root,task,{isCurrent});
   if(!isCurrent())return;
   const ordinary=renderOrdinaryTaskResult(task);if(ordinary)root.append(ordinary);
-  for(const control of task.kind==='ordinary_project'?[]:data.controls||[]){
+  for(const control of data.controls||[]){
     const state=controlState(control,task,owner),label=el('h3',{},state.label),section=el('section',{className:'panel stack'},label,
-      el('p',{},control.kind==='input'?'本适配器尚未验证输入答复能力。可拒绝本次请求，保存的修改意见不会被删除。':control.allowed_decisions.includes('accept')?'本次命令已与既有授权核对。允许只适用于这一次请求；项目、命令和网络权限不会扩大。':'请求权限尚未确认在已有授权内。本入口只允许拒绝，不会扩大项目、命令或网络权限。'),
+      el('p',{},control.kind==='input'?(state.canAnswer?'请补充本次任务的信息。答复只送给这个任务，不会扩大执行权限。':state.canDecline?'本次输入请求不可答复。可拒绝本次请求，原任务指令仍保留。':'这条输入请求已结束或目前不可操作，请核对原任务状态。'):control.allowed_decisions.includes('accept')?'本次命令已与既有授权核对。允许只适用于这一次请求；项目、命令和网络权限不会扩大。':'请求权限尚未确认在已有授权内。本入口只允许拒绝，不会扩大项目、命令或网络权限。'),
       el('p',{className:'caption'},'请求版本 '+control.version+' · '+new Date(control.expires_at*1000).toLocaleTimeString()+' 到期'));
     const controlButtons=[];let responding=false;
+    if(control.kind==='input'&&control.status==='pending'&&control.allowed_decisions.includes('answer')){
+      const fields=[];
+      for(const question of control.questions||[]){
+        const options=Array.isArray(question.options)?question.options:[];
+        const id='control-'+control.id+'-'+question.id;
+        const input=options.length&&!question.isOther?el('select',{id},
+          el('option',{value:''},'请选择'),...options.map(option=>el('option',{value:option.label},option.label+' — '+option.description))):el('textarea',{id,rows:3,maxLength:2000});
+        input.disabled=!state.canAnswer;
+        section.append(el('label',{htmlFor:id},question.header+'：'+question.question),input);
+        if(options.length&&question.isOther)section.append(el('p',{className:'caption'},'可填写 '+options.map(option=>option.label).join(' / ')+'，或补充其他回答。'));
+        fields.push({question,input});
+        actions.push({button:input,allowed:()=>!responding&&controlState(control,task,owner).canAnswer});
+      }
+      const message=el('p',{role:'status','aria-live':'polite'});
+      const answer=button('提交补充输入',async()=>{
+        if(responding)return;
+        if(!fields.length||fields.some(field=>!field.input.value.trim())){message.textContent='请回答每个问题。';fields.find(field=>!field.input.value.trim())?.input.focus();return;}
+        const answers=Object.fromEntries(fields.map(({question,input})=>[question.id,{answers:[input.value.trim()]}]));
+        responding=true;controlButtons.forEach(action=>action.disabled=true);fields.forEach(field=>field.input.disabled=true);message.textContent='正在保存本次答复…';
+        try{await api('/api/tasks/'+encodeURIComponent(task.id)+'/respond',{control_id:control.id,version:control.version,decision:'answer',answers});await renderTasks(target,{taskId,isCurrent});}
+        catch{message.textContent='答复结果需要核对。保留当前输入，请重新读取原任务；不会另建任务。';refresh.focus();}
+      });
+      answer.disabled=!state.canAnswer;controlButtons.push(answer);actions.push({button:answer,allowed:()=>!responding&&controlState(control,task,owner).canAnswer});section.append(answer,message);
+    }
     if(control.kind==='approval'&&control.allowed_decisions.includes('accept')){
       const accept=button('仅本次允许',async()=>{
         responding=true;controlButtons.forEach(action=>action.disabled=true);const message=el('p',{role:'status'},'正在保存本次答复…');section.append(message);
@@ -153,7 +178,7 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true}={}){
     cancel.disabled=!owner;
     actions.push({button:cancel,allowed:()=>owner});
     root.append(cancel);
-    root.append(el('p',{className:'caption'},'取消只中断这个任务；已经产生的修改可能保留，须查看差异后决定。'));
+    root.append(el('p',{className:'caption'},task.kind==='ordinary_project'?'取消只中断这个只读任务；执行状态和已经收到的回复仍保留。':'取消只中断这个任务；已经产生的修改可能保留，须查看差异后决定。'));
   }
   function identity(event){if(!root.isConnected){window.removeEventListener('hub:identity',identity);return;}owner=!recovery.blocked&&event.detail?.owner_authenticated===true;for(const action of actions)action.button.disabled=!action.allowed();}
   window.addEventListener('hub:identity',identity);

@@ -626,7 +626,7 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                 elif path.endswith('/respond'):result=self.server.tasks.respond_control(path[len('/api/tasks/'):-len('/respond')],command,owner_context=owner_context,authorize=authorize_task)
                 else:
                     if command:raise ServiceError('INVALID_TASK_REQUEST')
-                    result=self.server.tasks.cancel(path[len('/api/tasks/'):-len('/cancel')])
+                    result=self.server.tasks.cancel(path[len('/api/tasks/'):-len('/cancel')],owner_context=owner_context,authorize=authorize_task)
             elif path == '/api/management/project':
                 version = self.server.owner_auth.version
                 def authorize_management():

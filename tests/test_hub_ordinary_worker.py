@@ -78,7 +78,7 @@ class OrdinaryWorkerTests(unittest.TestCase):
                 if not self.changed:
                     self.changed = True
                     if self.scenario == 'revoked': fixture.store.register_grant({**fixture.grant, 'version': 2})
-                    if self.scenario == 'cancelled': fixture.store.cancel('ordinary-task')
+                    if self.scenario == 'cancelled': fixture.store.cancel('ordinary-task',worker_owner=fixture.store.task('ordinary-task')['owner'])
                     if self.scenario == 'registry_changed':
                         fixture.registry['projects'][0]['enabled']=False
                         fixture.registry_path.write_text(yaml.safe_dump(fixture.registry))

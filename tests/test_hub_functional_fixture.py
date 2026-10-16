@@ -14,6 +14,21 @@ from hub.local_service import WEB_ASSETS
 
 
 class FunctionalFixtureTests(unittest.TestCase):
+    def test_idle_runtime_restart_requires_new_explicit_owned_handle(self):
+        with FunctionalFixture() as f:
+            f.ordinary_sample()
+            f.start_ordinary_runtime()
+            old = f.ordinary_runtime
+            self.assertTrue(old.status()['worker_runtime']['available'])
+            f.restart_server()
+            self.assertIsNone(f.ordinary_runtime)
+            self.assertFalse(old.status()['worker_runtime']['available'])
+            self.assertFalse(f.tasks.capabilities()['ordinary_execution']['available'])
+            f.start_ordinary_runtime()
+            self.assertIsNot(f.ordinary_runtime, old)
+            self.assertTrue(f.tasks.capabilities()['ordinary_execution']['available'])
+            self.assertEqual([probe for probe in f.probes if probe[0] == 'worker-root'], [])
+
     def test_complete_http_guest_owner_refresh_sources_static_and_shutdown(self):
         with FunctionalFixture() as f:
             root = f.root

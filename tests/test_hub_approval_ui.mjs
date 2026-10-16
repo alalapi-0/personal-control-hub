@@ -29,3 +29,15 @@ test('accepted request has a single-request label rather than result acceptance'
   assert.equal(controlState({...control,status:'accepted'},task,true,10).label,'仅本次已允许');
   assert.equal(controlState({...control,status:'declined'},task,true,10).label,'已拒绝');
 });
+
+test('input answers require the exact pending request, owner, and active turn',()=>{
+  const input={...control,kind:'input',allowed_decisions:['decline','answer']};
+  const waiting={...task,status:'waiting_input'};
+  assert.equal(controlState(input,waiting,true,10).canAnswer,true);
+  assert.equal(controlState(input,waiting,false,10).canAnswer,false);
+  for(const patch of [{thread_id:'other'},{turn_id:'old'},{version:2},{status:'answered'},{allowed_decisions:['decline']}])
+    assert.equal(controlState({...input,...patch},waiting,true,10).canAnswer,false);
+  assert.equal(controlState(input,waiting,true,20).canAnswer,false);
+  assert.equal(controlState(input,{...waiting,status:'cancelled'},true,10).canAnswer,false);
+  assert.equal(controlState({...input,status:'answered'},waiting,true,10).label,'已提交补充输入');
+});

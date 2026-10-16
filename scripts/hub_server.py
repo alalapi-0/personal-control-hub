@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Start the single-user Hub UI and API on literal loopback."""
 import argparse
+import subprocess
 import sys
 from pathlib import Path
 
@@ -22,7 +23,45 @@ from hub.session_service import SessionService
 from hub.readonly_preview import ReadOnlyPreview, MANIFEST
 
 
-def assemble_server(root, *, host='127.0.0.1', port=8766, services=None):
+def attach_ordinary_runtime(server, runtime):
+    """Attach one explicit local executor; construction does not start it."""
+    tasks = server.tasks
+    if (tasks is None or runtime.store is not tasks.store
+            or getattr(server, 'ordinary_runtime', None) is not None):
+        raise ServiceError('ORDINARY_RUNTIME_BINDING_REJECTED')
+    tasks.writer_check = runtime.writer_check
+    tasks.writer_check_configured = True
+    tasks.runtime_status = runtime.status
+    tasks.ordinary_enabled = True
+    server.ordinary_runtime = runtime
+    close = server.server_close
+    def close_owned():
+        try:
+            runtime.stop()
+        finally:
+            close()
+    server.server_close = close_owned
+
+
+def ordinary_provider_status():
+    """Observe existing native login on explicit startup, never from a GET.
+
+    Output is reduced to a boolean; account/session values are not retained.
+    This is readiness, not evidence of a completed provider turn.
+    """
+    from hub.codex_adapter import child_environment
+    ready = False
+    try:
+        result = subprocess.run(['codex', 'login', 'status'], env=child_environment(),
+                                capture_output=True, timeout=10, check=False)
+        ready = (result.returncode == 0 and
+                 (result.stdout + result.stderr).strip() == b'Logged in using ChatGPT')
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+    return {'available': ready, 'classification': 'real'}
+
+
+def assemble_server(root, *, host='127.0.0.1', port=8766, services=None, ordinary_runtime=None):
     """Construct the product without starting effects or initializing stores.
 
     Explicit dependencies let disposable instances use the same assembly while
@@ -55,6 +94,12 @@ def assemble_server(root, *, host='127.0.0.1', port=8766, services=None):
     if 'owner_auth' in services:
         options['owner_auth'] = services['owner_auth']
     server = HubHTTPServer(projects, designs, host=host, port=port, **options)
+    if ordinary_runtime is not None:
+        try:
+            attach_ordinary_runtime(server, ordinary_runtime)
+        except Exception:
+            server.server_close()
+            raise
     return server, observer, preview
 
 
@@ -66,12 +111,28 @@ def main(argv=None):
     parser.add_argument("--port", type=int, default=8766)
     parser.add_argument("--readonly-preview", choices=["computer-study-plan"],
                         help="Start the explicitly granted read-only development fixture")
+    parser.add_argument('--ordinary-readonly-grant', action='append', default=[],
+                        help='Explicit existing synthetic ordinary grant ID; starts its owned read-only executor')
     args = parser.parse_args(argv)
     server = None
     observer = None
     preview = None
     try:
         server, observer, preview = assemble_server(args.root, host=args.host, port=args.port)
+        if args.ordinary_readonly_grant:
+            from hub.ordinary_runtime import OrdinaryRuntime
+            from hub.ordinary_tasks import check_registration, validate_grant
+            grants = [server.tasks.store.grant(ident) for ident in args.ordinary_readonly_grant]
+            for grant in grants:
+                if (type(grant) is not dict or grant.get('classification') != 'synthetic_fixture'
+                        or grant.get('kind') != 'ordinary_project' or grant.get('effect') != 'read_only'):
+                    raise ServiceError('ORDINARY_RUNTIME_SCOPE_REJECTED')
+                check_registration(grant, server.tasks.store.root)
+                validate_grant(grant, live=True)
+            runtime = OrdinaryRuntime(server.tasks.store, grants=grants,
+                                      provider_status=ordinary_provider_status())
+            attach_ordinary_runtime(server, runtime)
+            runtime.start()
         if args.readonly_preview:
             if preview is None: raise ServiceError('REAL_PREVIEW_REGISTRATION_INVALID')
             preview.start()

@@ -59,6 +59,7 @@ class TaskGrantCommandTests(unittest.TestCase):
 
     def test_owner_control_accept_delegated_to_store_policy_with_original_cas(self):
         store = mock.Mock()
+        store.task.return_value = {'id': 'task-one', 'intent': {'grant': copy.deepcopy(self.grant)}}
         store.respond_control.return_value = False
         service = TaskService(None, None, store, test_gate=True)
         service.get = mock.Mock(return_value={'task': {'id': 'task-one'}})
@@ -81,6 +82,7 @@ class TaskGrantCommandTests(unittest.TestCase):
                 service.respond_control('task-one', {'control_id': 'control-one', 'version': 1, 'decision': decision})
         with self.assertRaises(ServiceError):
             service.respond_control('task-one', {'control_id': 'control-one', 'version': 1, 'decision': 'accept', 'permissions': {}})
+        store.task.assert_not_called()
         store.respond_control.assert_not_called()
 
 
