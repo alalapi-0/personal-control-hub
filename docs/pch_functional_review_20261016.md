@@ -65,8 +65,8 @@
 | A-01 | 从正式首页核对三十天项目及Actor 4名称、用途、已有任务绑定；形成明确A/B映射；歧义被指出，不因发音或目录名猜定 | BLOCKED | BLOCKED | 所有者已确认口述项目身份；正式既有任务绑定、用途及当前运行页面的完整分支仍未验。 证据：所有者当前确认、nav.definitions、u:project_definition.py |
 | A-02 | 初次打开首页找A，再找B，不提示搜索/导航位置；找得到且能区分相似名称；记录用时、首击、滚动和错路 | PASS | UNVERIFIED | 已有首屏可达和自动导航证据；未把重复操作计时当初次用户找路与理解耗时。 证据：nav.firstScreen、nav.taskNavigationBefore、resilience.navigationTimings |
 | A-03 | 用正式名称、常用名称/关键词检索，再清空；搜索结果可解释；无结果可恢复；不误以为项目消失；别名不支持需记问题 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.directoryMatrix、nav.directoryHistoryWrites |
-| A-04 | 切状态、来源、分组、列表/树/甘特后打开项目；当前筛选与选中项目清楚；切视图不丢项目；全部统计与筛选数量不混淆 | UNVERIFIED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.directoryMatrix、nav.realPagination |
-| A-05 | 从A到B再返回列表，用浏览器后退/前进；返回位置/筛选/项目上下文可理解；不反复迷路 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.history、management.confirmedForwardReverse |
+| A-04 | 切状态、来源、分组、列表/树/甘特后打开项目；当前筛选与选中项目清楚；切视图不丢项目；全部统计与筛选数量不混淆 | UNVERIFIED | UNVERIFIED | 独立真实数据候选已补三组筛选/分组/视图的实际打开与返回，原正式页面分支仍未验；不额外要求 Owner 或本人逐项接受。 |
+| A-05 | 从A到B再返回列表，用浏览器后退/前进；返回位置/筛选/项目上下文可理解；不反复迷路 | FAIL | UNVERIFIED | 独立真实数据候选已补 A、B 各自的目录→详情→返回和浏览器后退/前进，筛选及项目上下文保留；原正式页面分支仍未验。 |
 | A-06 | 打开项目/任务深链接、刷新，再访问不存在ID；合法链接可恢复对应对象；不存在有可理解返回路径 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.sections、nav.errors、preview.pinnedTaskReopen、ordinary.drafts |
 | A-07 | 从项目找任务/会话入口，再找对应产物；不依赖源码或外部提示；导航高亮和返回路径与用户任务一致 | BLOCKED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.oneClickTasks、nav.taskNavigationBefore、preview.materialReturn、u:sessions.py |
 | A-08 | 无身份、合法身份、权限不足分别看同一路径；状态与实际能力一致；不会“已连接”即暗示能执行；认证说明可理解 | BLOCKED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：functional.guestDisabled、functional.ownerEnabled、ordinary.authenticationReasons、ordinary.runtimeAndRevocation |
@@ -146,9 +146,9 @@
 | V-06 | 比较列表/树/甘特中的同一个项目；名称、状态、日期含义一致，视图差异为决策服务 | UNVERIFIED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.directoryMatrix、management.calendarAndTimeline、u:timeline.mjs |
 | V-07 | 等待、空列表、错误、禁用、成功反馈逐一查看；状态清楚、有恢复路径，重要反馈不只靠颜色或瞬时toast | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.errors、ordinary.authenticationReasons、resilience.trueEmpty、resilience.emptyVersusUnavailable、keyboard.keyboardAnswerRecovery |
 | V-08 | 长项目名、长回复、多关系、很多unknown；不截掉关键对象/操作，不破版；长内容可定位和返回 | UNVERIFIED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：responsive.longReplies、responsive.layoutMatrix、resilience.longReplyIsolation |
-| V-09 | 1440×1050与1280×800观察首屏及滚动；主要任务和反馈可用；大截图不能掩盖小窗的入口缺失 | PASS | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.firstScreen、responsive.layoutMatrix |
+| V-09 | 1440×1050与1280×800观察首屏及滚动；主要任务和反馈可用；大截图不能掩盖小窗的入口缺失 | PASS | UNVERIFIED | 独立真实数据候选已补 A/B 概览和排期的准确 1440×1050、1280×800 首屏及滚动；原正式页面分支仍未验。 |
 | V-10 | 390×844窄窗浏览、导航、表单和长回复；内容有层次、无关键动作丢失；触控目标可用；真实手机另验 | UNVERIFIED | UNVERIFIED | 390 模拟视口通过，实际手机触控未验。 证据：responsive.layoutMatrix、parallel.activeDraftIsolation、preview.materialReturn |
-| V-11 | 200%缩放、对比度、焦点/禁用视觉检查；不丢内容/操作，文字可读，状态不只靠颜色；记录检查工具和限制 | UNVERIFIED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：responsive.layoutMatrix、responsive.contrast、keyboard.keyboardDraft、keyboard.keyboardAnswerRecovery |
+| V-11 | 200%缩放、对比度、焦点/禁用视觉检查；不丢内容/操作，文字可读，状态不只靠颜色；记录检查工具和限制 | UNVERIFIED | UNVERIFIED | 独立真实数据候选已补 A/B 实际 200% 首屏、焦点和禁用说明；四张底部浏览器截图无效，已改用私有显示原生画面核对关键内容和操作。历史对比度按未变颜色样式复用，非新像素测量；原正式页面分支仍未验。 |
 | V-12 | 判断方案图/截图预览与当前页面的关系；用户知道是设计、历史截图、导入结果还是当前现场；不可操作图不暗示可控制 | PASS | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：preview.savedCapture、preview.staleMaterial、preview.unversionedMaterial、u:captures.mjs、u:page_inventory.mjs |
 | E-01 | 只用键盘完成找项目、查看关系、进入指令和返回；焦点可见、顺序合任务、无陷阱；链接/按钮语义正确 | BLOCKED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：keyboard.keyboardRelationships、keyboard.keyboardDraft、keyboard.keyboardAnswerRecovery、keyboard.keyboardReturn |
 | E-02 | 展开面板/打开关闭对话框/触发错误；焦点进入/返回合理；状态与错误可被辅助技术感知 | UNVERIFIED | UNVERIFIED | 键盘和 AX 证据通过，真实读屏体验未验。 证据：keyboard.ownerDialog、keyboard.quietPolling、keyboard.keyboardAnswerRecovery、keyboard.keyboardRouteError |
@@ -156,10 +156,16 @@
 | E-04 | 副本模拟401/403/404/409/5xx和超时；各自含义清楚；不泄露敏感内部细节、不把权限问题说成无数据 | FAIL | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：nav.errors、ordinary.authenticationReasons、ordinary.inputConflict、resilience.admittedSave500 |
 | E-05 | 提交校验失败或网络失败后再次编辑；输入保留；错误定位；不重复提交，不静默清空 | PASS | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：management.dateRecovery、management.twoEditors、keyboard.keyboardAnswerRecovery、resilience.offlineDraftRecovery、resilience.admittedSave500 |
 | E-06 | 浏览器离线/重连边界；可读旧数据标历史；在线恢复可核对；不调整工作站网络/VPN | PASS | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：nav.errors、resilience.offlineDraftRecovery |
-| E-07 | 打开reduced-motion观察状态变化；非必要动效减少，状态和功能仍完整 | UNVERIFIED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：responsive.reducedMotion |
+| E-07 | 打开reduced-motion观察状态变化；非必要动效减少，状态和功能仍完整 | UNVERIFIED | UNVERIFIED | 独立真实数据候选已对照两种偏好下的搜索、清空、树展开/收起、项目导航及返回，功能反馈一致，声明过渡由31个元素降为0；原正式页面分支仍未验。 |
 | E-08 | 全程检查console异常和network关键交换；新旧错误分开；请求目标、方法、授权、返回处理匹配实际动作 | UNVERIFIED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：nav.errors、parallel.expectedBrowserErrors、parallel.secondaryNetwork、resilience.runtimeDiagnostics、edge.edgeDiagnostics、helper.console、helper.network |
 | E-09 | 空项目/无任务/无关系/无排期/服务未启用；各自说明和下一步正确；入口缺失不写NOT_APPLICABLE | UNVERIFIED | UNVERIFIED | 合成真空目录、无任务/关系/排期及禁用服务通过；正式已有状态在当前候选上的页面分支未复核。 证据：resilience.trueEmpty、resilience.emptyVersusUnavailable、ordinary.runtimeAndRevocation |
 | E-10 | 回看测试产生的本地效果和原始证据；不公开DB/消息/凭据/私密路径/敏感截图；不误改/清理其他任务 | PASS | PASS | 只交付审阅过的安全代码/测试/此摘要；原始 State、DB、消息、凭据、路径清单与截图留本地。 证据：u:materials.py、u:preview_policy.py、helper.fixtureExit |
+
+后续独立真实数据只读补测覆盖 A、B 各自的目录→详情→返回与浏览器后退/前进、三组筛选后切视图并实际打开/返回、A/B 概览与排期在准确 1440×1050 和 1280×800 的首屏/滚动，以及两种 reduced-motion 偏好下相同的搜索、清空、树展开/收起和导航。功能状态保留，声明过渡由 31 个元素降为零。A/B 的实际 Chrome 200% 首屏、可见焦点和只读禁用说明另行记录。
+
+主批、两次定向诊断及原生截图补测共 287 个 GET（245 个 200、42 个预期的受限 sync-status 503），无修改、外部请求或页面异常。首轮收尾断言因异步请求记账竞态失败，原 FAIL 保留；同一编号的轮询请求在保存的原始记录中已返回 200，206 个主批请求均有终态，不能把初次脚本称为整体通过。四张 200% 页底浏览器截图只有底色，全部无效；ActorForge 排期以同刻私有显示原生截图确认实际绘制正常，另三页底也改用原生截图核对关键内容与操作；装饰页脚在原生窗口下缘部分截断，未据此声称全部像素均可见。当前粗略对比度读数因忽略渐变背景而无效；历史 42 次合成像素测量只按未变颜色样式适用。64 个已登记浏览器进程身份和四个私有显示均已终止。
+
+原 R 的范围是有合法当前身份的正式页面，纯浏览项无需额外 Owner 登录或本人逐项接受；独立候选仍不能代替正式分支。上述五项的原因已具体化，98 项总结果与正式升级待授权状态保持原值。
 
 ## G10 交付核对
 
