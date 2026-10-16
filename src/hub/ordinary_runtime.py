@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import copy
 import threading
+import time
 
 from .codex_adapter import AppServerAdapter
 from .ordinary_tasks import KIND, check_registration, validate_grant
@@ -38,8 +39,7 @@ class OrdinaryRuntime:
         self._lock = threading.RLock()
         self._stop = threading.Event()
         self._thread = None
-        self._worker = None
-        self._task_id = None
+        self._handles = {}
         self._state = 'stopped'
         self._error = None
 
@@ -103,13 +103,53 @@ class OrdinaryRuntime:
             self._thread.start()
             return self.status()
 
+    def _cancel_owned(self):
+        # A failed cancellation must not prevent cleanup of the other handle.
+        with self._lock:
+            handles = list(self._handles.items())
+        failure = None
+        for ident, handle in handles:
+            try:
+                task = self.store.task(ident)
+                if task and task['owner'] == handle['worker'].owner and task['status'] in {
+                        'running', 'validating', 'waiting_input', 'waiting_approval'}:
+                    self.store.cancel(ident, worker_owner=handle['worker'].owner)
+            except Exception as error:
+                failure = failure or error
+        return failure
+
+    def _execute(self, handle):
+        try:
+            handle['claimed'] = handle['worker'].run_one()
+        except Exception as error:
+            self._failed(error)
+
+    def _observe_handles(self):
+        rejected = set()
+        with self._lock:
+            handles = list(self._handles.items())
+        for ident, handle in handles:
+            if not handle['thread'].is_alive():
+                handle['thread'].join()
+                if handle.get('claimed') is False:
+                    rejected.add(ident)
+                with self._lock:
+                    self._handles.pop(ident, None)
+        return rejected
+
     def _run(self):
+        rejected = set()
         try:
             while not self._stop.is_set():
                 self.store.check_storage()
+                rejected.update(self._observe_handles())
+                launched = False
                 for task in sorted(self.store.tasks(), key=lambda row: row['sequence']):
-                    if self._stop.is_set():
-                        break
+                    with self._lock:
+                        if self._stop.is_set() or len(self._handles) >= 2:
+                            break
+                        if task['id'] in self._handles or task['id'] in rejected:
+                            continue
                     grant = task['intent'].get('grant')
                     if (task['status'] != 'queued' or task['payload'].get('kind') != KIND
                             or not any(grant == owned for owned in self._grants)):
@@ -125,43 +165,74 @@ class OrdinaryRuntime:
                     with self._lock:
                         if self._stop.is_set():
                             break
-                        self._worker = TaskWorker(self.store, adapter_factory=self._adapter_factory,
+                        worker = TaskWorker(self.store, adapter_factory=self._adapter_factory,
                             writer_check=self.writer_check, request_timeout=self._request_timeout, only_task_id=task['id'])
-                        self._task_id = task['id']
-                        worker = self._worker
-                    worker.run_one()
-                    with self._lock:
-                        self._worker = None
-                        self._task_id = None
+                        handle = {'worker': worker}
+                        handle['thread'] = threading.Thread(target=self._execute, args=(handle,),
+                            name='hub-ordinary-task-' + worker.owner, daemon=False)
+                        self._handles[task['id']] = handle
+                        try:
+                            handle['thread'].start()
+                            launched = True
+                        except Exception:
+                            self._handles.pop(task['id'])
+                            raise
+                if not launched:
+                    rejected.clear()
+                # Blocked claims are retried only at the configured observation
+                # interval, yielding a rejected slot to other queued tasks on
+                # the next pass. TaskStore alone decides whether claims succeed.
                 self._stop.wait(self._poll_interval)
         except Exception as error:
             self._failed(error)
         finally:
+            if self._stop.is_set():
+                error = self._cancel_owned()
+                if error is not None:
+                    self._failed(error)
+                deadline = time.monotonic() + 5
+                with self._lock:
+                    handles = list(self._handles.items())
+                for ident, handle in handles:
+                    handle['thread'].join(max(0, deadline - time.monotonic()))
+                    if not handle['thread'].is_alive():
+                        with self._lock:
+                            self._handles.pop(ident, None)
+                with self._lock:
+                    if any(h['thread'].is_alive() for h in self._handles.values()):
+                        self._failed(ServiceError('ORDINARY_RUNTIME_STOP_TIMEOUT', status=409))
             with self._lock:
                 if self._state != 'failed':
-                    self._state = 'stopped'
+                    self._state = 'stopping' if any(h['thread'].is_alive() for h in self._handles.values()) else 'stopped'
 
     def stop(self, timeout=5):
         if type(timeout) not in (int, float) or not 0 <= timeout <= 30:
             raise ServiceError('ORDINARY_RUNTIME_CONFIG_REJECTED')
+        deadline = time.monotonic() + timeout
         with self._lock:
             self._stop.set()
             if self._state != 'failed':
                 self._state = 'stopping' if self._thread else 'stopped'
-            worker, ident, thread = self._worker, self._task_id, self._thread
-        if worker is not None and ident is not None:
-            try:
-                task = self.store.task(ident)
-                if task and task['owner'] == worker.owner and task['status'] in {
-                        'running', 'validating', 'waiting_input', 'waiting_approval'}:
-                    self.store.cancel(ident, worker_owner=worker.owner)
-            except Exception as error:
-                self._failed(error)
-                raise
-        if thread is not None:
-            thread.join(timeout)
-            if thread.is_alive():
-                error = ServiceError('ORDINARY_RUNTIME_STOP_TIMEOUT', status=409)
-                self._failed(error)
-                raise error
+            coordinator = self._thread
+        failure = self._cancel_owned()
+        # Join the coordinator first: it can no longer add a handle after stop.
+        if coordinator is not None:
+            coordinator.join(max(0, deadline - time.monotonic()))
+        with self._lock:
+            handles = list(self._handles.items())
+        for ident, handle in handles:
+            handle['thread'].join(max(0, deadline - time.monotonic()))
+            if not handle['thread'].is_alive():
+                with self._lock:
+                    self._handles.pop(ident, None)
+        with self._lock:
+            alive = (coordinator is not None and coordinator.is_alive()) or any(
+                h['thread'].is_alive() for h in self._handles.values())
+            if alive:
+                failure = failure or ServiceError('ORDINARY_RUNTIME_STOP_TIMEOUT', status=409)
+            if failure is None and self._state != 'failed':
+                self._state = 'stopped'
+        if failure is not None:
+            self._failed(failure)
+            raise failure
         return self.status()

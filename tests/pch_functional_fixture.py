@@ -79,7 +79,10 @@ class ControlledAdapter:
         self.denials, self.events = [], []
         self.ident = self.root.name
         self.fixture.probes.append(('worker-root', self.root))
-        self.release = fixture.release
+        self.release = threading.Event() if ordinary else fixture.release
+        self.closed = False
+        if ordinary:
+            with fixture.ordinary_lock: fixture.ordinary_adapters.append(self)
         self.requested = False
 
     def open(self): return self
@@ -139,7 +142,7 @@ class ControlledAdapter:
     def interrupt(self, thread, turn):
         self.fixture.interrupts.append((thread, turn))
         self.release.set()
-    def close(self): pass
+    def close(self): self.closed = True
 
 
 class FunctionalFixture:
@@ -155,6 +158,8 @@ class FunctionalFixture:
         self.probes, self.effects, self.interrupts = [], [], []
         self.scenarios, self.workers = {}, []
         self.ordinary_turns = {}
+        self.ordinary_lock = threading.RLock()
+        self.ordinary_adapters = []
         self.ordinary_runtime = None
         self.control_observations = []
         self.runtime = {key: {'available': True, 'classification': 'synthetic_fixture'}
@@ -376,6 +381,36 @@ class FunctionalFixture:
         path = self.roots[project_id] / 'README.md'
         path.write_text(path.read_text() + 'Synthetic input version changed.\n')
         return {'ordinary_input_changed': True, 'project_id': project_id}
+
+    def release_ordinary(self, task_id=None):
+        """Release an exact synthetic task's latch, never another task's wait."""
+        with self.ordinary_lock:
+            if task_id is None:
+                adapters = list(self.ordinary_adapters)  # Explicit legacy all-release.
+            else:
+                task = self.task_store.task(task_id)
+                if (not task or task['project'] not in self.roots
+                        or task['payload'].get('kind') != 'ordinary_project'
+                        or not task['thread_id'] or not task['turn_id']):
+                    raise ValueError('Only exact bound synthetic ordinary tasks may release')
+                adapters = [adapter for adapter in self.ordinary_adapters
+                            if adapter.root == self.roots[task['project']]
+                            and getattr(adapter, 'bound_thread', None) == task['thread_id']
+                            and getattr(adapter, 'bound_turn', None) == task['turn_id']]
+                if len(adapters) != 1:
+                    raise ValueError('Exact synthetic adapter binding unavailable')
+            for adapter in adapters: adapter.release.set()
+        return {'ordinary_released': True, 'task_id': task_id, 'released_count': len(adapters)}
+
+    def ordinary_observations(self):
+        with self.ordinary_lock:
+            return {'ordinary_control_observations': list(self.control_observations),
+                    'interrupts': list(self.interrupts), 'effects': len(self.effects),
+                    'ordinary_adapters': [{'project_id': adapter.ident,
+                        'thread_id': getattr(adapter, 'bound_thread', None),
+                        'turn_id': getattr(adapter, 'bound_turn', None),
+                        'released': adapter.release.is_set(), 'closed': adapter.closed}
+                        for adapter in self.ordinary_adapters]}
 
     def start_ordinary_runtime(self, request_timeout=10):
         from hub.ordinary_runtime import OrdinaryRuntime
@@ -637,7 +672,9 @@ class FunctionalFixture:
     def close(self):
         self.timer_stop()
         self.release_batch()
+        if self.ordinary_runtime is not None: self.ordinary_runtime.stop(timeout=3)
         self.release.set()
+        self.release_ordinary()  # Retire only this fixture's manual mock workers.
         for thread in self.workers: thread.join(3)
         if any(thread.is_alive() for thread in self.workers): raise RuntimeError('fixture worker remains active')
         if self.server:
@@ -680,8 +717,7 @@ def main():
             elif action == 'management-sample': result = fixture.management_sample()
             elif action == 'ordinary-sample': result = fixture.ordinary_sample()
             elif action == 'ordinary-runtime-start': result = fixture.start_ordinary_runtime(command.get('request_timeout', 10))
-            elif action == 'ordinary-observations': result = {'ordinary_control_observations': fixture.control_observations,
-                'interrupts': fixture.interrupts, 'effects': len(fixture.effects)}
+            elif action == 'ordinary-observations': result = fixture.ordinary_observations()
             elif action == 'ordinary-input': result = fixture.ordinary_input(command.get('project_id'))
             elif action == 'ordinary-regrant': result = fixture.ordinary_regrant(command.get('project_id'))
             elif action == 'ordinary-scenario':
@@ -689,13 +725,11 @@ def main():
                 if project not in fixture.roots or command.get('scenario') not in {'normal', 'delay', 'disconnect', 'input', 'secret_input', 'approval', 'timeout_input'}:
                     raise ValueError('Invalid synthetic ordinary scenario')
                 fixture.scenarios[fixture.roots[project].name] = command['scenario']
-                fixture.release.clear()
                 result = {'ordinary_scenario': command['scenario']}
             elif action == 'ordinary-release':
-                fixture.release.set()
+                result = fixture.release_ordinary(command.get('task_id'))
                 for thread in fixture.workers: thread.join(3)
                 if any(thread.is_alive() for thread in fixture.workers): raise RuntimeError('Fixture worker did not finish')
-                result = {'ordinary_released': True}
             elif action == 'ordinary-revoke':
                 project = command.get('project_id')
                 grant = copy.deepcopy(fixture.ordinary_grants[project])

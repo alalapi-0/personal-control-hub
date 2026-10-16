@@ -14,6 +14,39 @@ from hub.local_service import WEB_ASSETS
 
 
 class FunctionalFixtureTests(unittest.TestCase):
+    def test_ordinary_two_workers_have_independent_exact_release_latches(self):
+        with FunctionalFixture() as f:
+            f.handshake();f.ordinary_sample()
+            ids={}
+            for project,grant in f.ordinary_grants.items():
+                f.scenarios[project]='delay'
+                payload={'kind':'ordinary_project','request_id':project+'-ordinary',
+                         'project_id':project,'objective':'Synthetic independent readonly task',
+                         'scope':'Only registered synthetic inputs','effect':'read_only',
+                         'input_version':grant['input_version'],'mode':'new','parent_task_id':None}
+                self.assertEqual(f.call('POST','/api/tasks',payload)[0],200)
+                ids[project]=payload['request_id']
+            f.start_ordinary_runtime()
+            def wait(predicate):
+                end=time.monotonic()+4
+                while time.monotonic()<end:
+                    if predicate():return
+                    time.sleep(.01)
+                self.fail('Synthetic concurrent tasks did not reach expected state')
+            wait(lambda:all((t:=f.task_store.task(ident))['status']=='running'and t['turn_id']for ident in ids.values()))
+            a,b=(f.task_store.task(ids['fixture-project-'+suffix])for suffix in ('a','b'))
+            self.assertNotEqual(a['owner'],b['owner']);self.assertNotEqual(a['thread_id'],b['thread_id'])
+            with self.assertRaises(ValueError):f.release_ordinary('foreign-task')
+            self.assertEqual(f.call('POST','/api/tasks/'+a['id']+'/cancel',{})[0],200)
+            wait(lambda:f.task_store.task(a['id'])['status']=='cancelled')
+            self.assertEqual(f.task_store.task(b['id'])['status'],'running')
+            observed=f.ordinary_observations()
+            self.assertEqual(observed['interrupts'],[(a['thread_id'],a['turn_id'])])
+            self.assertFalse(next(row for row in observed['ordinary_adapters']if row['thread_id']==b['thread_id'])['released'])
+            self.assertEqual(f.release_ordinary(b['id'])['released_count'],1)
+            wait(lambda:f.task_store.task(b['id'])['status']=='checks_complete')
+            self.assertEqual(f.effects,[])
+
     def test_idle_runtime_restart_requires_new_explicit_owned_handle(self):
         with FunctionalFixture() as f:
             f.ordinary_sample()

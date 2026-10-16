@@ -34,6 +34,8 @@ class OrdinaryRuntimeTests(unittest.TestCase):
                     self.event('turn/completed', turn={'id':'ordinary-turn','status':'completed'})]
                 return 'ordinary-turn'
             def poll(self, timeout):
+                if self.hold and self.events and self.events[0]['method'] == 'turn/started':
+                    return self.events.pop(0)
                 if self.hold:
                     time.sleep(.01)
                     return None
@@ -73,6 +75,206 @@ class OrdinaryRuntimeTests(unittest.TestCase):
 
     def completed(self, ident):
         return self.store.task(ident)['status'] == 'checks_complete'
+
+    def parallel_runtime(self, count=2):
+        from hub.ordinary_tasks import make_grant
+        roots = [self.fixture.root]
+        for index in range(1, count):
+            root = Path(self.fixture.temp.name) / ('project-' + str(index))
+            root.mkdir()
+            (root / 'README.md').write_text('Synthetic independent input')
+            roots.append(root)
+            self.fixture.registry['projects'].append({'id': 'fixture-' + str(index),
+                'name': 'Synthetic', 'enabled': True, 'connection_read_allowed': True,
+                'root_path': str(root), 'current_state_paths': ['README.md']})
+        self.fixture.registry_path.write_text(yaml.safe_dump(self.fixture.registry))
+        registry_hash = hashlib.sha256(self.fixture.registry_path.read_bytes()).hexdigest()
+        self.fixture.intent['registry_hash'] = registry_hash
+        ids = [row['id'] for row in self.fixture.registry['projects']]
+        (self.store.root / 'data/connections/sync_scope.yaml').write_text(yaml.safe_dump({
+            'schema_version': '1.0', 'scope_id': 'ordinary-synthetic-scope',
+            'baseline_total': count, 'project_ids': ids, 'excluded_project_ids': {}}))
+        grants = [make_grant(root, ident, registry_hash, 'parallel-' + str(index),
+            input_paths=['README.md']) for index, (root, ident) in enumerate(zip(roots, ids))]
+        for grant in grants:
+            self.store.register_grant(grant)
+        self.grant = grants[0]
+        runtime = OrdinaryRuntime(self.store, grants=grants, adapter_factory=self.Adapter,
+            provider_status={'available': True, 'classification': 'synthetic_fixture'}, poll_interval=.01)
+        self.addCleanup(runtime.stop)
+        self.Adapter.hold = True
+        return runtime, grants
+
+    def both_started(self):
+        return all(self.store.task(ident)['turn_id'] is not None for ident in ('a', 'b'))
+
+    def test_two_roots_run_simultaneously_exact_cancel_keeps_b_running(self):
+        runtime, grants = self.parallel_runtime()
+        self.admit('a', grant=grants[0])
+        self.admit('b', grant=grants[1])
+        runtime.start()
+        self.wait(self.both_started)
+        self.assertEqual(len(runtime._handles), 2)
+        self.wait(lambda: all(any(e['data'].get('method') == 'turn/started' for e in self.store.events(i)) for i in ('a', 'b')))
+        self.store.cancel('a', worker_owner=self.store.task('a')['owner'])
+        self.wait(lambda: self.store.task('a')['status'] == 'cancelled')
+        self.assertEqual(self.store.task('b')['status'], 'running')
+        self.assertFalse(self.store.task('b')['cancel'])
+        self.assertEqual(len(self.Adapter.interrupts), 1)
+        next(a for a in self.Adapter.created if a.root == Path(grants[1]['root'])).hold = False
+        self.wait(lambda: self.completed('b'))
+        self.assertTrue(runtime.status()['worker_runtime']['available'])
+
+    def test_blocked_same_project_claim_yields_slot_to_independent_b(self):
+        runtime, grants = self.parallel_runtime()
+        self.admit('a', grant=grants[0])
+        self.admit('a-waiting', grant=grants[0])
+        self.admit('b', grant=grants[1])
+        runtime.start()
+        self.wait(self.both_started)
+        self.assertEqual(self.store.task('a-waiting')['status'], 'queued')
+        self.assertEqual(len(self.Adapter.created), 2)
+
+    def test_exact_two_slot_bound_and_completion_releases_slot(self):
+        runtime, grants = self.parallel_runtime(3)
+        for ident, grant in zip(('a', 'b', 'c'), grants):
+            self.admit(ident, grant=grant)
+        runtime.start()
+        self.wait(self.both_started)
+        time.sleep(.06)
+        self.assertEqual(len(self.Adapter.created), 2)
+        self.assertEqual(self.store.task('c')['status'], 'queued')
+        next(a for a in self.Adapter.created if a.root == Path(grants[0]['root'])).hold = False
+        self.wait(lambda: self.store.task('c')['turn_id'] is not None)
+        self.assertEqual(self.store.task('b')['status'], 'running')
+        self.assertLessEqual(len(runtime._handles), 2)
+        runtime.stop()
+        self.assertTrue(self.store.task('b')['cancel'])
+        self.assertTrue(self.store.task('c')['cancel'])
+        self.assertEqual(len(self.Adapter.closed), 3)
+        self.assertEqual(runtime._handles, {})
+
+    def test_stop_joins_both_owned_workers(self):
+        runtime, grants = self.parallel_runtime()
+        for ident, grant in zip(('a', 'b'), grants):
+            self.admit(ident, grant=grant)
+        runtime.start()
+        self.wait(self.both_started)
+        handles = list(runtime._handles.values())
+        runtime.stop(timeout=2)
+        self.assertTrue(all(not h['thread'].is_alive() for h in handles))
+        self.assertTrue(all(self.store.task(i)['cancel'] for i in ('a', 'b')))
+        self.assertEqual(len(self.Adapter.closed), 2)
+        self.assertEqual(runtime._handles, {})
+
+    def test_active_a_grant_revocation_does_not_stop_b(self):
+        runtime, grants = self.parallel_runtime()
+        for ident, grant in zip(('a', 'b'), grants):
+            self.admit(ident, grant=grant)
+        runtime.start()
+        self.wait(self.both_started)
+        self.store.register_grant({**grants[0], 'version': 2})
+        self.wait(lambda: self.store.task('a')['status'] == 'requires_reconcile')
+        self.assertEqual(self.store.task('b')['status'], 'running')
+        self.assertFalse(self.store.task('b')['cancel'])
+        next(a for a in self.Adapter.created if a.root == Path(grants[1]['root'])).hold = False
+        self.wait(lambda: self.completed('b'))
+        self.assertTrue(runtime.status()['worker_runtime']['available'])
+
+    def test_two_timed_out_handles_are_retained_for_exact_cleanup_retry(self):
+        runtime, grants = self.parallel_runtime()
+        release = threading.Event()
+        original_poll = self.Adapter.poll
+        def blocked(adapter, timeout):
+            release.wait(2)
+            return original_poll(adapter, timeout)
+        for ident, grant in zip(('a', 'b'), grants):
+            self.admit(ident, grant=grant)
+        with mock.patch.object(self.Adapter, 'poll', blocked):
+            runtime.start()
+            self.wait(self.both_started)
+            handles = dict(runtime._handles)
+            try:
+                with self.assertRaises(ServiceError) as error:
+                    runtime.stop(timeout=.01)
+                self.assertEqual(error.exception.code, 'ORDINARY_RUNTIME_STOP_TIMEOUT')
+                self.assertEqual(runtime._handles, handles)
+                self.assertTrue(all(h['thread'].is_alive() for h in handles.values()))
+                self.assertTrue(all(self.store.task(i)['cancel'] for i in ('a', 'b')))
+            finally:
+                release.set()
+                runtime.stop(timeout=3)
+        self.assertTrue(all(not h['thread'].is_alive() for h in handles.values()))
+        self.assertEqual(len(self.Adapter.closed), 2)
+        self.assertEqual(runtime._handles, {})
+
+    def test_cancel_error_still_cleans_b_and_retains_a_for_retry(self):
+        runtime, grants = self.parallel_runtime()
+        for ident, grant in zip(('a', 'b'), grants):
+            self.admit(ident, grant=grant)
+        runtime.start()
+        self.wait(self.both_started)
+        cancel = self.store.cancel
+        attempted = []
+        def reject_a(ident, **kwargs):
+            attempted.append(ident)
+            if ident == 'a':
+                raise ServiceError('SYNTHETIC_CANCEL_FAILURE')
+            return cancel(ident, **kwargs)
+        with mock.patch.object(self.store, 'cancel', reject_a):
+            with self.assertRaises(ServiceError) as error:
+                runtime.stop(timeout=.05)
+            self.assertEqual(error.exception.code, 'SYNTHETIC_CANCEL_FAILURE')
+            self.assertIn('b', attempted)
+            self.assertTrue(self.store.task('b')['cancel'])
+            self.assertIn('a', runtime._handles)
+            self.assertTrue(runtime._handles['a']['thread'].is_alive())
+        runtime.stop(timeout=2)
+        self.assertEqual(runtime._handles, {})
+        self.assertEqual(len(self.Adapter.closed), 2)
+
+    def test_lease_failure_closes_a_only_while_b_completes(self):
+        runtime, grants = self.parallel_runtime()
+        for ident, grant in zip(('a', 'b'), grants):
+            self.admit(ident, grant=grant)
+        heartbeat = self.store.heartbeat
+        def lose_a(ident, owner):
+            if ident == 'a':
+                raise ServiceError('TASK_LEASE_LOST')
+            return heartbeat(ident, owner)
+        with mock.patch.object(self.store, 'heartbeat', lose_a):
+            runtime.start()
+            self.wait(self.both_started)
+            self.wait(lambda: self.store.task('a')['status'] == 'requires_reconcile')
+        self.assertEqual(self.store.task('a')['result']['error_class'], 'TASK_LEASE_LOST')
+        self.assertEqual(self.store.task('b')['status'], 'running')
+        self.assertFalse(self.store.task('b')['cancel'])
+        next(a for a in self.Adapter.created if a.root == Path(grants[1]['root'])).hold = False
+        self.wait(lambda: self.completed('b'))
+        self.assertTrue(runtime.status()['worker_runtime']['available'])
+
+    def test_escaped_worker_exception_cleans_up_other_owned_worker(self):
+        runtime, grants = self.parallel_runtime()
+        for ident, grant in zip(('a', 'b'), grants):
+            self.admit(ident, grant=grant)
+        from hub.task_worker import TaskWorker
+        original = TaskWorker.run_one
+        release = threading.Event()
+        def run(worker):
+            if worker.only_task_id == 'a':
+                release.wait(2)
+                raise RuntimeError('synthetic escaped worker failure')
+            return original(worker)
+        with mock.patch.object(TaskWorker, 'run_one', run):
+            runtime.start()
+            self.wait(lambda: self.store.task('b')['turn_id'] is not None)
+            release.set()
+            self.wait(lambda: runtime.status()['worker_runtime']['status'] == 'failed')
+            self.wait(lambda: not runtime._thread.is_alive())
+        self.assertTrue(self.store.task('b')['cancel'])
+        self.assertEqual(runtime._handles, {})
+        self.assertEqual(len(self.Adapter.closed), 1)
+        self.assertEqual(self.store.task('a')['status'], 'queued')
 
     def test_observers_and_constructor_never_open_adapter(self):
         self.admit('first')
@@ -232,6 +434,7 @@ class OrdinaryRuntimeTests(unittest.TestCase):
             'connection_read_allowed':True,'root_path':str(root_b),'current_state_paths':['README.md']})
         self.fixture.registry_path.write_text(yaml.safe_dump(registry))
         registry_hash = hashlib.sha256(self.fixture.registry_path.read_bytes()).hexdigest()
+        self.fixture.intent['registry_hash'] = registry_hash
         scope = self.store.root / 'data/connections/sync_scope.yaml'
         scope.write_text(yaml.safe_dump({'schema_version':'1.0','scope_id':'ordinary-synthetic-scope',
             'baseline_total':2,'project_ids':['ordinary-fixture','fixture-b'],'excluded_project_ids':{}}))

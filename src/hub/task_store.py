@@ -518,6 +518,42 @@ class TaskStore:
         with self._connection() as connection:
             return [self._task(row) for row in connection.execute('SELECT * FROM tasks ORDER BY sequence DESC')] if connection else []
 
+    def _parallel_read_claim(self, connection, tasks):
+        """Narrow concurrency exception, revalidated inside the atomic claim.
+
+        Stored markers alone confer no authority: every participant must still
+        have the exact registered grant and current Hub scope before its granted
+        workspace is inspected. Unknown or mixed effects keep global seriality.
+        """
+        from .ordinary_tasks import check_registration, validate_grant, validate_spec
+        from .writer_handoff import workspace_identity, workspaces_overlap
+        scopes=[]; projects=set()
+        try:
+            for task in tasks:
+                grant=task['intent']['grant']; payload=task['payload']
+                if (payload.get('kind')!='ordinary_project' or payload.get('effect')!='read_only'
+                        or grant.get('kind')!='ordinary_project' or grant.get('effect')!='read_only'
+                        or grant.get('classification')!='synthetic_fixture'
+                        or task['project']!=grant.get('project_id') or task['project']in projects
+                        or payload.get('project_id')!=task['project']
+                        or payload.get('input_version')!=grant.get('input_version')
+                        or task['intent'].get('grant_hash')!=digest(grant)
+                        or task['intent'].get('registry_hash')!=grant.get('registry_hash')
+                        or task['intent'].get('task_spec')!=payload):
+                    return False
+                validate_spec(payload)
+                current=connection.execute('SELECT * FROM grants WHERE id=?',(grant['grant_id'],)).fetchone()
+                if (not current or current['version']!=grant['version']
+                        or self._decode(current['body'],current['hash'])!=grant):return False
+                check_registration(grant,self.root)
+                validate_grant(grant,live=True)
+                scope=workspace_identity(grant['root'])
+                if any(workspaces_overlap(scope,other)for other in scopes):return False
+                scopes.append(scope);projects.add(task['project'])
+            return True
+        except (ServiceError,OSError,ValueError,TypeError,KeyError):
+            return False
+
     def claim(self, owner, now=None, *, only_task_id=None):
         stable_id(owner); now = time.time() if now is None else now
         self.check_storage()
@@ -535,11 +571,13 @@ class TaskStore:
                     connection.execute("UPDATE tasks SET status='requires_reconcile' WHERE id=?", (row['id'],)); continue
                 if parent and parent['status'] not in TERMINAL: continue
                 if connection.execute("SELECT 1 FROM tasks WHERE project=? AND status IN ('running','validating','waiting_input','waiting_approval','requires_reconcile') LIMIT 1", (row['project'],)).fetchone(): continue
-                # The existing SQLite claim serializes cross-repository effects.
+                # SQLite serializes claim decisions. Only fully verified synthetic
+                # read participants may execute in disjoint workspaces together.
                 # An unresolved task fences its actual workspace, including
                 # differently named projects and shared Git worktrees.
                 active=connection.execute("SELECT * FROM tasks WHERE status IN ('running','validating','waiting_input','waiting_approval','requires_reconcile')").fetchall()
-                if any(other['status']!='requires_reconcile'for other in active):continue
+                running=[self._task(other)for other in active if other['status']!='requires_reconcile']
+                if running and not self._parallel_read_claim(connection,[task,*running]):continue
                 if active:
                     from .writer_handoff import workspace_identity,workspaces_overlap
                     try:scope=workspace_identity(_effect_root(task['intent']['grant']))

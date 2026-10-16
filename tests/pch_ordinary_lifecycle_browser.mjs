@@ -59,8 +59,9 @@ await runBrowserJourney('o44',async({page,context,evidence,evidenceRoot,origin:i
 
   await scenario(A,'delay');const cancelled=await send(A,'Synthetic exact cancellation');
   const running=await until(cancelled,d=>d.task.status==='running'&&d.task.turn_id);
-  await scenario(B,'normal');const afterCancel=await send(B,'Synthetic independent queued task');
-  assert.equal((await get(afterCancel)).task.status,'queued');
+  await scenario(B,'normal');const afterCancel=await send(B,'Synthetic independent parallel task');
+  await until(afterCancel,d=>d.task.status==='checks_complete');
+  assert.equal((await get(cancelled)).task.status,'running');
   await open(cancelled);await page.getByRole('button',{name:'取消这个任务',exact:true}).click();
   const stopped=await until(cancelled,d=>d.task.status==='cancelled');
   await until(afterCancel,d=>d.task.status==='checks_complete');
