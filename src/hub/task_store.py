@@ -4,6 +4,7 @@ from __future__ import annotations
 import contextlib
 import hashlib
 import json
+import math
 import os
 import secrets
 import sqlite3
@@ -582,7 +583,7 @@ class TaskStore:
         except (ServiceError,OSError,ValueError,TypeError,KeyError):
             return False
 
-    def _foreign_fence_scopes(self, connection, row):
+    def _foreign_fence_scopes(self, connection, row, *, deadlines=None):
         """Read administrative metadata only; never decode a foreign task body.
 
         Exact recorded/current grant equality is required before any workspace
@@ -632,6 +633,8 @@ class TaskStore:
                    (metadata['canonical_root'],metadata['canonical_identity'])]
             registry_hash=metadata['canonical_registry'];canonical_root=metadata['canonical_root']
         elif metadata['kind_type'] is None:
+            if metadata['checks']=='["csp_css_trial"]':
+                return self._resolved_terminal_scopes(connection,row['id'],deadlines=deadlines)
             # Supported legacy fixture grants predate a kind/registry hash.
             # This only proves a conservative unresolved-workspace fence; it
             # never validates a task, command, fingerprint or historical result.
@@ -663,6 +666,222 @@ class TaskStore:
             if root_identity(root)!=identity:raise ServiceError('TASK_FOREIGN_SCOPE_UNKNOWN',status=409)
             scopes.append(workspace_identity(root))
         return scopes
+
+    @staticmethod
+    def _terminal_process_closed(pid, start_ticks):
+        """A missing/reused exact historical identity is closed; unknown is not."""
+        if (type(pid)is not int or pid<=0 or type(start_ticks)is not str
+                or not start_ticks.isdecimal() or int(start_ticks)<=0
+                or str(int(start_ticks))!=start_ticks):
+            raise ServiceError('TERMINAL_SCOPE_PROCESS_UNKNOWN',status=409)
+        try:
+            fields=Path('/proc',str(pid),'stat').read_text().rsplit(') ',1)[1].split()
+            current=fields[19]
+            if not current.isdecimal():raise ValueError()
+        except FileNotFoundError:return
+        except (OSError,IndexError,ValueError):
+            raise ServiceError('TERMINAL_SCOPE_PROCESS_UNKNOWN',status=409)from None
+        if current==start_ticks and fields[0]!='Z':
+            raise ServiceError('TERMINAL_SCOPE_PROCESS_ACTIVE',status=409)
+
+    def _terminal_scope_snapshot(self, connection, ident, *, before_sequence=None):
+        """Exact legacy CSS administrative metadata, never a historical result check.
+
+        All task columns bind through raw-body hashes. Only process identities
+        are extracted from old events; task payload/result/intent are not decoded.
+        The canonical directory identity is CURRENT, not a repaired old grant.
+        """
+        from .css_trial import FIELDS as css_fields
+        from .task_service import GRANT_FIELDS,root_identity
+        from .project_service import ProjectService
+        from .ordinary_tasks import check_registration
+        from .writer_handoff import workspace_identity
+        connection.create_function('scope_sha256',1,lambda value:
+            hashlib.sha256(value.encode('utf-8')).hexdigest()if type(value)is str else None)
+        row=connection.execute("""
+            SELECT t.sequence,t.id,t.project,t.parent,t.status,t.owner,t.lease_until,
+              t.thread_id,t.turn_id,t.provider_status,t.cancel,t.created,
+              t.payload_hash,t.intent_hash,scope_sha256(t.payload) payload_bytes,
+              scope_sha256(t.intent) intent_bytes,scope_sha256(t.result) result_bytes,
+              g.id grant_id,g.version grant_version,g.hash grant_hash,
+              json_extract(g.body,'$.root') root,
+              json_extract(g.body,'$.root_identity') root_identity,
+              json_extract(g.body,'$.css_trial.canonical_root') canonical_root
+            FROM tasks t JOIN grants g ON g.id=CASE WHEN json_valid(t.intent)
+                THEN json_extract(t.intent,'$.grant.grant_id') END
+            WHERE t.id=? AND json_valid(g.body)
+              AND json_extract(t.intent,'$.grant')=g.body
+              AND json_extract(t.intent,'$.grant_hash')=g.hash
+              AND scope_sha256(g.body)=g.hash AND scope_sha256(t.intent)=t.intent_hash
+              AND json_extract(g.body,'$.grant_id')=g.id
+              AND json_extract(g.body,'$.version')=g.version
+              AND json_extract(g.body,'$.project_id')=t.project
+              AND json_extract(g.body,'$.task_id')=t.id
+              AND json_extract(g.body,'$.source')='verified_owner_decision'
+              AND json_extract(g.body,'$.auth')='ChatGPT'
+              AND json_type(g.body,'$.kind') IS NULL
+              AND json_extract(g.body,'$.checks')='["csp_css_trial"]'
+              AND json_extract(g.body,'$.isolated_root')=1
+              AND json_extract(g.body,'$.writable_scope')='["."]'
+              AND json_extract(g.body,'$.prohibited')='[]'
+              AND json_type(g.body,'$.css_trial')='object'
+        """,(stable_id(ident),)).fetchone()
+        now=time.time()
+        if (not row or row['status']!='requires_reconcile' or row['provider_status']!='completed'
+                or not row['owner'] or row['cancel'] or not row['thread_id'] or not row['turn_id']
+                or type(row['lease_until'])not in (int,float) or not math.isfinite(row['lease_until'])
+                or row['lease_until']>=now or row['payload_hash']!=row['payload_bytes']):
+            raise ServiceError('TERMINAL_SCOPE_FENCE_CHANGED',status=409)
+        keys={v[0]for v in connection.execute(
+            'SELECT key FROM grants,json_each(grants.body) WHERE grants.id=?',(row['grant_id'],))}
+        nested={v[0]for v in connection.execute(
+            "SELECT key FROM grants,json_each(grants.body,'$.css_trial') WHERE grants.id=?",(row['grant_id'],))}
+        if keys!=GRANT_FIELDS|{'css_trial'} or nested!=css_fields:
+            raise ServiceError('TERMINAL_SCOPE_UNKNOWN_SCOPE',status=409)
+        for name in ('root','canonical_root'):
+            value=row[name]
+            if type(value)is not str or not Path(value).is_absolute() or '..'in Path(value).parts:
+                raise ServiceError('TERMINAL_SCOPE_UNKNOWN_SCOPE',status=409)
+        service=ProjectService(self.root);resolver=service._resolver();resolver._check_registry()
+        registration={'project_id':row['project'],'root':row['canonical_root'],
+                      'registry_hash':resolver.authority['registry_hash']}
+        # Eligibility and exact canonical registration precede both root probes.
+        check_registration(registration,self.root)
+        try:
+            if root_identity(row['root'])!=row['root_identity']:
+                raise ServiceError('TERMINAL_SCOPE_ROOT_CHANGED',status=409)
+            scopes=[workspace_identity(row[name])for name in ('root','canonical_root')]
+        except OSError:
+            raise ServiceError('TERMINAL_SCOPE_ROOT_CHANGED',status=409)from None
+        events=[];processes=[];dispatch=set();children=set()
+        for event in connection.execute('SELECT * FROM events WHERE task_id=? ORDER BY sequence',(ident,)):
+            if before_sequence is not None and event['sequence']>=before_sequence:continue
+            if (type(event['body'])is not str or type(event['hash'])is not str
+                    or hashlib.sha256(event['body'].encode()).hexdigest()!=event['hash']):
+                raise ServiceError('TERMINAL_SCOPE_EVENT_CHANGED',status=409)
+            events.append(dict(event))
+            key=event['event_key']
+            if key.startswith(('dispatch-intent-','stdio-child-')):
+                try:
+                    value=json.loads(event['body'])
+                    if key.startswith('dispatch-intent-'):
+                        owner=key[len('dispatch-intent-'):];dispatch.add(owner)
+                        identity=value['worker']
+                        if identity.get('owner')!=owner:raise ValueError()
+                    else:
+                        owner=key[len('stdio-child-'):];children.add(owner);identity=value
+                    pid,ticks=identity['pid'],identity['start_ticks']
+                    self._terminal_process_closed(pid,ticks)
+                except (ValueError,TypeError,KeyError,AttributeError):
+                    raise ServiceError('TERMINAL_SCOPE_PROCESS_UNKNOWN',status=409)from None
+                processes.append({'event_key':key,'pid':pid,'start_ticks':ticks})
+        if not dispatch or dispatch!=children or row['owner']not in dispatch:
+            raise ServiceError('TERMINAL_SCOPE_PROCESS_UNKNOWN',status=409)
+        check_registration(registration,self.root)
+        try:
+            if scopes!=[workspace_identity(row[name])for name in ('root','canonical_root')]:
+                raise ServiceError('TERMINAL_SCOPE_ROOT_CHANGED',status=409)
+        except OSError:
+            raise ServiceError('TERMINAL_SCOPE_ROOT_CHANGED',status=409)from None
+        # Do not persist old bodies in the receipt, even administrative evidence.
+        history=[{key:e[key]for key in ('sequence','event_key','hash','received')}for e in events]
+        return {'task_id':ident,'project_id':row['project'],'grant_hash':row['grant_hash'],
+                'task_hash':digest(dict(row)),'events_hash':digest(history),
+                'registry_hash':registration['registry_hash'],'thread_id':row['thread_id'],
+                'turn_id':row['turn_id'],'root':row['root'],'scopes':scopes,'processes':processes}
+
+    def terminal_scope_snapshot(self, ident):
+        """Root-only preparation. No mutation, HTTP route or execution authority."""
+        with self._connection()as connection:
+            connection.execute('BEGIN')
+            return self._terminal_scope_snapshot(connection,ident)
+
+    @staticmethod
+    def _terminal_native(observation, snapshot, now):
+        fields={'source','cwd','thread_id','thread_status','turns','turns_complete','observed_at'}
+        if (type(observation)is not dict or set(observation)!=fields
+                or type(observation['source'])is not str
+                or observation['source']not in {'codex_app.read_thread','app_server_stdio.thread/read'}
+                or observation['cwd']!=snapshot['root'] or observation['thread_id']!=snapshot['thread_id']
+                or type(observation['thread_status'])is not str
+                or observation['thread_status']not in {'idle','notLoaded'}
+                or type(observation['observed_at'])not in (int,float)
+                or not math.isfinite(observation['observed_at'])
+                or not 0<=now-observation['observed_at']<30
+                or observation['turns_complete'] is not True
+                or type(observation['turns'])is not list or not 1<=len(observation['turns'])<=32):
+            raise ServiceError('TERMINAL_SCOPE_NATIVE_REJECTED',status=409)
+        seen=set()
+        for turn in observation['turns']:
+            if (type(turn)is not dict or set(turn)!={'id','status'}
+                    or type(turn['id'])is not str or not turn['id'] or turn['id']in seen
+                    or type(turn['status'])is not str
+                    or turn['status']not in {'completed','interrupted','cancelled'}):
+                raise ServiceError('TERMINAL_SCOPE_NATIVE_REJECTED',status=409)
+            seen.add(turn['id'])
+        if observation['turns'][-1]!={'id':snapshot['turn_id'],'status':'completed'}:
+            raise ServiceError('TERMINAL_SCOPE_NATIVE_REJECTED',status=409)
+
+    def _terminal_receipt(self, connection, ident, event):
+        receipt=self._decode(event['body'],event['hash']);now=time.time()
+        fields={'version','action','actor','snapshot','native','issued_at','expires_at'}
+        if (type(receipt)is not dict or set(receipt)!=fields or type(receipt['version'])is not int
+                or receipt['version']!=1 or receipt['actor']!='trusted_local_owner'
+                or receipt['action']!='terminal_scope_resolution_v1'
+                or event['event_key']!='terminal-scope-resolution-v1-'+digest(receipt)
+                or type(receipt['issued_at'])not in (int,float) or not math.isfinite(receipt['issued_at'])
+                or not 0<=now-receipt['issued_at']<30
+                or type(receipt['expires_at'])not in (int,float) or not math.isfinite(receipt['expires_at'])
+                or not now<receipt['expires_at']<=receipt['issued_at']+30):
+            raise ServiceError('TERMINAL_SCOPE_RECEIPT_REJECTED',status=409)
+        snapshot=receipt['snapshot']
+        snapshot_fields={'task_id','project_id','grant_hash','task_hash','events_hash','registry_hash',
+                         'thread_id','turn_id','root','scopes','processes'}
+        if type(snapshot)is not dict or set(snapshot)!=snapshot_fields or snapshot['task_id']!=ident:
+            raise ServiceError('TERMINAL_SCOPE_RECEIPT_REJECTED',status=409)
+        self._terminal_native(receipt['native'],snapshot,now)
+        if (receipt['expires_at']!=receipt['native']['observed_at']+30
+                or connection.execute('SELECT 1 FROM events WHERE task_id=? AND sequence>?',
+                                      (ident,event['sequence'])).fetchone()
+                or snapshot!=self._terminal_scope_snapshot(connection,ident,before_sequence=event['sequence'])):
+            raise ServiceError('TERMINAL_SCOPE_FENCE_CHANGED',status=409)
+        # Filesystem/Git probes can consume the remaining lifetime.
+        self._terminal_native(receipt['native'],snapshot,time.time())
+        if time.time()>=receipt['expires_at']:
+            raise ServiceError('TERMINAL_SCOPE_RECEIPT_REJECTED',status=409)
+        return receipt
+
+    def _resolved_terminal_scopes(self, connection, ident, *, deadlines=None):
+        event=connection.execute("SELECT * FROM events WHERE task_id=? AND event_key LIKE 'terminal-scope-resolution-v1-%' ORDER BY sequence DESC LIMIT 1",(ident,)).fetchone()
+        if event is None:raise ServiceError('TASK_FOREIGN_SCOPE_UNKNOWN',status=409)
+        receipt=self._terminal_receipt(connection,ident,event)
+        if deadlines is not None:deadlines.append(receipt['expires_at'])
+        return receipt['snapshot']['scopes']
+
+    def record_terminal_scope_resolution(self, ident, proof):
+        """Trusted Root adds a short-lived scope proof, never closes/replays a task.
+
+        Source strings/hashes bind evidence; they do not authenticate a caller.
+        Only the existing trusted backend may supply real native observations.
+        Receipt expiry also applies at claim; renewals need fresh observations
+        and a new snapshot covering the entire previous event history.
+        """
+        if (type(proof)is not dict or set(proof)!={'actor','action','snapshot','native'}
+                or proof['actor']!='trusted_local_owner' or proof['action']!='terminal_scope_resolution_v1'):
+            raise ServiceError('TERMINAL_SCOPE_AUTHORITY_REJECTED',status=409)
+        with self._connection(True)as connection:
+            prior=connection.execute("SELECT * FROM events WHERE task_id=? AND event_key LIKE 'terminal-scope-resolution-v1-%' ORDER BY sequence DESC LIMIT 1",(stable_id(ident),)).fetchone()
+            if prior:
+                value=self._decode(prior['body'],prior['hash'])
+                if type(value)is not dict:raise ServiceError('TERMINAL_SCOPE_RECEIPT_REJECTED',status=409)
+                if all(value.get(key)==item for key,item in proof.items()):
+                    return self._terminal_receipt(connection,ident,prior)
+            snapshot=self._terminal_scope_snapshot(connection,ident)
+            if snapshot!=proof['snapshot']:raise ServiceError('TERMINAL_SCOPE_FENCE_CHANGED',status=409)
+            now=time.time();self._terminal_native(proof['native'],snapshot,now)
+            receipt={'version':1,**proof,'issued_at':now,'expires_at':proof['native']['observed_at']+30}
+            self._append_event(connection,ident,'terminal-scope-resolution-v1-'+digest(receipt),receipt)
+            return receipt
 
     def claim(self, owner, now=None, *, only_task_id=None, selected_grant_ids=None):
         stable_id(owner); now = time.time() if now is None else now
@@ -701,6 +920,7 @@ class TaskStore:
                         continue
                 running=[self._task(other)for other in owned_active if other['status']!='requires_reconcile']
                 if running and not self._parallel_read_claim(connection,[task,*running]):continue
+                terminal_deadlines=[]
                 if active:
                     from .writer_handoff import workspace_identity,workspaces_overlap
                     try:scope=workspace_identity(_effect_root(task['intent']['grant']))
@@ -709,7 +929,7 @@ class TaskStore:
                     conflict=False
                     for other in active:
                         if selected_grant_ids is not None and other['id']not in owned_ids:
-                            try:foreign_scopes=self._foreign_fence_scopes(connection,other)
+                            try:foreign_scopes=self._foreign_fence_scopes(connection,other,deadlines=terminal_deadlines)
                             except (ServiceError,OSError,ValueError,TypeError,KeyError):
                                 conflict=True;break
                             if any(workspaces_overlap(scope,foreign)for foreign in foreign_scopes):
@@ -736,6 +956,7 @@ class TaskStore:
                 if parent:
                     if parent['provider_status']!='completed':
                         connection.execute("UPDATE tasks SET status='requires_reconcile' WHERE id=?",(row['id'],));continue
+                if any(time.time()>=expiry for expiry in terminal_deadlines):continue
                 connection.execute("UPDATE tasks SET owner=?,lease_until=?,status='running' WHERE id=?", (owner, now+15, row['id']))
                 return self._task(connection.execute('SELECT * FROM tasks WHERE id=?', (row['id'],)).fetchone())
             return None
