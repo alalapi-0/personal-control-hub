@@ -10,6 +10,7 @@ from hub.connection_extensions import validate_project_definition
 from hub.connection_records import RecordError, validate_result
 from hub.connection_refresh import RefreshLedger, refresh
 from hub.connection_sources import SourceResolver
+from hub.connections import validate_registry_value
 from hub.project_service import ProjectService
 
 
@@ -75,6 +76,92 @@ class ProjectDefinitionTests(unittest.TestCase):
         self.assertTrue(source['observed_at'])
         self.assertEqual(self.service.get_project('b')['definition']['fields']['aliases']['state'], 'missing')
 
+    def test_registry_definition_confirmed_aliases_are_hashed_without_root_reads(self):
+        self.fixture.projects[0]['project_definition'] = {
+            'aliases': known([{'name': '三十天', 'confirmed': True}]),
+            'outputs': known([]),
+            'roles': {'value': None, 'state': 'unknown', 'reason': 'Roles unpublished'}}
+        self.fixture.save_registry()
+        with mock.patch('hub.connection_sources._safe_relative_read', side_effect=AssertionError('GET source read')), \
+                mock.patch.object(SourceResolver, 'refresh', side_effect=AssertionError('GET refresh')):
+            dto = self.service.get_project('a')
+            listed = self.service.list_projects()['projects']
+        fields = dto['definition']['fields']
+        self.assertEqual(fields['aliases']['value'], ['三十天'])
+        self.assertEqual(fields['aliases']['state'], 'known')
+        self.assertEqual(fields['outputs']['state'], 'empty')
+        self.assertEqual(fields['roles']['state'], 'unknown')
+        self.assertEqual(fields['roles']['reason'], 'Roles unpublished')
+        self.assertEqual(fields['working_copies']['state'], 'missing')
+        self.assertEqual(fields['official_name']['value'], 'Official A')
+        source = fields['aliases']['source']
+        self.assertEqual(source['kind'], 'registry')
+        self.assertEqual(source['field'], 'project_definition.aliases')
+        self.assertEqual(source['sha256'], source['registry_sha256'])
+        self.assertEqual(len(source['sha256']), 64)
+        self.assertIsNone(source['observed_at'])
+        self.assertEqual(next(row for row in listed if row['project_id'] == 'a')['definition'], dto['definition'])
+
+    def test_registry_definition_rejects_unconfirmed_and_malformed_fields(self):
+        for definition in (None, [], {'aliases': known([{'name': 'Actor 4', 'confirmed': False}])},
+                           {'aliases': known(['Actor 4'])},
+                           {'aliases': known([{'name': 'Actor 4', 'confirmed': True, 'extra': True}])},
+                           {'aliases': known([{'name': 'Actor 4', 'confirmed': True}] * 2)},
+                           {'roles': known('Producer')}, {'unpublished': known('guess')}):
+            with self.subTest(definition=definition), self.assertRaises(RecordError):
+                validate_registry_value({'projects': [{**self.fixture.projects[0], 'project_definition': definition}]})
+
+    def test_registry_definition_priority_and_stale_source_fallback(self):
+        self.fixture.projects[0]['project_definition'] = {
+            'official_name': known('Explicit registry A'),
+            'purpose': {'value': None, 'state': 'unknown', 'reason': 'Purpose not confirmed'},
+            'aliases': known([{'name': 'Registry A', 'confirmed': True}])}
+        self.fixture.save_registry()
+        self.publish({'official_name': known('Source A'),
+                      'aliases': known([{'name': 'Source alias', 'confirmed': True}])})
+        self.collect()
+        fresh = self.service.get_project('a')['definition']['fields']
+        self.assertEqual(fresh['official_name']['value'], 'Source A')
+        self.assertEqual(fresh['aliases']['value'], ['Source alias'])
+        self.assertEqual(fresh['aliases']['source']['kind'], 'source_extension')
+        self.assertEqual(fresh['purpose']['state'], 'unknown')
+        self.assertEqual(fresh['purpose']['reason'], 'Purpose not confirmed')
+        self.assertEqual(fresh['project_type']['value'], 'synthetic_tool')
+        with mock.patch('hub.project_service._age', return_value=3601), \
+                mock.patch('hub.connection_sources._safe_relative_read', side_effect=AssertionError('GET source read')):
+            stale_dto = self.service.get_project('a')
+        self.assertEqual(stale_dto['freshness']['state'], 'stale')
+        stale = stale_dto['definition']['fields']
+        self.assertEqual(stale['official_name']['value'], 'Explicit registry A')
+        self.assertEqual(stale['aliases']['value'], ['Registry A'])
+        self.assertEqual(stale['aliases']['source']['kind'], 'registry')
+        self.assertEqual(stale['outputs']['state'], 'unavailable')
+        self.fixture.projects[0]['description'] = 'Changed registry hash'
+        self.fixture.save_registry()
+        drift_dto = self.service.get_project('a')
+        self.assertTrue(drift_dto['freshness']['authority_drift'])
+        drift_alias = drift_dto['definition']['fields']['aliases']
+        self.assertEqual(drift_alias['value'], ['Registry A'])
+        self.assertNotEqual(drift_alias['source']['registry_sha256'], fresh['aliases']['source']['registry_sha256'])
+
+    def test_failed_source_preserves_registry_alias_without_promoting_old_source(self):
+        self.fixture.projects[0]['project_definition'] = {
+            'aliases': known([{'name': 'Registry A', 'confirmed': True}])}
+        self.fixture.save_registry()
+        self.publish({'aliases': known([{'name': 'Historical alias', 'confirmed': True}]),
+                      'outputs': known(['Historical output'])})
+        self.collect()
+        (self.a / 'STATE.yaml').unlink()
+        ledger = RefreshLedger(self.fixture.hub, result_validator=validate_result)
+        refresh(ledger, SourceResolver(self.fixture.hub), 'failed-definition', ['a'])
+        with mock.patch('hub.connection_sources._safe_relative_read', side_effect=AssertionError('GET source read')):
+            dto = self.service.get_project('a')
+        self.assertFalse(dto['source']['source_record']['success'])
+        self.assertEqual(dto['freshness']['state'], 'stale')
+        self.assertEqual(dto['definition']['fields']['aliases']['value'], ['Registry A'])
+        self.assertEqual(dto['definition']['fields']['aliases']['source']['kind'], 'registry')
+        self.assertIsNone(dto['definition']['fields']['outputs']['value'])
+
     def test_empty_unknown_not_applicable_and_active_blocked_zero_progress(self):
         state = copy.deepcopy(self.fixture.business)
         state['current_work'].update(status='active', objective='Current iteration only', completed=False)
@@ -119,6 +206,8 @@ class ProjectDefinitionTests(unittest.TestCase):
                 validate_project_definition(definition)
 
     def test_removed_disabled_cloud_registry_only_projection_never_probes(self):
+        for project in self.fixture.projects:
+            project['project_definition'] = {'aliases': known([{'name': 'Alias ' + project['id'], 'confirmed': True}])}
         self.fixture.projects[0].update(current_state_status='removed_local', enabled=True,
                                         connection_read_allowed=True, root_path='/no-read-removed')
         self.fixture.projects[1].update(enabled=False, root_kind='cloud', root_path='/no-read-cloud')
@@ -129,6 +218,7 @@ class ProjectDefinitionTests(unittest.TestCase):
         for row in rows:
             self.assertIn('definition', row)
             self.assertEqual(row['definition']['fields']['roles']['state'], 'missing')
+            self.assertEqual(row['definition']['fields']['aliases']['value'], ['Alias ' + row['project_id']])
 
 
 if __name__ == '__main__': unittest.main()

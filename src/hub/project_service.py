@@ -769,8 +769,10 @@ class ProjectService:
     def _definition(declared, record, freshness, authority, read_allowed):
         """Project identity/long-term purpose, never inferred from current work.
 
-        Registry metadata is already loaded. Optional source definitions use the
-        existing verified extension envelope; GET performs no further reads.
+        Registry metadata is already loaded. Explicit registry definition
+        fields override legacy metadata; fresh source fields override both.
+        Optional source definitions use the existing verified extension envelope;
+        GET performs no further reads.
         """
         from .connection_extensions import DEFINITION_FIELDS, DEFINITION_LISTS
         fields = {}
@@ -791,6 +793,19 @@ class ProjectService:
             else:
                 fields[name] = {"value": None, "state": "unknown", "source": source,
                                 "reason": "Registry definition value is not a nonempty string."}
+        for name, item in declared.get("project_definition", {}).items():
+            source = {"kind": "registry", "registry_sha256": authority["registry_hash"],
+                      "field": "project_definition." + name,
+                      "sha256": authority["registry_hash"], "observed_at": None}
+            value = copy.deepcopy(item["value"])
+            if name == "aliases" and value is not None:
+                value = [entry["name"] for entry in value]
+            state, reason = item["state"], item["reason"]
+            if state == "known" and value == "unknown":
+                state, value, reason = "unknown", None, "Registry explicitly publishes unknown."
+            if state == "known" and name in DEFINITION_LISTS and value == []:
+                state = "empty"
+            fields[name] = {"value": value, "state": state, "source": source, "reason": reason}
         available = (read_allowed and record and record["success"] and freshness["state"] == "fresh")
         extension = (record or {}).get("extensions") or {}
         published = extension.get("fact", {}).get("project_definition")

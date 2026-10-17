@@ -80,6 +80,11 @@ def validate_registry_value(value: Any) -> dict:
     for row in value["projects"]:
         identifier(row["id"], "registry project")
         string(row.get("name"), "registry project name")
+        if "project_definition" in row:
+            # Extensions import selectors from this module; defer to avoid a
+            # module import cycle while sharing the exact same fact contract.
+            from .connection_extensions import validate_project_definition
+            validate_project_definition(row["project_definition"])
         # Removed rows remain reportable even when malicious activation flags are present.
         if (row.get("local_presence", {}).get("status") == "removed_local"
                 or row.get("current_state_status") == "removed_local"):
