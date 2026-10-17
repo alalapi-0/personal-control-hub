@@ -236,15 +236,16 @@ test('daily summary separates observation time from current fact time and full n
   assert.equal(summaryFields(p)['下一步'],next);
 });
 
-test('failed and stale summaries suppress history and complete quality while preserving read time',()=>{
+test('failed and stale summaries retain explicitly labeled historical business while preserving read time',()=>{
   for(const failed of [false,true]){
     const p=authoritative();p.business.quality={integration_quality:'complete'};
     p.source={observed_at:'2026-10-14T10:00:00Z'};
     p.freshness.fact_time_state='known';p.freshness.fact_updated_at='2026-10-10T10:00:00Z';
     if(failed)p.operational.latest_attempt={success:false};else p.freshness.state='stale';
     const summary=projectSummary(p);
-    assert.equal(summary.fields.every(([,text])=>text==='未知'||text==='未知 / 未知'),true);
-    assert.equal(summary.quality,failed?'当前来源读取失败；历史结果另行查看':'当前业务事实待核对；历史快照不能替代当前值');
+    assert.equal(Object.fromEntries(summary.fields)['项目阶段'],'M2');
+    assert.equal(summary.historical,true);
+    assert.match(summary.quality,/上次成功的历史快照/);
     assert.equal(summary.factAt,null);assert.equal(summary.observedAt,p.source.observed_at);
     assert.equal(facts(p,{history:true})['current_work.phase'].text,'M2');
   }
@@ -480,7 +481,7 @@ test('invalid success-with-errors DTO and errors without a latest observation re
     assert.equal(currentSourceAvailable(p),false);
     assert.equal(Object.values(facts(p)).every(f=>!f.known),true);
     assert.equal(summaryFields(p)['项目阶段'],'未知');
-    assert.equal(projectSummary(p).quality,'当前来源读取失败；历史结果另行查看');
+    assert.equal(projectSummary(p).quality,'当前来源读取失败；尚无可用成功快照');
     assert.equal(freshness(p),'最新读取失败');
     assert.equal(attention(p),true);
     assert.equal(JSON.stringify(p),before);
@@ -494,7 +495,9 @@ test('one current gate rejects drift, stale, explicit failure and denied or remo
     const p=authoritative();change(p);
     assert.equal(currentSourceAvailable(p),false);
     assert.equal(Object.values(facts(p)).every(f=>!f.known),true);
-    assert.equal(summaryFields(p)['项目阶段'],'未知');
+    const summary=projectSummary(p);
+    assert.equal(summaryFields(p)['项目阶段'],summary.historical?'M2':'未知');
+    if(summary.historical)assert.match(summary.quality,/历史快照/);
   }
 });
 

@@ -106,12 +106,21 @@ export function projectDefinition(project) {
 }
 
 // Keep the daily summary on the same field-proof gate as the full detail.
+export function historicalSnapshotAvailable(project) {
+  const record=project?.operational?.last_success,latest=project?.operational?.latest_attempt;
+  const inconsistent=(!latest || latest.success===true && latestFailure(project));
+  return !inconsistent && !removed(project) && project?.declared?.connection_read_allowed===true
+    && record?.schema_version==='2.0' && record.success===true;
+}
+
 export function projectSummary(project) {
-  const facts=Object.fromEntries(projectFacts(project).flatMap(group=>group.fields.map(f=>[f.key,f])));
-  const value=key=>facts[key].known ? facts[key].text : '未知';
   const current=currentSourceAvailable(project);
+  const historical=!current && historicalSnapshotAvailable(project);
+  const facts=Object.fromEntries(projectFacts(project,{history:historical}).flatMap(group=>group.fields.map(f=>[f.key,f])));
+  const value=key=>facts[key].known ? facts[key].text : '未知';
   const quality=latestFailure(project) ? 'error' : current ? project?.business?.quality?.integration_quality : 'partial';
   const allFacts=Object.values(facts),knownFacts=allFacts.filter(field=>field.known).length;
+  const snapshot=project?.last_success_snapshot;
   return {
     fields:[
       ['项目阶段',value('current_work.phase')], ['当前轮次',value('current_work.round')],
@@ -120,10 +129,16 @@ export function projectSummary(project) {
       ['计数依据',value('progress.counting_basis')],
       ['阻塞与待决定',value('blockers')], ['下一步',value('current_work.next_action')],
     ],
-    quality:quality==='error'?'当前来源读取失败；历史结果另行查看':current?
+    historical,
+    quality:historical ? (latestFailure(project)?'最新读取失败 · 以下为上次成功的历史快照':'读取证据已过期或规则变化 · 以下为上次成功的历史快照'):
+      quality==='error'?'当前来源读取失败；尚无可用成功快照':current?
       `来源读取成功 · ${quality==='complete'?'核心结构已通过':'核心字段仍有缺口'} · 当前业务字段 ${knownFacts}/${allFacts.length} 有依据`:
-      '当前业务事实待核对；历史快照不能替代当前值',
+      '当前业务事实待核对；尚无可用成功快照',
     observedAt:project?.source?.observed_at ?? null,
+    snapshotAt:historical ? project.operational.last_success.observed_at : project?.source?.last_success_at ?? null,
+    snapshotAgeSeconds:snapshot?.age_seconds ?? null,
+    failure:project?.source?.error || project?.freshness?.stale_reason || null,
+    recovery:!current ? snapshot?.recovery_action || '检查来源后显式刷新，或等待下次计划刷新。' : null,
     factAt:current && project?.freshness?.fact_time_state==='known' ? project.freshness.fact_updated_at : null,
   };
 }
@@ -220,7 +235,9 @@ export function scheduleSummary(schedule){
   if(!schedule?.available)return '自动刷新状态暂不可用；无法确认计时器、错过触发或补跑情况。';
   const timer=schedule.timer,service=schedule.service;
   const state=({active:'当前运行',paused:'当前暂停',unavailable:'当前状态不可用'})[schedule.status]||'当前状态未知';
-  return `自动刷新：${state}；开机登录后启用状态：${timer.UnitFileState}；最近触发记录：${timer.LastTriggerUSec||'未知'}；下次计划：${timer.NextElapseUSecRealtime||'未知'}。最近服务结果：${service.Result}，退出码 ${service.ExecMainStatus}。日历真实触发、退出登录后恢复和错过补跑尚未验收；计划时间不代表已经执行。`;
+  const hours=schedule.freshness_target?.interval_hours;
+  const interval=[12,24].includes(hours)?`计划间隔：${hours} 小时；`:'计划间隔尚未核实；';
+  return `自动刷新：${state}；${interval}开机登录后启用状态：${timer.UnitFileState}；最近触发记录：${timer.LastTriggerUSec||'未知'}；下次计划：${timer.NextElapseUSecRealtime||'未知'}。最近服务结果：${service.Result}，退出码 ${service.ExecMainStatus}。日历真实触发、退出登录后恢复和错过补跑尚未验收；计划时间不代表已经执行。`;
 }
 
 export function requestSummary(request){

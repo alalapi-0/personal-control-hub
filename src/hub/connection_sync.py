@@ -18,7 +18,7 @@ from hub.connection_sources import _safe_relative_read
 from hub.connections import parse_source
 from hub.service_contract import ServiceError
 
-INCREMENTAL_SECONDS = 60
+from hub.refresh_schedule import schedule_policy, latest_due_slot
 
 
 @contextmanager
@@ -94,26 +94,30 @@ def incremental_request(root, resolver, ledger, request_id, *, plan=None):
 
 
 def scheduled_request(root,resolver,ledger,*,instant=None,plan=None,incremental_only=False):
-    """One timer/service owns both the 09:00 full batch and minute checks."""
+    """One finite latest-due snapshot, or an explicit manual incremental read."""
     instant=instant or datetime.now(ZoneInfo('Asia/Tokyo'))
     require(instant.tzinfo is not None,'scheduled instant needs timezone')
-    local=instant.astimezone(ZoneInfo('Asia/Tokyo'))
     plan=plan if plan is not None else scope_plan(root,resolver)
+    policy=plan['schedule']
     started=time.monotonic()
     with sync_mutex(ledger):
-        daily=daily_request_id(plan['scope_id'],instant=instant)
-        history=ledger.history(current_authority=resolver.authority)
-        full=next((row for row in history['requests'] if row['request_id']==daily),None)
-        if not incremental_only and local.hour>=9 and (full is None or full['status']!='FINISHED'):
-            payload,code=sync_request(root,resolver,ledger,daily,plan=plan)
-            mode='daily'
-        else:
-            ident=f"{plan['scope_id']}.incremental.{local.strftime('%Y-%m-%dT%H-%M')}"
+        if incremental_only:
+            # Manual runs are distinct recoveries, never a generated timer policy.
+            import uuid
+            ident=f"{plan['scope_id']}.manual.{uuid.uuid4().hex}"
             payload,code=incremental_request(root,resolver,ledger,ident,plan=plan)
-            mode='incremental'
+            slot=None
+            mode='manual_incremental'
+        else:
+            slot=latest_due_slot(instant,policy['interval_hours'])
+            ident=f"{plan['scope_id']}.snapshot.{policy['interval_hours']}h.{slot.strftime('%Y-%m-%dT%H-%M')}"
+            payload,code=sync_request(root,resolver,ledger,ident,plan=plan)
+            mode='snapshot'
         elapsed=time.monotonic()-started
         payload.update(mode=mode,scheduled_at=instant.isoformat(),elapsed_seconds=elapsed,
-                       incremental_interval_seconds=INCREMENTAL_SECONDS,overloaded=elapsed>INCREMENTAL_SECONDS)
+                       due_slot=slot.isoformat() if slot else None,
+                       interval_hours=policy['interval_hours'],
+                       overloaded=elapsed>policy['expected_interval_seconds'])
         return payload,code
 
 SCOPE_PATH = "data/connections/sync_scope.yaml"
@@ -123,10 +127,16 @@ def scope_plan(root: Path, resolver) -> dict:
     """Qualify a frozen identity list without probing any registered project root."""
     data, meta = _safe_relative_read(Path(root), SCOPE_PATH, authority_check=resolver._check_registry)
     scope = parse_source(data, "yaml")
-    require(type(scope) is dict and set(scope) == {
-        "schema_version", "scope_id", "baseline_total", "project_ids", "excluded_project_ids"},
+    require(type(scope) is dict and set(scope) in ({
+        "schema_version", "scope_id", "baseline_total", "project_ids", "excluded_project_ids"}, {
+        "schema_version", "scope_id", "baseline_total", "project_ids", "excluded_project_ids", "schedule"}),
         "invalid sync scope fields")
     require(scope["schema_version"] == "1.0", "unsupported sync scope")
+    try:
+        policy = schedule_policy(scope["schedule"] if "schedule" in scope else {"interval_hours":12})
+        require("schedule" not in scope or type(scope["schedule"]) is dict, "invalid sync schedule")
+    except ValueError:
+        require(False, "invalid sync schedule")
     identifier(scope["scope_id"], "scope")
     ids, exclusions = scope["project_ids"], scope["excluded_project_ids"]
     require(type(ids) is list and bool(ids), "sync scope identities required")
@@ -166,6 +176,7 @@ def scope_plan(root: Path, resolver) -> dict:
             excluded.append({"project_id": project_id,
                              "reason": exclusions.get(project_id, "outside_frozen_scope")})
     return {"scope_id": scope["scope_id"], "scope_total": scope["baseline_total"],
+            "schedule": policy,
             "scope_sha256": meta["sha256"],
             "project_ids": list(ids), "eligible_project_ids": eligible, "excluded": excluded,
             "registered_count": len(resolver.projects),

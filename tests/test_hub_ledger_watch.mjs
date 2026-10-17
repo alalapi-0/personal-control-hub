@@ -15,20 +15,19 @@ function fixture(){
   });
   return {state,watcher};
 }
-test('ordinary 5s head observations never refresh an unchanged projection, but real changes do',async()=>{
+test('no continuous head or projection timers, only bounded explicit/event reads',async()=>{
   const {state,watcher}=fixture();watcher.accept(head(1));
-  assert.equal([...state.timers.values()][0].ms,5000);
-  await watcher.wake();assert.equal(state.reads,1);assert.equal(state.renders,0);
-  state.value.head=head(2);await watcher.wake();assert.equal(state.renders,1);
-  await watcher.wake();assert.equal(state.renders,1);assert.ok(state.status.includes('updated'));
-  state.time=60000;await watcher.wake();assert.equal(state.renders,2,'unchanged ledger still ages source freshness');
+  assert.equal(state.timers.size,0);
+  await watcher.wake();assert.equal(state.reads,1);assert.equal(state.renders,1);
+  assert.equal(state.timers.size,0);
+  state.value.head=head(2);await watcher.wake();assert.equal(state.renders,2);
   watcher.stop();assert.equal(state.timers.size,0);
 });
-test('hidden/offline pages do not collect or reconcile, and wake resumes immediately',async()=>{
+test('hidden/offline pages do not read, wake reprojects unchanged management state',async()=>{
   const {state,watcher}=fixture();watcher.accept(head(1));state.visible=false;
-  await watcher.wake();assert.equal(state.reads,0);assert.equal([...state.timers.values()][0].ms,30000);
+  await watcher.wake();assert.equal(state.reads,0);assert.equal(state.timers.size,0);
   state.visible=true;state.online=false;await watcher.wake();assert.equal(state.reads,0);
-  state.online=true;state.value.head=head(2);await watcher.wake();assert.equal(state.renders,1);
+  state.online=true;await watcher.wake();assert.equal(state.renders,1);
   watcher.stop();
 });
 test('a late head observation from another route cannot apply there',async()=>{

@@ -899,7 +899,7 @@ class FunctionalFixture:
         directory.mkdir(parents=True, exist_ok=True)
         if directory.stat().st_uid != os.getuid(): raise ValueError('Foreign fixture unit directory')
         units = render_units(self.root, Path(__file__).resolve().parents[1], Path(sys.executable),
-                             incremental=True, unit_prefix=prefix)
+                             interval_hours=12, unit_prefix=prefix)
         if any((directory / name).exists() or (directory / name).is_symlink() for name in units):
             raise FileExistsError('Fixture unit collision')
         self.timer_prefix, self.timer_units = prefix, units
@@ -919,16 +919,20 @@ class FunctionalFixture:
             raise
         return {'classification': self.classification, 'unit_prefix': prefix,
                 'timer': prefix + '.timer', 'service': prefix + '.service',
-                'interval_seconds': 60, 'daily': '09:00 Asia/Tokyo', 'started': True}
+                'interval_hours': 12, 'expected_interval_seconds': 43200,
+                'timezone': 'Asia/Tokyo', 'calendar': ['09:00', '21:00'],
+                'natural_wait_verification': 'unverified', 'started': True}
 
     def timer_status(self):
         if self.timer_prefix is None: return {'configured': False, 'invocations': []}
         prefix = self.timer_prefix
-        properties = 'Id,ActiveState,SubState,InvocationID,MainPID,ExecMainPID,ExecMainStartTimestamp,ExecMainStartTimestampMonotonic,ExecMainCode,ExecMainStatus,LastTriggerUSec,NextElapseUSecRealtime'
+        properties = 'Id,ActiveState,SubState,InvocationID,MainPID,ExecMainPID,ExecMainStartTimestamp,ExecMainStartTimestampMonotonic,ExecMainCode,ExecMainStatus,LastTriggerUSec,NextElapseUSecRealtime,TimersCalendar'
         show = self._control(['systemctl', '--user', 'show', prefix + '.timer', prefix + '.service', '--property=' + properties], check=False)
         units = []
         for block in show.stdout.strip().split('\n\n'):
             fields = dict(line.split('=', 1) for line in block.splitlines() if '=' in line)
+            calendars = [line.partition('=')[2] for line in block.splitlines() if line.startswith('TimersCalendar=')]
+            if calendars: fields['TimersCalendar'] = calendars
             if fields.get('Id') in self.timer_units: units.append(fields)
         journal = self._control(['journalctl', '--user', '--unit=' + prefix + '.service', '--since=' + self.timer_since,
                                  '--output=json', '--no-pager', '-n', '3000'], check=False)
@@ -1011,6 +1015,12 @@ def main():
     if args.owner_fd is not None:
         with os.fdopen(args.owner_fd) as stream: owner = stream.readline().strip()
         if not 32 <= len(owner) <= 512: raise ValueError('invalid synthetic owner pipe')
+    # SIGTERM must unwind the existing fixture context, including its batch child.
+    # No process-name discovery or unrelated runtime control is involved.
+    import signal
+    def terminate_owned_fixture(_signum, _frame):
+        raise SystemExit(128 + signal.SIGTERM)
+    signal.signal(signal.SIGTERM, terminate_owned_fixture)
     with FunctionalFixture(owner=owner, directory_size=args.directory_size) as fixture:
         print(json.dumps({'ready': True, 'classification': fixture.classification, 'origin': fixture.origin}), flush=True)
         for line in sys.stdin:

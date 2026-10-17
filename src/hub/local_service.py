@@ -509,6 +509,8 @@ class HubRequestHandler(BaseHTTPRequestHandler):
         elif path == '/api/host':
             if query:
                 raise ServiceError('INVALID_QUERY')
+            if self.server.host_observer:
+                self.server.host_observer.demand()
             result = (self.server.host_observer.snapshot() if self.server.host_observer else
                       {'available': False, 'metrics': {}, 'reason': 'OBSERVER_NOT_RUNNING',
                        'capacity_recommendation': None})
@@ -520,7 +522,9 @@ class HubRequestHandler(BaseHTTPRequestHandler):
             if query:
                 raise ServiceError("INVALID_QUERY")
             from .refresh_schedule import refresh_schedule_status
-            result = {**self.server.projects.sync_status(), "schedule": refresh_schedule_status()}
+            status = self.server.projects.sync_status()
+            interval = (status.get("schedule_policy") or {}).get("interval_hours", 12)
+            result = {**status, "schedule": refresh_schedule_status(interval_hours=interval)}
         elif path == "/api/projects":
             snapshot = self._design_snapshot()
             result = self.server.projects.list_projects(query=query, design_snapshot=snapshot)

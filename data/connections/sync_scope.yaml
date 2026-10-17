@@ -1,5 +1,7 @@
 # Static qualified identity set; registration/discovery does not expand it.
 schema_version: '1.0'
+schedule:
+  interval_hours: 12
 scope_id: pch-refactor-current-20261014
 baseline_total: 39
 project_ids:

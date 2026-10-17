@@ -4,40 +4,31 @@ export function validLedgerHead(head){
     &&typeof head.hash==='string'&&/^[a-f0-9]{64}$/.test(head.hash)
     &&(head.sequence===0)===(head.hash==='0'.repeat(64)));
 }
-const key=head=>head===null?'none':`${head.sequence}:${head.hash}`;
 
-export function watchLedger({read,reconcile,epoch,visible,online,onStatus=()=>{},
-  schedule=setTimeout,cancel=clearTimeout,now=Date.now,interval=5000,hiddenInterval=30000,freshnessInterval=60000}){
-  let timer,stopped=false,running=false,again=false,known=false,headKey,backend,lastApplied=now();
-  function accept(head){if(!validLedgerHead(head))throw new Error('INVALID_LEDGER_HEAD');known=true;headKey=key(head);lastApplied=now();}
-  function later(){cancel(timer);if(!stopped)timer=schedule(tick,visible()?interval:hiddenInterval);}
-  async function tick(){
-    if(stopped)return;
-    if(running){again=true;return;}
-    cancel(timer);
-    if(!visible()||!online()){later();return;}
+export function watchLedger({read,reconcile,epoch,visible,online,onStatus=()=>{}}){
+  let stopped=false,running=false,known=false;
+  function accept(head){if(!validLedgerHead(head))throw new Error('INVALID_LEDGER_HEAD');known=true;}
+  async function wake(){
+    // No periodic head/projection timer: only explicit or visibility/network
+    // events wake this observer, and concurrent events share one bounded read.
+    if(stopped||running||!visible()||!online())return;
     running=true;const version=epoch();
     try{
       const value=await read();
-      if(stopped||version!==epoch()||!visible())return;
+      if(stopped||version!==epoch()||!visible()||!online())return;
       if(!validLedgerHead(value?.head)||typeof value?.backend_instance!=='string'
         ||!/^[a-f0-9]{32}$/.test(value.backend_instance))throw new Error('INVALID_LEDGER_HEAD_RESPONSE');
-      const changed=known&&(key(value.head)!==headKey||backend!==undefined&&backend!==value.backend_instance
-        ||now()-lastApplied>=freshnessInterval);
-      if(changed){
-        const applied=await reconcile();
-        if(stopped||version!==epoch())return;
-        // The projection may be newer than the observed head. A failed or stale
-        // read is not acknowledged, so the next ordinary observation retries.
-        if(applied===undefined)return;
-        accept(applied);onStatus('updated');
-      }else if(!known)accept(value.head);
-      backend=value.backend_instance;onStatus('ready');
+      // An explicit wake also reprojects unchanged heads: source age and Hub
+      // management configuration can change without an appended ledger result.
+      const applied=await reconcile();
+      if(stopped||version!==epoch())return;
+      if(applied!==undefined){accept(applied);onStatus('updated');}
+      else if(!known)accept(value.head);
+      onStatus('ready');
     }catch(error){if(!stopped&&version===epoch())onStatus('unavailable',error);}
-    finally{running=false;if(again&&!stopped){again=false;timer=schedule(tick,0);}else later();}
+    finally{running=false;}
   }
-  later();
-  return {accept,wake:tick,stop(){stopped=true;cancel(timer);}};
+  return {accept,wake,stop(){stopped=true;}};
 }
 
 // Keep the actual editor nodes and their closure state during source updates.

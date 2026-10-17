@@ -13,6 +13,9 @@ from hub.connection_records import validate_result
 from hub.connection_refresh import RefreshLedger, HeadConflictError
 from hub.connection_sync import incremental_request, scheduled_request, sync_mutex
 from hub.service_contract import ServiceError
+from hub.refresh_schedule import latest_due_slot
+from hub.connection_sync import scope_plan, recovery_summary
+from hub.connection_records import RecordError
 
 class IncrementalSyncTests(unittest.TestCase):
     def setUp(self):
@@ -77,9 +80,88 @@ class IncrementalSyncTests(unittest.TestCase):
             self.assertEqual(caught.exception.code,'SYNC_BATCH_BUSY')
         instant=datetime(2026,10,16,0,0,tzinfo=timezone.utc)
         full,code=scheduled_request(self.fixture.hub,self.resolver,self.ledger,instant=instant)
-        self.assertIn('.daily.',full['request_id']);self.assertEqual(full['appended_count'],2)
+        self.assertIn('.snapshot.12h.',full['request_id']);self.assertEqual(full['appended_count'],2)
         repeat,code=scheduled_request(self.fixture.hub,self.resolver,self.ledger,instant=instant+timedelta(minutes=1))
-        self.assertEqual(repeat['status'],'UNCHANGED')
+        self.assertEqual(repeat['status'],'FINISHED');self.assertEqual(repeat['appended_count'],0)
+    def test_two_same_day_snapshots_read_new_versions_and_slot_replay_does_not_read(self):
+        morning=datetime(2026,10,16,0,0,tzinfo=timezone.utc)
+        first,code=scheduled_request(self.fixture.hub,self.resolver,self.ledger,instant=morning)
+        self.assertEqual(code,0)
+        self.change(self.a,'Evening source update')
+        with mock.patch.object(self.resolver,'refresh',side_effect=AssertionError('completed slot reread')):
+            replay,code=scheduled_request(self.fixture.hub,self.resolver,self.ledger,instant=morning+timedelta(hours=11))
+        self.assertEqual(replay['appended_count'],0)
+        evening,code=scheduled_request(self.fixture.hub,self.resolver,self.ledger,instant=morning+timedelta(hours=12))
+        self.assertEqual(code,0);self.assertEqual(evening['appended_count'],2)
+        self.assertNotEqual(first['request_id'],evening['request_id'])
+        self.assertEqual(len(self.ledger.history()['requests']),2)
+
+    def test_latest_due_before_anchor_missed_slots_and_24_hour_override(self):
+        instant=datetime(2026,10,20,23,59,tzinfo=timezone.utc) # Tokyo 08:59
+        self.assertEqual(latest_due_slot(instant).isoformat(),'2026-10-20T21:00:00+09:00')
+        self.assertEqual(latest_due_slot(instant,24).isoformat(),'2026-10-20T09:00:00+09:00')
+        scope=self.fixture.hub/'data/connections/sync_scope.yaml'
+        data=yaml.safe_load(scope.read_text());data['schedule']={'interval_hours':24};scope.write_text(yaml.safe_dump(data))
+        payload,code=scheduled_request(self.fixture.hub,self.resolver,self.ledger,instant=instant)
+        self.assertEqual(code,0);self.assertEqual(payload['interval_hours'],24)
+        self.assertIn('.snapshot.24h.2026-10-20T09-00',payload['request_id'])
+        self.assertEqual(len(self.ledger.history()['requests']),1) # no replay of missed history
+        with mock.patch.object(self.resolver,'refresh',side_effect=AssertionError('same daily slot reread')):
+            replay,code=scheduled_request(self.fixture.hub,self.resolver,self.ledger,instant=instant+timedelta(seconds=30))
+        self.assertEqual(replay['appended_count'],0)
+        next_slot,code=scheduled_request(self.fixture.hub,self.resolver,self.ledger,instant=instant+timedelta(minutes=1))
+        self.assertEqual(code,0);self.assertEqual(next_slot['appended_count'],2)
+        self.assertNotEqual(payload['request_id'],next_slot['request_id'])
+
+    def test_scheduled_open_resumes_missing_only_failure_is_durable_then_recovers(self):
+        morning=datetime(2026,10,16,0,0,tzinfo=timezone.utc)
+        original=self.resolver.refresh
+        def interrupt(ident):
+            if ident=='b':raise KeyboardInterrupt()
+            return original(ident)
+        with mock.patch.object(self.resolver,'refresh',side_effect=interrupt):
+            with self.assertRaises(KeyboardInterrupt):
+                scheduled_request(self.fixture.hub,self.resolver,self.ledger,instant=morning)
+        with mock.patch.object(self.resolver,'refresh',wraps=original) as read:
+            good,code=scheduled_request(self.fixture.hub,self.resolver,self.ledger,instant=morning)
+        read.assert_called_once_with('b');self.assertEqual(code,0)
+        old_bytes=(self.a/'STATE.yaml').read_bytes();(self.a/'STATE.yaml').write_text('broken: [')
+        evening=morning+timedelta(hours=12)
+        failed,code=scheduled_request(self.fixture.hub,self.resolver,self.ledger,instant=evening)
+        self.assertEqual(code,2);self.assertEqual(failed['status'],'FINISHED')
+        summary=recovery_summary(self.ledger.history(current_authority=self.resolver.authority),{'a','b'})
+        self.assertEqual(summary['last_success']['request_id'],good['request_id'])
+        self.assertEqual(summary['last_failure']['request_id'],failed['request_id'])
+        (self.a/'STATE.yaml').write_bytes(old_bytes)
+        with mock.patch.object(self.resolver,'refresh',side_effect=AssertionError('durable failure reread')):
+            repeated,code=scheduled_request(self.fixture.hub,self.resolver,self.ledger,instant=evening)
+        self.assertEqual(code,2);self.assertEqual(repeated['appended_count'],0)
+        recovered,code=scheduled_request(self.fixture.hub,self.resolver,self.ledger,instant=morning+timedelta(days=1))
+        self.assertEqual(code,0);self.assertEqual(recovered['appended_count'],2)
+
+    def test_manual_and_scheduled_cli_share_mutex_and_do_not_launch_other_runtimes(self):
+        with sync_mutex(self.ledger), mock.patch('hub.connection_sources.SourceResolver.refresh',side_effect=AssertionError('busy read')):
+            for args in (['--request-id','manual'],['--daily'],['--scheduled'],['--incremental']):
+                output=io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    code=main(['--root',str(self.fixture.hub),'sync',*args])
+                self.assertEqual(code,2);self.assertEqual(json.loads(output.getvalue())['error'],'SYNC_BATCH_BUSY')
+        with mock.patch('subprocess.Popen',side_effect=AssertionError('background process')):
+            first,code=scheduled_request(self.fixture.hub,self.resolver,self.ledger,instant=datetime(2026,10,16,0,tzinfo=timezone.utc))
+        self.assertEqual(code,0)
+        self.change(self.a,'Manual update')
+        output=io.StringIO()
+        with contextlib.redirect_stdout(output):
+            code=main(['--root',str(self.fixture.hub),'sync','--request-id','manual-recovery'])
+        self.assertEqual(code,0);self.assertEqual(json.loads(output.getvalue())['appended_count'],2)
+
+    def test_schedule_schema_is_strict_and_default_is_12(self):
+        self.assertEqual(scope_plan(self.fixture.hub,self.resolver)['schedule']['interval_hours'],12)
+        scope=self.fixture.hub/'data/connections/sync_scope.yaml';data=yaml.safe_load(scope.read_text())
+        for bad in (None,{},True,{'interval_hours':True},{'interval_hours':6},{'interval_hours':12,'extra':1}):
+            data['schedule']=bad;scope.write_text(yaml.safe_dump(data))
+            with self.subTest(schedule=bad),self.assertRaises(RecordError):scope_plan(self.fixture.hub,self.resolver)
+
     def test_cli_one_shot_and_subset_rejected(self):
         output=io.StringIO()
         with contextlib.redirect_stdout(output):

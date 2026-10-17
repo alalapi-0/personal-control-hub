@@ -15,6 +15,13 @@ await runBrowserJourney('o2',async({page,context,evidence,evidenceRoot,origin,wa
   await command('runtime',{worker_runtime:false,provider:false},m=>m.runtime_updated===true);
   const before=await readA();assert.equal(before.business.fields.progress.completed,0);
   const editor=await context.newPage();editor.setDefaultTimeout(5000);
+  const editorHeadRequests=[],editorHeadResponses=[];
+  editor.on('request',request=>{
+    if(request.url()===origin+'/api/ledger-head')editorHeadRequests.push({method:request.method(),path:'/api/ledger-head'});
+  });
+  editor.on('response',response=>{
+    if(response.url()===origin+'/api/ledger-head')editorHeadResponses.push({status:response.status(),path:'/api/ledger-head'});
+  });
   editor.on('pageerror',error=>evidence.console.push(String(error)));
   await editor.goto(origin+'/#projects/'+B+'/schedule');
   const date=editor.getByRole('textbox',{name:'计划时区（IANA，可留空）',exact:true});
@@ -47,13 +54,35 @@ await runBrowserJourney('o2',async({page,context,evidence,evidenceRoot,origin,wa
 
   async function assertEditor(head){
     await editor.bringToFront();
+    const check=editor.getByRole('button',{name:'核对已存快照',exact:true});
+    const preActionViewport=await editor.evaluate(()=>({x:scrollX,y:scrollY}));
+    // Playwright scrolls this toolbar into view before pointerdown. Capture the
+    // resulting user-action viewport before the click handler starts reconciliation.
+    await check.evaluate(button=>{
+      window.storedSnapshotPointerdown=null;
+      button.addEventListener('pointerdown',()=>{
+        window.storedSnapshotPointerdown={x:scrollX,y:scrollY};
+      },{capture:true,once:true});
+    });
+    const [explicitHeadResponse]=await Promise.all([
+      editor.waitForResponse(response=>response.url()===origin+'/api/ledger-head'&&response.request().method()==='GET'),
+      check.click(),
+    ]);
+    assert.equal(explicitHeadResponse.status(),200,'editor explicit stored-snapshot check reads the existing ledger head');
+    evidence.states.explicitStoredSnapshotCheck={page:'editor',method:'GET',path:'/api/ledger-head',status:explicitHeadResponse.status()};
+    const pointerdownViewport=await editor.evaluate(()=>window.storedSnapshotPointerdown);
+    assert.ok(pointerdownViewport,'the explicit stored-snapshot check received pointerdown');
     await editor.waitForFunction(sequence=>Number(document.querySelector('#main').dataset.ledgerSequence)>=sequence,head.sequence,{timeout:10000});
     assert.equal(await date.inputValue(),expectedDraft);
     assert.ok(await editor.evaluate(()=>window.savedEditor===document.querySelector('[aria-label="计划时区（IANA，可留空）"]')));
     assert.equal(await editor.locator('h1').innerText(),'Synthetic Project B');
-    const afterScroll=await editor.evaluate(()=>scrollY);
-    evidence.states.editorScroll={before:editorScroll,after:afterScroll};
-    assert.ok(Math.abs(afterScroll-editorScroll)<3,JSON.stringify({reason:'background source updates retain editor scroll',before:editorScroll,after:afterScroll}));
+    const finalViewport=await editor.evaluate(()=>({x:scrollX,y:scrollY}));
+    evidence.states.editorScroll={before:editorScroll,preAction:preActionViewport,
+      pointerdown:pointerdownViewport,final:finalViewport,
+      wake:'explicit stored snapshot check',intentionalToolbarNavigation:true};
+    assert.ok(Math.abs(finalViewport.y-pointerdownViewport.y)<3&&Math.abs(finalViewport.x-pointerdownViewport.x)<3,
+      JSON.stringify({reason:'snapshot reconciliation preserves the viewport after intentional toolbar navigation',
+        preAction:preActionViewport,pointerdown:pointerdownViewport,final:finalViewport}));
     await page.bringToFront();
   }
   const manual=await readA();assert.equal(manual.business.fields.progress.completed,1);
@@ -74,53 +103,42 @@ await runBrowserJourney('o2',async({page,context,evidence,evidenceRoot,origin,wa
   await page.bringToFront();
 
   if(process.env.PCH_REAL_TIMER==='1'){
-    const first=await source(2,'Synthetic scheduled revision 2');
     const timer=await command('timer-start',{},m=>m.started===true);
-    evidence.states.timer=timer;console.log(JSON.stringify({phase:'timer_started',unit:timer.unit_prefix}));
-    evidence.states.cycles=[];
-    const seen=new Set();
+    evidence.states.timer=timer;
     try{
-      for(const n of [2,3,4]){
-        const change=n===2?first:await source(n,'Synthetic scheduled revision '+n);
-        const started=Date.now();
-        await page.getByText('Synthetic scheduled revision '+n,{exact:true}).waitFor({timeout:85000});
-        let status,invocation;
-        const completionDeadline=Date.parse(change.updated_at)+90000;
-        do{
-          status=await command('timer-status',{},m=>m.configured===true&&Array.isArray(m.invocations));
-          assert.equal(status.systemctl_exit,0);assert.equal(status.journal_exit,0);
-          invocation=status.invocations.find(v=>v.result_readable&&!seen.has(v.invocation_id));
-          if(!invocation)await new Promise(resolve=>setTimeout(resolve,250));
-        }while(!invocation&&Date.now()<completionDeadline);
-        assert.ok(invocation,JSON.stringify({reason:status.journal_reason,invocations:status.invocations}));
-        await page.waitForFunction(sequence=>Number(document.querySelector('#main').dataset.ledgerSequence)>=sequence,
-          invocation.head.sequence,{timeout:Math.max(1,completionDeadline-Date.now())});
-        const current=await readA();
-        assert.equal(current.business.fields.progress.completed,n);
-        assert.ok(current.source.sources.some(s=>s.sha256===change.new_sha256));
-        assert.equal(await main.getByText(n+' / 7',{exact:true}).innerText(),n+' / 7');
-        assert.deepEqual(current.provenance.ledger_head,invocation.head);
-        assert.equal(await main.getAttribute('data-ledger-sequence'),String(invocation.head.sequence));
-        const elapsed=Date.now()-Date.parse(change.updated_at);
-        assert.ok(elapsed>=0&&elapsed<=90000,'stable source reaches matching API/DOM head within original90s target');
-        assert.ok(invocation.request_id&&invocation.pid);seen.add(invocation.invocation_id);
-        assert.ok(status.units.some(u=>u.Id===timer.timer&&u.LastTriggerUSec&&u.LastTriggerUSec!=='n/a'));
-        evidence.states.cycles.push({source:{old:change.old_sha256,new:change.new_sha256,updated_at:change.updated_at},
-          apiValue:n,domValue:n+' / 7',head:current.provenance.ledger_head,elapsed_ms:elapsed,
-          invocation,timerStatus:status.units,observed_ms:Date.now()-started});
-        await assertEditor(current.provenance.ledger_head);
-        console.log(JSON.stringify({phase:'automatic_cycle',cycle:n-1,elapsed_ms:elapsed,sequence:current.provenance.ledger_head.sequence}));
-      }
-      assert.equal(seen.size,3);evidence.states.originalFreshnessTargets={incremental_seconds:60,visible_head_seconds:5,end_to_end_seconds:90,passed:true};
+      assert.ok([12,24].includes(timer.interval_hours));
+      assert.equal(timer.expected_interval_seconds,timer.interval_hours*3600);
+      const status=await command('timer-status',{},m=>m.configured===true&&Array.isArray(m.units));
+      assert.equal(status.systemctl_exit,0);
+      const observed=status.units.find(unit=>unit.Id===timer.timer);
+      assert.ok(observed,'exact owned timer observed');
+      const calendars=observed.TimersCalendar;
+      assert.ok(Array.isArray(calendars),'actual calendars were observed');
+      assert.equal(calendars.length,timer.interval_hours===12?2:1);
+      assert.ok(calendars.some(value=>value.includes('09:00:00')&&value.includes('Asia/Tokyo')));
+      if(timer.interval_hours===12)assert.ok(calendars.some(value=>value.includes('21:00:00')&&value.includes('Asia/Tokyo')));
+      assert.ok(calendars.every(value=>!value.includes('*:*:00')),'no minute trigger');
+      assert.equal(observed.ActiveState,'active');
+      assert.ok(observed.NextElapseUSecRealtime&&!['n/a','0'].includes(observed.NextElapseUSecRealtime),'next planned trigger observed');
+      // Persistent catch-up on start is distinct from waiting for the next calendar boundary.
+      evidence.states.snapshotCadence={interval_hours:timer.interval_hours,actualCalendar:calendars,
+        nextPlanned:observed.NextElapseUSecRealtime,natural_wait_verification:'UNVERIFIED',
+        basis:'effective owned timer configuration and next plan; no natural boundary wait',
+        invocationsObserved:status.invocations.length};
     }finally{
       const stopped=await command('timer-stop',{},m=>m.stopped===true);evidence.states.timerCleanup=stopped;
     }
   }
   assert.equal(evidence.tasks.length,0,'source collection does not dispatch provider tasks');
   evidence.states.editorPreserved={project:B,value:expectedDraft,sameNode:true,scroll:true};
-  evidence.states.headRequests=evidence.network.filter(r=>r.path==='/api/ledger-head').length;
-  assert.ok(evidence.states.headRequests>=1);
+  evidence.states.headRequests={primary:evidence.network.filter(r=>r.path==='/api/ledger-head').length,
+    editor:editorHeadRequests.length,editorResponses:editorHeadResponses};
+  assert.ok(evidence.states.headRequests.editor>=1,'the editor explicit stored-snapshot check issued a ledger-head request');
+  assert.ok(editorHeadResponses.some(response=>response.status===200),'the editor observed a successful ledger-head response');
   await page.screenshot({path:path.join(evidenceRoot,'o2-updated.png')});
+  const snapshotFields=main.locator('.project-summary');
+  await snapshotFields.getByText('最后成功快照：',{exact:false}).waitFor();
+  await snapshotFields.screenshot({path:path.join(evidenceRoot,'o2-snapshot-fields.png')});
   await writeFile(path.join(evidenceRoot,'o2-dom.txt'),await main.innerText());
   await editor.close();
 },{directorySize:39});

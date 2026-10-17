@@ -47,15 +47,20 @@ class RefreshTimerFixtureTests(unittest.TestCase):
                              '__MONOTONIC_TIMESTAMP': '200000', 'MESSAGE': line} for line in json.dumps(payload, indent=2).splitlines()]
                     return SimpleNamespace(returncode=0, stdout='\n'.join(json.dumps(row) for row in rows), stderr='')
                 if 'show' in argv:
-                    return SimpleNamespace(returncode=0, stdout='Id=' + fixture.timer_prefix + '.timer\nActiveState=active\n', stderr='')
+                    return SimpleNamespace(returncode=0, stdout='Id=' + fixture.timer_prefix + '.timer\nActiveState=active\nTimersCalendar={ OnCalendar=*-*-* 09:00:00 Asia/Tokyo ; next_elapse=synthetic }\nTimersCalendar={ OnCalendar=*-*-* 21:00:00 Asia/Tokyo ; next_elapse=synthetic }\nNextElapseUSecRealtime=Sat 2026-10-17 21:00:00 JST\n', stderr='')
                 return SimpleNamespace(returncode=0, stdout='', stderr='')
             fixture.command_run = run
             result = fixture.timer_start(unit_dir=Path(directory))
             prefix = result['unit_prefix']
+            self.assertEqual(result['interval_hours'],12)
+            self.assertEqual(result['expected_interval_seconds'],43200)
+            self.assertNotIn('interval_seconds',result)
+            self.assertEqual(result['natural_wait_verification'],'unverified')
             self.assertTrue(prefix.startswith('pch-fixture-'))
             timer = (Path(directory) / (prefix + '.timer')).read_text()
             service = (Path(directory) / (prefix + '.service')).read_text()
-            self.assertIn('OnCalendar=*-*-* *:*:00 Asia/Tokyo', timer)
+            self.assertIn('OnCalendar=*-*-* 21:00:00 Asia/Tokyo', timer)
+            self.assertNotIn('*:*:00',timer)
             self.assertIn('OnCalendar=*-*-* 09:00:00 Asia/Tokyo', timer)
             self.assertIn(sys.executable, service)
             self.assertIn(str(fixture.root), service)
@@ -63,6 +68,9 @@ class RefreshTimerFixtureTests(unittest.TestCase):
             self.assertIn(['systemctl', '--user', 'start', prefix + '.timer'], calls)
             self.assertFalse(any('start' in row and prefix + '.service' in row for row in calls))
             status = fixture.timer_status()
+            self.assertEqual(len(status['units'][0]['TimersCalendar']),2)
+            self.assertIn('09:00:00',status['units'][0]['TimersCalendar'][0])
+            self.assertIn('21:00:00',status['units'][0]['TimersCalendar'][1])
             self.assertEqual(status['invocations'][0]['request_id'], 'synthetic-request')
             self.assertEqual(status['invocations'][0]['mode'], 'incremental')
             self.assertEqual(status['invocations'][0]['pid'], '123')

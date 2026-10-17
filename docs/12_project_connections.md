@@ -17,7 +17,7 @@
 2. 刷新：先 `python scripts/hub_sync.py --root "$PCH_ROOT" discover`，再用新请求 ID 执行 `sync --request-id ID`；原请求 ID 只续接未提交项。失败或 partial 保留原分母与历史；修正来源后用新 ID 重读受影响项目，不删除失败或伪造完整字段。
 3. 管理计划：所有者在页面编辑优先级、关系、日期及滚动估计，保存的是 Hub 管理层。导入只更新来源事实。预估到期与本人实际接受分别记录；没有本人回执时仍待验收。
 4. 新项目：按本文开头准备完整单条登记，使用 `register` 和预期 registry SHA 先检查，再在准确写责下显式 `--apply`。它不会生成业务声明、自动加入固定刷新集合或授予业务执行权。
-5. 日志：`journalctl --user -u personal-control-hub-refresh.service -n 30` 与 `systemctl --user status personal-control-hub-refresh.timer` 分别核对执行和调度。退出码 2 需要查看原请求错误；timer active、service 启动或 HTTP 200 均不等于全部业务成功。注销／漏跑边界见 [本地每日刷新](#本地每日刷新)。
+5. 日志：`journalctl --user -u personal-control-hub-refresh.service -n 30` 与 `systemctl --user status personal-control-hub-refresh.timer` 分别核对执行和调度。退出码 2 需要查看原请求错误；timer active、service 启动或 HTTP 200 均不等于全部业务成功。注销／漏跑边界见 [本地周期快照](#本地周期快照)。
 
 数据备份前先核对并停止该备份范围的写者，保持刷新、任务、管理编辑和采集静止；不要停止其他人的任务。SQLite 使用标准库的 `Connection.backup`，同时保存匹配版本的注册文件、管理配置、唯一 STATE 与已保存图片。下面片段只接受全新的私有备份目录，不读取浏览器会话或环境凭据；它本身不会建立独占写责。代码及未提交工作树成果另行保留。
 
@@ -81,7 +81,7 @@ PY
 
 只在新的、独占恢复目录中按清单核对 SHA 后复制这些文件，并用同一已验证代码版本启动 `hub_server.py --root "$RESTORED_PCH_ROOT" --host 127.0.0.1 --port 0`。核对完整账本 head／history、管理值、任务状态及保存图片；外部资产引用不代表资产字节已备份，业务项目原始资料仍由各项目保管。任务库的物理身份需要下节的显式离线恢复，不能靠新建空库解决。恢复演练通过之前不要覆盖当前运行目录；回退仅针对本次拥有且当前 SHA 未变化的文件。
 
-## 本地每日刷新
+## 本地周期快照
 
 当前单状态来源刷新复用 `SourceResolver → RefreshLedger → ProjectService/API → 项目页面`，不执行下面旧数值指标入口的 exporter。`data/connections/sync_scope.yaml` 是静态资格集合：固定 39 个身份及显式排除，读取前再核对当前登记权限；缺登记、撤销权限、离线、缺声明不会缩小分母。`discover` 只核对这份集合与 Hub 登记元数据，不扫描目录或自动注册新候选。
 
@@ -93,24 +93,35 @@ PY
 python scripts/hub_sync.py --root "$PCH_ROOT" discover
 python scripts/hub_sync.py --root "$PCH_ROOT" sync --request-id UNIQUE_ID
 python scripts/hub_sync.py --root "$PCH_ROOT" sync --request-id UNIQUE_ID --project-id PROJECT_ID
-python scripts/hub_sync.py --root "$PCH_ROOT" sync --daily
+python scripts/hub_sync.py --root "$PCH_ROOT" sync --scheduled
 ```
 
-同请求 ID 复试只处理未提交项；已记录的失败也保留，重读需显式新 ID。每日请求 ID 按 Asia/Tokyo 日期稳定生成；资格或来源规则变化导致身份冲突时保留原请求，用历史入口核对后另起明确的新请求，不自动覆盖或换号。输出只有请求状态、数量、错误代码和账本版本，不把业务正文写入 journal；失败返回 2。原详细历史查询仍用 `hub_connections.py history --request-id ID`，只在本地查看。
+同请求 ID 复试只处理未提交项；已记录的失败也保留，重读需显式新 ID。周期请求 ID 包含间隔与 Asia/Tokyo 最近已到期的时点，12 小时策略同日 09:00、21:00 使用不同身份，因此第二个周期会重新读取来源。漏跑只补最近到期周期，不回放每个历史时点；同一时点重启保持幂等。手动刷新使用新的请求身份，并与周期同步共享现有互斥。原 `--daily` 仅保留为显式兼容入口，不用于 timer；资格或来源规则变化导致身份冲突时保留原请求，用历史入口核对后另起明确的新请求，不自动覆盖或换号。输出只有请求状态、数量、错误代码和账本版本，不把业务正文写入 journal；失败返回 2。原详细历史查询仍用 `hub_connections.py history --request-id ID`，只在本地查看。
 
-页面的完整同步统计来自只读 `/api/sync-status`，在与完整分页目录同一账本版本时才启用刷新。完整/partial/失败/过期/未读取五类保留固定集合分母；登记及排除单列，搜索不会改变范围。未登记目录的发现数量保持未知。旧成功仅显示为历史；核心字段缺口单列，技术完成与用户接受互不替代。
+页面普通 GET 只读已保存快照，不调用来源刷新；跨项目页面不再后台每 5 秒探测账本或每分钟重取全目录。可显式“核对已存快照”，页面恢复可见或联网时也核对已存账本。来源时间、快照年龄、上次成功、最近失败与恢复入口分别显示；失败保留旧成功并标为历史，不能据新调度间隔延长来源 TTL。页面的完整同步统计来自只读 `/api/sync-status`，在与完整分页目录同一账本版本时才启用刷新。完整/partial/失败/过期/未读取五类保留固定集合分母；登记及排除单列，搜索不会改变范围。未登记目录的发现数量保持未知。旧成功仅显示为历史；核心字段缺口单列，技术完成与用户接受互不替代。
 
-每日运行使用已验证版本的独立代码与项目专用 Python 3.12 venv。依赖仍只安装同一 `requirements.txt`；把固定版本的 `src/hub`、`scripts/hub_sync.py` 和运行依赖放在项目已忽略的 `.venv/pch-refresh/` 内，显式 `--root` 指向现有主项目。不要复制 registry、STATE、DB 或凭据到运行副本，不把临时目录作为持久 timer 入口，不覆盖主项目未提交代码。生成新 unit 时指定这些绝对路径：
+周期运行使用已验证版本的独立代码与项目专用 Python 3.12 venv。依赖仍只安装同一 `requirements.txt`；把固定版本的 `src/hub`、`scripts/hub_sync.py` 和运行依赖放在项目已忽略的 `.venv/pch-refresh/` 内，显式 `--root` 指向现有主项目。不要复制 registry、STATE、DB 或凭据到运行副本，不把临时目录作为持久 timer 入口，不覆盖主项目未提交代码。生成新 unit 时指定这些绝对路径：
 
 ```sh
-python scripts/install_hub_refresh.py --root "$PCH_ROOT" --code-root "$FIXED_CODE_ROOT" --python "$REFRESH_PYTHON" --unit-dir "$HOME/.config/systemd/user"
+python scripts/install_hub_refresh.py --root "$PCH_ROOT" --code-root "$FIXED_CODE_ROOT" --python "$REFRESH_PYTHON" --interval-hours 12 --unit-dir "$HOME/.config/systemd/user"
 systemd-analyze --user verify "$HOME/.config/systemd/user/personal-control-hub-refresh.service" "$HOME/.config/systemd/user/personal-control-hub-refresh.timer"
 systemd-analyze calendar '*-*-* 09:00:00 Asia/Tokyo'
+systemd-analyze calendar '*-*-* 21:00:00 Asia/Tokyo'
 systemctl --user daemon-reload
 systemctl --user enable --now personal-control-hub-refresh.timer
 ```
 
-`--time HH:MM --timezone Area/Location` 可调整生成的日程；不改主机时区或 linger。生成器拒绝覆盖已有 unit，更新前需核对精确前像及写责。只暂停新 timer：`systemctl --user stop personal-control-hub-refresh.timer`；恢复用 `start`，停用用 `disable --now`。已开始的 oneshot 与现有 Hub 生产服务分开；中断后账本 OPEN 请求可用同 ID 续接。手动启动 service 可验证执行链，但不能证明真实到点。`Persistent=true` 只在 user manager 再次可用时补跑；注销期间持续运行、实际下一次定时 journal 都须真实验证，安装文件不构成这些验收。
+现有 `sync_scope.yaml` 的可选 `schedule.interval_hours` 仅接受 12 或 24，缺省为 12；同值传给生成器 `--interval-hours`，锚点固定为 Asia/Tokyo 09:00。12 小时增加 21:00，24 小时只保留 09:00。不改主机时区或 linger。已有覆盖配置更新时先核对前像，清空原 `OnCalendar` 后写入对应日历，删除被替代的分钟触发；用 `systemctl --user cat`、`show -p TimersCalendar -p NextElapseUSecRealtime` 检查合并后的实际值。配置文件、unit 与页面预期间隔必须一致。生成器拒绝覆盖已有 unit，更新前需核对精确前像及写责。只暂停新 timer：`systemctl --user stop personal-control-hub-refresh.timer`；恢复用 `start`，停用用 `disable --now`。已开始的 oneshot 与现有 Hub 生产服务分开；中断后账本 OPEN 请求可用同 ID 续接。手动启动 service 可验证执行链，但不能证明真实到点。`Persistent=true` 只在 user manager 再次可用时补跑；注销期间持续运行、实际下一次定时 journal 都须真实验证，安装文件不构成这些验收。
+
+## 测试存储与宿主采样
+
+大依赖、工具链和测试候选使用项目已登记的 `.venv/pch-task-storage/` 磁盘目录；使用前核验挂载类型、可用空间和路径身份，拒绝 tmpfs/ramfs。固定版本的 Python、浏览器及依赖复用，只隔离本轮可写 fixture/profile，不再复制完整 Git 历史和环境。`PCH_TEST_STORAGE` 可指定已核验的磁盘测试根，`PCH_PYTHON_EXECUTABLE` 保留固定解释器入口；`TMPDIR` 指向该轮磁盘可写区。Chrome 的 AF_UNIX 套接字有路径长度限制；外层浏览器启动器应在同项目登记一个较短、任务独占的磁盘临时路径，并在退出后回收，不退回 tmpfs。
+
+浏览器旅程沿用现有入口，带有限总超时，按 PID/start ticks 和私有进程组核对 fixture；正常、错误、超时和取消均关闭连接、浏览器及 fixture，确认端口与子进程退出后删除该轮目录。只保留精简结果或必要失败诊断；强制终止会记为失败。外层启动器仍负责自身的私有显示与浏览器 profile。不能按进程名批量结束其他任务。
+
+迁移历史工作区时先完整复制并逐项核验，保留唯一结果、账本、未完成输入、原始 hash 和旧新对应关系，再更新当前引用与停止入口、检查进程及挂载占用后释放原 tmpfs 内容。相同字节不继承旧 dev/inode 的运行资格；新执行入口必须通过直接磁盘路径重新登记，历史授权与证据不改写。
+
+宿主健康独立于周期快照。现有采样器在页面需求期间维持 2 秒采样和 10 秒需求租期，空闲后暂停外部探测；恢复时重置 CPU/I/O 差值基线。页面仅在可见、联网且处于宿主页面时短时请求，显示真实缓存年龄，不能把旧采样伪装成当前数据。
 
 ## 离线备份中的任务库恢复
 
@@ -398,7 +409,7 @@ PCH 自身由唯一 `STATE.yaml.pch_refactor` 的正常写者，在同一次状�
 
 ### 手动采集实际预览（可选）
 
-来源页面清单是项目事实；已保存截图是本地采集观察，两个入口分别展示。普通查询、每日同步和无模型模式均不会启动浏览器或业务服务。截图也不代表本人验收。
+来源页面清单是项目事实；已保存截图是本地采集观察，两个入口分别展示。普通查询、周期同步和无模型模式均不会启动浏览器或业务服务。截图也不代表本人验收。
 
 需要新网页截图时，在项目隔离环境安装 `requirements-preview.txt`，再显式运行 `python scripts/hub_preview.py --root /path/to/hub capture --request /path/to/owner-request.json`。可用 `--executable-path` 指定已安装的本地 Chromium；使用新的无登录上下文，保留浏览器沙箱，不接管用户浏览器。请求必须提供当前已声明的实施页面 ID、来源／构建版本、来源凭证 hash、精确 loopback URL 与资源 GET 白名单、视口、最长 30 秒超时、过期时长和刷新原因。请求格式见 `validate_capture_request`；来源字段不能授予采集权限。已有图片优先使用 `import-existing --manifest ... --policy ...`，只读取所有者明确列入白名单的 Hub 内图片，不搜索或启动子项目。
 

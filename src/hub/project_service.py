@@ -864,10 +864,32 @@ class ProjectService:
         business["task_plan"] = self._task_plan_view(latest, row["freshness"], connection_read_allowed)
         business["timeline"] = self._timeline_view(latest, row["freshness"], connection_read_allowed)
         business["page_inventory"] = self._page_inventory_view(latest, row["freshness"], connection_read_allowed)
+        # Retain the last successful business snapshot separately from current
+        # evidence. Neither expiry nor a later failed attempt changes its time.
+        historical = previous if connection_read_allowed else None
+        snapshot_age = (_age(historical["observed_at"],
+                            datetime.fromisoformat(snapshot["observed_at"].replace("Z", "+00:00")))
+                        if historical else None)
+        last_success_snapshot = {
+            "available": historical is not None,
+            "state": ("current" if row["freshness"]["state"] == "fresh" and latest == historical
+                      else "historical") if historical else "unavailable",
+            "observed_at": historical["observed_at"] if historical else None,
+            "age_seconds": snapshot_age,
+            "source_mtime_age_seconds": (
+                _age(historical["sources"][0]["modified_at"],
+                     datetime.fromisoformat(snapshot["observed_at"].replace("Z", "+00:00")))
+                if historical and historical["sources"] else None),
+            "fields": copy.deepcopy(historical["business"]) if historical else None,
+            "reason": row["freshness"]["reason"],
+            "recovery_action": ("检查来源位置、读取权限和来源格式，再显式刷新；保留上次成功快照。"
+                                if latest and not latest["success"] else
+                                "等待下次计划刷新，或显式刷新以核对当前来源。"),
+        }
         return {"schema_version": "1.0", "project_id": row["project_id"],
                 "name": row["name"], "declared": declared_view,
                 "definition": self._definition(declared, latest, row["freshness"], snapshot["authority"], connection_read_allowed),
-                "business": business,
+                "business": business, "last_success_snapshot": last_success_snapshot,
                 "operational": {"facts": [], "latest_attempt": source_record,
                                 "last_success": copy.deepcopy(previous)},
                 "freshness": {"state": row["freshness"]["state"],
@@ -1068,6 +1090,7 @@ class ProjectService:
                                 "authority_drift": request["authority_drift"]}
         return {"schema_version": "1.0", "scope_id": scope["scope_id"],
                 "scope_total": scope["scope_total"], "head": snapshot["ledger_head"],
+                "schedule_policy": copy.deepcopy(scope.get("schedule")),
                 "counts": counts, "eligible_project_ids": scope["eligible_project_ids"],
                 "excluded": scope["excluded"],
                 "discovery": {"mode": "registered_scope_only",

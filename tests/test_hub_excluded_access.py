@@ -156,7 +156,7 @@ class ExcludedAccessTests(unittest.TestCase):
             result, code = scheduled_request(self.root, self.resolver, self.ledger,
                 instant=datetime(2026, 10, 16, 1, tzinfo=timezone.utc))
             self.assertEqual(code, 0)
-            self.assertEqual(result['mode'], 'daily')
+            self.assertEqual(result['mode'], 'snapshot')
             history = self.ledger.history()
             self.assertEqual({row['project_id'] for row in history['results']}, {'allowed'})
 

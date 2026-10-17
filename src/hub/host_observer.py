@@ -1,4 +1,4 @@
-"""Bounded Linux observations, independent of browser/request lifetimes.
+"""Bounded Linux observations, sampled only during a short view-demand lease.
 
 Only trusted startup code supplies named filesystem paths. No client can select
 paths, commands or services. Failed samples retain the last value as stale.
@@ -21,7 +21,7 @@ from pathlib import Path
 class HostObserver:
     def __init__(self, filesystems, *, proc=Path('/proc'), interval=2, ttl=8,
                  clock=time.monotonic, wall=time.time, run=subprocess.run,
-                 statvfs=os.statvfs, hwmon=Path('/sys/class/hwmon')):
+                 statvfs=os.statvfs, demand_seconds=10, hwmon=Path('/sys/class/hwmon')):
         if not 0.1 <= interval <= 60 or not interval < ttl <= 300:
             raise ValueError('invalid sampling interval')
         self.filesystems = {name: Path(path) for name, path in filesystems.items()}
@@ -30,6 +30,11 @@ class HostObserver:
         self.proc, self.interval, self.ttl = Path(proc), interval, ttl
         self.clock, self.wall, self.run, self.statvfs = clock, wall, run, statvfs
         self._lock, self._stop = threading.Lock(), threading.Event()
+        if not interval < demand_seconds <= 60:
+            raise ValueError('invalid demand lease')
+        self.demand_seconds = demand_seconds
+        self._demand_until = 0
+        self._wake = threading.Event()
         self._thread = None
         self._values, self._times, self._mounts = {}, {}, {}
         self._cpu = None
@@ -44,14 +49,33 @@ class HostObserver:
 
     def stop(self):
         self._stop.set()
+        self._wake.set()
         if self._thread is not None:
             self._thread.join(5)
             if self._thread.is_alive():
                 raise RuntimeError('host observer did not stop')
 
+    def demand(self):
+        """Renew a bounded sampling lease; never collect on a request thread."""
+        with self._lock:
+            self._demand_until = self.clock() + self.demand_seconds
+        self._wake.set()
+
     def _loop(self):
         while not self._stop.is_set():
+            with self._lock:
+                active = self.clock() < self._demand_until
+                if not active:
+                    # A resumed view must measure a short new delta, not label
+                    # an average across hours of idle time as a fresh sample.
+                    self._cpu = None
+                    self._io = {}
+            if not active:
+                self._wake.wait()
+                self._wake.clear()
+                continue
             self.sample()
+            # Demand renewals do not shorten the cadence or start extra samples.
             self._stop.wait(self.interval)
 
     def _command(self, args):
@@ -290,5 +314,7 @@ class HostObserver:
                 if value['state'] == 'fresh' and age is not None and age > self.ttl:
                     value.update(state='stale', reason='SAMPLING_EXPIRED')
             return {'available': bool(values), 'interval_seconds': self.interval,
+                    'sampling_active': now < self._demand_until,
+                    'demand_lease_seconds': self.demand_seconds,
                     'metrics': values, 'capacity_recommendation': None,
                     'capacity_reason': 'NO_MEASURED_TASK_PROFILES', 'initial_sample_target_ms': 250}

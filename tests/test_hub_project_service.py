@@ -26,6 +26,9 @@ def project_facts(dto):
     value = copy.deepcopy(dto)
     for key in ('read_age_seconds', 'source_mtime_age_seconds', 'projected_at'):
         value['freshness'].pop(key, None)
+    if 'last_success_snapshot' in value:
+        value['last_success_snapshot'].pop('age_seconds', None)
+        value['last_success_snapshot'].pop('source_mtime_age_seconds', None)
     return value
 
 class SharedProjectionTests(unittest.TestCase):
@@ -283,7 +286,7 @@ class ProjectServiceFacadeTests(unittest.TestCase):
         self.assertEqual(project_facts(detail), project_facts(listing["projects"][0]))
         self.assertEqual({"schema_version", "project_id", "name", "declared", "business",
                           "operational", "freshness", "source", "errors", "relations",
-                          "design", "provenance", "management", "definition"}, set(detail))
+                          "design", "provenance", "management", "definition", "last_success_snapshot"}, set(detail))
         self.assertFalse(detail["management"]["available"])
         self.assertEqual("MANAGEMENT_NOT_INITIALIZED", detail["management"]["reason"])
         self.assertIsNone(detail["management"]["overlay"])
@@ -419,6 +422,11 @@ class ProjectServiceFacadeTests(unittest.TestCase):
                              read_only=True).head
         self.service.refresh(self.command("bad", head=head))
         row = self.service.get_project("a")
+        self.assertTrue(row["last_success_snapshot"]["available"])
+        self.assertEqual(row["last_success_snapshot"]["state"], "historical")
+        self.assertEqual(row["last_success_snapshot"]["observed_at"], good["source"]["last_success_at"])
+        self.assertEqual(row["last_success_snapshot"]["fields"], good["business"]["fields"])
+        self.assertIn("显式刷新", row["last_success_snapshot"]["recovery_action"])
         self.assertFalse(row["source"]["source_record"]["success"])
         self.assertEqual("invalid", row["source"]["source_record"]["disposition"])
         self.assertEqual("unknown", row["business"]["normalized_status"])

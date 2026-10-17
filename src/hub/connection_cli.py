@@ -145,7 +145,7 @@ def main(argv: list[str] | None = None) -> int:
     identity = sync.add_mutually_exclusive_group(required=True)
     identity.add_argument("--request-id", help="Reuse to resume; choose a fresh ID to read again")
     identity.add_argument("--daily", action="store_true", help="One scope request per Asia/Tokyo day")
-    identity.add_argument("--scheduled", action="store_true", help="One minute check or due daily batch")
+    identity.add_argument("--scheduled", action="store_true", help="One finite snapshot for the latest 12/24-hour due slot")
     identity.add_argument("--incremental", action="store_true", help="One bounded incremental check")
     sync.add_argument("--project-id", action="append", dest="projects")
     history = commands.add_parser("history")
@@ -195,7 +195,9 @@ def main(argv: list[str] | None = None) -> int:
             from hub.project_service import ProjectService
             from hub.refresh_schedule import refresh_schedule_status
             result = ProjectService(root, ledger_path=path).sync_status()
-            result["schedule"] = refresh_schedule_status()
+            from hub.connection_sync import scope_plan
+            policy = scope_plan(root, SourceResolver(root))["schedule"]
+            result["schedule"] = refresh_schedule_status(interval_hours=policy["interval_hours"])
             print(json.dumps(result, ensure_ascii=False, indent=2))
             return 0
         if args.command in {"history", "rebuild"}:
@@ -205,7 +207,7 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         resolver = SourceResolver(root)
         if args.command in {"discover", "sync"}:
-            from hub.connection_sync import daily_request_id, scope_plan, sync_request, scheduled_request
+            from hub.connection_sync import daily_request_id, scope_plan, sync_request, scheduled_request, sync_mutex
             plan = scope_plan(root, resolver)
             if args.command == "discover":
                 print(json.dumps(plan, ensure_ascii=False, indent=2))
@@ -224,8 +226,9 @@ def main(argv: list[str] | None = None) -> int:
                 payload,code=scheduled_request(root,resolver,ledger,plan=plan,incremental_only=args.incremental)
                 print(json.dumps(payload,ensure_ascii=False,indent=2))
                 return code
-            payload, code = sync_request(root, resolver, ledger, request_id,
-                                         project_ids=args.projects, plan=plan)
+            with sync_mutex(ledger):
+                payload, code = sync_request(root, resolver, ledger, request_id,
+                                             project_ids=args.projects, plan=plan)
             print(json.dumps(payload, ensure_ascii=False, indent=2))
             return code
         if args.command == "refresh":
@@ -236,8 +239,10 @@ def main(argv: list[str] | None = None) -> int:
             expected = (None if args.expected_sequence is None else
                         {"sequence": args.expected_sequence, "hash": args.expected_hash})
             ledger = RefreshLedger(root, path, result_validator=validate_result)
-            outcome = refresh(ledger, resolver, args.request_id, ids,
-                              expected_head=expected)
+            from hub.connection_sync import sync_mutex
+            with sync_mutex(ledger):
+                outcome = refresh(ledger, resolver, args.request_id, ids,
+                                  expected_head=expected)
             receipt = {"request": outcome["request"],
                        "appended_project_ids": outcome["appended_project_ids"],
                        "resolver_errors": outcome["resolver_errors"]}

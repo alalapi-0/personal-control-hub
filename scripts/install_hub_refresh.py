@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the separate finite-source daily refresh service and timer."""
+"""Render the finite 12/24-hour source snapshot service and timer."""
 import sys
 from pathlib import Path
 

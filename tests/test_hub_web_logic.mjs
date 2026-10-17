@@ -3,7 +3,7 @@ import test from "node:test";
 
 const { __test } = await import("../src/hub/web/designs.js");
 const { api, validRefreshCommand, connectionState, ownerLogin, ownerLogout } = await import("../src/hub/web/common.js");
-const { metricText, metricState } = await import('../src/hub/web/host.js');
+const { metricText, metricState, watchHost } = await import('../src/hub/web/host.js');
 const {materialUrl,reviewLink}=await import('../src/hub/web/materials.js');
 const {sessionState,sourceState}=await import('../src/hub/web/sessions.js');
 const { normalizedPoint, rectangle, sameBinding, validPending } = await import('../src/hub/web/workbench.js');
@@ -257,4 +257,22 @@ test('owner login adopts its rotated CSRF and logout discards it without browser
     assert.equal(requests.at(-2).path,'/api/guest');
     assert.ok(requests.every(r=>!r.path.includes(proof)));
   } finally {globalThis.fetch=originalFetch;globalThis.localStorage=originalStorage;}
+});
+
+
+test('host view schedules only while visible online and attached, with bounded single flight',async()=>{
+  let visible=true,online=true,current=true,release,reads=0,applied=0;
+  const timers=new Map();let id=0;
+  const watcher=watchHost({read:()=>{reads++;return new Promise(resolve=>{release=resolve;});},
+    apply:()=>applied++,isCurrent:()=>current,visible:()=>visible,online:()=>online,
+    schedule:(fn,ms)=>{timers.set(++id,{fn,ms});return id;},cancel:key=>timers.delete(key)});
+  assert.equal([...timers.values()][0].ms,2000);
+  const pending=watcher.wake();await watcher.wake();assert.equal(reads,1);
+  visible=false;watcher.pause();release({});await pending;
+  assert.equal(applied,0);assert.equal(timers.size,0);
+  visible=true;online=false;await watcher.wake();assert.equal(reads,1);
+  online=true;const resumed=watcher.wake();release({});await resumed;
+  assert.equal(applied,1);assert.equal(timers.size,1);
+  current=false;await watcher.wake();assert.equal(reads,2);assert.equal(timers.size,0);
+  watcher.stop();visible=true;current=true;await watcher.wake();assert.equal(reads,2);
 });

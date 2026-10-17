@@ -8,7 +8,8 @@ from __future__ import annotations
 import re
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 
 _TIMER = 'personal-control-hub-refresh.timer'
 _SERVICE = 'personal-control-hub-refresh.service'
@@ -23,6 +24,33 @@ _FILE_STATES = {'enabled', 'enabled-runtime', 'linked', 'linked-runtime',
                 'indirect', 'generated', 'transient'}
 _TIMESTAMP = re.compile(r'(?:|n/a|0|(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun) '
                         r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)? [A-Za-z0-9_+:/-]+)')
+
+
+def schedule_policy(schedule=None) -> dict:
+    """One strict cadence configuration shared by collectors, units and pages."""
+    if schedule is None:
+        schedule = {'interval_hours': 12}
+    if (type(schedule) is not dict or set(schedule) != {'interval_hours'}
+            or type(schedule['interval_hours']) is not int or schedule['interval_hours'] not in (12, 24)):
+        raise ValueError('schedule requires interval_hours 12 or 24')
+    hours = schedule['interval_hours']
+    return {'interval_hours': hours, 'timezone': 'Asia/Tokyo', 'anchor_time': '09:00',
+            'calendar': '09:00,21:00' if hours == 12 else '09:00',
+            'expected_interval_seconds': hours * 3600}
+
+
+def latest_due_slot(instant: datetime, interval_hours: int = 12) -> datetime:
+    """Only the most recent due slot; missed slots never create a backlog."""
+    schedule_policy({'interval_hours': interval_hours})
+    if instant.tzinfo is None:
+        raise ValueError('scheduled instant needs timezone')
+    local = instant.astimezone(ZoneInfo('Asia/Tokyo'))
+    anchor = local.replace(hour=9, minute=0, second=0, microsecond=0)
+    if local < anchor:
+        anchor -= timedelta(days=1)
+    if interval_hours == 12 and local >= anchor + timedelta(hours=12):
+        anchor += timedelta(hours=12)
+    return anchor
 
 
 def _elapsed_seconds(start,end):
@@ -64,15 +92,15 @@ def _parse(stdout: str, fields: tuple[str, ...]) -> dict:
     return values
 
 
-def refresh_schedule_status() -> dict:
+def refresh_schedule_status(*, interval_hours: int = 12) -> dict:
     """Observe only the fixed timer/service; never accept a command or unit."""
+    policy = schedule_policy({'interval_hours': interval_hours})
     result = {'available': False, 'reason': None,
               'observed_at': datetime.now(timezone.utc).isoformat(),
               'status': 'unavailable', 'timer': None, 'service': None,
               'actual_calendar_verification': 'unverified',
               'logout_recovery_verification': 'unverified',
-              'freshness_target': {'incremental_check_seconds':60,'visible_head_check_seconds':5,
-                                   'source_to_page_seconds':90,'configuration_verification':'unverified'},
+              'freshness_target': {**policy, 'configuration_verification': 'unverified'},
               'last_run_seconds':None,'overloaded':None,
               'missed': None, 'catchup': None}
     if sys.platform != 'linux':
@@ -112,7 +140,7 @@ def refresh_schedule_status() -> dict:
     timer, service = observations
     elapsed=_elapsed_seconds(service['ExecMainStartTimestamp'],service['ExecMainExitTimestamp'])
     result.update(available=True, timer=timer, service=service,
-                  last_run_seconds=elapsed,overloaded=elapsed>60 if elapsed is not None else None,
+                  last_run_seconds=elapsed,overloaded=elapsed>policy['expected_interval_seconds'] if elapsed is not None else None,
                   status='active' if timer['ActiveState'] == 'active' else
                          'paused' if timer['ActiveState'] == 'inactive' else 'unavailable')
     if result['status'] == 'unavailable':

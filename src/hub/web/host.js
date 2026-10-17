@@ -1,4 +1,5 @@
 import {el,button,api} from './common.js';
+import {replaceProjection} from './ledger_watch.mjs';
 
 const names={cpu_usage:'CPU 使用率',cpu_cores:'逻辑核心',cpu_temperature:'CPU 温度',memory:'可用内存',swap:'交换空间',gpu_memory:'GPU 显存',gpu_usage:'GPU 使用率',gpu_temperature:'GPU 温度',gpu_encode:'GPU 编码占用',gpu_decode:'GPU 解码占用',disk_hub:'Hub 磁盘余量',disk_temp:'临时目录磁盘余量',io_hub:'Hub 所在设备 I/O',io_temp:'临时目录所在设备 I/O',hub_service:'Hub 服务',sample_duration:'一次采集耗时'};
 const gib=n=>(n/1024**3).toLocaleString('zh-CN',{maximumFractionDigits:2})+' GiB';
@@ -21,7 +22,7 @@ export function metricState(metric,elapsed=0){
   if(metric.state!=='fresh')return metric.state;
   return !Number.isFinite(metric.age_seconds)||metric.age_seconds+elapsed>metric.max_age_seconds?'stale':'fresh';
 }
-export function renderHost(target,data){
+function renderSnapshot(target,data,reload){
   const metrics=data.metrics||{},grid=el('div',{className:'host-grid'}),labels=[];
   const started=performance.now();
   for(const [key,name] of Object.entries(names)){
@@ -40,20 +41,19 @@ export function renderHost(target,data){
   const notice=el('p',{className:'warning',role:'status'});
   const refresh=button('读取最新采样',async()=>{
     refresh.disabled=true;
-    try{
-      const updated=await api('/api/host');
-      if(section.isConnected){renderHost(target,updated);target.querySelector('button')?.focus();}
-    }catch{if(section.isConnected)notice.textContent='后端暂时无法连接；保留最后观测，请重连后重新读取。';}
-    finally{refresh.disabled=false;if(section.isConnected)refresh.focus();}
+    try{await reload();}
+    finally{if(section.isConnected)refresh.disabled=false;}
   });
+  refresh.id='host-refresh';
   const section=el('section',{className:'stack'},el('h1',{},'Linux 主机'),
     el('p',{className:'muted'},'主机观测独立于项目进度。服务运行状态不能证明任务成功。'),
-    el('div',{className:'row'},refresh,el('p',{className:'caption'},`后台采样间隔：${data.interval_seconds??'未知'} 秒`)),notice,
+    el('div',{className:'row'},refresh,el('p',{className:'caption'},`当前页面可见时采样间隔：${data.interval_seconds??'未知'} 秒；离开后短租约到期即停止`)),notice,
     grid,el('p',{className:'caption'},'磁盘 I/O 是路径所在设备的观测；Hub 与临时目录可能共用同一设备。编码/解码占用不证明业务编解码成功。'),
     el('p',{className:'caption'},`采集耗时的初始目标：${data.initial_sample_target_ms??'未知'} ms。并发容量：未知 · 尚无已测任务峰值画像。`));
-  target.replaceChildren(section);
+  replaceProjection(target,section,{preserve:false});
   // Age the displayed snapshot while it remains open. This makes collector loss
   // visible without confusing the browser's lifetime with the collector's.
+  let ageTimer;
   function age(){
     if(!section.isConnected)return;
     for(const [m,label,stamp] of labels){
@@ -61,7 +61,47 @@ export function renderHost(target,data){
       label.className=state==='fresh'?'caption':'warning';
       label.textContent=`${({fresh:'最新采样',stale:'已过期 · 保留最后观测',unavailable:'不可用'})[state]||'状态未知'} · ${stamp}`;
     }
-    setTimeout(age,1000);
+    ageTimer=setTimeout(age,1000);
   }
   age();
+  return ()=>clearTimeout(ageTimer);
+}
+
+// A view-scoped read loop: no demand survives navigation, hiding, offline or
+// disposal. Backend work stops after its short lease if a client disappears.
+export function watchHost({read,apply,isCurrent,visible,online,onError=()=>{},
+  schedule=setTimeout,cancel=clearTimeout,interval=2000}){
+  let stopped=false,running=false,timer;
+  const active=()=>!stopped&&isCurrent()&&visible()&&online();
+  function pause(){cancel(timer);timer=undefined;}
+  function later(){pause();if(active())timer=schedule(tick,interval);}
+  async function tick(){
+    pause();if(!active()||running)return;
+    running=true;
+    try{const data=await read();if(active())apply(data);}
+    catch(error){if(active())onError(error);}
+    finally{running=false;later();}
+  }
+  later();
+  return {wake:tick,pause,stop(){stopped=true;pause();}};
+}
+
+export function renderHost(target,data){
+  let disposeSnapshot=()=>{},stopped=false,section;
+  const current=()=>!stopped&&section?.isConnected===true;
+  const apply=value=>{disposeSnapshot();disposeSnapshot=renderSnapshot(target,value,()=>watcher.wake());section=target.firstElementChild;};
+  let watcher;
+  apply(data);
+  watcher=watchHost({read:()=>api('/api/host'),apply,isCurrent:current,
+    visible:()=>!document.hidden,online:()=>navigator.onLine,
+    onError:()=>{const notice=section?.querySelector('[role="status"]');if(notice)notice.textContent='后端暂时无法连接；保留最后观测，请重连后重新读取。';}});
+  // Only this attached view renews backend demand; displayed age never
+  // issues a request.
+  const visibility=()=>{if(document.hidden)watcher.pause();else watcher.wake();};
+  const online=()=>watcher.wake(),offline=()=>watcher.pause();
+  document.addEventListener('visibilitychange',visibility);
+  window.addEventListener('online',online);window.addEventListener('offline',offline);
+  return ()=>{stopped=true;watcher.stop();disposeSnapshot();
+    document.removeEventListener('visibilitychange',visibility);
+    window.removeEventListener('online',online);window.removeEventListener('offline',offline);};
 }

@@ -14,7 +14,7 @@ class DailyUnitsTests(unittest.TestCase):
         self.assertIn('Persistent=true', units[TIMER])
         self.assertIn('Type=oneshot', units[SERVICE])
         self.assertIn('WorkingDirectory=/workspace/hub\n', units[SERVICE])
-        self.assertIn('"/runtime/env/bin/python" "/runtime/version/scripts/hub_sync.py" --root "/workspace/hub" sync --daily', units[SERVICE])
+        self.assertIn('"/runtime/env/bin/python" "/runtime/version/scripts/hub_sync.py" --root "/workspace/hub" sync --scheduled', units[SERVICE])
         self.assertNotIn('personal-control-hub.service', ''.join(units.values()))
         self.assertNotIn('Restart=', units[SERVICE])
 

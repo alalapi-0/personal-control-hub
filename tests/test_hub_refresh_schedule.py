@@ -45,6 +45,9 @@ class RefreshScheduleTests(unittest.TestCase):
         self.assertTrue(result['available'])
         self.assertEqual('active', result['status'])
         self.assertIsNone(result['reason'])
+        self.assertEqual(result['freshness_target']['interval_hours'],12)
+        self.assertNotIn('incremental_check_seconds',result['freshness_target'])
+        self.assertNotIn('source_to_page_seconds',result['freshness_target'])
         self.assertEqual(TIMER, result['timer'])
         expected = copy.deepcopy(SERVICE)
         expected['ExecMainStatus'] = 0
@@ -66,6 +69,16 @@ class RefreshScheduleTests(unittest.TestCase):
         self.assertEqual(['personal-control-hub-refresh.timer', 'personal-control-hub-refresh.service'], units)
         with self.assertRaises(TypeError):
             refresh_schedule_status('another.service')
+
+    def test_24_hour_expectation_retains_actual_failed_exit(self):
+        failed={**SERVICE,'Result':'exit-code','ExecMainStatus':'2'}
+        with mock.patch('hub.refresh_schedule.sys.platform','linux'),mock.patch(
+                'hub.refresh_schedule.subprocess.run',side_effect=[reply(TIMER),reply(failed)]):
+            result=refresh_schedule_status(interval_hours=24)
+        self.assertEqual(result['freshness_target']['expected_interval_seconds'],86400)
+        self.assertEqual(result['service']['ExecMainStatus'],2)
+        self.assertEqual(result['service']['Result'],'exit-code')
+        self.assertEqual(result['actual_calendar_verification'],'unverified')
 
     def test_paused_timer_retains_unknown_calendar_and_recovery(self):
         timer = {**TIMER, 'ActiveState': 'inactive', 'UnitFileState': 'disabled',

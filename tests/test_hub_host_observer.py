@@ -103,10 +103,14 @@ class HostObservationTests(unittest.TestCase):
         self.assertEqual(metrics['disk_missing']['state'], 'unavailable')
         self.assertIsNone(metrics['cpu_usage']['value'])
 
-    def test_thread_is_independent_and_stops_without_request(self):
+    def test_thread_only_collects_during_demand_and_stops(self):
         observer = HostObserver({}, proc=self.proc, interval=.1, ttl=1, run=self.run_command,hwmon=self.hwmon)
         observer.start()
         try:
+            time.sleep(.12)
+            self.assertFalse(observer.snapshot()['available'])
+            self.assertEqual(self.calls, [])
+            observer.demand()
             deadline = time.monotonic() + 1
             while not observer.snapshot()['available'] and time.monotonic() < deadline:
                 time.sleep(.01)
@@ -157,6 +161,40 @@ class HostObservationTests(unittest.TestCase):
         self.assertEqual(changed['reason'],'SENSOR_CHANGED');self.assertEqual(changed['value'],first['value'])
         self.assertEqual(changed['observed_at'],first['observed_at']);self.assertEqual(changed['state'],'stale')
 
+    def test_thread_returns_to_idle_after_short_lease(self):
+        observer=HostObserver({},proc=self.proc,interval=.1,ttl=1,demand_seconds=.2,
+                              clock=lambda:self.now,run=self.run_command,hwmon=self.hwmon)
+        observer.start()
+        try:
+            observer.demand()
+            deadline=time.monotonic()+1
+            while not observer.snapshot()['available'] and time.monotonic()<deadline:
+                time.sleep(.01)
+            self.assertTrue(observer.snapshot()['available'])
+            self.now=1
+            time.sleep(.15)
+            calls=len(self.calls)
+            time.sleep(.2)
+            self.assertEqual(len(self.calls),calls)
+            self.assertFalse(observer.snapshot()['sampling_active'])
+            self.assertIsNone(observer._cpu)
+            self.assertEqual(observer._io,{})
+        finally:observer.stop()
+
+    def test_demand_lease_expiry_stops_commands_and_does_not_retime_snapshot(self):
+        self.observer.demand()
+        self.observer.sample()
+        original=self.observer.snapshot()['metrics']['gpu_usage']
+        self.now=11
+        cached=self.observer.snapshot()
+        self.assertFalse(cached['sampling_active'])
+        self.assertEqual(cached['metrics']['gpu_usage']['state'],'stale')
+        self.assertEqual(cached['metrics']['gpu_usage']['observed_at'],original['observed_at'])
+        calls=len(self.calls)
+        self.observer.demand()
+        self.assertTrue(self.observer.snapshot()['sampling_active'])
+        self.assertEqual(len(self.calls),calls,'demand itself never runs host probes')
+
     def test_host_http_is_session_scoped_snapshot_only(self):
         observer = mock.Mock()
         observer.snapshot.return_value = {'available': True, 'metrics': {'fixture': {'value': 0}}}
@@ -177,6 +215,7 @@ class HostObservationTests(unittest.TestCase):
             self.assertEqual(get('/api/host?path=/etc', cookie)[0], 400)
             observer.snapshot.assert_not_called()
             self.assertEqual(get('/api/host', cookie)[0], 200)
+            observer.demand.assert_called_once_with()
             observer.snapshot.assert_called_once_with()
             observer.sample.assert_not_called(); observer.run.assert_not_called()
             server.projects.assert_not_called(); server.designs.assert_not_called()

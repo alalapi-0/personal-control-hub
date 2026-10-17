@@ -14,10 +14,22 @@ class IncrementalScheduleTests(unittest.TestCase):
         service=units['pch-opt-synthetic-test.service'];timer=units['pch-opt-synthetic-test.timer']
         self.assertIn('sync --scheduled',service)
         self.assertIn('OnCalendar=*-*-* 09:00:00 Asia/Tokyo',timer)
-        self.assertIn('OnCalendar=*-*-* *:*:00 Asia/Tokyo',timer)
-        self.assertIn('AccuracySec=1s',timer)
+        self.assertIn('OnCalendar=*-*-* 21:00:00 Asia/Tokyo',timer)
+        self.assertNotIn('*:*:00',timer)
+        self.assertIn('AccuracySec=1min',timer)
         self.assertIn('Unit=pch-opt-synthetic-test.service',timer)
         self.assertNotIn('Restart=',service)
+    def test_24_hour_calendar_has_only_anchor_and_no_background_runtime(self):
+        units=render_units(Path('/hub'),Path('/code'),Path('/bin/python'),interval_hours=24)
+        combined=''.join(units.values())
+        self.assertEqual(combined.count('OnCalendar='),1)
+        self.assertNotIn('21:00',combined)
+        self.assertIn('Persistent=true',combined)
+        for forbidden in ('--incremental','*:*:00','Restart=','browser','agent','mcp'):
+            self.assertNotIn(forbidden,combined)
+        for invalid in (True,6,'12'):
+            with self.assertRaises(ValueError):render_units(Path('/hub'),Path('/code'),Path('/bin/python'),interval_hours=invalid)
+
     def test_explicit_other_daily_time_cannot_silently_use_nine(self):
         with self.assertRaises(ValueError):
             render_units(Path('/hub'),Path('/code'),Path('/bin/python'),incremental=True,time='10:00')

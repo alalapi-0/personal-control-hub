@@ -5,6 +5,7 @@ import argparse
 import re
 from pathlib import Path
 from zoneinfo import ZoneInfo
+from hub.refresh_schedule import schedule_policy
 
 MARKER = "# Managed by Personal Control Hub daily refresh installer."
 SERVICE = "personal-control-hub-refresh.service"
@@ -22,10 +23,11 @@ def _argument(path: Path) -> str:
 
 def render_units(root: Path, code_root: Path, python: Path, *,
                  time: str = "09:00", timezone: str = "Asia/Tokyo", incremental: bool = False,
-                 unit_prefix: str = "personal-control-hub-refresh") -> dict[str, str]:
+                 unit_prefix: str = "personal-control-hub-refresh", interval_hours: int = 12) -> dict[str, str]:
     if not re.fullmatch(r'[a-z][a-z0-9-]{0,79}',unit_prefix):raise ValueError('Invalid unit prefix.')
-    if incremental and (time!='09:00' or timezone!='Asia/Tokyo'):
-        raise ValueError('Scheduled daily dispatch currently requires 09:00 Asia/Tokyo.')
+    policy = schedule_policy({'interval_hours': interval_hours})
+    if time!='09:00' or timezone!='Asia/Tokyo':
+        raise ValueError('Snapshot dispatch requires the 09:00 Asia/Tokyo anchor.')
     service_name=unit_prefix+'.service';timer_name=unit_prefix+'.timer'
     if not re.fullmatch(r"(?:[01][0-9]|2[0-3]):[0-5][0-9]", time):
         raise ValueError("Time must be HH:MM.")
@@ -37,7 +39,7 @@ def render_units(root: Path, code_root: Path, python: Path, *,
     # systemd retains quote characters there and rejects the resulting path.
     working_directory = str(root).replace('%', '%%')
     script = _argument(code_root / "scripts/hub_sync.py")
-    mode='--scheduled' if incremental else '--daily'
+    mode='--scheduled'
     service = f"""{MARKER}
 [Unit]
 Description=Personal Control Hub finite local source refresh
@@ -52,16 +54,15 @@ Nice=10
 TimeoutStartSec=300
 UnsetEnvironment=OPENAI_API_KEY ANTHROPIC_API_KEY HUB_OWNER_TOKEN
 """
-    minute_calendar='OnCalendar=*-*-* *:*:00 Asia/Tokyo\n' if incremental else ''
-    accuracy='1s' if incremental else '1min'
+    evening_calendar='OnCalendar=*-*-* 21:00:00 Asia/Tokyo\n' if policy['interval_hours'] == 12 else ''
     timer = f"""{MARKER}
 [Unit]
-Description=Personal Control Hub daily local source refresh
+Description=Personal Control Hub periodic source snapshots
 
 [Timer]
 OnCalendar=*-*-* {time}:00 {timezone}
-{minute_calendar}Persistent=true
-AccuracySec={accuracy}
+{evening_calendar}Persistent=true
+AccuracySec=1min
 Unit={service_name}
 
 [Install]
@@ -71,18 +72,19 @@ WantedBy=timers.target
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Write only new Hub daily refresh user units; enable separately.")
+    parser = argparse.ArgumentParser(description="Write only new Hub 12/24-hour snapshot units; enable separately.")
     parser.add_argument("--root", required=True, type=Path)
     parser.add_argument("--code-root", required=True, type=Path)
     parser.add_argument("--python", required=True, type=Path)
     parser.add_argument("--time", default="09:00")
     parser.add_argument("--timezone", default="Asia/Tokyo")
-    parser.add_argument("--incremental",action='store_true',help='Render the same service with 60-second checks and 09:00 full batch')
+    parser.add_argument("--incremental",action='store_true',help='Deprecated compatibility option; uses the configured snapshot cadence')
+    parser.add_argument("--interval-hours", type=int, choices=(12,24), default=12)
     parser.add_argument("--unit-prefix",default='personal-control-hub-refresh',help='Explicit isolated test unit identity if needed')
     parser.add_argument("--unit-dir", required=True, type=Path)
     args = parser.parse_args(argv)
     units = render_units(args.root, args.code_root, args.python,
-                         time=args.time, timezone=args.timezone,incremental=args.incremental,unit_prefix=args.unit_prefix)
+                         time=args.time, timezone=args.timezone,incremental=args.incremental,unit_prefix=args.unit_prefix,interval_hours=args.interval_hours)
     # Never overwrite an existing operator-owned or previously installed unit.
     # Changes use an explicit reviewed preimage rather than a broad replace flag.
     args.unit_dir.mkdir(parents=True, exist_ok=True)
