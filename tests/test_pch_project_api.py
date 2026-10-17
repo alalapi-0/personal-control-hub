@@ -106,7 +106,15 @@ class ProjectAPITests(unittest.TestCase):
         self.commit()
         dto = self.service.get_project("a")
         self.assertEqual(set(dto), {"schema_version", "project_id", "name", "declared", "business",
-                                    "operational", "freshness", "source", "errors", "relations", "design", "provenance", "management", "definition"})
+                                    "operational", "freshness", "source", "errors", "relations", "design", "provenance", "management", "definition", "last_success_snapshot"})
+        success = dto["last_success_snapshot"]
+        self.assertEqual(set(success), {"available", "state", "observed_at", "age_seconds",
+                                        "source_mtime_age_seconds", "fields", "reason", "recovery_action"})
+        self.assertTrue(success["available"])
+        self.assertEqual(success["state"], "current")
+        self.assertEqual(success["observed_at"], self.time)
+        self.assertGreaterEqual(success["age_seconds"], 0)
+        self.assertEqual(success["fields"], dto["business"]["fields"])
         self.assertFalse(dto["management"]["available"])
         self.assertIsNone(dto["management"]["overlay"])
         quality = dto["business"]["quality"]

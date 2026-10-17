@@ -33,6 +33,8 @@ def project_facts(dto):
     value = copy.deepcopy(dto)
     for key in ('read_age_seconds', 'source_mtime_age_seconds', 'projected_at'):
         value['freshness'].pop(key, None)
+    for key in ('age_seconds', 'source_mtime_age_seconds'):
+        value['last_success_snapshot'].pop(key, None)
     return value
 
 class LocalServiceIntegrationTests(unittest.TestCase):
@@ -174,6 +176,8 @@ class LocalServiceIntegrationTests(unittest.TestCase):
             row = next(item for item in listing["data"]["projects"] if item["project_id"] == "fixture-project")
             status, _, detail = self.call(path="/api/projects/fixture-project")
             self.assertEqual(status, 200)
+            self.assertGreaterEqual(detail["data"]["last_success_snapshot"]["age_seconds"],
+                                    row["last_success_snapshot"]["age_seconds"])
             self.assertEqual(project_facts(row), project_facts(detail["data"]))
             self.assertEqual(row["business"]["normalized_status"], "active")
             self.assertTrue(any(f["id"] == "fixture-candidate" for f in row["design"]["references"]))
