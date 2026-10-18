@@ -197,6 +197,10 @@ export async function renderOrdinaryTasks(project,{isCurrent=()=>true,request=ap
     save.disabled=!owner||busy||Boolean(uncertain)||!spec||conflict||!pendingDraft&&!validOrdinarySpec(spec);
     save.textContent=pendingDraft?'重试确认草稿保存':'保存任务草稿';
     const valid=validOrdinarySpec(spec,{submit:true});
+    const inputChanged=sha(spec?.input_version)&&sha(context?.input_version)&&spec.input_version!==context.input_version;
+    const inputMessage=!spec?'':!sha(context?.input_version)?'当前任务输入版本尚未核实，请核对任务条件后再试；草稿保留。'
+      :!sha(spec.input_version)?'草稿尚未绑定当前输入版本，请显式重新读取任务输入。'
+      :inputChanged?'草稿绑定的输入版本与当前来源不同，请显式重新读取任务输入。':'';
     send.disabled=!owner||locked||conflict||blocked||!context?.ready||!valid||!allowedModes().includes(spec?.mode)
       ||!context.allowed_effects?.includes('read_only')||spec?.input_version!==context.input_version;
     sendReason.textContent=!send.disabled?'任务目标、范围和只读条件已核对；发送前会先保存同一份任务草稿。'
@@ -211,7 +215,8 @@ export async function renderOrdinaryTasks(project,{isCurrent=()=>true,request=ap
       :!context.ready?'普通任务执行条件尚未就绪，请核对任务条件；仍可保存草稿。'
       :!allowedModes().includes(spec?.mode)?'当前续接目标不允许所选任务模式，请核对续接任务。'
       :!context.allowed_effects?.includes('read_only')?'当前授权没有允许只读任务，请核对任务条件。'
-      :!sha(spec?.input_version)||spec.input_version!==context.input_version?'草稿输入版本尚未核实或已经变化，请显式重新读取任务输入。'
+      :inputChanged?'草稿输入版本已经变化，请显式重新读取任务输入。'
+      :inputMessage?inputMessage
       :'任务指令尚未通过校验，请核对原任务草稿。';
     reconcile.disabled=busy||!uncertain;reconcile.hidden=!uncertain;
     reload.disabled=busy||Boolean(pendingDraft)||Boolean(uncertain);
@@ -223,7 +228,7 @@ export async function renderOrdinaryTasks(project,{isCurrent=()=>true,request=ap
       el('p',{},context?.ready?'只读任务条件已就绪':'普通任务暂不可发送；可用时仍需核对授权范围。'),
       context?.reason_code?el('p',{className:'caption'},'条件代码：'+context.reason_code):null,
       spec&&!validOrdinarySpec(spec)?el('p',{className:'warning'},'请填写非空任务目标（最多 2000 字符）和任务范围（最多 1000 字符），并选择对应任务模式。'):null,
-      spec&&spec.input_version!==context?.input_version?el('p',{className:'warning'},'草稿绑定的输入版本与当前来源不同，请显式重新读取任务输入。'):null,
+      inputMessage?el('p',{className:inputChanged?'warning':'caption'},inputMessage):null,
       spec?el('p',{className:'caption'},'草稿请求：'+spec.request_id+' · 版本 '+revision):null].filter(Boolean));
     if(backupWarning)conditions.append(el('p',{className:'warning'},backupWarning));
   }

@@ -69,6 +69,50 @@ test('ready false and unknown input still save isolated drafts without starting 
   assert.equal(field(node,'任务范围').value,'Only this synthetic project');
 }));
 
+for(const recoveredVersion of ['a','b'])test('saved known input survives unavailable context and explicit recovery to '+(recoveredVersion==='a'?'the same':'a changed')+' version',()=>setup(async()=>{
+  const saved=spec(),initial={...context(),ready:false,input_version:null,reason_code:'WORKER_UNAVAILABLE'};
+  initial.draft={...initial.draft,revision:3,value:saved};
+  const state=service(initial),node=await state.render();
+  const assertPreserved=()=>{
+    assert.equal(field(node,'任务目标').value,saved.objective);
+    assert.equal(field(node,'任务范围').value,saved.scope);
+    assert.match(node.textContent,new RegExp(saved.request_id));
+    assert.equal(state.calls.filter(call=>call.path==='/api/tasks').length,0);
+  };
+  assertPreserved();
+  assert.equal(button(node,'发送普通任务').disabled,true);
+  assert.equal(button(node,'保存任务草稿').disabled,false);
+  assert.match(node.textContent,/当前任务输入版本尚未核实.*核对任务条件.*草稿保留/);
+  assert.doesNotMatch(node.textContent,/草稿绑定的输入版本与当前来源不同|输入版本已变化/);
+  await button(node,'发送普通任务').fire('click');assertPreserved();
+  await button(node,'保存任务草稿').fire('click');
+  assert.deepEqual(state.calls.filter(call=>call.path==='/api/ordinary-drafts').at(-1).body.value,saved);
+  assertPreserved();
+
+  state.context.ready=true;state.context.input_version=recoveredVersion.repeat(64);state.context.reason_code=null;
+  await button(node,'核对任务条件').fire('click');assertPreserved();
+  assert.doesNotMatch(node.textContent,/当前任务输入版本尚未核实/);
+  await button(node,'保存任务草稿').fire('click');
+  assert.deepEqual(state.calls.filter(call=>call.path==='/api/ordinary-drafts').at(-1).body.value,saved);
+  if(recoveredVersion==='a'){
+    assert.equal(button(node,'发送普通任务').disabled,false);
+    assert.doesNotMatch(node.textContent,/草稿绑定的输入版本与当前来源不同|输入版本已变化/);
+  }else{
+    assert.equal(button(node,'发送普通任务').disabled,true);
+    assert.match(sendReason(node).textContent,/输入版本.*(?:不同|变化).*重新读取任务输入/);
+    await button(node,'发送普通任务').fire('click');assertPreserved();
+    await button(node,'重新读取任务输入').fire('click');
+    assert.equal(field(node,'任务目标').value,saved.objective);
+    assert.equal(field(node,'任务范围').value,saved.scope);
+    assert.equal(button(node,'发送普通任务').disabled,false);
+    await button(node,'保存任务草稿').fire('click');
+    const rebound=state.calls.filter(call=>call.path==='/api/ordinary-drafts').at(-1).body.value;
+    assert.equal(rebound.input_version,'b'.repeat(64));assert.notEqual(rebound.request_id,saved.request_id);
+    assert.deepEqual({...rebound,input_version:saved.input_version,request_id:saved.request_id},saved);
+  }
+  assert.equal(state.calls.filter(call=>call.path==='/api/tasks').length,0);
+}));
+
 test('send first saves and then uses that exact task ID; double clicks cannot dispatch twice',()=>setup(async()=>{
   const state=service();let release;state.postTask=body=>new Promise(resolve=>{release=()=>resolve({task:taskFor(body)});});
   const node=await state.render();await fill(node);const sending=button(node,'发送普通任务').fire('click');
