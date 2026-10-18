@@ -2,7 +2,19 @@
 
 状态：**with_gaps**。正式 Web 已完成两个正式项目的只读任务、忙碌追问与结果重开验收；本次有限执行器已关闭，Web 和所有者登录保持。当前原 98 项为 **62 PASS / 4 BLOCKED / 32 UNVERIFIED**，G10 单独全通过。其余自然业务分支、真实设备及所有者最终接受仍未完成。下文保留各批次的原版本、计数和失败，历史记录不能替代此处当前结论。
 
-## 当前补充：正式 A/B 完整导航与键盘路径
+## 当前补充：动态偏好、对比度适用性与缩放工具边界
+
+本批保持正式程序 `b47e54d2fde405d3b8b5df57b9d5ecd45cc98e398b486b0c16a0f670faee2037`、原进程和所有者连接，163 项运行指纹与四项受保护文件不变。没有发送任务、采集来源、重新认证或更新服务。
+
+在当前 A/B 概览、任务与既有答复的代表路径动态切换普通／减少动态效果偏好：三组可见控件中的 22、28、18 项过渡分别降为零，控件数量保持；新增会话历史仍能用键盘读取 A 的两条、B 的一条记录，读取后有 3px 焦点。Story 两个草稿字段的内容指纹保持，两项目答复全文指纹在偏好切换前后相同。实际截图核对了历史控件及答复可读性，未见本次视口内的横向溢出。旧隔离长回复、错误恢复及按住控件的有效证据继续按适用范围复用；本次 raw CDP 按键接口在效果前被拒，随后使用受支持的普通键盘读取，不宣称重新测过按住时的位移。
+
+原对比度验收样式与当前样式只差 701–1000 像素导航布局规则，颜色、控件、焦点、禁用态及减少动态效果规则逐字相同。原 42 项浏览器合成像素实测按此限定范围复用，文字最小 7.242、关键边界最小 3.174；没有把它们写成本轮新测量。当前两项目答复在五个偏好观察点的计算样式前景色／自身不透明纯色背景对比度为 8.121，按 4.5 阈值核对；这是计算样式配色检查，不是新像素采样或完整 WCAG 验收。
+
+当前内置浏览器的两个正常缩放快捷键均未改变页面宽度或 DPR。尝试既有真实 Chrome 设置方法时，工具安全策略拒绝 `chrome://settings/appearance`，只允许 HTTP/HTTPS；没有改走隐藏接口、其他浏览器或缩放模拟来绕过。设置用临时页已关闭并核实消失。旧隔离和独立只读候选的真实 Chrome 200% 证据仍有效，但当前正式 Owner 全路径的真实 200% 继续未验，需要后续人工审核；视口模拟不替代它。
+
+本批 46 个 GET 全部 200，开始、响应和结束一一对应，无截断、加载失败或捕获到的运行异常。这只覆盖本批有界路径；早期完整网络、CSP 归属、真实设备／读屏、自然业务及最终本人接受缺口继续保留。E-07 原 PASS 仅补当前新控件适用性，V-11 仍 UNVERIFIED；原 98 项保持 62 PASS / 4 BLOCKED / 32 UNVERIFIED，新增整项验收、证据修正和范围变化均为零。模拟偏好和视口已恢复，临时诊断及计算会话已收尾，原 Owner 页按用途保留；无新环境、配置副本、显示或模型，本任务峰值内存未知。
+
+## 前批次补充：正式 A/B 完整导航与键盘路径
 
 本批保持正式程序 `b47e54d2fde405d3b8b5df57b9d5ecd45cc98e398b486b0c16a0f670faee2037`，163 项运行指纹及原 Web 进程身份不变。复用既有所有者页面和三条已完成的只读任务，未重新发送任务、采集来源、登录或更新服务；四项受保护文件保持。
 
@@ -230,7 +242,7 @@ Root 67 项 Python、45 项前端检查及独立审查通过。正式访客页�
 
 ## 98 项结果
 
-当前结果：**62 PASS、4 BLOCKED、32 UNVERIFIED；0 FAIL、0 NOT_APPLICABLE**，与唯一 State 的当前逐项结果一致。本表保留此前已验收的 57 项，本批实际补验新增 A-06、A-07、T-01、V-04、E-01 共 5 项；D-01 属于前批次。既有表格修正不重复计为新增验收。早期 30/17/51 的正式范围回正、此前 37/10/51 的范围误判及所有成功／失败证据继续保留在历史批次。每 ID 只有一个当前总结果，全部必需分支成立才 PASS；没有增加新的正式身份或业务质量要求。原始 23 PASS / 18 FAIL / 25 BLOCKED / 32 UNVERIFIED 不覆盖、不改写。此计数不是 Goal 完成率。
+当前结果：**62 PASS、4 BLOCKED、32 UNVERIFIED；0 FAIL、0 NOT_APPLICABLE**，与唯一 State 的当前逐项结果一致。本表保留已验收的 62 项；前批次补验 A-06、A-07、T-01、V-04、E-01 五项，本批只补当前动态偏好和对比度适用性及缩放工具限制，无新增整项验收。D-01 属于更早批次。既有表格修正不重复计为新增验收。早期 30/17/51 的正式范围回正、此前 37/10/51 的范围误判及所有成功／失败证据继续保留在历史批次。每 ID 只有一个当前总结果，全部必需分支成立才 PASS；没有增加新的正式身份或业务质量要求。原始 23 PASS / 18 FAIL / 25 BLOCKED / 32 UNVERIFIED 不覆盖、不改写。此计数不是 Goal 完成率。
 
 | ID | 原始场景及预期 | 原结果 | 当前总结果 | 观察与限制；确定性证据入口 |
 | --- | --- | --- | --- | --- |
@@ -320,7 +332,7 @@ Root 67 项 Python、45 项前端检查及独立审查通过。正式访客页�
 | V-08 | 长项目名、长回复、多关系、很多unknown；不截掉关键对象/操作，不破版；长内容可定位和返回 | UNVERIFIED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：responsive.longReplies、responsive.layoutMatrix、resilience.longReplyIsolation |
 | V-09 | 1440×1050与1280×800观察首屏及滚动；主要任务和反馈可用；大截图不能掩盖小窗的入口缺失 | PASS | PASS | 正式A/B概览与排期，两指定桌面尺寸，首屏与稳定918/700px滚动、16截图及59GET复核通过。 |
 | V-10 | 390×844窄窗浏览、导航、表单和长回复；内容有层次、无关键动作丢失；触控目标可用；真实手机另验 | UNVERIFIED | UNVERIFIED | 390 模拟视口通过，实际手机触控未验。 证据：responsive.layoutMatrix、parallel.activeDraftIsolation、preview.materialReturn |
-| V-11 | 200%缩放、对比度、焦点/禁用视觉检查；不丢内容/操作，文字可读，状态不只靠颜色；记录检查工具和限制 | UNVERIFIED | UNVERIFIED | 独立真实数据候选已补 A/B 实际 200% 首屏、焦点和禁用说明；四张底部浏览器截图无效，已改用私有显示原生画面核对关键内容和操作。历史对比度按未变颜色样式复用，非新像素测量；原正式页面分支仍未验。 |
+| V-11 | 200%缩放、对比度、焦点/禁用视觉检查；不丢内容/操作，文字可读，状态不只靠颜色；记录检查工具和限制 | UNVERIFIED | UNVERIFIED | 旧候选真实 Chrome 200% 及限定样式对比度证据保留；当前正式 Owner 缩放快捷键无效，设置页受工具 HTTP/HTTPS 策略限制，真实 200% 仍未验。 |
 | V-12 | 判断方案图/截图预览与当前页面的关系；用户知道是设计、历史截图、导入结果还是当前现场；不可操作图不暗示可控制 | PASS | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：preview.savedCapture、preview.staleMaterial、preview.unversionedMaterial、u:captures.mjs、u:page_inventory.mjs |
 | E-01 | 只用键盘完成找项目、查看关系、进入指令和返回；焦点可见、顺序合任务、无陷阱；链接/按钮语义正确 | BLOCKED | PASS | 正式 A/B 纯键盘搜索→关系→普通输入→返回通过，3px 焦点可见；较强键盘发送／回复分支保留。 证据：本批正式导航与键盘记录；原始预期和历史结果保留。 |
 | E-02 | 展开面板/打开关闭对话框/触发错误；焦点进入/返回合理；状态与错误可被辅助技术感知 | UNVERIFIED | UNVERIFIED | 键盘和 AX 证据通过，真实读屏体验未验。 证据：keyboard.ownerDialog、keyboard.quietPolling、keyboard.keyboardAnswerRecovery、keyboard.keyboardRouteError |
@@ -328,7 +340,7 @@ Root 67 项 Python、45 项前端检查及独立审查通过。正式访客页�
 | E-04 | 副本模拟401/403/404/409/5xx和超时；各自含义清楚；不泄露敏感内部细节、不把权限问题说成无数据 | FAIL | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：nav.errors、ordinary.authenticationReasons、ordinary.inputConflict、resilience.admittedSave500 |
 | E-05 | 提交校验失败或网络失败后再次编辑；输入保留；错误定位；不重复提交，不静默清空 | PASS | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：management.dateRecovery、management.twoEditors、keyboard.keyboardAnswerRecovery、resilience.offlineDraftRecovery、resilience.admittedSave500 |
 | E-06 | 浏览器离线/重连边界；可读旧数据标历史；在线恢复可核对；不调整工作站网络/VPN | PASS | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：nav.errors、resilience.offlineDraftRecovery |
-| E-07 | 打开reduced-motion观察状态变化；非必要动效减少，状态和功能仍完整 | UNVERIFIED | PASS | 正式偏好对照功能一致，过渡321→0；原有效I层补充回复/草稿/恢复，独立原范围复核通过。 |
+| E-07 | 打开reduced-motion观察状态变化；非必要动效减少，状态和功能仍完整 | UNVERIFIED | PASS | 既有隔离及正式 PASS 保留；本批新会话历史的动态偏好、键盘读取、草稿和答复保持已核对。未重复计为新验收。 |
 | E-08 | 全程检查console异常和network关键交换；新旧错误分开；请求目标、方法、授权、返回处理匹配实际动作 | UNVERIFIED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：nav.errors、parallel.expectedBrowserErrors、parallel.secondaryNetwork、resilience.runtimeDiagnostics、edge.edgeDiagnostics、helper.console、helper.network |
 | E-09 | 空项目/无任务/无关系/无排期/服务未启用；各自说明和下一步正确；入口缺失不写NOT_APPLICABLE | UNVERIFIED | UNVERIFIED | 合成真空目录、无任务/关系/排期及禁用服务通过；正式已有状态在当前候选上的页面分支未复核。 证据：resilience.trueEmpty、resilience.emptyVersusUnavailable、ordinary.runtimeAndRevocation |
 | E-10 | 回看测试产生的本地效果和原始证据；不公开DB/消息/凭据/私密路径/敏感截图；不误改/清理其他任务 | PASS | PASS | 只交付审阅过的安全代码/测试/此摘要；原始 State、DB、消息、凭据、路径清单与截图留本地。 证据：u:materials.py、u:preview_policy.py、helper.fixtureExit |
