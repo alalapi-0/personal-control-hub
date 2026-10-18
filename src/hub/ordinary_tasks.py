@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import math
 import os
 import stat
 import time
@@ -90,7 +91,8 @@ def _version(grant):
     return digest({key:grant[key] for key in ('project_id','root_identity','registry_hash','input_files','effect')})
 
 
-def validate_grant(value, *, live=False):
+def validate_grant_metadata(value):
+    """Validate a stored record's shape, never its current execution authority."""
     if type(value)is not dict or set(value)!=GRANT_FIELDS or value['kind']!=KIND:
         raise ServiceError('INVALID_ORDINARY_GRANT',status=403)
     for key in ('grant_id','project_id'):stable_id(value[key])
@@ -101,8 +103,9 @@ def validate_grant(value, *, live=False):
     root=Path(value['root']) if type(value['root'])is str else Path('.')
     if not root.is_absolute() or '..'in root.parts or not _sha(value['root_identity']) or not _sha(value['registry_hash']):
         raise ServiceError('INVALID_ORDINARY_GRANT',status=403)
-    if type(value['expires_at'])not in (int,float) or not time.time()<value['expires_at']<time.time()+86400:
-        raise ServiceError('GRANT_EXPIRED',status=403)
+    expires=value['expires_at']
+    if type(expires)not in (int,float) or type(expires)is float and not math.isfinite(expires):
+        raise ServiceError('INVALID_ORDINARY_GRANT',status=403)
     if type(value['max_turn_seconds'])is not int or not 10<=value['max_turn_seconds']<=600:
         raise ServiceError('INVALID_ORDINARY_GRANT',status=403)
     files=value['input_files']
@@ -115,8 +118,15 @@ def validate_grant(value, *, live=False):
         if item['path']in seen:raise ServiceError('INVALID_ORDINARY_GRANT',status=403)
         seen.add(item['path'])
     if value['input_version']!=_version(value):raise ServiceError('INVALID_ORDINARY_GRANT',status=403)
-    if live and snapshot_inputs(value)!=files:raise ServiceError('ORDINARY_INPUT_CHANGED',status=409)
     return copy.deepcopy(value)
+
+
+def validate_grant(value, *, live=False):
+    value=validate_grant_metadata(value)
+    if not time.time()<value['expires_at']<time.time()+86400:
+        raise ServiceError('GRANT_EXPIRED',status=403)
+    if live and snapshot_inputs(value)!=value['input_files']:raise ServiceError('ORDINARY_INPUT_CHANGED',status=409)
+    return value
 
 
 def make_grant(root,project_id,registry_hash,grant_id,*,input_paths=('AGENTS.md','README.md'),

@@ -30,6 +30,11 @@ def attach_ordinary_runtime(server, runtime):
     if (tasks is None or runtime.store is not tasks.store
             or getattr(server, 'ordinary_runtime', None) is not None):
         raise ServiceError('ORDINARY_RUNTIME_BINDING_REJECTED')
+    scope=TaskService._ordinary_scope_ids(getattr(runtime, 'grant_ids', None))
+    projects=getattr(runtime, 'grant_projects', None)
+    if scope is None or projects is None:
+        raise ServiceError('ORDINARY_RUNTIME_BINDING_REJECTED')
+    tasks.bind_ordinary_grants(scope,projects=projects)
     tasks.writer_check = runtime.writer_check
     tasks.writer_check_configured = True
     tasks.runtime_status = runtime.status

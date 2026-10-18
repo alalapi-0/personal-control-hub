@@ -348,6 +348,8 @@ class RealOrdinaryEntryTests(unittest.TestCase):
         class Runtime:
             def __init__(self,store,**kwargs):
                 self.store=store;self.kwargs=kwargs;self.started=False;self.stopped=False;runtimes.append(self)
+                self.grant_ids=tuple(grant['grant_id']for grant in kwargs['grants'])
+                self.grant_projects=tuple((grant['grant_id'],grant['project_id'])for grant in kwargs['grants'])
             def writer_check(self,grant): return False
             def status(self): return {}
             def start(self): self.started=True
@@ -361,6 +363,7 @@ class RealOrdinaryEntryTests(unittest.TestCase):
         self.assertEqual(len(runtimes),1)
         runtime=runtimes[0]
         self.assertEqual(runtime.kwargs['grants'],[self.grant])
+        self.assertEqual(state['tasks'].ordinary_grant_ids,(self.grant['grant_id'],))
         self.assertEqual(runtime.kwargs['grant_classification'],'real')
         self.assertTrue(runtime.started and runtime.stopped)
         self.assertEqual(runtime.store.root,self.f.store.root)

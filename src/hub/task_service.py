@@ -9,7 +9,7 @@ import time
 from pathlib import Path
 
 from .service_contract import ServiceError
-from .task_store import stable_id
+from .task_store import MAX_TASKS, stable_id
 from .workbench_store import digest, validate_command
 from .preview_service import PreviewService
 
@@ -104,7 +104,8 @@ def validate_grant(grant, *, live=False):
 
 
 class TaskService:
-    def __init__(self,projects,annotations,store, *, test_gate=False, writer_check=None, runtime_status=None, ordinary_enabled=False):
+    def __init__(self,projects,annotations,store, *, test_gate=False, writer_check=None, runtime_status=None, ordinary_enabled=False,
+                 ordinary_grant_ids=None):
         self.projects,self.annotations,self.store=projects,annotations,store
         self.test_gate=test_gate
         # An internal lease cannot certify an unrelated writer's absence.
@@ -112,6 +113,51 @@ class TaskService:
         self.writer_check_configured=writer_check is not None
         self.runtime_status=runtime_status
         self.ordinary_enabled=ordinary_enabled is True
+        self.ordinary_grant_ids=ordinary_grant_ids
+
+    @staticmethod
+    def _ordinary_scope_ids(value):
+        if value is None:return None  # Existing standalone services have no attached runtime scope.
+        if (type(value)is not tuple or not value or len(value)>MAX_TASKS
+                or any(type(ident)is not str for ident in value)):
+            raise ServiceError('ORDINARY_GRANT_SCOPE_REJECTED',status=403)
+        try:ids=tuple(stable_id(ident)for ident in value)
+        except ServiceError:
+            raise ServiceError('ORDINARY_GRANT_SCOPE_REJECTED',status=403)from None
+        if len(set(ids))!=len(ids):raise ServiceError('ORDINARY_GRANT_SCOPE_REJECTED',status=403)
+        return ids
+
+    @property
+    def ordinary_grant_ids(self):
+        return self._ordinary_grant_scope[0]
+
+    @ordinary_grant_ids.setter
+    def ordinary_grant_ids(self,value):
+        self.bind_ordinary_grants(value)
+
+    def bind_ordinary_grants(self,value, *, projects=None):
+        ids=self._ordinary_scope_ids(value)
+        # Freeze applicability at binding time, so a deleted/rebound row cannot
+        # turn a selected same-project ambiguity into a unique survivor. Keep
+        # independent projects independent when one registration disappears.
+        if projects is None:
+            bindings=[]
+            for ident in ids or ():
+                grant=self.store.grant(ident)
+                project=grant.get('project_id')if type(grant)is dict else None
+                bindings.append((ident,project if type(project)is str else None))
+        else:
+            if (ids is None or type(projects)is not tuple or len(projects)!=len(ids)
+                    or any(type(pair)is not tuple or len(pair)!=2 for pair in projects)):
+                raise ServiceError('ORDINARY_GRANT_SCOPE_REJECTED',status=403)
+            for ident,pair in zip(ids,projects):
+                if pair[0]!=ident or type(pair[1])is not str:
+                    raise ServiceError('ORDINARY_GRANT_SCOPE_REJECTED',status=403)
+                try:stable_id(pair[1])
+                except ServiceError:
+                    raise ServiceError('ORDINARY_GRANT_SCOPE_REJECTED',status=403)from None
+            bindings=projects
+        self._ordinary_grant_scope=(ids,tuple(bindings))
 
     def capabilities(self, *, storage=None):
         """Read server readiness only; never authorize a task or probe a provider.
@@ -177,16 +223,40 @@ class TaskService:
         return resolver,resolver.projects[project_id]
 
     def _ordinary_grant(self,resolver,project, *, live=True):
-        candidates=[]
-        for grant in self.store.grants(project_id=project['id']):
-            if grant.get('kind')=='ordinary_project' and grant.get('project_id')==project['id']:
-                candidates.append(grant)
-        if not candidates:raise ServiceError('ORDINARY_PROJECT_GRANT_REQUIRED',status=403)
+        from .ordinary_tasks import validate_grant_metadata
+        selected,selected_projects=self._ordinary_grant_scope
+        candidates=[];expired=False;now=time.time()
+        if selected is None:
+            records=self.store.grants(project_id=project['id'])
+        else:
+            records=[]
+            for ident,bound_project in selected_projects:
+                if bound_project is None:
+                    raise ServiceError('ORDINARY_PROJECT_GRANT_REQUIRED',status=403)
+                if bound_project!=project['id']:continue
+                grant=self.store.grant(ident)
+                if grant is None:
+                    raise ServiceError('ORDINARY_PROJECT_GRANT_REQUIRED',status=403)
+                if grant.get('kind')!='ordinary_project' or grant.get('project_id')!=bound_project:
+                    raise ServiceError('GRANT_BINDING_REJECTED',status=409)
+                records.append(grant)
+        for grant in records:
+            if grant.get('kind')!='ordinary_project' or grant.get('project_id')!=project['id']:continue
+            if selected is not None and grant.get('grant_id')not in selected:continue
+            # Old records remain immutable history. Only definitively expired,
+            # structurally valid records can be ignored; other invalid selected
+            # records reject rather than falling back to another grant.
+            grant=validate_grant_metadata(grant)
+            if grant['expires_at']<=now:
+                expired=True;continue
+            grant=validate_grant(grant,live=False)
+            if grant['root']!=project.get('root_path') or grant['registry_hash']!=resolver.authority['registry_hash']:
+                raise ServiceError('GRANT_BINDING_REJECTED',status=409)
+            candidates.append(validate_grant(grant,live=live))
+        if not candidates:
+            raise ServiceError('GRANT_EXPIRED'if expired else 'ORDINARY_PROJECT_GRANT_REQUIRED',status=403)
         if len(candidates)!=1:raise ServiceError('ORDINARY_PROJECT_GRANT_AMBIGUOUS',status=409)
-        grant=validate_grant(candidates[0],live=False)
-        if grant['root']!=project.get('root_path') or grant['registry_hash']!=resolver.authority['registry_hash']:
-            raise ServiceError('GRANT_BINDING_REJECTED',status=409)
-        return validate_grant(grant,live=live)
+        return candidates[0]
 
     @staticmethod
     def _ordinary_parent(parent,project_id,owner_context,grant=None):
@@ -207,7 +277,10 @@ class TaskService:
         capabilities=self.capabilities();ready=capabilities['ordinary_execution']['available']
         reason=capabilities['ordinary_execution']['reason_code'];grant=None
         if ready:
-            try:grant=self._ordinary_grant(resolver,project)
+            try:
+                grant=self._ordinary_grant(resolver,project)
+                if not self.writer_check(grant):
+                    raise ServiceError('EXTERNAL_WRITER_UNKNOWN',status=409)
             except ServiceError as error:ready=False;reason=error.code
         parents=[]
         for parent in self.store.tasks():
@@ -254,6 +327,7 @@ class TaskService:
         caps=self.capabilities()
         if not caps['ordinary_execution']['available']:
             raise ServiceError(caps['ordinary_execution']['reason_code'],status=503)
+        selected_scope=self._ordinary_grant_scope
         grant=self._ordinary_grant(resolver,project)
         if spec['input_version']!=grant['input_version']:raise ServiceError('ORDINARY_INPUT_CHANGED',status=409)
         if not self.writer_check(grant):raise ServiceError('EXTERNAL_WRITER_UNKNOWN',status=409)
@@ -268,7 +342,8 @@ class TaskService:
         def check():
             authorize();resolver._check_registry()
             current,current_project=self._ordinary_project(spec['project_id'])
-            if current.authority!=resolver.authority or self._ordinary_grant(current,current_project)!=grant:
+            if (self._ordinary_grant_scope!=selected_scope or current.authority!=resolver.authority
+                    or self._ordinary_grant(current,current_project)!=grant):
                 raise ServiceError('GRANT_VERSION_STALE',status=409)
             if not self.writer_check(grant):raise ServiceError('EXTERNAL_WRITER_UNKNOWN',status=409)
             if parent:

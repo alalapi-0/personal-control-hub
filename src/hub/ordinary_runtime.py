@@ -51,6 +51,15 @@ class OrdinaryRuntime:
         self._state = 'stopped'
         self._error = None
 
+    @property
+    def grant_ids(self):
+        """Immutable server-selected scope; observing it never starts work."""
+        return self._grant_ids
+
+    @property
+    def grant_projects(self):
+        return tuple((grant['grant_id'],grant['project_id'])for grant in self._grants)
+
     def _validate(self, grant):
         # Compare against the explicit list before touching a supplied root.
         if not any(grant == owned for owned in self._grants):

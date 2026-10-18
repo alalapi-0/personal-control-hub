@@ -118,18 +118,59 @@ class ServerEntryTests(unittest.TestCase):
 
     def test_explicit_runtime_attachment_does_not_start_and_close_owns_its_handle(self):
         from types import SimpleNamespace
+        from hub.task_service import TaskService
         store = object(); calls = []
-        tasks = SimpleNamespace(store=store)
+        tasks = TaskService(None,None,store)
         server = SimpleNamespace(tasks=tasks, server_close=lambda: calls.append('http-close'))
-        runtime = SimpleNamespace(store=store, writer_check=lambda _: False,
+        runtime = SimpleNamespace(store=store, grant_ids=('selected-grant',),
+                                  grant_projects=(('selected-grant','fixture-project'),),writer_check=lambda _: False,
                                   status=lambda: {}, stop=lambda: calls.append('runtime-stop'))
         self.entry.attach_ordinary_runtime(server, runtime)
         self.assertTrue(tasks.ordinary_enabled)
+        self.assertEqual(tasks.ordinary_grant_ids, runtime.grant_ids)
         self.assertEqual(calls, [])
         server.server_close()
         self.assertEqual(calls, ['runtime-stop', 'http-close'])
         with self.assertRaises(Exception):
             self.entry.attach_ordinary_runtime(server, runtime)
+
+    def test_attachment_rejects_missing_empty_or_malformed_selected_scope_before_enable(self):
+        from types import SimpleNamespace
+        from hub.service_contract import ServiceError
+        from hub.task_service import TaskService
+        for scope in (None, (), [], ['selected'], ('same', 'same'), ('bad/id',), (42,)):
+            with self.subTest(scope=scope):
+                store = object(); calls = []
+                tasks = TaskService(None,None,store)
+                close = lambda: calls.append('http-close')
+                server = SimpleNamespace(tasks=tasks, server_close=close)
+                runtime = SimpleNamespace(store=store, grant_ids=scope,grant_projects=(('selected','fixture-project'),),
+                    writer_check=lambda _: False, status=lambda: {},
+                    stop=lambda: calls.append('runtime-stop'))
+                with self.assertRaises(ServiceError):
+                    self.entry.attach_ordinary_runtime(server, runtime)
+                self.assertFalse(tasks.ordinary_enabled)
+                self.assertIs(server.server_close, close)
+                self.assertEqual(calls, [])
+
+    def test_attachment_rejects_invalid_project_bindings_before_enable(self):
+        from types import SimpleNamespace
+        from hub.service_contract import ServiceError
+        from hub.task_service import TaskService
+        for projects in (None,(),[],(('other-id','fixture-project'),),
+                         (('selected','bad/project'),),(('selected',False),),('selected',)):
+            with self.subTest(projects=projects):
+                store=object();tasks=TaskService(None,None,store);calls=[]
+                close=lambda:calls.append('close')
+                server=SimpleNamespace(tasks=tasks,server_close=close)
+                runtime=SimpleNamespace(store=store,grant_ids=('selected',),grant_projects=projects,
+                    writer_check=lambda _:False,status=lambda:{},stop=lambda:calls.append('stop'))
+                with self.assertRaises(ServiceError):
+                    self.entry.attach_ordinary_runtime(server,runtime)
+                self.assertFalse(tasks.ordinary_enabled)
+                self.assertIsNone(tasks.ordinary_grant_ids)
+                self.assertIs(server.server_close,close)
+                self.assertEqual(calls,[])
 
     def test_missing_or_aliased_root_fails_before_startup_and_does_not_initialize(self):
         missing = self.data / 'absent'

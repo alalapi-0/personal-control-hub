@@ -108,6 +108,23 @@ class OrdinaryRuntimeTests(unittest.TestCase):
     def both_started(self):
         return all(self.store.task(ident)['turn_id'] is not None for ident in ('a', 'b'))
 
+    def test_selected_grant_ids_are_exact_ordered_read_only_and_observation_has_no_effect(self):
+        runtime, grants = self.parallel_runtime()
+        expected = tuple(grant['grant_id'] for grant in grants)
+        self.assertEqual(runtime.grant_ids, expected)
+        self.assertEqual(runtime.grant_projects,tuple((g['grant_id'],g['project_id'])for g in grants))
+        self.assertIsInstance(runtime.grant_ids, tuple)
+        with self.assertRaises(AttributeError):
+            runtime.grant_ids = ('foreign-grant',)
+        with self.assertRaises(AttributeError):
+            runtime.grant_projects = (('foreign-grant','foreign-project'),)
+        before = self.store.grants()
+        runtime.status()
+        self.assertEqual(runtime.grant_ids, expected)
+        self.assertEqual(self.store.grants(), before)
+        self.assertEqual(self.Adapter.created, [])
+        self.assertFalse(runtime.status()['worker_runtime']['available'])
+
     def test_two_roots_run_simultaneously_exact_cancel_keeps_b_running(self):
         runtime, grants = self.parallel_runtime()
         self.admit('a', grant=grants[0])
