@@ -32,6 +32,41 @@ const button=(n,label)=>all(n).find(x=>x.tagName==='button'&&x.textContent===lab
 const articles=n=>all(n).filter(x=>x.tagName==='article');
 const status=n=>all(n).find(x=>x.attributes.role==='status').textContent;
 
+for(const item of [
+ {name:'no dates',start:null,end:null,zone:'Asia/Tokyo',milestones:null,points:0},
+ {name:'start only',start:'2026-10-31',end:null,zone:'Asia/Tokyo',milestones:null,points:1},
+ {name:'end only',start:null,end:'2026-11-01',zone:'America/New_York',milestones:null,points:1},
+ {name:'milestone only',start:null,end:null,zone:'America/New_York',milestones:[{id:'review',label:'Review milestone',date:'2026-11-01'}],points:1},
+])test('partial planned dates retain graphical and text truth in every filter: '+item.name,()=>{
+ const p=fixture();p.business.timeline.available=false;
+ p.management.overlay={start_date:item.start,end_date:item.end,timezone:item.zone,milestones:item.milestones};
+ const before=structuredClone(p),n=mount([p],{context:'project'}),filter=label(n,'时间线日期筛选');
+ const planned=node=>(node.attributes.class??node.attributes.className??'').split(' ').includes('timeline-planned');
+ for(const mode of ['all','dated','unscheduled']){
+  filter.value=mode;filter.fire('change');
+  const expected=mode==='dated'&&item.points===0?0:1;
+  assert.equal(articles(n).length,expected);assert.match(status(n),new RegExp('当前项目日期筛选显示 '+expected+' / 当前项目 1'));
+  if(!expected){assert.match(n.textContent,/当前日期筛选没有匹配的项目日期/);continue;}
+  assert.equal(articles(n)[0].attributes['data-project-id'],'a');
+  const lane=all(n).find(node=>node.tagName==='section'&&planned(node));assert.ok(lane);
+  assert.ok(lane.textContent.includes('开始：'+(item.start??'未知 · 未排期')));
+  assert.ok(lane.textContent.includes('结束：'+(item.end??'未知 · 未排期')));
+  assert.match(lane.textContent,/独立日期标记，不计算连续时长/);
+  assert.match(lane.textContent,/管理计划日期未全部声明/);
+  const markers=all(n).filter(node=>node.tagName==='circle'&&planned(node));
+  assert.equal(markers.length,item.points);assert.equal(all(n).filter(node=>node.tagName==='rect'&&planned(node)).length,0);
+  const titles=markers.map(node=>node.textContent);
+  if(item.start)assert.ok(titles.some(value=>value.includes('开始：'+item.start)&&value.includes(item.zone)));
+  if(item.end)assert.ok(titles.some(value=>value.includes('结束：'+item.end)&&value.includes(item.zone)));
+  for(const milestone of item.milestones??[]){
+   assert.ok(lane.textContent.includes('里程碑 '+milestone.label+'（'+milestone.id+'）：'+milestone.date));
+   assert.ok(titles.some(value=>value.includes(milestone.label+'：'+milestone.date)&&value.includes(item.zone)));
+  }
+  if(!item.points){assert.match(status(n),/没有已知日期；未推断当前日期/);assert.equal(all(n).filter(node=>node.tagName==='svg').length,0);}
+ }
+ assert.deepEqual(p,before);
+});
+
 test('definition extension 1.4 retains proven actual dates and rejects mismatched proof',()=>{
  const p=fixture();p.operational.latest_attempt.extensions.schema_version='1.4';
  assert.equal(timelineRows([p])[0].actual.points.length,2);
