@@ -1,5 +1,6 @@
 import {el} from './common.js';
 import {businessPlan} from './business_tasks.mjs';
+import {projectSummary,currentSourceAvailable} from './connection_view.mjs';
 
 const DAY=86400000,MIN=Date.parse('0001-01-01T00:00:00Z')/DAY,MAX=Date.parse('9999-12-31T00:00:00Z')/DAY;
 const hash=v=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);
@@ -102,7 +103,7 @@ export function renderTimeline(projects,{total=projects.length,onEdit,context='d
       dates.append(entry);
     }
     if(l.condition)dates.append(el('p',{},`前置条件：${l.condition}`));
-    if(l.scope)dates.append(el('p',{},`验收范围：${l.scope}`));
+    if(l.scope)dates.append(el('p',{},`评估时的验收范围：${l.scope}`));
     if(l.dependsOn?.length)dates.append(el('p',{},`依赖：${(l.dependsOnLabels??l.dependsOn).join('、')}`));
     if(l.forecast&&['automatic','human'].includes(l.subkind))dates.append(el('p',{},'这是拟议验收窗口，尚非验收回执；实际验收日期未知。'));
     if(l.reason)dates.append(el('p',{className:'caption'},`未知原因：${l.reason}`));
@@ -127,11 +128,16 @@ export function renderTimeline(projects,{total=projects.length,onEdit,context='d
     content.replaceChildren();
     for(const r of visible){
       const lanes=[r.planned,r.actual,...r.forecasts,...r.stages],article=el('article',{className:'stack timeline-project','data-project-id':r.id},el('h3',{},el('a',{href:detail(r.id)},`${r.name}（${r.id}）`)));
+      const sourceSummary=projectSummary(r.project),facts=Object.fromEntries(sourceSummary.fields),current=currentSourceAvailable(r.project);
+      article.append(el('p',{className:'caption'},`${current?'当前来源':sourceSummary.historical?'历史快照':'当前来源不可用'}：${facts['工作状态']} · 业务进度 ${facts['业务进度 V/N']}`));
+      if(!current)article.append(el('p',{className:'caption'},sourceSummary.quality));
+      if(facts['计数依据']!=='未知')article.append(el('details',{},el('summary',{},'查看进度计数依据'),el('p',{className:'caption'},facts['计数依据'])));
       if(r.rollingPlan){
         const rp=r.rollingPlan,summary=el('section',{className:'stack timeline-forecast-summary','aria-label':`${r.id} 滚动估计说明`},el('h4',{},'滚动估计（非截止日期）'),el('p',{},`估计基准 ${rp.as_of} · 下次复核 ${rp.next_review} · 信心 ${confidenceLabels[rp.confidence]??'未知'} · 时区 ${r.project.management.overlay.timezone??'未声明'}`));
         summary.append(el('p',{},'预计窗口用于逐步安排；来源实际进度、自动核验和本人验收分别记录，不推定本人已通过。'));
+        summary.append(el('p',{},'来源状态与计数以上方摘要为准；以下依据和验收范围保留估计基准时的记录，不随来源刷新自动改写。'));
         for(const condition of rp.conditions??[])summary.append(el('p',{},`估计条件：${condition}`));
-        for(const basis of rp.basis??[])summary.append(el('details',{},el('summary',{},`${basis.kind==='source'?'来源依据':'估计假设'}：${basis.summary}`),el('p',{className:'caption'},`引用 ${basis.reference}${basis.sha256?` · SHA256 ${basis.sha256}`:''}`)));
+        for(const basis of rp.basis??[])summary.append(el('details',{},el('summary',{},`估计基准 ${rp.as_of} 的${basis.kind==='source'?'来源依据':'估计假设'}：${basis.summary}`),el('p',{className:'caption'},`引用 ${basis.reference}${basis.sha256?` · SHA256 ${basis.sha256}`:''}`)));
         article.append(summary);
       }
       article.append(el('p',{className:'caption'},`来源自动／工程核验：${r.verification?'已有来源记录，可展开查看':'未知'}；实际自动验收日期：未知；本人实际验收状态及日期：未知（当前无带类型的本人验收回执）。`));

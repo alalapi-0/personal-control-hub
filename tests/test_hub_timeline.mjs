@@ -111,6 +111,29 @@ function rolling(p=fixture('forecast')){
  p.management.overlay={start_date:null,end_date:null,timezone:'Asia/Tokyo',milestones:null,rolling_plan:{schema_version:'1.0',kind:'rolling_estimate',as_of:'2026-10-15',next_review:'2026-10-22',completion_window:{earliest:'2026-12-01',latest:'2027-01-15'},confidence:'low',basis:[{kind:'source',reference:'canonical-task',sha256:sha,summary:'仍有原编号任务未验收'},{kind:'assumption',reference:'review-policy',sha256:null,summary:'按逐步完成推进，不要求固定截止日期'}],conditions:['先补齐来源事实，不自动推进业务'],next_milestone:{id:'milestone-next',label:'下一阶段核对',window:{earliest:'2026-10-20',latest:'2026-10-22'},condition:'依赖所有者提供事实'},acceptance_windows:[{id:'auto',kind:'automatic',label:'本地自动检查',window:{earliest:'2026-10-23',latest:'2026-10-24'},depends_on:['milestone-next'],scope:'自动测试通过'},{id:'human',kind:'human',label:'本人查看结果',window:null,depends_on:['auto'],scope:'由本人实际操作并确认'}]}};
  p.business.timeline.available=false;return p;
 }
+test('timeline keeps proven current counts separate from an older estimate and labels historical fallback',()=>{
+ const p=rolling(),record=p.operational.latest_attempt;
+ record.business={current_work:{status:'blocked'},progress:{completed:3,total:13,counting_basis:'3 of 13 roadmap results accepted; overall percentage unknown'}};
+ record.field_provenance=Object.fromEntries(['current_work.status','progress.completed','progress.total','progress.counting_basis'].map(key=>[key,{source_ref:'state',sha256:sha,selector:{path:key.split('.')}}]));
+ p.business.state='current';p.business.source_record=structuredClone(record);p.operational.last_success=structuredClone(record);
+ p.management.overlay.rolling_plan.basis[0].summary='当前范围完成数 未知/13';
+ const before=structuredClone(p),n=mount([p]);
+ assert.match(n.textContent,/当前来源：受阻 · 业务进度 3 \/ 13/);
+ assert.match(n.textContent,/3 of 13 roadmap results accepted; overall percentage unknown/);
+ assert.match(n.textContent,/估计基准 2026-10-15 的来源依据：当前范围完成数 未知\/13/);
+ assert.match(n.textContent,/不随来源刷新自动改写/);assert.deepEqual(p,before);
+ const invalid=structuredClone(p);invalid.business.source_record.field_provenance['progress.completed'].sha256='b'.repeat(64);
+ assert.match(mount([invalid]).textContent,/当前来源：受阻 · 业务进度 未知 \/ 13/);
+ const stale=structuredClone(p);stale.freshness.state='stale';const history=mount([stale]);
+ assert.match(history.textContent,/历史快照：受阻 · 业务进度 3 \/ 13/);
+ assert.doesNotMatch(history.textContent,/当前来源：受阻/);
+ for(const change of [q=>q.freshness.local_presence='removed_local',q=>q.declared.connection_read_allowed=false,q=>{q.business.source_record=null;q.operational.last_success=null;}]){
+  const unavailable=structuredClone(p);change(unavailable);const view=mount([unavailable]);
+  assert.match(view.textContent,/当前来源不可用：未知 · 业务进度 未知 \/ 未知/);
+  assert.match(view.textContent,/当前业务事实待核对；尚无可用成功快照/);
+  assert.doesNotMatch(view.textContent,/当前来源：|历史快照：|业务进度 3 \/ 13/);
+ }
+});
 test('rolling forecasts retain independent completion milestone automatic human lanes and explicit accessible uncertainty',()=>{
  const p=rolling(),before=structuredClone(p),r=timelineRows([p])[0];assert.equal(r.forecasts.length,4);assert.deepEqual(r.forecasts.map(l=>l.subkind),['completion','milestone','automatic','human']);assert.equal(r.planned.points.length,0);assert.equal(r.actual.points.length,0);assert.equal(r.forecasts[0].start.value,'2026-12-01');assert.equal(r.forecasts[3].points.length,0);assert.equal(r.dated,true);assert.equal(r.unscheduled,true);assert.deepEqual(p,before);
  const n=mount([p]);for(const expected of ['滚动估计（非截止日期）','估计基准 2026-10-15','下次复核 2026-10-22','信心 低','Asia/Tokyo','先补齐来源事实','仍有原编号任务未验收','按逐步完成推进','窗口最早','窗口最晚','前置条件：依赖所有者提供事实','验收范围：由本人实际操作并确认','依赖：自动验收：本地自动检查','尚非验收回执','实际验收日期未知'])assert.ok(n.textContent.includes(expected),expected);
