@@ -156,6 +156,7 @@ details[open]>summary {margin-bottom:16px}
 .project-summary{display:flex;flex-direction:column;gap:8px;min-width:0}
 .summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 20px}
 .summary-grid>div{min-width:0}
+.summary-grid>div>details{margin-top:8px}
 .summary-grid dd{margin-top:2px}
 .project-row>.project-summary{margin-top:8px}
 .project-row h2{font-size:1.142857rem;line-height:1.714286rem}
