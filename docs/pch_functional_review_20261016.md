@@ -1,8 +1,20 @@
 # PCH 功能优化审核包
 
-状态：**with_gaps**。正式 Web 已完成两个正式项目的只读任务、忙碌追问与结果重开验收；本次有限执行器已关闭，Web 和所有者登录保持。当前原 98 项为 **57 PASS / 4 BLOCKED / 37 UNVERIFIED**，G10 单独全通过。其余自然业务分支、真实设备及所有者最终接受仍未完成。下文保留各批次的原版本、计数和失败，历史记录不能替代此处当前结论。
+状态：**with_gaps**。正式 Web 已完成两个正式项目的只读任务、忙碌追问与结果重开验收；本次有限执行器已关闭，Web 和所有者登录保持。当前原 98 项为 **62 PASS / 4 BLOCKED / 32 UNVERIFIED**，G10 单独全通过。其余自然业务分支、真实设备及所有者最终接受仍未完成。下文保留各批次的原版本、计数和失败，历史记录不能替代此处当前结论。
 
-## 当前补充：任务结果、绑定会话与项目产物导航
+## 当前补充：正式 A/B 完整导航与键盘路径
+
+本批保持正式程序 `b47e54d2fde405d3b8b5df57b9d5ecd45cc98e398b486b0c16a0f670faee2037`，163 项运行指纹及原 Web 进程身份不变。复用既有所有者页面和三条已完成的只读任务，未重新发送任务、采集来源、登录或更新服务；四项受保护文件保持。
+
+两个项目均完成项目深链接、刷新恢复、任务卡到固定版本答复、绑定会话历史、来源与产物说明及原项目返回。Story 的两条同会话结果与 ActorForge 的单条结果严格分开；不存在项目和任务分别显示明确错误，实际返回项目列表。这里对应产物是已经记录的只读答复；没有独立文件绑定，不把项目登记产物入口当成任务文件证明。
+
+实际纯键盘完成两组“搜索项目→查看排期与关系→进入普通任务输入→返回概览”，记录全部 Tab / Shift+Tab 轨迹和关系区域滚动位置。可编辑的目标、范围输入不依赖截图；焦点有 3px 轮廓，任务与来源导航高亮及返回项目一致。任务、排期与关系、来源均有单独可复制的导航位置。执行器关闭时发送禁用且有原因；本次没有声称完成键盘发送／收回真实回复这一更强分支。1440×1050 的实际焦点截图已检查；既有适用的窄屏证据复用，真实设备、读屏与当前候选完整 200% 仍未验收。
+
+深链接直接相关的 29 个 GET 请求都有开始、响应和结束记录，其中 27 个 200、两个为故意不存在对象的 404；两个 404 的控制台提示符合测试预期。较大观察范围仍有缓冲截断、四项身份请求缺少捕获响应及一项孤立完成事件，不能据此宣称完整网络通过。另保留四条与前批次相同指纹的内联样式 CSP 拦截诊断，归属仍未证明；未改 CSP。验收等待器超时及加载完成前的过早输入属于观察失败，后续真实页面和相同请求终态另行保留，没有重复触发任务或掩盖失败。
+
+按原始要求复核 A-06、A-07、T-01、V-04、E-01；本批新增执行验收 5 项，范围变化、证据修正均为零。原 98 项为 62 PASS / 4 BLOCKED / 32 UNVERIFIED，G10 仍单独全通过。完整网络、自然业务、设备、较强键盘发送分支及最终本人接受继续保留；本地原始任务和截图不上传。复用磁盘依赖和已登录页，临时诊断已关闭、视口已恢复，没有新建环境或浏览器配置；本任务峰值内存未知。
+
+## 前批次补充：任务结果、绑定会话与项目产物导航
 
 正式程序已更新为 `b47e54d2fde405d3b8b5df57b9d5ecd45cc98e398b486b0c16a0f670faee2037`。项目任务卡明确标注“查看本次指令与只读答复”；结果页顶部可返回原项目任务区。新增的会话历史仅在主动读取时查询已有记录，严格按普通任务、相同非空项目和会话绑定筛选，以既有固定版本链接互相跳转。通用 Hub 会话入口明确标作其他会话；项目登记产物与任务答复分开，缺少独立文件绑定时如实说明。
 
@@ -218,7 +230,7 @@ Root 67 项 Python、45 项前端检查及独立审查通过。正式访客页�
 
 ## 98 项结果
 
-当前结果：**57 PASS、4 BLOCKED、37 UNVERIFIED；0 FAIL、0 NOT_APPLICABLE**，与唯一 State 的当前逐项结果一致。本表已同步前批次的 18 项滞后结论及 B-08、S-02、R-01；本批新增 D-01。既有表格修正不重复计为新增验收。早期 30/17/51 的正式范围回正、此前 37/10/51 的范围误判及所有成功／失败证据继续保留在历史批次。每 ID 只有一个当前总结果，全部必需分支成立才 PASS；没有增加新的正式身份或业务质量要求。原始 23 PASS / 18 FAIL / 25 BLOCKED / 32 UNVERIFIED 不覆盖、不改写。此计数不是 Goal 完成率。
+当前结果：**62 PASS、4 BLOCKED、32 UNVERIFIED；0 FAIL、0 NOT_APPLICABLE**，与唯一 State 的当前逐项结果一致。本表保留此前已验收的 57 项，本批实际补验新增 A-06、A-07、T-01、V-04、E-01 共 5 项；D-01 属于前批次。既有表格修正不重复计为新增验收。早期 30/17/51 的正式范围回正、此前 37/10/51 的范围误判及所有成功／失败证据继续保留在历史批次。每 ID 只有一个当前总结果，全部必需分支成立才 PASS；没有增加新的正式身份或业务质量要求。原始 23 PASS / 18 FAIL / 25 BLOCKED / 32 UNVERIFIED 不覆盖、不改写。此计数不是 Goal 完成率。
 
 | ID | 原始场景及预期 | 原结果 | 当前总结果 | 观察与限制；确定性证据入口 |
 | --- | --- | --- | --- | --- |
@@ -227,8 +239,8 @@ Root 67 项 Python、45 项前端检查及独立审查通过。正式访客页�
 | A-03 | 用正式名称、常用名称/关键词检索，再清空；搜索结果可解释；无结果可恢复；不误以为项目消失；别名不支持需记问题 | FAIL | PASS | 正式页面别名/名称唯一命中，明确无结果并清空恢复原43项；独立原范围复核通过。 |
 | A-04 | 切状态、来源、分组、列表/树/甘特后打开项目；当前筛选与选中项目清楚；切视图不丢项目；全部统计与筛选数量不混淆 | UNVERIFIED | PASS | 正式页面三组筛选/分组×三视图均核对DTO、全局/筛选数量、打开与返回；原失败保留。 |
 | A-05 | 从A到B再返回列表，用浏览器后退/前进；返回位置/筛选/项目上下文可理解；不反复迷路 | FAIL | PASS | 正式原目录历史项实际后退/前进，恢复筛选、焦点、合法滚动与项目上下文；新返回链接按自身历史语义验收。 |
-| A-06 | 打开项目/任务深链接、刷新，再访问不存在ID；合法链接可恢复对应对象；不存在有可理解返回路径 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.sections、nav.errors、preview.pinnedTaskReopen、ordinary.drafts |
-| A-07 | 从项目找任务/会话入口，再找对应产物；不依赖源码或外部提示；导航高亮和返回路径与用户任务一致 | BLOCKED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.oneClickTasks、nav.taskNavigationBefore、preview.materialReturn、u:sessions.py |
+| A-06 | 打开项目/任务深链接、刷新，再访问不存在ID；合法链接可恢复对应对象；不存在有可理解返回路径 | FAIL | PASS | 正式 A/B 项目及固定任务结果深链接／刷新、缺失项目与任务的实际返回通过；29 项相关 GET 完整对应。整体网络缺口保留。 证据：本批正式导航与键盘记录；原始预期和历史结果保留。 |
+| A-07 | 从项目找任务/会话入口，再找对应产物；不依赖源码或外部提示；导航高亮和返回路径与用户任务一致 | BLOCKED | PASS | 实际从项目任务卡找到各自只读答复及绑定会话历史，并按项目返回；答复是本次产物，未声明独立文件绑定。 证据：本批正式导航与键盘记录；原始预期和历史结果保留。 |
 | A-08 | 无身份、合法身份、权限不足分别看同一路径；状态与实际能力一致；不会“已连接”即暗示能执行；认证说明可理解 | BLOCKED | PASS | 同路径访客、有效所有者及退役执行器后的能力分别实际核对；连接不表示可执行，适用隔离检查保留拒绝／撤回授权分支。 |
 | B-01 | A/B各自用一句话回答项目用途和主要产出；页面支持回答；无需把技术阶段、路径或任务编号翻译成用途 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.definitions、u:project_definition.py |
 | B-02 | 辨认业务项目/Agent/基座/连接器/工作副本等角色；角色可说明、可多重；技术栈标签不代替本质角色 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：u:project_definition.py、responsive.layoutMatrix、edge.B02B03B05R03Definitions |
@@ -270,7 +282,7 @@ Root 67 项 Python、45 项前端检查及独立审查通过。正式访客页�
 | S-06 | 甘特缩放/筛选/窄窗查看；项目名、日期、未排期与关键动作仍可理解；不靠悬停才有全部信息 | UNVERIFIED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：management.calendarAndTimeline、responsive.layoutMatrix |
 | S-07 | 依赖改变但计划尚未调整；影响有依据；不未经操作改别人的安排或捏造实际完成时间 | UNVERIFIED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：management.confirmedForwardReverse、management.relationsOnlyRetraction、u:relations.mjs |
 | S-08 | 两个编辑者基于不同版本保存排期；冲突可恢复，不静默覆盖；测试只在隔离副本模拟 | PASS | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：management.twoEditors、parallel.managementIsolation |
-| T-01 | A/B分别从项目上下文找“下指令”；不必先有截图/图像批注才能表达普通项目任务；没有可用入口记缺口 | BLOCKED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.oneClickTasks、ordinary.drafts、keyboard.keyboardDraft |
+| T-01 | A/B分别从项目上下文找“下指令”；不必先有截图/图像批注才能表达普通项目任务；没有可用入口记缺口 | BLOCKED | PASS | 正式 A/B 普通任务文本入口、正确项目位置和可编辑目标／范围已核对，无图片前置；执行器关闭状态有准确说明。 证据：本批正式导航与键盘记录；原始预期和历史结果保留。 |
 | T-02 | 编写只读指令，核对项目/新建或继续/任务范围；用户看得懂接收对象与效果；后台绑定吻合；无歧义默认目标 | BLOCKED | PASS | 正式 Owner 页面在提交前显示项目、新建／续接模式、只读范围和效果，后台及原生绑定对应。 |
 | T-03 | 存草稿、离开、回到同一任务；内容可恢复且明确未发送；不偷偷创建模型任务 | BLOCKED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：ordinary.unsavedDraft、ordinary.drafts、parallel.activeDraftIsolation |
 | T-04 | 经页面真实发送一次有界只读任务；页面请求走真实通道，正确项目/会话真实接收；非后台替代调用 | BLOCKED | PASS | 正式页面三次提交均收到成功响应，并对应两个项目的实际任务、原生线程和回合；未用后台替代提交。 |
@@ -301,7 +313,7 @@ Root 67 项 Python、45 项前端检查及独立审查通过。正式访客页�
 | V-01 | 不滚动看首页，说出页面用途、项目入口、需要关注的事；首屏优先支持找项目和决策；同步/恢复说明不淹没核心内容 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.firstScreen、responsive.layoutMatrix |
 | V-02 | 打开项目首屏回答“是什么、现在怎样、能做什么”；定义、关键状态、主动作有明确顺序，不靠通读工程字段 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.definitions、nav.sections、responsive.layoutMatrix |
 | V-03 | 通读完整项目页，标记重复、长段落和无关模块；每块服务明确问题；能辨主次，重复状态不造成矛盾感 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.sections、responsive.layoutMatrix |
-| V-04 | 从长页找关系、排期、任务和来源；找路成本可记录；难找时提出基于任务的分层/拆页建议 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.sections、nav.taskNavigationBefore、keyboard.keyboardRelationships、keyboard.keyboardDraft |
+| V-04 | 从长页找关系、排期、任务和来源；找路成本可记录；难找时提出基于任务的分层/拆页建议 | FAIL | PASS | 正式 A/B 任务、排期与关系、来源独立导航及高亮／返回均实走，键盘和滚动成本已记录。 证据：本批正式导航与键盘记录；原始预期和历史结果保留。 |
 | V-05 | 解释内部ID、英文阶段、unknown与技术状态码；正常用户能理解；有必要的技术详情可深入查看；不替用户脑补 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：u:connection_view.mjs、u:relations.mjs、nav.errors、edge.D06D07SourceFailures |
 | V-06 | 比较列表/树/甘特中的同一个项目；名称、状态、日期含义一致，视图差异为决策服务 | UNVERIFIED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.directoryMatrix、management.calendarAndTimeline、u:timeline.mjs |
 | V-07 | 等待、空列表、错误、禁用、成功反馈逐一查看；状态清楚、有恢复路径，重要反馈不只靠颜色或瞬时toast | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.errors、ordinary.authenticationReasons、resilience.trueEmpty、resilience.emptyVersusUnavailable、keyboard.keyboardAnswerRecovery |
@@ -310,7 +322,7 @@ Root 67 项 Python、45 项前端检查及独立审查通过。正式访客页�
 | V-10 | 390×844窄窗浏览、导航、表单和长回复；内容有层次、无关键动作丢失；触控目标可用；真实手机另验 | UNVERIFIED | UNVERIFIED | 390 模拟视口通过，实际手机触控未验。 证据：responsive.layoutMatrix、parallel.activeDraftIsolation、preview.materialReturn |
 | V-11 | 200%缩放、对比度、焦点/禁用视觉检查；不丢内容/操作，文字可读，状态不只靠颜色；记录检查工具和限制 | UNVERIFIED | UNVERIFIED | 独立真实数据候选已补 A/B 实际 200% 首屏、焦点和禁用说明；四张底部浏览器截图无效，已改用私有显示原生画面核对关键内容和操作。历史对比度按未变颜色样式复用，非新像素测量；原正式页面分支仍未验。 |
 | V-12 | 判断方案图/截图预览与当前页面的关系；用户知道是设计、历史截图、导入结果还是当前现场；不可操作图不暗示可控制 | PASS | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：preview.savedCapture、preview.staleMaterial、preview.unversionedMaterial、u:captures.mjs、u:page_inventory.mjs |
-| E-01 | 只用键盘完成找项目、查看关系、进入指令和返回；焦点可见、顺序合任务、无陷阱；链接/按钮语义正确 | BLOCKED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：keyboard.keyboardRelationships、keyboard.keyboardDraft、keyboard.keyboardAnswerRecovery、keyboard.keyboardReturn |
+| E-01 | 只用键盘完成找项目、查看关系、进入指令和返回；焦点可见、顺序合任务、无陷阱；链接/按钮语义正确 | BLOCKED | PASS | 正式 A/B 纯键盘搜索→关系→普通输入→返回通过，3px 焦点可见；较强键盘发送／回复分支保留。 证据：本批正式导航与键盘记录；原始预期和历史结果保留。 |
 | E-02 | 展开面板/打开关闭对话框/触发错误；焦点进入/返回合理；状态与错误可被辅助技术感知 | UNVERIFIED | UNVERIFIED | 键盘和 AX 证据通过，真实读屏体验未验。 证据：keyboard.ownerDialog、keyboard.quietPolling、keyboard.keyboardAnswerRecovery、keyboard.keyboardRouteError |
 | E-03 | 页面等待期间和错误恢复后反复导航；loading不永远悬置；错误可重试；旧请求不恢复错误页面 | PASS | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：nav.errors、nav.lateResponse、parallel.lateResponseIsolation |
 | E-04 | 副本模拟401/403/404/409/5xx和超时；各自含义清楚；不泄露敏感内部细节、不把权限问题说成无数据 | FAIL | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：nav.errors、ordinary.authenticationReasons、ordinary.inputConflict、resilience.admittedSave500 |
