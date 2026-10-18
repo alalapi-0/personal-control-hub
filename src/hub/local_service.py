@@ -42,6 +42,7 @@ WEB_ASSETS = {
     "/assets/management.mjs": ("management.mjs", "text/javascript; charset=utf-8"),
     "/assets/relations.mjs": ("relations.mjs", "text/javascript; charset=utf-8"),
     "/assets/ordinary_tasks.mjs": ("ordinary_tasks.mjs", "text/javascript; charset=utf-8"),
+    "/assets/task_history.mjs": ("task_history.mjs", "text/javascript; charset=utf-8"),
     "/assets/timeline.mjs": ("timeline.mjs", "text/javascript; charset=utf-8"),
     "/assets/designs.js": ("designs.js", "text/javascript; charset=utf-8"),
     "/assets/host.js": ("host.js", "text/javascript; charset=utf-8"),

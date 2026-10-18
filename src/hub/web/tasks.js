@@ -1,6 +1,7 @@
 import {el,button,api,navigate} from './common.js';
 import {renderBusinessPreview} from './business_preview.mjs';
 import {renderOrdinaryTaskResult} from './ordinary_tasks.mjs';
+import {renderTaskHistory} from './task_history.mjs';
 
 export async function renderBusinessTaskPreview(target,task,{isCurrent=()=>true,expectedResultVersion=null,onVersionStale=()=>{}}={}){
   if(task.kind!=='story_exchange')return;
@@ -142,9 +143,10 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true,expecte
   catch(error){if(expectedResultVersion&&error.status===409&&error.code==='RESULT_VERSION_STALE'){stale();return;}throw error;}
   if(expectedResultVersion&&data.task?.result_version!==expectedResultVersion){stale();return;}
   if(!isCurrent())return;
-  const root=el('section',{className:'stack'},el('h1',{},'任务与结果'),el('a',{href:'#workbench'},'← 可视化工作台'),
+  const root=el('section',{className:'stack'},el('h1',{},'任务与结果'),
+    el('a',{href:data.task?.project?'#projects/'+encodeURIComponent(data.task.project)+'/tasks':'#workbench'},data.task?.project?'← 返回本项目任务区':'← 可视化工作台'),
     el('p',{className:'muted'},'浏览器关闭后读取同一请求核对结果。执行回复、实际检查与用户验收分别记录。'),
-    el('a',{href:'#sessions'},'核对既有 Codex 会话'));
+    el('a',{href:'#sessions'},'其他 Hub 原生会话（非本任务历史）'));
   const refresh=button('重新对账',async()=>{refresh.disabled=true;try{await renderTasks(target,options);focusTaskStatus(target,isCurrent);}catch{root.append(el('p',{role:'status'},'连接暂不可用；保留当前记录，请重连后核对。'));refresh.disabled=false;refresh.focus();}});
   refresh.setAttribute('data-task-focus','refresh');
   focusSnapshot=taskFocusSnapshot(target);
@@ -171,6 +173,7 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true,expecte
     el('p',{className:'caption'},'模式：'+({new:'新建会话',idle_continue:'继续明确的空闲会话',busy_feedback:'排队反馈'}[task.mode]||'待核对')+(task.parent?' · 前序任务 '+task.parent:'')),
     task.annotation_id?el('p',{className:'caption'},`保存意见 ${task.annotation_id} · revision ${task.annotation_revision}`):null,
     el('p',{className:'caption'},'用户验收：'+(reviewLabels[task.human_acceptance]||'待决定')+'。Git 交付另行核对。')].filter(Boolean));
+  if(task.kind==='ordinary_project')root.append(renderTaskHistory(task,{isCurrent,linkFor:taskResultLink}));
   if(recovery.needsReconcile){
     const retry=button('重新执行（尚未开放）',()=>{});retry.disabled=true;
     root.append(el('p',{className:'warning'},'任务运行或结果尚未确认。核对原请求、执行器和会话后再决定；此处不会重新执行。'),retry);
@@ -185,6 +188,10 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true,expecte
   if(!isCurrent()||expectedResultVersion&&previewAccepted===false)return;
   if(task.result)root.setAttribute('data-result-visible','true');
   const ordinary=renderOrdinaryTaskResult(task);if(ordinary)root.append(ordinary);
+  if(task.kind==='ordinary_project'){
+    root.append(el('p',{className:'muted'},'本任务记录未提供独立文件产物绑定；已记录的只读答复在上方单独展示。'),
+      el('a',{href:'#projects/'+encodeURIComponent(task.project)+'/sources'},'查看本项目来源与登记产物'));
+  }
   for(const control of data.controls||[]){
     const state=controlState(control,task,owner),label=el('h3',{},state.label),section=el('section',{className:'panel stack'},label,
       el('p',{},control.kind==='input'?(state.canAnswer?'请补充本次任务的信息。答复只送给这个任务，不会扩大执行权限。':state.canDecline?'本次输入请求不可答复。可拒绝本次请求，原任务指令仍保留。':'这条输入请求已结束或目前不可操作，请核对原任务状态。'):control.allowed_decisions.includes('accept')?'本次命令已与既有授权核对。允许只适用于这一次请求；项目、命令和网络权限不会扩大。':'请求权限尚未确认在已有授权内。本入口只允许拒绝，不会扩大项目、命令或网络权限。'),

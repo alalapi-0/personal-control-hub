@@ -265,6 +265,7 @@ async function projectTaskPanel(project,token){
       const {taskLabels,taskResultLink}=await import('./tasks.js');
       for(const task of tasks)panel.append(el('a',{className:'project-row',href:taskResultLink(task)},
         el('h3',{},taskLabels[task.status]||'任务状态未知'),el('p',{className:'caption'},task.id),
+        task.kind==='ordinary_project'?el('p',{},'查看本次指令与只读答复 · '+project.name):null,
         el('p',{},'用户验收：待决定')));
     }
   }catch(error){panel.append(el('p',{role:'status',className:'warning'},error.code==='TASK_STORE_MISSING'?'尚无任务记录。':'执行任务暂不可读取；项目来源信息仍可查看。'));}
