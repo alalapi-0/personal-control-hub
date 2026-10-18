@@ -196,6 +196,10 @@ export function projectSummary(project) {
   const snapshot=project?.last_success_snapshot;
   return {
     fieldExplanations:Object.fromEntries(Object.values(facts).filter(f=>f.explanation).map(f=>[f.key,f.explanation])),
+    blockerGap:facts.blockers.known?null:{
+      text:`${historical?'历史快照中':'当前'}尚无可核对的项目阻塞记录；阻塞原因和解除条件仍未知，不能据此判断没有阻塞。`,
+      technicalReason:current||historical?facts.blockers.reason:'当前来源或字段证据不可用。',
+    },
     fields:[
       ['来源阶段标识',value('current_work.phase')], ['来源轮次标识',value('current_work.round')],
       ['当前目标',value('current_work.objective')], ['工作状态',value('current_work.status')],

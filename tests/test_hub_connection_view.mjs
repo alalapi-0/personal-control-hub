@@ -495,6 +495,54 @@ test('summary never bypasses mismatched field proof or read denial',()=>{
   assert.equal(summaryFields(p)['当前目标'],'未知');
 });
 
+test('missing business blockers explain the gap without deriving a blocker from the next action',()=>{
+  const reasons=[
+    'Compatibility gaps and open questions are prose, not typed blocker records.',
+    'checkpoint.blocker is a native-goal impasse object, not the required typed business blocker array.',
+  ];
+  for(const reason of reasons){
+    const p=authoritative();setFact(p,'blockers',null);
+    p.business.unknown_fields.blockers=reason;
+    p.business.source_record.unknown_fields.blockers=reason;
+    const before=JSON.stringify(p),summary=projectSummary(p);
+    assert.equal(Object.fromEntries(summary.fields)['阻塞与待决定'],'未知');
+    assert.match(summary.blockerGap.text,/阻塞原因和解除条件.*未知/);
+    assert.match(summary.blockerGap.text,/不能据此判断没有阻塞/);
+    assert.equal(summary.blockerGap.technicalReason,reason);
+    assert.equal(Object.fromEntries(summary.fields)['下一步'],'Owner reviews version C');
+    assert.equal(JSON.stringify(p),before);
+  }
+});
+
+test('known blockers and explicit empty blockers retain their distinct answers',()=>{
+  const p=authoritative();let summary=projectSummary(p);
+  assert.equal(summary.blockerGap,null);
+  assert.match(Object.fromEntries(summary.fields)['阻塞与待决定'],/恢复条件：Owner replies/);
+  setFact(p,'blockers',[]);summary=projectSummary(p);
+  assert.equal(summary.blockerGap,null);
+  assert.equal(Object.fromEntries(summary.fields)['阻塞与待决定'],'来源未列出阻塞');
+});
+
+test('blocker gap uses historical reasons only for permitted history and suppresses hidden metadata',()=>{
+  const p=authoritative();setFact(p,'blockers',null);
+  p.business.unknown_fields.blockers='Current missing reason';
+  p.operational.last_success=structuredClone(p.business.source_record);
+  p.operational.last_success.unknown_fields.blockers='Historical missing reason';
+  p.operational.latest_attempt={success:false};
+  let summary=projectSummary(p);
+  assert.equal(summary.historical,true);
+  assert.match(summary.blockerGap.text,/历史快照/);
+  assert.equal(summary.blockerGap.technicalReason,'Historical missing reason');
+  for(const hidden of ['permission','removed']){
+    const copy=structuredClone(p);
+    if(hidden==='permission')copy.declared.connection_read_allowed=false;
+    else copy.freshness.local_presence='removed_local';
+    summary=projectSummary(copy);
+    assert.equal(summary.historical,false);
+    assert.equal(summary.blockerGap.technicalReason,'当前来源或字段证据不可用。');
+  }
+});
+
 const directoryHead={sequence:9,hash:'c'.repeat(64)};
 function directoryPage(total,offset) {
   return {head:{...directoryHead},total,offset,limit:100,
