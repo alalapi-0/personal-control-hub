@@ -102,6 +102,13 @@ await runBrowserJourney('o1',async({page,context,evidence,evidenceRoot,origin})=
   for(const id of [A,B]){
     await go('#projects/'+id);
     await heading(title(id)).waitFor();
+    const intro=main.getByRole('region',{name:'项目速览',exact:true});
+    assert.match(await intro.innerText(),/项目用途：/);
+    assert.match(await intro.innerText(),/工作状态：/);
+    const definitionToggle=main.locator('.project-definition-disclosure');
+    assert.equal(await definitionToggle.getAttribute('open'),null,'Full definition starts collapsed');
+    await definitionToggle.locator(':scope > summary').press('Enter');
+    assert.notEqual(await definitionToggle.getAttribute('open'),null,'Keyboard opens complete source-backed definition');
     const definition=main.locator('[aria-label="项目定义"]');
     const text=await definition.innerText();
     if(id===A){assert.match(text,/Synthetic reusable asset production/);assert.match(text,/合成甲/);assert.match(text,/Editable synthetic asset/);}

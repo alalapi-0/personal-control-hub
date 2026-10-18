@@ -255,6 +255,15 @@ function definitionView(project){
         el('p',{className:'caption'},field.source.kind==='registry'?'项目登记明确声明':'项目来源明确声明'),
         el('p',{className:'caption'},'观察时间：'+dataTime(field.source.observed_at))):null))));
 }
+function projectIntro(project){
+  const definition=projectDefinition(project),purpose=definition.find(field=>field.key==='purpose'),
+    aliases=definition.find(field=>field.key==='aliases'),summary=projectSummary(project),fields=Object.fromEntries(summary.fields);
+  return el('section',{className:'project-intro stack','aria-label':'项目速览'},
+    el('p',{},'项目用途：'+(purpose?.text??'来源未提供')),
+    el('p',{className:attention(project)?'warning':'caption'},
+      `${summary.historical?'历史快照状态':'工作状态'}：${fields['工作状态']} · ${sourceLine(project)}`),
+    aliases?.known?el('p',{className:'caption'},'已确认别名：'+aliases.text):null);
+}
 function factsView(project,history=false){
   return el('div',{className:'stack'},...projectFacts(project,{history}).map((group,index)=>el(index<2?'section':'details',{className:'stack'},
     el(index<2?'h3':'summary',{},group.title),el('dl',{},...group.fields.map(f=>el('div',{},el('dt',{},f.label),
@@ -445,13 +454,13 @@ async function projectDetail(id,token,section='overview',reconcile=false){
       el('a',{className:'button'+(key===section?' primary':''),href:base+(key==='overview'?'':'/'+key),
         'aria-current':key===section?'page':null},label)));
   let body;
-  if(section==='overview')body=[definitionView(p),el('section',{className:'panel stack'},el('h2',{},'当前工作与下一步'),summaryView(p)),el('details',{},el('summary',{},'日期与排期'),timeView),relations];
+  if(section==='overview')body=[el('details',{className:'project-definition-disclosure'},el('summary',{},'项目定义与依据'),definitionView(p)),el('section',{className:'panel stack'},el('h2',{},'当前工作与下一步'),summaryView(p)),el('details',{},el('summary',{},'日期与排期'),timeView),relations];
   else if(section==='tasks')body=[taskPanel];
   else if(section==='schedule')body=[timeView,relations,managementPanel,renderBusinessPlan(p)];
   else body=[sources,el('section',{className:'panel stack'},el('h2',{},'全部来源字段'),fields),renderPageInventory(p),renderCaptures(p,captures),design,
     diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields,quality:p.business.quality})];
   const next=el('section',{className:'stack'},el('a',{href:lastDirectoryHash},'← 所有项目'),el('h1',{},p.name),
-    el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},el('a',{className:'button primary',href:base+'/tasks'},'编写与查看任务'),refreshButton([p])),
+    section==='overview'?projectIntro(p):el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},el('a',{className:'button primary',href:base+'/tasks'},'编写与查看任务'),refreshButton([p])),
     navigation,identityNotice,exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,...body);
   if(reconcile)replaceProjection(main,next);else main.replaceChildren(next);
   reconcileVisible=()=>projectDetail(id,token,section,true);
