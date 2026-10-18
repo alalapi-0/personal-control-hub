@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import copy
+import contextlib
 import hashlib
+import importlib.util
 import io
 import json
 import sys
@@ -188,6 +190,131 @@ class LocalServiceIntegrationTests(unittest.TestCase):
         blocked = next(item for item in listing["data"]["projects"] if item["project_id"] == "manga-localizer")
         self.assertEqual(blocked["business"]["normalized_status"], "unknown")
         self.assertEqual(blocked["operational"]["latest_attempt"]["disposition"], "disabled")
+
+    def test_default_assembly_browses_and_refreshes_without_model_execution(self):
+        # Replace only the disposable server from setUp; retain its real fixtures.
+        self.stop()
+        spec = importlib.util.spec_from_file_location(
+            "integration_server_entry", Path(__file__).resolve().parents[1] / "scripts/hub_server.py")
+        entry = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(entry)
+        from hub.codex_adapter import AppServerAdapter, ReadonlyAppServerAdapter
+        from hub.ordinary_runtime import OrdinaryRuntime
+        from hub.task_service import TaskService
+        from hub.task_store import TaskStore
+        from hub.task_worker import TaskWorker
+
+        class InertObserver:
+            def start(self):
+                pass
+
+            def stop(self):
+                pass
+
+        with contextlib.ExitStack() as stack:
+            forbidden = []
+            for target, methods in (
+                    (AppServerAdapter, ("__init__", "open")),
+                    (ReadonlyAppServerAdapter, ("__init__", "open")),
+                    (OrdinaryRuntime, ("__init__", "start")),
+                    (TaskWorker, ("__init__", "run_one")),
+                    (entry, ("ordinary_provider_status",))):
+                for method in methods:
+                    forbidden.append(stack.enter_context(mock.patch.object(
+                        target, method, side_effect=AssertionError("implicit model/worker startup"))))
+
+            # No ordinary grant/runtime is the supported unavailable-model setup.
+            self.server, _, preview = entry.assemble_server(
+                self.root, port=0, services={
+                    "designs": self.designs, "host_observer": InertObserver(),
+                    "owner_auth": OwnerAuth(provider=lambda: self.owner_proof)})
+            thread = None
+            try:
+                self.projects = self.server.projects
+                self.assertIs(type(self.projects), ProjectService)
+                self.assertIs(type(self.server.tasks), TaskService)
+                self.assertIs(type(self.server.tasks.store), TaskStore)
+                self.assertEqual(self.server.tasks.store.root, self.root)
+                self.assertIsNone(preview)
+                thread = self.thread = threading.Thread(
+                    target=self.server.serve_forever, kwargs={"poll_interval": 0.01})
+                thread.start()
+                self.cookie, self.csrf = None, None
+
+                status, headers, guest = self.call(path="/api/session", authenticated=False)
+                self.assertEqual(status, 200)
+                self.cookie = headers["Set-Cookie"].split(";", 1)[0]
+                self.csrf = guest["data"]["csrf_token"]
+                status, _, identity = self.call(path="/api/identity")
+                self.assertEqual(status, 200)
+                self.assertFalse(identity["data"]["owner_authenticated"])
+                self.assertEqual(identity["data"]["capabilities"]["owner_session"]["status"], "guest")
+                self.session()
+                status, _, identity = self.call(path="/api/identity")
+                self.assertEqual(status, 200)
+                self.assertTrue(identity["data"]["owner_authenticated"])
+                self.assertFalse(identity["data"]["execution_enabled"])
+                for capability in ("ordinary_execution", "provider", "worker_runtime"):
+                    self.assertFalse(identity["data"]["capabilities"][capability]["available"])
+                self.assertEqual(identity["data"]["capabilities"]["ordinary_execution"]["reason_code"],
+                                 "ORDINARY_EXECUTION_DISABLED")
+
+                ledger = self.root / "data/connections/connection_refresh.sqlite3"
+                status, _, before = self.call()
+                self.assertEqual(status, 200)
+                self.assertEqual(before["data"]["total"], 2)
+                status, _, detail = self.call(path="/api/projects/fixture-project")
+                self.assertEqual(status, 200)
+                self.assertEqual(detail["data"]["business"]["normalized_status"], "unknown")
+                self.assertFalse(ledger.exists())
+                business = copy.deepcopy(self.source_fixture.business)
+                business["current_work"]["next_action"] = "Review freshly collected synthetic source"
+                (self.source_fixture.base / "fixture-project/STATE.yaml").write_text(
+                    yaml.safe_dump(business, sort_keys=False))
+                command = {"request_id": "fixture-no-model-refresh", "project_ids": ["fixture-project"],
+                           "expected_head": {"sequence": 0, "hash": GENESIS_HASH}}
+                status, _, result = self.call("POST", "/api/refresh", command)
+                self.assertEqual(status, 200)
+                self.assertEqual(result["data"]["request"]["status"], "FINISHED")
+                self.assertEqual(result["data"]["appended_project_ids"], ["fixture-project"])
+                self.assertEqual(result["data"]["resolver_errors"], {})
+                ledger_digest = hashlib.sha256(ledger.read_bytes()).hexdigest()
+                with mock.patch.object(SourceResolver, "refresh", side_effect=AssertionError(
+                        "GET/retry must use the committed source result")) as refresh:
+                    status, _, listing = self.call()
+                    self.assertEqual(status, 200)
+                    row = next(item for item in listing["data"]["projects"]
+                               if item["project_id"] == "fixture-project")
+                    status, _, detail = self.call(path="/api/projects/fixture-project")
+                    self.assertEqual(status, 200)
+                    self.assertEqual(project_facts(row), project_facts(detail["data"]))
+                    self.assertEqual(row["business"]["normalized_status"], "active")
+                    self.assertEqual(row["business"]["next_action"], business["current_work"]["next_action"])
+                    self.assertTrue(row["business"]["source_record"]["success"])
+                    self.assertEqual(row["business"]["source_record"]["business"], business)
+                    status, _, retried = self.call("POST", "/api/refresh", command)
+                    self.assertEqual(status, 200)
+                    self.assertEqual(retried["data"]["appended_project_ids"], [])
+                    refresh.assert_not_called()
+                self.assertEqual(hashlib.sha256(ledger.read_bytes()).hexdigest(), ledger_digest)
+                status, _, identity = self.call(path="/api/identity")
+                self.assertEqual(status, 200)
+                self.assertFalse(identity["data"]["execution_enabled"])
+                self.assertFalse(identity["data"]["capabilities"]["ordinary_execution"]["available"])
+                self.assertFalse(self.server.tasks.store.path.exists())
+            finally:
+                try:
+                    if thread is not None and thread.is_alive():
+                        self.server.shutdown()
+                finally:
+                    try:
+                        self.server.server_close()
+                    finally:
+                        if thread is not None and thread.ident is not None:
+                            thread.join(2)
+                            self.assertFalse(thread.is_alive())
+                        for method in forbidden:
+                            method.assert_not_called()
 
 
 if __name__ == "__main__":
