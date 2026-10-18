@@ -175,3 +175,34 @@ test('an unrelated HTTP409 is not mislabeled as fixed result staleness',()=>setu
   await assert.rejects(renderTasks(root,{taskId:'task-a',expectedResultVersion:V}),error=>error.code==='TASK_SCOPE_CHANGED');
   assert.doesNotMatch(root.textContent,/固定任务结果已变化/);
 }));
+
+const defaultText=node=>node.tag==='details'?node.children.find(n=>n.tag==='summary')?.textContent||'':(node.text??node.children.map(defaultText).join(''));
+test('ordinary result titles use full bound goal with exact metadata retained only in collapsed details',()=>setup(async({root,setReader,calls})=>{
+  const original={...task(),id:'request-unique',thread_id:'thread-unique',turn_id:'turn-unique',parent:'parent-unique',
+    annotation_id:'annotation-unique',annotation_revision:13,
+    feedback:{sequence:2,parent_binding:{turn_id:'bound-turn-unique'},writer_status:'known'},
+    task_spec:{...task().task_spec,parent_task_id:'parent-unique',objective:'😀'.repeat(130)+'\nOriginal full goal'}};
+  const before=structuredClone(original);setReader(()=>response({task:original,controls:[],events:[]}));
+  await renderTasks(root,{taskId:original.id,expectedResultVersion:V});
+  const visible=defaultText(root);
+  for(const value of ['request-unique','thread-unique','turn-unique','completed','parent-unique','annotation-unique','bound-turn-unique'])
+    assert.equal(visible.includes(value),false,value+' must not be default metadata');
+  assert.match(visible,/执行已完成|检查完成/);assert.match(visible,/模式：新建会话/);assert.match(visible,/排队意见已执行/);
+  assert.equal(walk(root).find(n=>n.tag==='h2').textContent,'😀'.repeat(119)+'…');
+  assert.ok(visible.includes(original.task_spec.objective));assert.ok(visible.includes(original.result.response));
+  const details=walk(root).find(n=>n.tag==='details'&&n.children[0].textContent==='任务技术详情');
+  assert.equal(details.attrs.open,undefined);
+  assert.deepEqual(JSON.parse(details.children[1].textContent),{request_id:original.id,thread_id:original.thread_id,turn_id:original.turn_id,
+    provider_status:original.provider_status,parent:original.parent,parent_task_id:original.task_spec.parent_task_id,
+    annotation_id:original.annotation_id,annotation_revision:13,feedback:original.feedback});
+  assert.equal(link(root,'本次结果固定链接').attrs.href,taskResultLink(original));
+  assert.equal(calls[0].url,taskReadPath(original.id,V));assert.deepEqual(original,before);
+}));
+test('ordinary list cards name goals while legacy cards and identity links stay exact',()=>setup(async({root,setReader})=>{
+  const ordinary=task(),legacy={...task(),id:'legacy-request',kind:'legacy',project:'legacy-project'};
+  setReader(()=>response({tasks:[ordinary,legacy],tasks_available:true}));await renderTasks(root);
+  const ordinaryLink=walk(root).find(n=>n.tag==='a'&&n.attrs.href===taskResultLink(ordinary));
+  assert.equal(ordinaryLink.children[0].textContent,ordinary.task_spec.objective);assert.equal(defaultText(ordinaryLink).includes(ordinary.id),false);
+  const legacyLink=walk(root).find(n=>n.tag==='a'&&n.attrs.href===taskResultLink(legacy));
+  assert.equal(legacyLink.children[0].textContent,'legacy-project');assert.match(legacyLink.textContent,/legacy-request/);
+}));

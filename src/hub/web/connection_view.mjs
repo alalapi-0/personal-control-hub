@@ -93,6 +93,14 @@ export function projectTasks(tasks, projectId) {
 export function projectDefinition(project) {
   const labels={official_name:'正式名称',purpose:'项目用途',outputs:'主要产出',roles:'项目角色',
     aliases:'已确认别名',primary_project_id:'所属主项目',working_copies:'工作副本'};
+  const reasons={
+    'No published long-term definition field.':'尚无已发布的项目定义。',
+    'Registry explicitly publishes an unknown value.':'项目登记明确将此项标记为未知。',
+    'Registry explicitly publishes unknown.':'项目登记明确将此项标记为未知。',
+    'Registry definition value is not a nonempty string.':'项目登记未提供有效的非空文字。',
+    'Source explicitly publishes unknown.':'项目来源明确将此项标记为未知。',
+    "Current source definition is unavailable under this project's read policy.":'按本项目读取规则，当前无法核对定义来源。',
+  };
   return Object.entries(labels).map(([key,label])=>{
     const field=project?.definition?.fields?.[key];
     const known=field?.state==='known' && field?.source && field.value!==null && field.value!==undefined;
@@ -100,8 +108,10 @@ export function projectDefinition(project) {
     if(field?.state==='empty')text='来源明确未列出';
     if(field?.state==='not_applicable')text='来源声明不适用';
     if(field?.state==='unavailable')text='当前定义来源不可用';
+    const reason=field?.reason||(!known?'需要项目来源明确声明，当前不作推断。':null);
+    const reasonText=Object.hasOwn(reasons,reason)?reasons[reason]:reason;
     return {key,label,text,known:Boolean(known),state:field?.state||'missing',
-      reason:field?.reason||(!known?'需要项目来源明确声明，当前不作推断。':null),source:field?.source||null};
+      reason,reasonText,technicalReason:reasonText!==reason?reason:null,source:field?.source||null};
   });
 }
 
@@ -234,11 +244,16 @@ export function validateSyncStatus(directory, value) {
 
 export function scheduleSummary(schedule){
   if(!schedule?.available)return '自动刷新状态暂不可用；无法确认计时器、错过触发或补跑情况。';
-  const timer=schedule.timer,service=schedule.service;
+  const timer=schedule.timer??{},service=schedule.service??{};
   const state=({active:'当前运行',paused:'当前暂停',unavailable:'当前状态不可用'})[schedule.status]||'当前状态未知';
   const hours=schedule.freshness_target?.interval_hours;
   const interval=[12,24].includes(hours)?`计划间隔：${hours} 小时；`:'计划间隔尚未核实；';
-  return `自动刷新：${state}；${interval}开机登录后启用状态：${timer.UnitFileState}；最近触发记录：${timer.LastTriggerUSec||'未知'}；下次计划：${timer.NextElapseUSecRealtime||'未知'}。最近服务结果：${service.Result}，退出码 ${service.ExecMainStatus}。日历真实触发、退出登录后恢复和错过补跑尚未验收；计划时间不代表已经执行。`;
+  const enabled=({enabled:'已启用',disabled:'未启用',masked:'已被停用',static:'由其他服务按需启动',
+    'enabled-runtime':'本次登录期间启用'})[timer.UnitFileState]||'尚未核实';
+  const result=service.Result==='success'&&service.ExecMainStatus===0?'进程正常结束，仍需核对项目读取结果'
+    :['exit-code','signal','core-dump','timeout','watchdog','start-limit-hit','resources','oom-kill','protocol'].includes(service.Result)?'未正常完成，请核对项目读取结果'
+    :'尚未核实，请查看技术详情';
+  return `自动刷新：${state}；${interval}开机登录后启用状态：${enabled}。最近服务结果：${result}。触发记录、下次计划和退出状态可展开技术详情核对；计时器记录不能证明真实触发、退出登录后恢复和错过补跑均正常，计划时间不代表已经执行。`;
 }
 
 export function requestSummary(request){

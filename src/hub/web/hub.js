@@ -185,6 +185,7 @@ function syncOverview(){
     c.excluded?el('details',{},el('summary',{},'查看排除项及原因'),el('ul',{},...syncStatus.excluded.map(row=>el('li',{},`${projectNames.get(row.project_id)||row.project_id}：${({missing_registration:'缺少当前登记',removed_local:'已从本地移除',removed_local_no_probe:'已从本地移除，禁止探测',disabled:'接入已停用',summary_disabled:'汇总已停用',connection_read_disabled:'当前来源读取未获允许',cloud:'云项目，不读取本地来源',outside_frozen_scope:'不属于当前固定范围',legacy_noncurrent_root:'历史入口，不属于当前范围'})[row.reason]||row.reason}`)))):null,
     el('details',{},el('summary',{},'自动刷新与请求恢复'),
       el('p',{className:'caption'},scheduleSummary(syncStatus.schedule)),
+      el('details',{},el('summary',{},'自动刷新技术详情'),el('pre',{},JSON.stringify(syncStatus.schedule,null,2))),
       el('p',{},'最近成功读取（不代表业务验收）：'+requestSummary(syncStatus.recovery?.last_success)),
       el('p',{},'最近失败读取：'+requestSummary(syncStatus.recovery?.last_failure)),
       ...(syncStatus.recovery?.open_requests||[]).map(r=>el('p',{className:'warning'},'未结束请求：'+requestSummary(r)+(r.can_resume?'可用原请求 ID 续接。':'请先核对权限和来源版本。')))),
@@ -201,18 +202,24 @@ function syncOverview(){
 }
 function summaryView(project,compact=false){
   const summary=projectSummary(project);
+  const identifiers=new Set(['来源阶段标识','来源轮次标识']);
   const shorten=text=>compact && text.length>140 ? text.slice(0,140)+'…（详情中查看完整内容）' : text;
   return el('div',{className:'project-summary'},
     el('p',{className:attention(project)?'warning':'caption'},'来源与内容：'+summary.quality),
-    el('dl',{className:'summary-grid'},...summary.fields.map(([label,text])=>el('div',{},
+    el('dl',{className:'summary-grid'},...summary.fields.filter(([label])=>!identifiers.has(label)).map(([label,text])=>el('div',{},
       el('dt',{},label),el('dd',{className:text==='未知'?'muted':''},shorten(text))))),
-    el('p',{className:'caption'},'阶段与轮次按来源原文展示；未附含义说明时，不作推断。'),
+    el('details',{},el('summary',{},'来源阶段与轮次标识'),
+      el('p',{className:'caption'},'以下保留来源原文；标识本身不代表已提供阶段含义说明，不据此推断工作状态。'),
+      el('dl',{},...summary.fields.filter(([label])=>identifiers.has(label)).map(([label,text])=>
+        el('div',{},el('dt',{},label),el('dd',{},text))))),
     el('p',{className:'caption'},'最近读取尝试：'+dataTime(summary.observedAt)),
     el('p',{className:summary.historical?'warning':'caption'},'最后成功快照：'+dataTime(summary.snapshotAt)+(summary.snapshotAgeSeconds!==null?` · 距今 ${Math.round(summary.snapshotAgeSeconds/3600*10)/10} 小时`:'')),
     summary.failure?el('p',{className:'warning'},'来源状态：'+summary.failure):null,
     summary.recovery?el('p',{className:'caption'},'恢复方式：'+summary.recovery):null,
     el('p',{className:'caption'},'来源事实更新时间：'+dataTime(summary.factAt)),
-    !compact?el('p',{className:'caption'},scheduleSummary(syncStatus?.schedule)):null);
+    !compact?el('p',{className:'caption'},scheduleSummary(syncStatus?.schedule)):null,
+    !compact&&syncStatus?.schedule?el('details',{},el('summary',{},'自动刷新技术详情'),
+      el('pre',{},JSON.stringify(syncStatus.schedule,null,2))):null);
 }
 function projectRow(p,reasons=[]){
   const summary=projectSummary(p),fields=Object.fromEntries(summary.fields),purpose=projectDefinition(p).find(f=>f.key==='purpose');
@@ -226,7 +233,8 @@ function definitionView(project){
   return el('section',{className:'panel stack','aria-label':'项目定义'},el('h2',{},'这是什么项目'),
     el('dl',{className:'summary-grid'},...projectDefinition(project).map(field=>el('div',{},
       el('dt',{},field.label),el('dd',{className:field.known?'':'muted'},field.text),
-      field.reason?el('p',{className:'caption'},field.reason):null,
+      field.reasonText?el('p',{className:'caption'},field.technicalReason?field.reasonText:'来源说明：'+field.reasonText):null,
+      field.technicalReason?el('details',{},el('summary',{},field.label+'的技术说明'),el('p',{},field.technicalReason)):null,
       field.source?el('details',{},el('summary',{},field.label+'的依据'),
         el('p',{className:'caption'},field.source.kind==='registry'?'项目登记明确声明':'项目来源明确声明'),
         el('p',{className:'caption'},'观察时间：'+dataTime(field.source.observed_at))):null))));
@@ -252,7 +260,7 @@ async function projectTaskPanel(project,token){
   }
   try{
     const identity=await api('/api/identity');
-    const {renderOrdinaryTasks}=await import('./ordinary_tasks.mjs');
+    const {renderOrdinaryTasks,ordinaryTaskLabel}=await import('./ordinary_tasks.mjs');
     if(token!==generation)return panel;
     const ordinary=await renderOrdinaryTasks(project,{isCurrent:()=>token===generation});
     if(token!==generation)return panel;
@@ -264,7 +272,8 @@ async function projectTaskPanel(project,token){
     else{
       const {taskLabels,taskResultLink}=await import('./tasks.js');
       for(const task of tasks)panel.append(el('a',{className:'project-row',href:taskResultLink(task)},
-        el('h3',{},taskLabels[task.status]||'任务状态未知'),el('p',{className:'caption'},task.id),
+        el('h3',{},task.kind==='ordinary_project'?ordinaryTaskLabel(task):task.id),
+        el('p',{className:'caption'},taskLabels[task.status]||'任务状态未知'),
         task.kind==='ordinary_project'?el('p',{},'查看本次指令与只读答复 · '+project.name):null,
         el('p',{},'用户验收：待决定')));
     }

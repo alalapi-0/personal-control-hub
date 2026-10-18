@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {renderOrdinaryTasks,renderOrdinaryTaskResult,validOrdinarySpec,ordinaryTaskMatches} from '../src/hub/web/ordinary_tasks.mjs';
+import {renderOrdinaryTasks,renderOrdinaryTaskResult,validOrdinarySpec,ordinaryTaskMatches,ordinaryTaskLabel} from '../src/hub/web/ordinary_tasks.mjs';
 
 class N{
   constructor(tag){this.tag=tag;this.children=[];this.attrs={};this.events={};this.value='';this.disabled=false;this.hidden=false;this.isConnected=true;this.text='';}
@@ -398,4 +398,62 @@ test('feedback description IDs belong to each rendered form and survive draft re
   assert.notEqual(button(first,'发送普通任务').attrs['aria-describedby'],button(reopened,'发送普通任务').attrs['aria-describedby']);
   assert.ok(sendReason(reopened));assert.equal(field(reopened,'任务目标').value,'A precise objective');
   assert.equal(state.calls.filter(call=>call.path==='/api/tasks').length,0);
+}));
+
+// Native <details> contents are retained in the DOM but absent from the default view.
+const defaultText=node=>node.tag==='details'?node.children.find(n=>n.tag==='summary')?.textContent||'':node.text+node.children.filter(Boolean).map(defaultText).join('');
+test('ordinary labels use only bound goals and truncate Unicode without changing the original spec',()=>{
+  const value=parentTask(),original='  '+ '😀'.repeat(121)+'\n完整目标  ';
+  value.task_spec.objective=original;const before=structuredClone(value);
+  const label=ordinaryTaskLabel(value);assert.equal(Array.from(label).length,120);
+  assert.equal(label,'😀'.repeat(119)+'…');assert.deepEqual(value,before);
+  assert.equal(ordinaryTaskLabel({...value,project:'other'}),'任务目标尚未提供');
+  assert.equal(ordinaryTaskLabel({...value,task_spec:{project_id:'a',objective:'   '}}),'任务目标尚未提供');
+  assert.equal(ordinaryTaskLabel({...value,task_spec:{project_id:'a',objective:'整理\n 本项目 任务'}}),'整理 本项目 任务');
+});
+test('parent labels disambiguate matching goals while preserving exact IDs and rejecting foreign bindings',()=>setup(async()=>{
+  const initial=context();initial.parents=[parentTask('a','original-one'),parentTask('a','original-two'),parentTask('b','foreign')];
+  const state=service(initial),node=await state.render(),options=field(node,'续接任务').children;
+  assert.deepEqual(options.map(n=>n.value),['','original-one','original-two']);
+  assert.deepEqual(options.slice(1).map(n=>n.textContent),['Read project a（任务编号：original-one）','Read project a（任务编号：original-two）']);
+  assert.doesNotMatch(defaultText(node),/foreign/);
+  for(const option of options.slice(1))assert.equal(option.attrs.title,'Read project a');
+  const originalLabels=new Map(options.slice(1).map(option=>[option.value,option.textContent]));
+  state.context.parents.reverse();await button(node,'核对任务条件').fire('click');
+  for(const option of field(node,'续接任务').children.slice(1))assert.equal(option.textContent,originalLabels.get(option.value));
+  state.context.parents=[parentTask('a','unique-parent')];
+  state.context.parents[0].task_spec.objective='😀'.repeat(130)+'\n完整原始目标';
+  await button(node,'核对任务条件').fire('click');
+  const unique=field(node,'续接任务').children[1];
+  assert.equal(unique.value,'unique-parent');assert.equal(unique.attrs.title,state.context.parents[0].task_spec.objective);
+  assert.equal(unique.textContent,'😀'.repeat(119)+'…');assert.doesNotMatch(unique.textContent,/unique-parent/);
+  assert.equal(state.calls.every(call=>call.body===undefined),true);
+}));
+for(const [code,meaning]of [
+  ['ORDINARY_EXECUTION_DISABLED','普通只读任务执行器尚未启用'],
+  ['TASK_PROVIDER_UNAVAILABLE','模型服务当前不可用'],
+  ['ORDINARY_PROJECT_GRANT_REQUIRED','尚未登记普通只读任务授权'],
+  ['LOW_SPACE','存储可用空间不足'],
+  ['ORDINARY_INPUT_CHANGED','任务输入已变化'],
+  ['NEW_UNKNOWN_REASON','任务条件尚未确认']
+])test('readiness reason '+code+' explains only known facts and keeps raw draft diagnostics collapsed',()=>setup(async()=>{
+  const saved=spec(),initial={...context(),ready:false,reason_code:code};
+  initial.draft={...initial.draft,revision:7,value:saved};
+  const state=service(initial),node=await state.render(),visible=defaultText(node);
+  assert.ok(visible.includes(meaning));assert.doesNotMatch(visible,new RegExp(code+'|'+saved.request_id+'|草稿请求：'));
+  const details=walk(node).find(n=>n.tag==='details'&&n.children[0].textContent==='任务条件技术详情');
+  assert.equal(details.attrs.open,undefined);
+  assert.deepEqual(JSON.parse(details.children[1].textContent),{reason_code:code,request_id:saved.request_id,draft_revision:7});
+  assert.equal(button(node,'发送普通任务').disabled,true);assert.equal(button(node,'保存任务草稿').disabled,false);
+  assert.equal(field(node,'任务目标').value,saved.objective);assert.equal(state.calls.every(call=>call.body===undefined),true);
+  if(code==='NEW_UNKNOWN_REASON')assert.doesNotMatch(visible,/执行器尚未启用|模型服务当前不可用|授权已过期|登录失败/);
+  if(code==='ORDINARY_EXECUTION_DISABLED')assert.doesNotMatch(visible,/登录失败|所有者未连接/);
+}));
+test('ordinary result preserves full objective and reply without repeating request metadata',()=>setup(()=>{
+  const saved=spec();saved.objective='😀'.repeat(150)+'\n完整目标';
+  const original={...taskFor(saved),result:{response:'原始回复\n保留全部内容'},provider_status:'completed'};
+  const before=structuredClone(original),node=renderOrdinaryTaskResult(original);
+  assert.ok(node.textContent.includes(saved.objective));assert.equal(field(node,'普通任务执行回复').textContent,original.result.response);
+  assert.doesNotMatch(node.textContent,/本次请求：|ordinary-saved-a/);assert.deepEqual(original,before);
+  assert.ok(walk(node).some(n=>n.attrs.href==='#projects/a/tasks?parent_task_id='+saved.request_id));
 }));

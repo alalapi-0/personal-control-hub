@@ -2,7 +2,23 @@
 
 状态：**with_gaps**。正式 Web 已完成两个正式项目的只读任务、忙碌追问与结果重开验收；本次有限执行器已关闭，Web 和所有者登录保持。当前原 98 项为 **62 PASS / 4 BLOCKED / 32 UNVERIFIED**，G10 单独全通过。其余自然业务分支、真实设备及所有者最终接受仍未完成。下文保留各批次的原版本、计数和失败，历史记录不能替代此处当前结论。
 
-## 当前补充：动态偏好、对比度适用性与缩放工具边界
+## 当前补充：可读任务标题与分层技术说明
+
+正式 Web 已更新为程序 `d1ac9ec4cd940e5bc7039662f58125c0d30a82583aedf46cc8973a3eeb73303e`。本批只改四个前端模块及相关检查：普通任务以已绑定项目的原任务目标辨认，标题最多 120 个 Unicode 字符，完整指令与回复继续保留。续接选项的实际目标值与固定结果链接不变；同名选项只在需要区分时显示准确任务编号。请求、会话、回合及条件代码移入可展开的技术详情。
+
+内置项目定义说明、已知执行条件和刷新状态改为中文；未知代码不猜原因，原始值仍可核对。来源阶段与轮次原文移至独立详情，不把标识推断成业务含义。来源提供的业务目标、英文原文、缩写和实际回复均未被改写。
+
+Root 282 项前端检查通过。工程候选和三项精确版本替换经过独立复核后，只正常重启 Web 一次；135 项源码及 28 项固定运行依赖核对通过。后台接口、所有者认证和采集代码未改，执行器保持关闭，任务库、登记、存储登记和计时器配置保持。原所有者连接在新程序中继续有效，没有重新认证。
+
+当前 A/B 概览、任务及既有固定结果的有界路径覆盖 1440×1050、1280×800 桌面与 390×844 模拟窄屏。两项目草稿与实际回复指纹前后相同，选项绑定和结果版本链接保持，技术详情的键盘展开有 3px 焦点，所测页面无文档横向溢出。两次定位器等待在页面仍加载时提前结束，已依据后续页面和请求确认完成，没有重复导航；一次窄屏定位器点击只留下焦点，键盘恢复及后来可见目标的原生点击通过，保留该观测限制。
+
+本批捕获的 75 个当前 GET 均有开始、200 响应与结束。诊断中出现一条与历史同签名的 CSP 样式警告，归属仍未确定；缓冲发生过截断，不能由这些局部记录宣称全程 console/network 通过。未为此放宽 CSP。完整 E-08 继续未通过；新版本真实 200%、实际手机、读屏、自然业务及最终本人接受仍有缺口。
+
+V-05 仍为 UNVERIFIED：系统文案和编号层级已有修复，但原报告指出的 B 项目英文工程目标及 H1/H2 缩写含义尚未得到完整可读说明，不能把原文保留当作解释完成。V-08 的既有隔离长回复／容器与样式证据按未变范围复用；本次新增的是标题边界检查和实际 A/B 内容保持，没有重跑极端内容浏览器矩阵。原 98 项仍为 62 PASS / 4 BLOCKED / 32 UNVERIFIED，G10 单列，新增整项验收、范围及证据修正均为零。
+
+本批复用现有依赖和 Owner 浏览器，只新增必要的源码版本，没有环境、模型、浏览器或账号配置副本。视口已恢复，诊断已停用，计算会话已重置；现有 Owner 页和正式 Web 按用途保留，峰值内存未知。
+
+## 前批次补充：动态偏好、对比度适用性与缩放工具边界
 
 本批保持正式程序 `b47e54d2fde405d3b8b5df57b9d5ecd45cc98e398b486b0c16a0f670faee2037`、原进程和所有者连接，163 项运行指纹与四项受保护文件不变。没有发送任务、采集来源、重新认证或更新服务。
 
@@ -242,7 +258,7 @@ Root 67 项 Python、45 项前端检查及独立审查通过。正式访客页�
 
 ## 98 项结果
 
-当前结果：**62 PASS、4 BLOCKED、32 UNVERIFIED；0 FAIL、0 NOT_APPLICABLE**，与唯一 State 的当前逐项结果一致。本表保留已验收的 62 项；前批次补验 A-06、A-07、T-01、V-04、E-01 五项，本批只补当前动态偏好和对比度适用性及缩放工具限制，无新增整项验收。D-01 属于更早批次。既有表格修正不重复计为新增验收。早期 30/17/51 的正式范围回正、此前 37/10/51 的范围误判及所有成功／失败证据继续保留在历史批次。每 ID 只有一个当前总结果，全部必需分支成立才 PASS；没有增加新的正式身份或业务质量要求。原始 23 PASS / 18 FAIL / 25 BLOCKED / 32 UNVERIFIED 不覆盖、不改写。此计数不是 Goal 完成率。
+当前结果：**62 PASS、4 BLOCKED、32 UNVERIFIED；0 FAIL、0 NOT_APPLICABLE**，与唯一 State 的当前逐项结果一致。本表保留已验收的 62 项；此前补验 A-06、A-07、T-01、V-04、E-01 五项，本批交付系统文案与技术详情层级修复，V-05 的来源含义及其他缺口保留，无新增整项验收。D-01 属于更早批次。既有表格修正不重复计为新增验收。早期 30/17/51 的正式范围回正、此前 37/10/51 的范围误判及所有成功／失败证据继续保留在历史批次。每 ID 只有一个当前总结果，全部必需分支成立才 PASS；没有增加新的正式身份或业务质量要求。原始 23 PASS / 18 FAIL / 25 BLOCKED / 32 UNVERIFIED 不覆盖、不改写。此计数不是 Goal 完成率。
 
 | ID | 原始场景及预期 | 原结果 | 当前总结果 | 观察与限制；确定性证据入口 |
 | --- | --- | --- | --- | --- |
@@ -326,13 +342,13 @@ Root 67 项 Python、45 项前端检查及独立审查通过。正式访客页�
 | V-02 | 打开项目首屏回答“是什么、现在怎样、能做什么”；定义、关键状态、主动作有明确顺序，不靠通读工程字段 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.definitions、nav.sections、responsive.layoutMatrix |
 | V-03 | 通读完整项目页，标记重复、长段落和无关模块；每块服务明确问题；能辨主次，重复状态不造成矛盾感 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.sections、responsive.layoutMatrix |
 | V-04 | 从长页找关系、排期、任务和来源；找路成本可记录；难找时提出基于任务的分层/拆页建议 | FAIL | PASS | 正式 A/B 任务、排期与关系、来源独立导航及高亮／返回均实走，键盘和滚动成本已记录。 证据：本批正式导航与键盘记录；原始预期和历史结果保留。 |
-| V-05 | 解释内部ID、英文阶段、unknown与技术状态码；正常用户能理解；有必要的技术详情可深入查看；不替用户脑补 | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：u:connection_view.mjs、u:relations.mjs、nav.errors、edge.D06D07SourceFailures |
+| V-05 | 解释内部ID、英文阶段、unknown与技术状态码；正常用户能理解；有必要的技术详情可深入查看；不替用户脑补 | FAIL | UNVERIFIED | 系统说明和任务编号层级已在正式 A/B 修复；B 来源英文工程目标与 H1/H2 含义仍缺完整可读解释，保留未验。 |
 | V-06 | 比较列表/树/甘特中的同一个项目；名称、状态、日期含义一致，视图差异为决策服务 | UNVERIFIED | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.directoryMatrix、management.calendarAndTimeline、u:timeline.mjs |
 | V-07 | 等待、空列表、错误、禁用、成功反馈逐一查看；状态清楚、有恢复路径，重要反馈不只靠颜色或瞬时toast | FAIL | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：nav.errors、ordinary.authenticationReasons、resilience.trueEmpty、resilience.emptyVersusUnavailable、keyboard.keyboardAnswerRecovery |
 | V-08 | 长项目名、长回复、多关系、很多unknown；不截掉关键对象/操作，不破版；长内容可定位和返回 | UNVERIFIED | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：responsive.longReplies、responsive.layoutMatrix、resilience.longReplyIsolation |
 | V-09 | 1440×1050与1280×800观察首屏及滚动；主要任务和反馈可用；大截图不能掩盖小窗的入口缺失 | PASS | PASS | 正式A/B概览与排期，两指定桌面尺寸，首屏与稳定918/700px滚动、16截图及59GET复核通过。 |
 | V-10 | 390×844窄窗浏览、导航、表单和长回复；内容有层次、无关键动作丢失；触控目标可用；真实手机另验 | UNVERIFIED | UNVERIFIED | 390 模拟视口通过，实际手机触控未验。 证据：responsive.layoutMatrix、parallel.activeDraftIsolation、preview.materialReturn |
-| V-11 | 200%缩放、对比度、焦点/禁用视觉检查；不丢内容/操作，文字可读，状态不只靠颜色；记录检查工具和限制 | UNVERIFIED | UNVERIFIED | 旧候选真实 Chrome 200% 及限定样式对比度证据保留；当前正式 Owner 缩放快捷键无效，设置页受工具 HTTP/HTTPS 策略限制，真实 200% 仍未验。 |
+| V-11 | 200%缩放、对比度、焦点/禁用视觉检查；不丢内容/操作，文字可读，状态不只靠颜色；记录检查工具和限制 | UNVERIFIED | UNVERIFIED | 旧候选真实 Chrome 200% 及限定样式对比度证据保留；前批正式 Owner 设置页受工具策略限制，本批未重试。新版本正式 200% 仍未验。 |
 | V-12 | 判断方案图/截图预览与当前页面的关系；用户知道是设计、历史截图、导入结果还是当前现场；不可操作图不暗示可控制 | PASS | UNVERIFIED | 适用确定性机制已验证；正式 A/B、当前运行版本或用户理解分支尚未完成。 证据：preview.savedCapture、preview.staleMaterial、preview.unversionedMaterial、u:captures.mjs、u:page_inventory.mjs |
 | E-01 | 只用键盘完成找项目、查看关系、进入指令和返回；焦点可见、顺序合任务、无陷阱；链接/按钮语义正确 | BLOCKED | PASS | 正式 A/B 纯键盘搜索→关系→普通输入→返回通过，3px 焦点可见；较强键盘发送／回复分支保留。 证据：本批正式导航与键盘记录；原始预期和历史结果保留。 |
 | E-02 | 展开面板/打开关闭对话框/触发错误；焦点进入/返回合理；状态与错误可被辅助技术感知 | UNVERIFIED | UNVERIFIED | 键盘和 AX 证据通过，真实读屏体验未验。 证据：keyboard.ownerDialog、keyboard.quietPolling、keyboard.keyboardAnswerRecovery、keyboard.keyboardRouteError |
@@ -341,7 +357,7 @@ Root 67 项 Python、45 项前端检查及独立审查通过。正式访客页�
 | E-05 | 提交校验失败或网络失败后再次编辑；输入保留；错误定位；不重复提交，不静默清空 | PASS | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：management.dateRecovery、management.twoEditors、keyboard.keyboardAnswerRecovery、resilience.offlineDraftRecovery、resilience.admittedSave500 |
 | E-06 | 浏览器离线/重连边界；可读旧数据标历史；在线恢复可核对；不调整工作站网络/VPN | PASS | PASS | 原始所需隔离/效果边界已按上述实际证据验证；不扩张为正式/live或最终用户接受。 证据：nav.errors、resilience.offlineDraftRecovery |
 | E-07 | 打开reduced-motion观察状态变化；非必要动效减少，状态和功能仍完整 | UNVERIFIED | PASS | 既有隔离及正式 PASS 保留；本批新会话历史的动态偏好、键盘读取、草稿和答复保持已核对。未重复计为新验收。 |
-| E-08 | 全程检查console异常和network关键交换；新旧错误分开；请求目标、方法、授权、返回处理匹配实际动作 | UNVERIFIED | BLOCKED | 正式 owner/正式业务运行分支未就绪；合成及真实 provider 局部证据不能替代完整正式验收。 证据：nav.errors、parallel.expectedBrowserErrors、parallel.secondaryNetwork、resilience.runtimeDiagnostics、edge.edgeDiagnostics、helper.console、helper.network |
+| E-08 | 全程检查console异常和network关键交换；新旧错误分开；请求目标、方法、授权、返回处理匹配实际动作 | UNVERIFIED | BLOCKED | 正式 Owner 及只读任务已有局部证据，但完整原范围交换、CSP 归属与全程诊断未核实；本批 75 个完整 GET 不替代，截断和同签名警告保留。 |
 | E-09 | 空项目/无任务/无关系/无排期/服务未启用；各自说明和下一步正确；入口缺失不写NOT_APPLICABLE | UNVERIFIED | UNVERIFIED | 合成真空目录、无任务/关系/排期及禁用服务通过；正式已有状态在当前候选上的页面分支未复核。 证据：resilience.trueEmpty、resilience.emptyVersusUnavailable、ordinary.runtimeAndRevocation |
 | E-10 | 回看测试产生的本地效果和原始证据；不公开DB/消息/凭据/私密路径/敏感截图；不误改/清理其他任务 | PASS | PASS | 只交付审阅过的安全代码/测试/此摘要；原始 State、DB、消息、凭据、路径清单与截图留本地。 证据：u:materials.py、u:preview_policy.py、helper.fixtureExit |
 

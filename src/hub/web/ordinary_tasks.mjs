@@ -7,6 +7,35 @@ const clone=value=>structuredClone(value);
 const sameSpec=(left,right)=>left&&right&&Object.keys(left).length===Object.keys(right).length
   &&Object.entries(left).every(([key,value])=>right[key]===value);
 const requestId=()=>`ordinary-${crypto.randomUUID()}`;
+// Labels are presentation only; the bound original TaskSpec remains untouched.
+export function ordinaryTaskLabel(task){
+  const spec=task?.task_spec;
+  if(task?.kind!=='ordinary_project'||!id(task.project)||spec?.project_id!==task.project
+    ||typeof spec.objective!=='string'||!spec.objective.trim())return '任务目标尚未提供';
+  const characters=Array.from(spec.objective.trim().replace(/\s+/gu,' '));
+  return characters.length>120?characters.slice(0,119).join('')+'…':characters.join('');
+}
+const readinessReasons={
+  ORDINARY_EXECUTION_DISABLED:'普通只读任务执行器尚未启用；仍可保存草稿。',
+  TASK_WRITER_CHECK_UNCONFIGURED:'后台尚未配置任务写入冲突检查；仍可保存草稿。',
+  TASK_WORKER_UNCONFIGURED:'任务后台执行器尚未就绪；仍可保存草稿。',
+  TASK_PROVIDER_UNAVAILABLE:'模型服务当前不可用；仍可保存草稿。',
+  TASK_STORAGE_STATUS_UNAVAILABLE:'任务存储状态暂无法核对；仍可保留草稿。',
+  TASK_STORAGE_BLOCKED:'任务存储当前不可写；请核对存储条件。',
+  LOW_SPACE:'任务存储可用空间不足；请核对存储条件。',
+  SPACE_UNAVAILABLE:'任务存储可用空间暂无法核对。',
+  ORDINARY_PROJECT_GRANT_REQUIRED:'本项目尚未登记普通只读任务授权；仍可保存草稿。',
+  ORDINARY_PROJECT_GRANT_AMBIGUOUS:'本项目存在多份普通任务授权，需先核对适用授权。',
+  INVALID_ORDINARY_GRANT:'本项目普通任务授权未通过校验，需核对授权内容。',
+  GRANT_EXPIRED:'本项目普通任务授权已过期，需核对有效授权。',
+  GRANT_BINDING_REJECTED:'普通任务授权与当前项目登记不一致，需核对授权绑定。',
+  GRANT_VERSION_STALE:'普通任务授权绑定的项目入口已变化，需重新核对授权。',
+  ORDINARY_INPUT_REJECTED:'登记的任务输入未通过只读校验，需核对输入。',
+  ORDINARY_INPUT_CHANGED:'登记的任务输入已变化，需核对当前输入和授权。',
+  ORDINARY_INPUT_UNAVAILABLE:'登记的任务输入暂无法读取，需核对输入是否可用。'
+};
+const readinessReason=code=>Object.hasOwn(readinessReasons,code)?readinessReasons[code]
+  :'任务条件尚未确认；请展开任务条件技术详情核对后台记录。';
 export function ordinaryFailure(error={}){
   if(error.code==='ORDINARY_SPEC_INVALID')return '请先填写完整的任务目标和范围，再保存或切换草稿；当前输入保留。';
   if(error.status===401)return '请连接所有者后重试；当前输入保留。';
@@ -40,7 +69,6 @@ export function renderOrdinaryTaskResult(task){
     el('p',{},'执行位置：'+(task.execution_location||'尚未提供')),
     el('dl',{},...Object.entries({'任务目标':spec.objective,'任务范围':spec.scope,'允许效果':'只读答复，不改写项目文件'}).map(([label,value])=>
       el('div',{},el('dt',{},label),el('dd',{},value||'原指令尚不可用')))),
-    el('p',{className:'caption'},'本次请求：'+task.id),
     el('a',{href:'#projects/'+encodeURIComponent(spec.project_id||task.project)+'/tasks'},'返回项目任务区'));
   if(typeof task.result?.response==='string'){
     panel.append(el('h3',{},'执行回复'),
@@ -174,7 +202,12 @@ export async function renderOrdinaryTasks(project,{isCurrent=()=>true,request=ap
   }
   function fill(){objective.value=spec?.objective||'';scope.value=spec?.scope||'';renderOptions();}
   function renderOptions(){
-    parent.replaceChildren(el('option',{value:''},'本项目新任务'),...ownedParents().map(task=>el('option',{value:task.id},task.id)));
+    const parents=ownedParents(),labels=parents.map(ordinaryTaskLabel),counts=new Map();
+    for(const label of labels)counts.set(label,(counts.get(label)||0)+1);
+    parent.replaceChildren(el('option',{value:''},'本项目新任务'),...parents.map((task,index)=>{
+      const label=labels[index];
+      return el('option',{value:task.id,title:task.task_spec.objective},label+(counts.get(label)>1?'（任务编号：'+task.id+'）':''));
+    }));
     parent.value=parentId||'';
     const values=allowedModes();mode.replaceChildren(...values.map(value=>el('option',{value},modes[value]||value)));
     if(spec&&!values.includes(spec.mode))mode.append(el('option',{value:spec.mode,disabled:true},'原任务模式当前不可用'));
@@ -226,10 +259,12 @@ export async function renderOrdinaryTasks(project,{isCurrent=()=>true,request=ap
     conditions.replaceChildren(...[el('p',{},'执行位置：'+(context?.execution_location||'尚未核对')),
       el('p',{},owner?'所有者已连接':'请连接所有者后保存草稿或发送；本地输入保留。'),
       el('p',{},context?.ready?'只读任务条件已就绪':'普通任务暂不可发送；可用时仍需核对授权范围。'),
-      context?.reason_code?el('p',{className:'caption'},'条件代码：'+context.reason_code):null,
+      context?.reason_code?el('p',{className:'caption'},readinessReason(context.reason_code)):null,
       spec&&!validOrdinarySpec(spec)?el('p',{className:'warning'},'请填写非空任务目标（最多 2000 字符）和任务范围（最多 1000 字符），并选择对应任务模式。'):null,
       inputMessage?el('p',{className:inputChanged?'warning':'caption'},inputMessage):null,
-      spec?el('p',{className:'caption'},'草稿请求：'+spec.request_id+' · 版本 '+revision):null].filter(Boolean));
+      context||spec?el('details',{},el('summary',{},'任务条件技术详情'),el('pre',{},JSON.stringify({
+        reason_code:context?.reason_code??null,request_id:spec?.request_id??null,draft_revision:revision
+      },null,2))):null].filter(Boolean));
     if(backupWarning)conditions.append(el('p',{className:'warning'},backupWarning));
   }
   async function loadContext(preserve=false,target=parentId,allowBlockedReset=false){

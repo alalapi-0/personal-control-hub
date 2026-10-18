@@ -1,6 +1,6 @@
 import {el,button,api,navigate} from './common.js';
 import {renderBusinessPreview} from './business_preview.mjs';
-import {renderOrdinaryTaskResult} from './ordinary_tasks.mjs';
+import {renderOrdinaryTaskResult,ordinaryTaskLabel} from './ordinary_tasks.mjs';
 import {renderTaskHistory} from './task_history.mjs';
 
 export async function renderBusinessTaskPreview(target,task,{isCurrent=()=>true,expectedResultVersion=null,onVersionStale=()=>{}}={}){
@@ -159,21 +159,25 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true,expecte
     root.append(el('p',{className:'warning'},data.test_gate?'隔离测试入口；不代表真实项目执行授权。':'执行入口尚未开放；需要有效的项目授权、隔离与后台配置。'));
     if(data.tasks_available===false)root.append(el('p',{className:'warning'},'目前无法读取任务账本；原记录未被初始化或覆盖。'));
     else if(!data.tasks.length)root.append(el('div',{className:'empty'},el('h2',{},'尚无已接收任务')));
-    for(const t of data.tasks)root.append(el('a',{href:taskResultLink(t),className:'panel stack'},el('h2',{},t.project),el('p',{},t.id),el('p',{},lifecycleLabel(t)),
-      t.kind==='ordinary_project'?el('p',{},'普通只读任务：'+(t.task_spec?.objective||'原指令待核对')):null));
+    for(const t of data.tasks)root.append(el('a',{href:taskResultLink(t),className:'panel stack'},el('h2',{},t.kind==='ordinary_project'?ordinaryTaskLabel(t):t.project),t.kind==='ordinary_project'?el('p',{},'项目：'+t.project):el('p',{},t.id),el('p',{},lifecycleLabel(t))));
     return;
   }
   const task=data.task;root.setAttribute('data-task-record',task.id);root.setAttribute('data-task-status',lifecycleLabel(task));
   if(previousStatus&&previousStatus!==lifecycleLabel(task)){const notice=document.getElementById?.('notice');if(notice)taskMessage(notice,'任务状态：'+lifecycleLabel(task));}
   if(task.result_version)root.append(el('a',{href:taskResultLink(task)},'本次结果固定链接'));
   let owner=!recovery.blocked;const actions=[];
-  root.append(...[el('h2',{},task.id),el('p',{className:task.status==='checks_complete'?'success':'warning',role:'status','aria-live':'polite','aria-label':'任务执行状态',tabIndex:-1},lifecycleLabel(task)),
+  root.append(...[el('h2',{},task.kind==='ordinary_project'?ordinaryTaskLabel(task):task.id),el('p',{className:task.status==='checks_complete'?'success':'warning',role:'status','aria-live':'polite','aria-label':'任务执行状态',tabIndex:-1},lifecycleLabel(task)),
     task.worker_state==='lease_expired'?el('p',{className:'warning'},'执行器租约已过期；需要核对精确进程与会话，不能重新发送。'):null,
-    el('p',{},'项目：'+task.project),el('p',{className:'caption'},`会话 ${task.thread_id||'尚未绑定'} · 回合 ${task.turn_id||'尚未绑定'} · 原生状态 ${task.provider_status||'尚未取得'}`),
-    el('p',{className:'caption'},'模式：'+({new:'新建会话',idle_continue:'继续明确的空闲会话',busy_feedback:'排队反馈'}[task.mode]||'待核对')+(task.parent?' · 前序任务 '+task.parent:'')),
-    task.annotation_id?el('p',{className:'caption'},`保存意见 ${task.annotation_id} · revision ${task.annotation_revision}`):null,
+    el('p',{},'项目：'+task.project),task.kind==='ordinary_project'?null:el('p',{className:'caption'},`会话 ${task.thread_id||'尚未绑定'} · 回合 ${task.turn_id||'尚未绑定'} · 原生状态 ${task.provider_status||'尚未取得'}`),
+    el('p',{className:'caption'},'模式：'+({new:'新建会话',idle_continue:'继续明确的空闲会话',busy_feedback:'排队反馈'}[task.mode]||'待核对')+(task.parent&&task.kind!=='ordinary_project'?' · 前序任务 '+task.parent:'')),
+    task.annotation_id&&task.kind!=='ordinary_project'?el('p',{className:'caption'},`保存意见 ${task.annotation_id} · revision ${task.annotation_revision}`):null,
     el('p',{className:'caption'},'用户验收：'+(reviewLabels[task.human_acceptance]||'待决定')+'。Git 交付另行核对。')].filter(Boolean));
-  if(task.kind==='ordinary_project')root.append(renderTaskHistory(task,{isCurrent,linkFor:taskResultLink}));
+  if(task.kind==='ordinary_project')root.append(el('details',{},el('summary',{},'任务技术详情'),el('pre',{},JSON.stringify({
+    request_id:task.id,thread_id:task.thread_id??null,turn_id:task.turn_id??null,provider_status:task.provider_status??null,
+    parent:task.parent??null,parent_task_id:task.task_spec?.parent_task_id??null,
+    annotation_id:task.annotation_id??null,annotation_revision:task.annotation_revision??null,
+    feedback:task.feedback??null
+  },null,2))),renderTaskHistory(task,{isCurrent,linkFor:taskResultLink}));
   if(recovery.needsReconcile){
     const retry=button('重新执行（尚未开放）',()=>{});retry.disabled=true;
     root.append(el('p',{className:'warning'},'任务运行或结果尚未确认。核对原请求、执行器和会话后再决定；此处不会重新执行。'),retry);
@@ -181,7 +185,7 @@ export async function renderTasks(target,{taskId=null,isCurrent=()=>true,expecte
   if(task.feedback){
     const state=feedbackState(task.status);
     root.append(el('section',{className:'panel stack'},el('h3',{},state.label),el('p',{},state.detail),
-      el('p',{className:'caption'},'顺序 '+task.feedback.sequence+' · 绑定前序回合 '+(task.feedback.parent_binding?.turn_id||'尚未确认')),
+      task.kind==='ordinary_project'?null:el('p',{className:'caption'},'顺序 '+task.feedback.sequence+' · 绑定前序回合 '+(task.feedback.parent_binding?.turn_id||'尚未确认')),
       task.feedback.writer_status==='unknown'?el('p',{className:'warning'},'外部写者状态未确认；保留意见，禁止启动竞争任务。'):null));
   }
   const previewAccepted=await renderBusinessTaskPreview(root,task,{isCurrent,expectedResultVersion,onVersionStale:stale});

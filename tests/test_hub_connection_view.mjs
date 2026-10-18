@@ -207,6 +207,30 @@ test('long-term definitions require their own source and retain explicit empty, 
   assert.ok(!JSON.stringify(projectDefinition(p)).includes('current_work.objective'));
 });
 
+test('definition explanations translate only known product messages and retain original source wording',()=>{
+  const builtins=[
+    ['No published long-term definition field.','尚无已发布的项目定义。'],
+    ['Registry explicitly publishes an unknown value.','项目登记明确将此项标记为未知。'],
+    ['Registry explicitly publishes unknown.','项目登记明确将此项标记为未知。'],
+    ['Registry definition value is not a nonempty string.','项目登记未提供有效的非空文字。'],
+    ['Source explicitly publishes unknown.','项目来源明确将此项标记为未知。'],
+    ["Current source definition is unavailable under this project's read policy.",'按本项目读取规则，当前无法核对定义来源。'],
+  ];
+  for(const [reason,explanation]of builtins){
+    const p={definition:{fields:{purpose:{value:null,state:'unknown',reason}}}};
+    const before=structuredClone(p),field=projectDefinition(p).find(f=>f.key==='purpose');
+    assert.equal(field.known,false);assert.equal(field.text,'来源未提供');
+    assert.equal(field.reason,reason);assert.equal(field.reasonText,explanation);
+    assert.equal(field.technicalReason,reason);assert.deepEqual(p,before);
+  }
+  for(const reason of ['Original source says: waiting for a human decision.','来源等待本人选择。']){
+    const p={definition:{fields:{purpose:{value:null,state:'unknown',reason}}}};
+    const field=projectDefinition(p).find(f=>f.key==='purpose');
+    assert.equal(field.reasonText,reason);assert.equal(field.reason,reason);
+    assert.equal(field.technicalReason,null);assert.equal(field.known,false);
+  }
+});
+
 test('summary displays only the source-proven current responsible role and verbatim stage identifiers',()=>{
   const p=authoritative();setFact(p,'current_work.owner_role','Owner / 来源负责者');
   setFact(p,'current_work.phase','阶段 Ω / M2');setFact(p,'current_work.round','轮次 第四 / R4');
@@ -523,7 +547,12 @@ test('schedule and recovery text retains failure and unverified real-trigger bou
   assert.ok(scheduleSummary({available:false,reason:'query_failed'}).includes('无法确认'));
   const text=scheduleSummary({available:true,status:'active',timer:{UnitFileState:'disabled',
     LastTriggerUSec:'',NextElapseUSecRealtime:'tomorrow'},service:{Result:'exit-code',ExecMainStatus:2}});
-  for(const value of ['当前运行','disabled','退出码 2','尚未验收','计划时间不代表已经执行'])assert.ok(text.includes(value));
+  for(const value of ['当前运行','未启用','未正常完成','不能证明','计划时间不代表已经执行'])assert.ok(text.includes(value));
+  assert.doesNotMatch(text,/disabled|exit-code|tomorrow/);
+  const successful=scheduleSummary({available:true,status:'active',timer:{UnitFileState:'enabled'},service:{Result:'success',ExecMainStatus:0}});
+  assert.match(successful,/已启用.*进程正常结束，仍需核对项目读取结果/);
+  const unrecognized=scheduleSummary({available:true,status:'new-state',timer:{UnitFileState:'new-kind'},service:{Result:'new-result',ExecMainStatus:0}});
+  assert.match(unrecognized,/状态未知.*尚未核实/);assert.doesNotMatch(unrecognized,/已启用|进程正常结束/);
   const request=requestSummary({request_id:'same-id',started_at:'2026-10-14T00:00:00Z',finished_at:null,
     completed:1,failed:1,remaining_project_ids:['b'],authority_drift:true});
   for(const value of ['same-id','尚未结束','失败 1','剩余 1','原请求不能直接续接'])assert.ok(request.includes(value));
