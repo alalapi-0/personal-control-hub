@@ -191,6 +191,190 @@ class LocalServiceIntegrationTests(unittest.TestCase):
         self.assertEqual(blocked["business"]["normalized_status"], "unknown")
         self.assertEqual(blocked["operational"]["latest_attempt"]["disposition"], "disabled")
 
+    def test_confirmed_relation_cannot_restore_revoked_source_or_task_authority(self):
+        self.stop()
+        related_root, _ = self.source_fixture.add("related-project")
+        denied_root = self.source_fixture.base / "manga-localizer"
+        protected_sources = {path: path.read_bytes() for root in (related_root, denied_root)
+                             for path in (root / "STATE.yaml", root / "hub.connection.yaml")}
+        config = self.root / "data/connections/management_config.yaml"
+        config.parent.mkdir(parents=True, exist_ok=True)
+        base = yaml.safe_load((Path(__file__).resolve().parents[1] /
+                               "data/connections/management_config.yaml").read_text())
+        base.update(schema_version="1.0", projects={})
+        base.pop("revision", None)
+        base.pop("history", None)
+        config.write_text(yaml.safe_dump(base, sort_keys=False))
+        spec = importlib.util.spec_from_file_location(
+            "relation_integration_entry", Path(__file__).resolve().parents[1] / "scripts/hub_server.py")
+        entry = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(entry)
+        from hub import connection_sources
+        from hub.codex_adapter import AppServerAdapter, ReadonlyAppServerAdapter
+        from hub.management_store import ManagementStore
+        from hub.ordinary_runtime import OrdinaryRuntime
+        from hub.task_service import TaskService
+        from hub.task_store import TaskStore
+        from hub.task_worker import TaskWorker
+
+        class InertObserver:
+            pass
+
+        with contextlib.ExitStack() as stack:
+            forbidden = []
+            for target, methods in ((AppServerAdapter, ("__init__", "open")),
+                                    (ReadonlyAppServerAdapter, ("__init__", "open")),
+                                    (OrdinaryRuntime, ("__init__", "start")),
+                                    (TaskWorker, ("__init__", "run_one")),
+                                    (entry, ("ordinary_provider_status",))):
+                for method in methods:
+                    forbidden.append(stack.enter_context(mock.patch.object(
+                        target, method, side_effect=AssertionError("relation conferred execution authority"))))
+            input_read = stack.enter_context(mock.patch(
+                "hub.ordinary_tasks._read_input", side_effect=AssertionError("ungranted task input read")))
+            source_reads = []
+            real_read = connection_sources._safe_relative_read
+
+            def allowed_source_read(root, relative, **kwargs):
+                source_reads.append((root, relative))
+                self.assertEqual(root, self.source_fixture.base / "fixture-project")
+                return real_read(root, relative, **kwargs)
+
+            stack.enter_context(mock.patch.object(connection_sources, "_safe_relative_read",
+                                                  side_effect=allowed_source_read))
+            self.server, _, _ = entry.assemble_server(self.root, port=0, services={
+                "designs": self.designs, "host_observer": InertObserver(),
+                "owner_auth": OwnerAuth(provider=lambda: self.owner_proof)})
+            thread = None
+            try:
+                self.projects = self.server.projects
+                self.assertIs(type(self.projects), ProjectService)
+                self.assertIs(type(self.server.tasks), TaskService)
+                self.assertIs(type(self.server.tasks.store), TaskStore)
+                # Register only disposable storage, without any grants or runtime.
+                self.server.tasks.store.register_storage()
+                thread = self.thread = threading.Thread(target=self.server.serve_forever,
+                                                         kwargs={"poll_interval": 0.01})
+                thread.start()
+                self.cookie, self.csrf = None, None
+                value = {"priority": None, "start_date": None, "end_date": None,
+                         "watch": None, "order": None, "layout": None,
+                         "relations": {"belongs_to": None, "depends_on": [],
+                                       "related_to": ["related-project"], "independent": None}}
+
+                def management_command(ident, project="fixture-project"):
+                    status, _, state = self.call(path="/api/management?project_id=" + project)
+                    self.assertEqual(status, 200)
+                    return {"request_id": ident, "expected_revision": state["data"]["revision"],
+                            "expected_hash": state["data"]["config_hash"], "project_id": project,
+                            "operation": "set", "value": value}
+
+                def ordinary_command(project, ident):
+                    return {"kind": "ordinary_project", "request_id": ident, "project_id": project,
+                            "objective": "Read synthetic registered inputs", "scope": "Return text only",
+                            "effect": "read_only", "input_version": "0" * 64,
+                            "mode": "new", "parent_task_id": None}
+
+                def boundaries(label, revoked):
+                    before_config = config.read_bytes()
+                    before_tasks = self.server.tasks.store.path.read_bytes()
+                    self.cookie, self.csrf = None, None
+                    status, _, denied = self.call(authenticated=False)
+                    self.assertEqual((status, denied["error"]["code"]), (401, "SESSION_REQUIRED"))
+                    status, headers, guest = self.call(path="/api/session", authenticated=False)
+                    self.assertEqual(status, 200)
+                    self.cookie = headers["Set-Cookie"].split(";", 1)[0]
+                    self.csrf = guest["data"]["csrf_token"]
+                    command = management_command(label + "-guest")
+                    task = ordinary_command("fixture-project", label + "-task")
+                    for path, body in (("/api/management/project", command), ("/api/tasks", task)):
+                        status, _, denied = self.call("POST", path, body)
+                        self.assertEqual((status, denied["error"]["code"]), (401, "OWNER_AUTH_REQUIRED"))
+                    self.session()
+                    for path, body in (("/api/management/project", command), ("/api/tasks", task)):
+                        status, _, denied = self.call("POST", path, body, {"X-Hub-CSRF": "wrong"})
+                        self.assertEqual((status, denied["error"]["code"]), (403, "CSRF_REJECTED"))
+                    for project in ("fixture-project", "related-project", "manga-localizer"):
+                        status, _, denied = self.call("POST", "/api/tasks",
+                                                     ordinary_command(project, label + "-" + project))
+                        expected = ((403, "TASK_PROJECT_REJECTED") if project == "manga-localizer"
+                                    or (project == "related-project" and revoked)
+                                    else (503, "ORDINARY_EXECUTION_DISABLED"))
+                        self.assertEqual((status, denied["error"]["code"]), expected)
+                    for project in (["manga-localizer", "related-project"] if revoked else ["manga-localizer"]):
+                        command = management_command(label + "-denied-" + project, project)
+                        command["value"] = {**value, "relations": None}
+                        status, _, denied = self.call("POST", "/api/management/project", command)
+                        self.assertEqual((status, denied["error"]["code"]), (400, "MANAGEMENT_INVALID_COMMAND"))
+                    self.assertEqual(config.read_bytes(), before_config)
+                    self.assertEqual(self.server.tasks.store.path.read_bytes(), before_tasks)
+                    self.assertEqual(self.server.tasks.store.tasks(), [])
+                    self.assertEqual(self.server.tasks.store.grants(), [])
+
+                boundaries("before-relation", revoked=False)
+                command = management_command("confirm-related-project")
+                status, _, saved = self.call("POST", "/api/management/project", command)
+                self.assertEqual(status, 200)
+                self.assertEqual(saved["data"]["view"]["relation_state"], "owner_confirmed")
+                self.assertEqual(ManagementStore(self.root).snapshot()["projects"]["fixture-project"], value)
+                status, _, detail = self.call(path="/api/projects/fixture-project")
+                self.assertEqual(status, 200)
+                edge = detail["data"]["management"]["relation_view"]["outgoing"][0]
+                self.assertEqual((edge["project_id"], edge["relation"], edge["eligible"]),
+                                 ("related-project", "related_to", True))
+                self.assertEqual(source_reads, [])
+                self.assertFalse((self.root / "data/connections/connection_refresh.sqlite3").exists())
+
+                self.source_fixture.projects[2]["connection_read_allowed"] = False
+                self.source_fixture.save_registry()
+                registry = self.root / "data/registry/external_projects.yaml"
+                registry_bytes = registry.read_bytes()
+                boundaries("after-revocation", revoked=True)
+                status, _, detail = self.call(path="/api/projects/fixture-project")
+                self.assertEqual(status, 200)
+                management = detail["data"]["management"]
+                self.assertEqual(management["relation_state"], "owner_confirmed")
+                edge = management["relation_view"]["outgoing"][0]
+                self.assertEqual((edge["project_id"], edge["eligible"]), ("related-project", False))
+                self.assertIn("MANAGEMENT_ORPHAN_REFERENCE", management["warnings"])
+                self.assertEqual(source_reads, [])
+                self.assertFalse((self.root / "data/connections/connection_refresh.sqlite3").exists())
+                status, _, refreshed = self.call("POST", "/api/refresh", {
+                    "request_id": "related-denied-refresh", "project_ids": ["fixture-project", "related-project", "manga-localizer"],
+                    "expected_head": {"sequence": 0, "hash": GENESIS_HASH}})
+                self.assertEqual(status, 200)
+                self.assertEqual(refreshed["data"]["request"]["status"], "FINISHED")
+                self.assertEqual(refreshed["data"]["resolver_errors"], {})
+                self.assertTrue(source_reads)
+                status, _, active = self.call(path="/api/projects/fixture-project")
+                self.assertEqual(status, 200)
+                self.assertEqual(active["data"]["business"]["normalized_status"], "active")
+                for project in ("related-project", "manga-localizer"):
+                    status, _, denied = self.call(path="/api/projects/" + project)
+                    self.assertEqual(status, 200)
+                    self.assertEqual(denied["data"]["business"]["normalized_status"], "unknown")
+                    self.assertEqual(denied["data"]["operational"]["latest_attempt"]["disposition"], "disabled")
+                    self.assertIsNone(denied["data"]["operational"]["last_success"])
+                self.assertEqual(registry.read_bytes(), registry_bytes)
+                for path, original in protected_sources.items():
+                    self.assertEqual(path.read_bytes(), original)
+                self.assertEqual(self.server.tasks.store.tasks(), [])
+                self.assertEqual(self.server.tasks.store.grants(), [])
+                input_read.assert_not_called()
+            finally:
+                try:
+                    if thread is not None and thread.is_alive():
+                        self.server.shutdown()
+                finally:
+                    try:
+                        self.server.server_close()
+                    finally:
+                        if thread is not None and thread.ident is not None:
+                            thread.join(2)
+                            self.assertFalse(thread.is_alive())
+                        for method in forbidden:
+                            method.assert_not_called()
+
     def test_default_assembly_browses_and_refreshes_without_model_execution(self):
         # Replace only the disposable server from setUp; retain its real fixtures.
         self.stop()
