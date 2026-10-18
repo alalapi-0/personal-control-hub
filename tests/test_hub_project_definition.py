@@ -1,5 +1,6 @@
 """Source-backed long-term definitions never borrow current work or permissions."""
 import copy
+import hashlib
 from pathlib import Path
 import unittest
 from unittest import mock
@@ -74,7 +75,50 @@ class ProjectDefinitionTests(unittest.TestCase):
         self.assertEqual(source['selector'], {'path': ['definition']})
         self.assertEqual(len(source['sha256']), 64)
         self.assertTrue(source['observed_at'])
+        roles_source = fields['roles']['source']
+        self.assertEqual(roles_source['kind'], 'source_extension')
+        self.assertEqual(roles_source['field'], 'roles')
+        self.assertEqual(roles_source['source_ref'], 'state')
+        self.assertEqual(roles_source['selector'], {'path': ['definition']})
+        self.assertEqual(roles_source['sha256'], hashlib.sha256((self.a / 'STATE.yaml').read_bytes()).hexdigest())
+        self.assertEqual(roles_source['observed_at'], source['observed_at'])
+        self.assertNotEqual(roles_source['field'], source['field'])
         self.assertEqual(self.service.get_project('b')['definition']['fields']['aliases']['state'], 'missing')
+
+    def test_project_roles_are_not_inferred_from_type_stack_current_owner_or_task_actor(self):
+        self.publish({'purpose': known('Maintain a reusable asset library')},
+                     technical_stack=['Python', 'SQLite'], agent={'role': 'Agent actor'},
+                     tasks=[{'owner_role': 'Task actor'}])
+        self.collect()
+        dto = self.service.get_project('a')
+        fields = dto['definition']['fields']
+        self.assertEqual(fields['project_type']['value'], 'synthetic_tool')
+        self.assertEqual(fields['purpose']['value'], 'Maintain a reusable asset library')
+        self.assertEqual(dto['business']['fields']['current_work']['owner_role'], 'Root')
+        self.assertEqual(fields['roles']['state'], 'missing')
+        self.assertIsNone(fields['roles']['value'])
+        self.assertIsNone(fields['roles']['source'])
+
+    def test_definition_proof_times_are_canonical_utc_without_changing_valid_source_records(self):
+        self.publish({'roles': known(['Producer', 'Library'])})
+        self.collect()
+        original = self.service.get_project('a')['business']['source_record']
+        for observed_at in ('2026-10-18 00:00:00+00:00', '2026-10-18T00:00:00+0000',
+                            '20261018T000000+0000', '2026-10-18T01:02:03+01:02:03'):
+            with self.subTest(observed_at=observed_at):
+                record = copy.deepcopy(original)
+                record['observed_at'] = observed_at
+                proof = record['extensions']['fact']['project_definition']['proof']
+                proof['observed_at'] = observed_at
+                validate_result(record)
+                before = copy.deepcopy(record)
+                definition = self.service._definition(self.fixture.projects[0], record,
+                    {'state': 'fresh'}, record['authority'], True)
+                roles = definition['fields']['roles']
+                self.assertEqual(roles['value'], ['Producer', 'Library'])
+                self.assertEqual(roles['source']['observed_at'], '2026-10-18T00:00:00Z')
+                self.assertEqual(roles['source']['sha256'], proof['sha256'])
+                self.assertEqual(record, before)
 
     def test_registry_definition_confirmed_aliases_are_hashed_without_root_reads(self):
         self.fixture.projects[0]['project_definition'] = {

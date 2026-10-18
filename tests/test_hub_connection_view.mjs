@@ -193,11 +193,12 @@ function setFact(p,key,value) {
 }
 const summaryFields=p=>Object.fromEntries(projectSummary(p).fields);
 
+const definitionProof=key=>({kind:'registry',field:key==='purpose'?'description':'project_definition.'+key,registry_sha256:'d'.repeat(64),sha256:'d'.repeat(64),observed_at:null});
 test('long-term definitions require their own source and retain explicit empty, unknown and not-applicable states',()=>{
-  const source={kind:'registry',field:'description'};
+  const source=definitionProof('purpose');
   const p={definition:{fields:{purpose:{value:'A sourced purpose',state:'known',source},
-    roles:{value:[],state:'empty',source},aliases:{value:['unconfirmed'],state:'missing',source:null},
-    primary_project_id:{value:null,state:'not_applicable',source,reason:'Explicit independent project'}}}};
+    roles:{value:[],state:'empty',source:definitionProof('roles')},aliases:{value:['unconfirmed'],state:'missing',source:null},
+    primary_project_id:{value:null,state:'not_applicable',source:definitionProof('primary_project_id'),reason:'Explicit independent project'}}}};
   const fields=Object.fromEntries(projectDefinition(p).map(f=>[f.key,f]));
   assert.equal(fields.purpose.text,'A sourced purpose');assert.equal(fields.purpose.known,true);
   assert.equal(fields.roles.text,'来源明确未列出');assert.equal(fields.aliases.text,'来源未提供');
@@ -205,6 +206,64 @@ test('long-term definitions require their own source and retain explicit empty, 
   p.definition.fields.purpose.source=null;
   assert.equal(projectDefinition(p).find(f=>f.key==='purpose').known,false);
   assert.ok(!JSON.stringify(projectDefinition(p)).includes('current_work.objective'));
+});
+
+test('project roles retain their own multi-role text and proof apart from the current responsible actor',()=>{
+  const p=authoritative();setFact(p,'current_work.owner_role','Current responsible actor');
+  const source={kind:'source_extension',field:'roles',registry_sha256:'d'.repeat(64),source_ref:'state',selector:{path:['definition']},
+    sha256:'c'.repeat(64),observed_at:'2026-10-18T00:00:00Z'};
+  p.definition={fields:{roles:{value:['资产生产者','共享资产库','上游供给方'],state:'known',source},
+    purpose:{value:'Long-term purpose',state:'known',source:definitionProof('purpose')}}};
+  const before=structuredClone(p),role=projectDefinition(p).find(f=>f.key==='roles');
+  assert.equal(role.label,'项目角色');assert.equal(role.known,true);
+  assert.equal(role.text,'资产生产者、共享资产库、上游供给方');
+  assert.deepEqual(role.source,source);
+  assert.equal(summaryFields(p)['负责角色'],'Current responsible actor');
+  assert.deepEqual(p,before);
+  p.definition.fields.roles.source=null;
+  const missing=projectDefinition(p).find(f=>f.key==='roles');
+  assert.equal(missing.known,false);assert.equal(missing.text,'来源未提供');assert.equal(missing.source,null);
+  p.definition.fields.roles.source=source;p.definition.fields.roles.state='unknown';
+  assert.equal(projectDefinition(p).find(f=>f.key==='roles').known,false);
+});
+
+test('malformed project role proofs neither authorize text nor expose a declaration disclosure',()=>{
+  const source={kind:'source_extension',field:'roles',registry_sha256:'d'.repeat(64),source_ref:'state',
+    selector:{path:['definition']},sha256:'c'.repeat(64),observed_at:'2026-10-18T00:00:00Z'};
+  const invalid=[{},[],true,'registry',null,{...definitionProof('roles'),kind:'unknown'},
+    definitionProof('purpose'),{...definitionProof('roles'),sha256:'e'.repeat(64)},
+    {...definitionProof('roles'),registry_sha256:'not-a-hash'},
+    {...definitionProof('roles'),observed_at:'2026-10-18T00:00:00Z'},
+    ...['source_ref','selector','observed_at','registry_sha256'].map(key=>{const bad={...source};delete bad[key];return bad;}),
+    {...source,field:'purpose'},{...source,source_ref:'../state'},
+    {...source,observed_at:'2026-10-18T00:00:00'},
+    {...source,observed_at:'invalidZ'}, {...source,selector:{path:[]}},
+    {...source,selector:{path:[true]}},{...source,selector:{path:['definition'],extra:true}},
+    {...source,selector:{heading:'Definition',label:'roles',extra:true}}];
+  for(const proof of invalid){
+    const p={definition:{fields:{roles:{value:['Unproven role'],state:'known',source:proof}}}};
+    const before=structuredClone(p),role=projectDefinition(p).find(f=>f.key==='roles');
+    assert.equal(role.known,false);assert.equal(role.text,'来源未提供');assert.equal(role.source,null);
+    assert.deepEqual(p,before);
+  }
+  for(const selector of [{path:['definition',0]}, {heading:'Definition',label:'roles'},
+    {heading:'Definition',boolean_label:'roles'}, {heading:'Definition',table_label:'roles'},
+    {heading:'Definition',ordered_item:1}]){
+    const proof={...source,selector};
+    const p={definition:{fields:{roles:{value:['Producer','Library'],state:'known',source:proof}}}};
+    const role=projectDefinition(p).find(f=>f.key==='roles');
+    assert.equal(role.known,true);assert.equal(role.text,'Producer、Library');assert.deepEqual(role.source,proof);
+  }
+});
+
+test('missing project roles cannot be supplied by purpose, type, stack, current owner, agents or tasks',()=>{
+  const p=authoritative();setFact(p,'current_work.owner_role','Current responsible actor');
+  p.definition={fields:{purpose:{value:'Asset library purpose',state:'known',source:definitionProof('purpose')},
+    project_type:{value:'Library type',state:'known',source:{...definitionProof('project_type'),field:'project_type'}}}};
+  p.technical_stack=['Python'];p.agent={role:'Agent actor'};p.tasks=[{owner_role:'Task actor'}];
+  const before=structuredClone(p),role=projectDefinition(p).find(f=>f.key==='roles');
+  assert.equal(role.known,false);assert.equal(role.state,'missing');
+  assert.equal(role.text,'来源未提供');assert.equal(role.source,null);assert.deepEqual(p,before);
 });
 
 test('definition explanations translate only known product messages and retain original source wording',()=>{
@@ -234,7 +293,7 @@ test('definition explanations translate only known product messages and retain o
 test('summary displays only the source-proven current responsible role and verbatim stage identifiers',()=>{
   const p=authoritative();setFact(p,'current_work.owner_role','Owner / 来源负责者');
   setFact(p,'current_work.phase','阶段 Ω / M2');setFact(p,'current_work.round','轮次 第四 / R4');
-  p.definition={fields:{roles:{value:['Definition role'],state:'known',source:{kind:'registry',field:'roles'}}}};
+  p.definition={fields:{roles:{value:['Definition role'],state:'known',source:definitionProof('roles')}}};
   p.tasks=[{status:'running',owner_role:'Task actor'}];p.agent={role:'Current agent'};
   const before=JSON.stringify(p),summary=projectSummary(p),fields=summaryFields(p);
   assert.equal(summary.historical,false);assert.equal(fields['负责角色'],'Owner / 来源负责者');
@@ -253,7 +312,7 @@ test('summary never infers a missing or unproven responsible role from definitio
     p=>p.business.source_record.success=false,
   ]){
     const p=authoritative();setFact(p,'current_work.owner_role','Unproven role');
-    p.definition={fields:{roles:{value:['Definition role'],state:'known',source:{kind:'registry',field:'roles'}}}};
+    p.definition={fields:{roles:{value:['Definition role'],state:'known',source:definitionProof('roles')}}};
     p.tasks=[{status:'running',owner_role:'Task actor'}];p.agent={role:'Current agent'};
     change(p);const summary=projectSummary(p);
     assert.equal(summaryFields(p)['负责角色'],'未知');

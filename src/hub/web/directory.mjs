@@ -1,5 +1,5 @@
 import {el} from './common.js';
-import {attention, freshness as sourceFreshness} from './connection_view.mjs';
+import {attention, freshness as sourceFreshness, validDefinitionSource} from './connection_view.mjs';
 import {renderBusinessPlan} from './business_tasks.mjs';
 
 const statuses={active:'进行中',paused:'已暂停',blocked:'受阻',complete:'已完成',unknown:'来源未提供状态'};
@@ -18,7 +18,7 @@ export function projectSearchMatch(project,query=''){
   const fields=project.definition?.fields??{};
   for(const [field,label] of [['official_name','正式名称'],['aliases','已确认别名'],['purpose','用途'],['outputs','产出']]){
     const entry=fields[field];
-    if(entry?.state!=='known'||!entry.source)continue;
+    if(entry?.state!=='known'||!validDefinitionSource(entry.source,field))continue;
     const values=Array.isArray(entry.value)?entry.value:[entry.value];
     for(const value of values)candidates.push({field,label,value,source:entry.source});
   }

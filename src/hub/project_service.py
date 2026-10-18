@@ -819,6 +819,11 @@ class ProjectService:
                 for name, item in published["value"].items():
                     source = {"kind": "source_extension", "registry_sha256": authority["registry_hash"],
                               "field": name, **copy.deepcopy(proof)}
+                    # Canonical DTO time keeps every backend-valid ISO representation
+                    # usable in browser proof gates; the stored proof remains verbatim.
+                    source["observed_at"] = datetime.fromisoformat(
+                        proof["observed_at"].replace("Z", "+00:00")
+                    ).astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
                     value = copy.deepcopy(item["value"])
                     if name == "aliases" and value is not None:
                         value = [entry["name"] for entry in value]

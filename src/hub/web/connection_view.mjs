@@ -90,6 +90,33 @@ export function projectTasks(tasks, projectId) {
   return Array.isArray(tasks) ? tasks.filter(task=>task.project===projectId) : [];
 }
 
+// Definition proofs are DTO metadata, never permission to read a source here.
+// Share the same gate across summaries, directory search and relation disclosures.
+export function validDefinitionSource(source,key) {
+  const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
+  const hash=value=>typeof value==='string'&&/^[0-9a-f]{64}$/.test(value);
+  const text=value=>typeof value==='string'&&value.trim().length>0&&value.trim().length<=16000;
+  if(!object(source)||!hash(source.registry_sha256)||!hash(source.sha256))return false;
+  if(source.kind==='registry'){
+    const legacy={official_name:'name',purpose:'description',project_type:'project_type'};
+    return (source.field==='project_definition.'+key||(legacy[key]!==undefined&&source.field===legacy[key]))
+      &&source.sha256===source.registry_sha256&&source.observed_at===null;
+  }
+  if(source.kind!=='source_extension'||source.field!==key
+    ||typeof source.source_ref!=='string'||! /^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$/.test(source.source_ref)
+    ||typeof source.observed_at!=='string'||! /T.*(?:Z|[+-]\d{2}:\d{2})$/.test(source.observed_at)
+    ||!Number.isFinite(Date.parse(source.observed_at))||!object(source.selector))return false;
+  const selector=source.selector,keys=Object.keys(selector);
+  if(keys.length===1&&keys[0]==='path')return Array.isArray(selector.path)
+    &&selector.path.length>0&&selector.path.length<=20
+    &&selector.path.every(part=>(typeof part==='string'&&part.length>0&&part.length<=160)
+      ||(typeof part==='number'&&Number.isInteger(part)&&part>=0));
+  if(keys.length!==2||!keys.includes('heading')||!text(selector.heading))return false;
+  const selectorKey=keys.find(name=>name!=='heading');
+  return selectorKey==='ordered_item'?Number.isInteger(selector.ordered_item)&&selector.ordered_item>0
+    :['label','boolean_label','table_label'].includes(selectorKey)&&text(selector[selectorKey]);
+}
+
 export function projectDefinition(project) {
   const labels={official_name:'正式名称',purpose:'项目用途',outputs:'主要产出',roles:'项目角色',
     aliases:'已确认别名',primary_project_id:'所属主项目',working_copies:'工作副本'};
@@ -103,15 +130,16 @@ export function projectDefinition(project) {
   };
   return Object.entries(labels).map(([key,label])=>{
     const field=project?.definition?.fields?.[key];
-    const known=field?.state==='known' && field?.source && field.value!==null && field.value!==undefined;
+    const source=validDefinitionSource(field?.source,key)?field.source:null;
+    const known=field?.state==='known' && source!==null && field.value!==null && field.value!==undefined;
     let text=known ? (Array.isArray(field.value) ? field.value.join('、') : String(field.value)) : '来源未提供';
-    if(field?.state==='empty')text='来源明确未列出';
-    if(field?.state==='not_applicable')text='来源声明不适用';
+    if(field?.state==='empty'&&source)text='来源明确未列出';
+    if(field?.state==='not_applicable'&&source)text='来源声明不适用';
     if(field?.state==='unavailable')text='当前定义来源不可用';
     const reason=field?.reason||(!known?'需要项目来源明确声明，当前不作推断。':null);
     const reasonText=Object.hasOwn(reasons,reason)?reasons[reason]:reason;
     return {key,label,text,known:Boolean(known),state:field?.state||'missing',
-      reason,reasonText,technicalReason:reasonText!==reason?reason:null,source:field?.source||null};
+      reason,reasonText,technicalReason:reasonText!==reason?reason:null,source};
   });
 }
 

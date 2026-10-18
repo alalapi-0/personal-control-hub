@@ -1,4 +1,5 @@
 import {el} from './common.js';
+import {validDefinitionSource} from './connection_view.mjs';
 
 const labels={outgoing:{belongs_to:'归属项目',depends_on:'依赖项目',related_to:'相关项目'},
   incoming:{belongs_to:'包含项目',depends_on:'被以下项目依赖',related_to:'被以下项目关联'}};
@@ -29,13 +30,13 @@ export function renderRelations(project,{names=new Map()}={}){
   const source=el('section',{className:'stack','aria-label':'来源声明关系'},el('h3',{},'来源声明与项目角色'));
   const fields=project.definition?.fields||{};
   for(const [key,title] of [['roles','项目角色'],['primary_project_id','所属主项目'],['working_copies','工作副本']]){
-    const field=fields[key],known=field?.state==='known'&&field.source;
+    const field=fields[key],known=field?.state==='known'&&validDefinitionSource(field.source,key);
     const values=known?(Array.isArray(field.value)?field.value:[field.value]):[];
-    source.append(el('div',{},el('h4',{},title),values.length?el('ul',{},...values.map(value=>el('li',{},key==='roles'?String(value):link(value,names.get(value),names.has(value))))):el('p',{className:'muted'},field?.state==='empty'?'来源明确未列出':'来源未提供当前可核对值'),
+    source.append(el('div',{},el('h4',{},title),values.length?el('ul',{},...values.map(value=>el('li',{},key==='roles'?String(value):link(value,names.get(value),names.has(value))))):el('p',{className:'muted'},field?.state==='empty'&&validDefinitionSource(field.source,key)?'来源明确未列出':'来源未提供当前可核对值'),
       known?el('details',{},el('summary',{},'查看声明依据'),el('p',{className:'caption'},'来源版本 '+short(field.source.sha256)),el('p',{className:'caption'},'观察时间 '+(field.source.observed_at||'未知'))):null));
   }
   const sourceParent=fields.primary_project_id,ownerParent=managed?.outgoing?.find(edge=>edge.relation==='belongs_to');
-  if(sourceParent?.state==='known'&&sourceParent.source&&ownerParent&&sourceParent.value!==ownerParent.project_id)
+  if(sourceParent?.state==='known'&&validDefinitionSource(sourceParent.source,'primary_project_id')&&ownerParent&&sourceParent.value!==ownerParent.project_id)
     source.append(el('p',{className:'warning'},'来源主项目与管理归属不同；两项声明均保留，请核对各自依据。'));
   panel.append(source);
 

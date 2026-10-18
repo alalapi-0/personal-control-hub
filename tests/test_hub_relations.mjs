@@ -28,8 +28,8 @@ test('same-version outgoing and incoming types jump by stable IDs; orphan target
   assert.doesNotMatch(n.textContent,/private path/);assert.ok(nodes(n).every(x=>x.attributes.href!=='#projects/secret'));assert.deepEqual(p,before);
 });
 test('source roles and main/copy facts retain evidence and differing owner parent',()=>{
-  const p=project(),source={sha256:'f'.repeat(64),observed_at:'2026-10-16T00:00:00Z'};
-  p.definition.fields={roles:{state:'known',value:['supplier','consumer'],source},primary_project_id:{state:'known',value:'c',source},working_copies:{state:'empty',value:[],source}};
+  const p=project(),source={kind:'source_extension',field:'roles',registry_sha256:'a'.repeat(64),source_ref:'state',selector:{path:['definition']},sha256:'f'.repeat(64),observed_at:'2026-10-16T00:00:00Z'};
+  p.definition.fields={roles:{state:'known',value:['supplier','consumer'],source},primary_project_id:{state:'known',value:'c',source:{...source,field:'primary_project_id'}},working_copies:{state:'empty',value:[],source:{...source,field:'working_copies'}}};
   p.management.relation_view.outgoing=[{relation:'belongs_to',project_id:'b',name:'Beta',eligible:true}];
   const n=mount(p);assert.match(n.textContent,/supplierconsumer/);assert.match(n.textContent,/来源明确未列出/);assert.match(n.textContent,/来源主项目与管理归属不同/);assert.match(n.textContent,/ffffffffffff/);
   assert.ok(nodes(n).some(x=>x.attributes.href==='#projects/c'));
@@ -37,4 +37,16 @@ test('source roles and main/copy facts retain evidence and differing owner paren
 test('derived dependency path exposes exact source basis and review warning without source mutation',()=>{
   const p=project();p.business={normalized_status:'active'};p.management.relation_view.dependency_impact={status:'affected',truncated:true,paths:[{path:['a','b'],source_status:'blocked',source_freshness:'fresh',reason:'dependency_blocked',source_version:{ledger_head:{sequence:77},latest_result_hash:'b'.repeat(64),registry_sha256:'c'.repeat(64)}}]};
   const before=structuredClone(p),n=mount(p);assert.match(n.textContent,/依赖影响（派生）.*需要复核排期/);assert.match(n.textContent,/Alpha → Beta/);assert.match(n.textContent,/来源账本 77.*bbbbbbbbbbbb.*cccccccccccc/);assert.match(n.textContent,/结论不完整/);assert.match(n.textContent,/不改变项目来源状态或日期/);assert.deepEqual(p,before);
+});
+
+test('invalid source roles and parent produce neither claims, evidence disclosures nor conflicts',()=>{
+  for(const source of [{},{kind:'registry'},'registry']){
+    const p=project();p.definition.fields={roles:{state:'known',value:['Unproven role'],source},
+      primary_project_id:{state:'known',value:'c',source},working_copies:{state:'empty',value:[],source}};
+    p.management.relation_view.outgoing=[{relation:'belongs_to',project_id:'b',name:'Beta',eligible:true}];
+    const n=mount(p);
+    assert.doesNotMatch(n.textContent,/Unproven role|查看声明依据|来源主项目与管理归属不同|来源明确未列出/);
+    assert.match(n.textContent,/来源未提供当前可核对值/);
+    assert.ok(nodes(n).every(x=>x.attributes.href!=='#projects/c'));
+  }
 });

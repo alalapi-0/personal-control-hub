@@ -62,11 +62,11 @@ test('empty, unknown, removed and management identity survive without guessed re
   assert.deepEqual(projectDirectory(input,{groupBy:'unrecognized'}).rows,input);
 });
 
-const sourced=value=>({value,state:'known',source:'registry:definition',reason:'已登记'});
+const sourced=(value,key='aliases')=>({value,state:'known',source:{kind:'registry',field:'project_definition.'+key,registry_sha256:'d'.repeat(64),sha256:'d'.repeat(64),observed_at:null},reason:'已登记'});
 test('search explains sourced identity, aliases, purpose and outputs without guessing mappings',()=>{
   const p={project_id:'actor-four',name:'Actor 4',definition:{fields:{
-    official_name:sourced('Actor Four Studio'),aliases:sourced(['演员工作台']),
-    purpose:sourced('组织角色表演镜头'),outputs:sourced(['分镜视频','角色档案']),
+    official_name:sourced('Actor Four Studio','official_name'),aliases:sourced(['演员工作台']),
+    purpose:sourced('组织角色表演镜头','purpose'),outputs:sourced(['分镜视频','角色档案'],'outputs'),
   }}};
   const cases=[['ACTOR-FOUR','project_id','actor-four'],['four studio','official_name','Actor Four Studio'],
     ['演员','aliases','演员工作台'],['表演','purpose','组织角色表演镜头'],['分镜','outputs','分镜视频']];
@@ -93,7 +93,7 @@ test('search explains sourced identity, aliases, purpose and outputs without gue
 
 test('103 identities remain complete in the shared view projection across searches, filters and groups',()=>{
   const input=projects.slice(0,103).map((p,i)=>({...p,definition:{fields:{
-    aliases:sourced([i%2?'常用甲':'常用乙']),purpose:sourced(i%3?'镜头整理':'音频制作'),
+    aliases:sourced([i%2?'常用甲':'常用乙']),purpose:sourced(i%3?'镜头整理':'音频制作','purpose'),
   }}}));
   const before=structuredClone(input);
   for(const [query,accept] of [['',()=>true],['常用甲',i=>i%2===1],['音频',i=>i%3===0],['不存在',()=>false]])
@@ -137,4 +137,12 @@ test('tree preserves each project identity, safe detail route and explicit unkno
     assert.match(rendered.textContent,/按当前读取权限，业务计划不可查看/);
     assert.match(renderDirectoryTree([]).textContent,/没有匹配/);
   }finally{globalThis.document=previous;}
+});
+
+test('malformed definition sources cannot create alias or purpose search matches',()=>{
+  for(const field of ['aliases','purpose','outputs'])for(const source of [{},'registry:definition',
+    {...sourced('x',field).source,field:'project_definition.roles'}]){
+    const p={project_id:'a',name:'Alpha',definition:{fields:{[field]:{value:['Unproven needle'],state:'known',source}}}};
+    assert.deepEqual(projectSearchMatch(p,'needle'),{matched:false,reasons:[]});
+  }
 });
