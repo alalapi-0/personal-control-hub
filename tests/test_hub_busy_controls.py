@@ -257,9 +257,19 @@ class BusyControlTests(unittest.TestCase):
                         if wrong:self.events.insert(1,{'method':'item/agentMessage/delta','params':{'threadId':'fixture-thread','turnId':'wrong-turn','delta':'PRIVATE'}})
                         else:self.events[1:1]=[{'method':'item/started','params':{'threadId':'fixture-thread','turnId':'fixture-turn','item':{'type':'reasoning','id':str(i)}}} for i in range(260)]
                         return ident
-                f.service.submit(f.payload);TaskWorker(f.store,adapter_factory=StreamAdapter,writer_check=lambda _:True).run_one()
+                # Isolate the worker's stream limit from hundreds of synchronous
+                # SQLite commits competing with its real heartbeat. Durable event
+                # storage is exercised by the preceding large-stream test.
+                critical_events=[];persist=f.store.event
+                def record(ident,key,data):
+                    if key.startswith('event-'):critical_events.append(data)
+                    else:return persist(ident,key,data)
+                f.service.submit(f.payload)
+                with patch.object(f.store,'event',side_effect=record):
+                    TaskWorker(f.store,adapter_factory=StreamAdapter,writer_check=lambda _:True).run_one()
                 self.assertEqual(f.store.task('fixture-task')['status'],'requires_reconcile')
                 self.assertEqual(f.store.task('fixture-task')['result']['error_class'],'CODEX_EVENT_BINDING_REJECTED' if wrong else 'TASK_EVENT_CAPACITY')
+                self.assertEqual(len(critical_events),1 if wrong else 256)
                 self.assertFalse(f.worker().run_one())
             finally:f.doCleanups()
 
