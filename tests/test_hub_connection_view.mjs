@@ -207,6 +207,63 @@ test('long-term definitions require their own source and retain explicit empty, 
   assert.ok(!JSON.stringify(projectDefinition(p)).includes('current_work.objective'));
 });
 
+test('summary displays only the source-proven current responsible role and verbatim stage identifiers',()=>{
+  const p=authoritative();setFact(p,'current_work.owner_role','Owner / 来源负责者');
+  setFact(p,'current_work.phase','阶段 Ω / M2');setFact(p,'current_work.round','轮次 第四 / R4');
+  p.definition={fields:{roles:{value:['Definition role'],state:'known',source:{kind:'registry',field:'roles'}}}};
+  p.tasks=[{status:'running',owner_role:'Task actor'}];p.agent={role:'Current agent'};
+  const before=JSON.stringify(p),summary=projectSummary(p),fields=summaryFields(p);
+  assert.equal(summary.historical,false);assert.equal(fields['负责角色'],'Owner / 来源负责者');
+  assert.equal(fields['来源阶段标识'],'阶段 Ω / M2');assert.equal(fields['来源轮次标识'],'轮次 第四 / R4');
+  assert.equal(Object.hasOwn(fields,'项目阶段'),false);assert.equal(Object.hasOwn(fields,'当前轮次'),false);
+  assert.equal(JSON.stringify(p),before);
+});
+
+test('summary never infers a missing or unproven responsible role from definitions, agents or tasks',()=>{
+  for(const change of [
+    p=>delete p.business.source_record.business.current_work.owner_role,
+    p=>delete p.business.source_record.field_provenance['current_work.owner_role'],
+    p=>p.business.source_record.field_provenance['current_work.owner_role'].sha256='b'.repeat(64),
+    p=>p.business.source_record.field_provenance['current_work.owner_role'].source_ref='missing-source',
+    p=>p.business.source_record.schema_version='unsupported',
+    p=>p.business.source_record.success=false,
+  ]){
+    const p=authoritative();setFact(p,'current_work.owner_role','Unproven role');
+    p.definition={fields:{roles:{value:['Definition role'],state:'known',source:{kind:'registry',field:'roles'}}}};
+    p.tasks=[{status:'running',owner_role:'Task actor'}];p.agent={role:'Current agent'};
+    change(p);const summary=projectSummary(p);
+    assert.equal(summaryFields(p)['负责角色'],'未知');
+    for(const value of ['Unproven role','Definition role','Task actor','Current agent'])assert.equal(JSON.stringify(summary).includes(value),false);
+  }
+});
+
+test('responsible role uses the correct old source only in an explicitly historical summary',()=>{
+  for(const change of [p=>p.freshness.state='stale',p=>p.freshness.authority_drift=true,
+    p=>p.operational.latest_attempt={success:false}]){
+    const p=authoritative();setFact(p,'current_work.owner_role','Historical source owner');
+    p.operational.last_success=structuredClone(p.business.source_record);
+    setFact(p,'current_work.owner_role','Unusable current owner');change(p);
+    const summary=projectSummary(p),fields=summaryFields(p);
+    assert.equal(summary.historical,true);assert.match(summary.quality,/历史快照/);
+    assert.equal(fields['负责角色'],'Historical source owner');
+    assert.equal(fields['来源阶段标识'],'M2');assert.equal(fields['来源轮次标识'],'R4');
+    assert.equal(JSON.stringify(summary).includes('Unusable current owner'),false);
+    assert.equal(facts(p)['current_work.owner_role'].known,false);
+  }
+});
+
+test('withdrawn reading permission or removed registration hides current and historical responsible roles',()=>{
+  for(const change of [p=>p.declared.connection_read_allowed=false,p=>p.freshness.local_presence='removed_local']){
+    const p=authoritative();setFact(p,'current_work.owner_role','Current source owner');
+    p.operational.last_success=structuredClone(p.business.source_record);
+    p.operational.last_success.business.current_work.owner_role='Historical source owner';
+    p.freshness.state='stale';change(p);const summary=projectSummary(p);
+    assert.equal(summary.historical,false);assert.equal(summaryFields(p)['负责角色'],'未知');
+    for(const history of [false,true])assert.equal(facts(p,{history})['current_work.owner_role'].known,false);
+    for(const value of ['Current source owner','Historical source owner'])assert.equal(JSON.stringify(summary).includes(value),false);
+  }
+});
+
 test('daily summary preserves explicit zero, false and empty values without percentage inference',()=>{
   const p=authoritative();setFact(p,'progress.completed',0);setFact(p,'progress.total',0);
   setFact(p,'progress.counting_basis','Declared review units');setFact(p,'blockers',[]);
@@ -243,7 +300,7 @@ test('failed and stale summaries retain explicitly labeled historical business w
     p.freshness.fact_time_state='known';p.freshness.fact_updated_at='2026-10-10T10:00:00Z';
     if(failed)p.operational.latest_attempt={success:false};else p.freshness.state='stale';
     const summary=projectSummary(p);
-    assert.equal(Object.fromEntries(summary.fields)['项目阶段'],'M2');
+    assert.equal(Object.fromEntries(summary.fields)['来源阶段标识'],'M2');
     assert.equal(summary.historical,true);
     assert.match(summary.quality,/上次成功的历史快照/);
     assert.equal(summary.factAt,null);assert.equal(summary.observedAt,p.source.observed_at);
@@ -253,7 +310,7 @@ test('failed and stale summaries retain explicitly labeled historical business w
 
 test('summary never bypasses mismatched field proof or read denial',()=>{
   const p=authoritative();p.business.source_record.field_provenance['current_work.phase'].sha256='b'.repeat(64);
-  assert.equal(summaryFields(p)['项目阶段'],'未知');
+  assert.equal(summaryFields(p)['来源阶段标识'],'未知');
   p.declared.connection_read_allowed=false;
   assert.equal(summaryFields(p)['当前目标'],'未知');
 });
@@ -480,7 +537,7 @@ test('invalid success-with-errors DTO and errors without a latest observation re
     const before=JSON.stringify(p);
     assert.equal(currentSourceAvailable(p),false);
     assert.equal(Object.values(facts(p)).every(f=>!f.known),true);
-    assert.equal(summaryFields(p)['项目阶段'],'未知');
+    assert.equal(summaryFields(p)['来源阶段标识'],'未知');
     assert.equal(projectSummary(p).quality,'当前来源读取失败；尚无可用成功快照');
     assert.equal(freshness(p),'最新读取失败');
     assert.equal(attention(p),true);
@@ -496,7 +553,7 @@ test('one current gate rejects drift, stale, explicit failure and denied or remo
     assert.equal(currentSourceAvailable(p),false);
     assert.equal(Object.values(facts(p)).every(f=>!f.known),true);
     const summary=projectSummary(p);
-    assert.equal(summaryFields(p)['项目阶段'],summary.historical?'M2':'未知');
+    assert.equal(summaryFields(p)['来源阶段标识'],summary.historical?'M2':'未知');
     if(summary.historical)assert.match(summary.quality,/历史快照/);
   }
 });

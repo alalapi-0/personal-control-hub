@@ -123,8 +123,9 @@ export function projectSummary(project) {
   const snapshot=project?.last_success_snapshot;
   return {
     fields:[
-      ['项目阶段',value('current_work.phase')], ['当前轮次',value('current_work.round')],
+      ['来源阶段标识',value('current_work.phase')], ['来源轮次标识',value('current_work.round')],
       ['当前目标',value('current_work.objective')], ['工作状态',value('current_work.status')],
+      ['负责角色',value('current_work.owner_role')],
       ['业务进度 V/N',`${value('progress.completed')} / ${value('progress.total')}`],
       ['计数依据',value('progress.counting_basis')],
       ['阻塞与待决定',value('blockers')], ['下一步',value('current_work.next_action')],

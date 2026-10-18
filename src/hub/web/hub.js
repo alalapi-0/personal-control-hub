@@ -206,6 +206,7 @@ function summaryView(project,compact=false){
     el('p',{className:attention(project)?'warning':'caption'},'来源与内容：'+summary.quality),
     el('dl',{className:'summary-grid'},...summary.fields.map(([label,text])=>el('div',{},
       el('dt',{},label),el('dd',{className:text==='未知'?'muted':''},shorten(text))))),
+    el('p',{className:'caption'},'阶段与轮次按来源原文展示；未附含义说明时，不作推断。'),
     el('p',{className:'caption'},'最近读取尝试：'+dataTime(summary.observedAt)),
     el('p',{className:summary.historical?'warning':'caption'},'最后成功快照：'+dataTime(summary.snapshotAt)+(summary.snapshotAgeSeconds!==null?` · 距今 ${Math.round(summary.snapshotAgeSeconds/3600*10)/10} 小时`:'')),
     summary.failure?el('p',{className:'warning'},'来源状态：'+summary.failure):null,
