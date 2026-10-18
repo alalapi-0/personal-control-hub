@@ -75,7 +75,7 @@ def assemble_server(root, *, host='127.0.0.1', port=8766, services=None, ordinar
         raise ServiceError('HUB_ROOT_REJECTED')
     services = dict(services or {})
     allowed = {'projects', 'designs', 'host_observer', 'previews', 'tasks',
-               'materials', 'session_view', 'owner_auth'}
+               'materials', 'session_view', 'owner_auth', 'owner_session_store'}
     if set(services) - allowed:
         raise ValueError('Unknown Hub service dependency')
     def dependency(name, factory):
@@ -94,6 +94,8 @@ def assemble_server(root, *, host='127.0.0.1', port=8766, services=None, ordinar
                    session_view=dependency('session_view', lambda: SessionService(hub_root=root)))
     if 'owner_auth' in services:
         options['owner_auth'] = services['owner_auth']
+    from hub.owner_sessions import OwnerSessionStore
+    options['owner_session_store'] = dependency('owner_session_store', lambda: OwnerSessionStore(root))
     server = HubHTTPServer(projects, designs, host=host, port=port, **options)
     if ordinary_runtime is not None:
         try:

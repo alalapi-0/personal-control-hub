@@ -72,13 +72,33 @@ def _reject_constant(_):
 
 
 class _Sessions:
-    def __init__(self, *, clock=time.monotonic, ttl=3600, capacity=32):
+    OWNER_COOKIE_AGE = 400 * 24 * 60 * 60
+
+    def __init__(self, *, clock=time.monotonic, ttl=3600, capacity=32,
+                 owner_store=None, scope=None):
         self.clock, self.ttl, self.capacity = clock, ttl, capacity
+        self.owner_store, self.scope = owner_store, scope
         self.values = {}
         self.lock = threading.Lock()
-        self.cookie_name = "hub_" + secrets.token_hex(8)
+        self.cookie_name = (owner_store.cookie_name(scope) if owner_store is not None
+                            else "hub_" + secrets.token_hex(8))
+
+    def _owner_csrf(self, session):
+        return hmac.new(session.encode('ascii'), b'PCH persistent Owner CSRF v1', hashlib.sha256).hexdigest()
+
+    def cookie_header(self, session, *, owner=False, clear=False):
+        value = f'{self.cookie_name}={session}; HttpOnly; SameSite=Strict; Path=/api'
+        if clear:
+            return value + '; Max-Age=0'
+        if owner and self.owner_store is not None:
+            value += f'; Max-Age={self.OWNER_COOKIE_AGE}'
+        return value
 
     def issue(self, *, owner=False, credential_version=None):
+        if owner and self.owner_store is not None:
+            session = secrets.token_urlsafe(32)
+            self.owner_store.issue(session, self.scope, credential_version)
+            return session, self._owner_csrf(session)
         with self.lock:
             now = self.clock()
             self.values = {key: value for key, value in self.values.items() if value[1] > now}
@@ -106,6 +126,15 @@ class _Sessions:
         session = self._session_id(cookie)
         with self.lock:
             saved = self.values.get(session)
+        if saved is None and self.owner_store is not None:
+            if not self.owner_store.validate(session, self.scope, credential_version):
+                raise ServiceError('SESSION_REQUIRED', status=401)
+            if csrf is not None and (not isinstance(csrf, str) or not csrf.isascii()
+                    or not hmac.compare_digest(self._owner_csrf(session), csrf)):
+                raise ServiceError('CSRF_REJECTED', status=403)
+            return True
+        with self.lock:
+            saved = self.values.get(session)
             if saved is None or saved[1] <= self.clock():
                 self.values.pop(session, None)
                 raise ServiceError("SESSION_REQUIRED", status=401)
@@ -130,7 +159,9 @@ class _Sessions:
                 return self.issue()
             session = self._session_id(cookie)
             try:
-                self.validate(cookie, credential_version=credential_version)
+                owner = self.validate(cookie, credential_version=credential_version)
+                if owner and self.owner_store is not None:
+                    return session, self._owner_csrf(session)
                 with self.lock:
                     saved = self.values.get(session)
                     if saved and saved[1] > self.clock():
@@ -142,22 +173,25 @@ class _Sessions:
     def revoke(self, cookie):
         session = self._session_id(cookie)
         with self.lock:
-            self.values.pop(session, None)
+            saved = self.values.pop(session, None)
+        if saved is None and self.owner_store is not None:
+            self.owner_store.revoke(session, self.scope)
 
 
 class HubHTTPServer(ThreadingHTTPServer):
     """Explicit loopback binding and bounded, joined request workers."""
     daemon_threads = False
-    allow_reuse_address = False
+    # Rebind after a normal shutdown while old accepted sockets are in TIME_WAIT.
+    # SO_REUSEPORT remains disabled: a second live listener is still rejected.
+    allow_reuse_address = True
     request_queue_size = 8
 
-    def __init__(self, projects, designs, *, host="127.0.0.1", port=0, owner_auth=None, host_observer=None, previews=None, tasks=None, materials=None, session_view=None):
+    def __init__(self, projects, designs, *, host="127.0.0.1", port=0, owner_auth=None, host_observer=None, previews=None, tasks=None, materials=None, session_view=None, owner_session_store=None):
         if host != "127.0.0.1":
             raise ServiceError("NON_LOOPBACK_BIND_REJECTED")
         if type(port) is not int or not 0 <= port <= 65535:
             raise ServiceError("INVALID_PORT")
         self.projects, self.designs = projects, designs
-        self.sessions = _Sessions()
         self.owner_auth = owner_auth or OwnerAuth()
         self.host_observer = host_observer
         self.previews = previews
@@ -169,6 +203,7 @@ class HubHTTPServer(ThreadingHTTPServer):
         super().__init__((host, port), HubRequestHandler)
         self.host_header = f"127.0.0.1:{self.server_address[1]}"
         self.origin = "http://" + self.host_header
+        self.sessions = _Sessions(owner_store=owner_session_store, scope=self.origin)
 
     def get_request(self):
         request, address = super().get_request()
@@ -284,6 +319,10 @@ class HubRequestHandler(BaseHTTPRequestHandler):
         return result
 
     def _send(self, data, *, status=200, content_type="application/json; charset=utf-8", headers=None, ui=False):
+        headers = dict(headers or {})
+        if (status < 400 and getattr(self, '_owner_response_session', None)
+                and 'Set-Cookie' not in headers):
+            headers['Set-Cookie'] = self.server.sessions.cookie_header(self._owner_response_session, owner=True)
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(data)))
@@ -359,11 +398,15 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                 self._success({"service": "hub-local", "ui_implemented": True})
             else:
                 session, csrf = self.server.sessions.bootstrap(self._one_header('Cookie'), credential_version=self.server.owner_auth.version)
-                cookie = f"{self.server.sessions.cookie_name}={session}; HttpOnly; SameSite=Strict; Path=/api"
+                owner = self.server.sessions.validate(f'{self.server.sessions.cookie_name}={session}',
+                                                     credential_version=self.server.owner_auth.version)
+                cookie = self.server.sessions.cookie_header(session, owner=owner)
                 self._json({"api_version": API_VERSION, "ok": True, "data": {"csrf_token": csrf}},
                            headers={"Set-Cookie": cookie})
             return
         owner = self.server.sessions.validate(self._one_header("Cookie"), credential_version=self.server.owner_auth.version)
+        if owner and self.server.sessions.owner_store is not None:
+            self._owner_response_session = self.server.sessions._session_id(self._one_header('Cookie'))
         if path == '/api/ledger-head':
             if query:
                 raise ServiceError('INVALID_QUERY')
@@ -598,15 +641,17 @@ class HubRequestHandler(BaseHTTPRequestHandler):
             token = self._one_header("X-Hub-CSRF")
             if not token:
                 raise ServiceError("CSRF_REJECTED", status=403)
-            self.server.sessions.validate(self._one_header("Cookie"), token, credential_version=self.server.owner_auth.version)
+            owner = self.server.sessions.validate(self._one_header("Cookie"), token, credential_version=self.server.owner_auth.version)
+            if owner and self.server.sessions.owner_store is not None:
+                self._owner_response_session = self.server.sessions._session_id(self._one_header('Cookie'))
             command = self._body()
             if path == '/api/owner/login':
                 if set(command) != {'token'}:
                     raise ServiceError('INVALID_OWNER_PROOF')
                 version = self.server.owner_auth.verify(command['token'])
-                self.server.sessions.revoke(self._one_header('Cookie'))
                 session, csrf = self.server.sessions.issue(owner=True, credential_version=version)
-                cookie = f'{self.server.sessions.cookie_name}={session}; HttpOnly; SameSite=Strict; Path=/api'
+                self.server.sessions.revoke(self._one_header('Cookie'))
+                cookie = self.server.sessions.cookie_header(session, owner=True)
                 self._json({'api_version': API_VERSION, 'ok': True, 'data': {'csrf_token': csrf}},
                            headers={'Set-Cookie': cookie})
                 return
@@ -614,7 +659,8 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                 if command:
                     raise ServiceError('INVALID_OWNER_PROOF')
                 self.server.sessions.revoke(self._one_header('Cookie'))
-                self._success({'owner_authenticated': False})
+                self._json({'api_version': API_VERSION, 'ok': True, 'data': {'owner_authenticated': False}},
+                           headers={'Set-Cookie': self.server.sessions.cookie_header('', clear=True)})
                 return
             if path not in {"/api/refresh", "/api/designs/decisions", "/api/designs/exports", '/api/annotations', '/api/task-drafts', '/api/ordinary-drafts', '/api/tasks', '/api/management/project'} and not (path.startswith('/api/tasks/')and path.endswith(('/cancel','/respond','/review'))):
                 raise ServiceError("NOT_FOUND", status=404)

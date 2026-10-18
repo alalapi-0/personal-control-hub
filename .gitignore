@@ -36,3 +36,6 @@ data/connections/preview/
 data/design_governance/*.lock
 data/design_governance/*.sqlite3
 *.json.lock
+
+# Private durable Owner session digests; never publish authentication state.
+/data/owner-auth/
