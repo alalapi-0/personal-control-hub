@@ -152,10 +152,11 @@ function figmaUrl(candidate) {
 
 function previewDialog(image, title) {
   const restore = document.activeElement;
-  const dialog = el("dialog", { className: "dialog", "aria-labelledby": "preview-dialog-title" });
+  const dialog = el("dialog", { className: "dialog", "aria-labelledby": "preview-dialog-title", "aria-describedby": "preview-dialog-note" });
   const close = button("关闭大图", () => dialog.close(), { className: "subtle" });
   dialog.append(
     el("div", { className: "row" }, el("h2", { id: "preview-dialog-title" }, title), close),
+    el("p", { id: "preview-dialog-note", className: "caption" }, "这是静态预览图，仅供查看；图内按钮和表单不能操作。"),
     el("img", { src: image.src, alt: image.alt }),
   );
   dialog.addEventListener("close", () => { dialog.remove(); restore?.focus?.(); });
