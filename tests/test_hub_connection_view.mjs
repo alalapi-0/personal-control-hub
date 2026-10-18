@@ -133,6 +133,103 @@ function authoritative() {
 }
 const facts=(p,options)=>Object.fromEntries(projectFacts(p,options).flatMap(g=>g.fields.map(f=>[f.key,f])));
 
+function withWorkExplanation(key='current_work.objective'){
+  const p=authoritative(),r=p.business.source_record;
+  if(key==='progress.counting_basis'){
+    r.business.progress={counting_basis:'Heterogeneous results have no agreed weights'};
+    r.field_provenance[key]={source_ref:'state',sha256:'a'.repeat(64),selector:{path:['progress','counting_basis']}};
+  }
+  p.project_id='a';r.project_id='a';r.authority={registry_hash:'c'.repeat(64)};
+  p.provenance={registry_sha256:'c'.repeat(64)};
+  const value=key.split('.').reduce((v,k)=>v[k],r.business),proof=r.field_provenance[key];
+  proof.raw_value=value;
+  p.field_explanations={schema_version:'1.0',project_id:'a',fields:{[key]:{
+    text:'按来源材料整理的中文说明',
+    binding:{value,source_ref:proof.source_ref,selector:structuredClone(proof.selector),sha256:proof.sha256},
+    declaration:{kind:'registry',field:'hub_field_explanations.fields.'+key,
+      registry_sha256:'c'.repeat(64),sha256:'c'.repeat(64),
+      basis:[{path:'docs/PLAN.md',sha256:'d'.repeat(64),locator:'当前轮次与检查点'}]},
+  }}};
+  return p;
+}
+
+test('optional work commentary preserves original facts, phase identifiers and exact basis',()=>{
+  for(const key of ['current_work.objective','current_work.phase','current_work.round','current_work.next_action','progress.counting_basis']){
+    const p=withWorkExplanation(key),before=JSON.stringify(p),field=facts(p)[key];
+    assert.equal(field.known,true);assert.equal(field.text,p.field_explanations.fields[key].binding.value);
+    assert.equal(field.explanation.text,'按来源材料整理的中文说明');
+    assert.equal(field.explanation.original,field.text);
+    assert.deepEqual(field.explanation.basis,[{path:'docs/PLAN.md',sha256:'d'.repeat(64),locator:'当前轮次与检查点'}]);
+    assert.equal(projectSummary(p).fieldExplanations[key].text,field.explanation.text);
+    assert.equal(JSON.stringify(p),before);
+  }
+  const p=withWorkExplanation('current_work.phase');
+  assert.equal(Object.fromEntries(projectSummary(p).fields)['来源阶段标识'],'M2');
+});
+
+test('unbound or malformed commentary never substitutes a known source value',()=>{
+  const key='current_work.objective';
+  const changes=[
+    p=>p.field_explanations.project_id='other',p=>p.business.source_record.project_id='other',
+    p=>p.business.source_record.authority.registry_hash='e'.repeat(64),
+    p=>p.field_explanations.schema_version='2.0',p=>p.field_explanations.fields[key].text='',
+    p=>p.field_explanations.fields[key].text='x'.repeat(4001),
+    p=>p.field_explanations.fields[key].binding.value='Different source objective',
+    p=>p.field_explanations.fields[key].binding.source_ref='different',
+    p=>p.field_explanations.fields[key].binding.sha256='e'.repeat(64),
+    p=>p.field_explanations.fields[key].binding.selector={path:['different']},
+    p=>p.field_explanations.fields[key].binding.selector={path:[]},
+    p=>p.field_explanations.fields[key].declaration.field='project_definition.purpose',
+    p=>p.field_explanations.fields[key].declaration.registry_sha256='e'.repeat(64),
+    p=>p.field_explanations.fields[key].declaration.sha256='bad',
+    p=>p.field_explanations.fields[key].declaration.basis=[],
+    p=>p.field_explanations.fields[key].declaration.basis[0].path='../PLAN.md',
+    p=>p.field_explanations.fields[key].declaration.basis[0].path='/PLAN.md',
+    p=>p.field_explanations.fields[key].declaration.basis[0].sha256='bad',
+    p=>p.field_explanations.fields[key].declaration.basis[0].locator='',
+  ];
+  for(const change of changes){
+    const p=withWorkExplanation();change(p);const field=facts(p)[key];
+    assert.equal(field.known,true);assert.equal(field.text,'Repair preview');
+    assert.equal(field.explanation,null);assert.deepEqual(projectSummary(p).fieldExplanations,{});
+  }
+});
+
+test('a naturally changed source retains its new fact and discards the old commentary',()=>{
+  const p=withWorkExplanation(),r=p.business.source_record;
+  r.sources[0].sha256='e'.repeat(64);
+  r.field_provenance['current_work.objective'].sha256='e'.repeat(64);
+  r.field_provenance['current_work.objective'].raw_value='New source objective';
+  r.business.current_work.objective='New source objective';
+  const f=facts(p)['current_work.objective'];
+  assert.equal(f.known,true);assert.equal(f.text,'New source objective');assert.equal(f.explanation,null);
+  assert.equal(Object.fromEntries(projectSummary(p).fields)['当前目标'],'New source objective');
+});
+
+test('current commentary cannot fill unknown facts, decorate history or expand read permission',()=>{
+  const key='current_work.objective';
+  for(const change of [p=>p.freshness.state='stale',p=>p.freshness.authority_drift=true,
+    p=>p.operational.latest_attempt={success:false},p=>p.declared.connection_read_allowed=false,
+    p=>p.freshness.local_presence='removed_local',p=>p.business.source_record.business.current_work.objective=null,
+    p=>delete p.business.source_record.field_provenance[key],p=>p.business.source_record.sources=[]]){
+    const p=withWorkExplanation();change(p);
+    assert.equal(facts(p)[key].explanation,null);
+    assert.equal(facts(p,{history:true})[key].explanation,null);
+  }
+  const p=withWorkExplanation();
+  assert.equal(facts(p,{history:true})[key].text,'Repair preview');
+  assert.equal(facts(p,{history:true})[key].explanation,null);
+});
+
+test('commentary retains mapped source wording without granting completion or acceptance',()=>{
+  const p=withWorkExplanation(),r=p.business.source_record;
+  r.field_provenance['current_work.objective'].raw_value='Original published objective';
+  assert.equal(facts(p)['current_work.objective'].explanation.original,'Original published objective');
+  assert.equal(facts(p)['current_work.accepted'].text,'尚未接受');
+  p.field_explanations.fields['current_work.accepted']=p.field_explanations.fields['current_work.objective'];
+  assert.equal(facts(p)['current_work.accepted'].explanation,null);
+});
+
 test('paused, completed, unaccepted and undelivered facts stay independent with exact provenance',()=>{
   const p=authoritative(),before=JSON.stringify(p),f=facts(p);
   assert.equal(Object.keys(f).length,21);

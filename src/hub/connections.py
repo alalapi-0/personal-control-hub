@@ -85,6 +85,9 @@ def validate_registry_value(value: Any) -> dict:
             # module import cycle while sharing the exact same fact contract.
             from .connection_extensions import validate_project_definition
             validate_project_definition(row["project_definition"])
+        if "hub_field_explanations" in row:
+            from .field_explanations import validate_field_explanations
+            validate_field_explanations(row["hub_field_explanations"])
         # Removed rows remain reportable even when malicious activation flags are present.
         if (row.get("local_presence", {}).get("status") == "removed_local"
                 or row.get("current_state_status") == "removed_local"):

@@ -200,18 +200,34 @@ function syncOverview(){
       el('p',{},'先确认稳定项目身份、唯一状态路径和明确读取权限。非 Git 项目也可以登记；同一项目迁移路径沿用原 ID，旧账本历史保留。'),
       el('p',{className:'caption'},'在本机按接入文档准备单条登记候选，运行 python3 scripts/hub_connections.py register --help。默认只检查；确认登记版本后才显式应用。登记不会创建业务声明、自动运行代码或扩大当前固定范围；缺少声明会如实显示。')));
 }
+function workExplanationEvidence(explanation,label){
+  if(!explanation)return null;
+  return el('details',{className:'work-explanation'},el('summary',{},label+'的原文与说明依据'),
+    el('p',{},'来源原文：'+explanation.original),
+    el('p',{className:'caption'},'Hub 按已登记材料整理的说明，仅适用于所核对的来源版本；不代表新的来源事实或用户批准。'),
+    el('ul',{},...explanation.basis.map(ref=>el('li',{},ref.path+' · '+ref.locator))),
+    el('details',{},el('summary',{},'说明依据的技术版本'),
+      el('p',{className:'caption'},'登记版本：'+explanation.registrySha256),
+      ...explanation.basis.map(ref=>el('p',{className:'caption'},ref.path+' · '+ref.sha256))));
+}
 function summaryView(project,compact=false){
   const summary=projectSummary(project);
   const identifiers=new Set(['来源阶段标识','来源轮次标识']);
+  const keys={'当前目标':'current_work.objective','下一步':'current_work.next_action',
+    '来源阶段标识':'current_work.phase','来源轮次标识':'current_work.round','计数依据':'progress.counting_basis'};
+  const explanation=label=>summary.fieldExplanations[keys[label]];
   const shorten=text=>compact && text.length>140 ? text.slice(0,140)+'…（详情中查看完整内容）' : text;
   return el('div',{className:'project-summary'},
     el('p',{className:attention(project)?'warning':'caption'},'来源与内容：'+summary.quality),
     el('dl',{className:'summary-grid'},...summary.fields.filter(([label])=>!identifiers.has(label)).map(([label,text])=>el('div',{},
-      el('dt',{},label),el('dd',{className:text==='未知'?'muted':''},shorten(text))))),
+      el('dt',{},label),el('dd',{className:text==='未知'?'muted':''},shorten(explanation(label)?.text??text)),
+      workExplanationEvidence(explanation(label),label)))),
     el('details',{},el('summary',{},'来源阶段与轮次标识'),
       el('p',{className:'caption'},'以下保留来源原文；标识本身不代表已提供阶段含义说明，不据此推断工作状态。'),
       el('dl',{},...summary.fields.filter(([label])=>identifiers.has(label)).map(([label,text])=>
-        el('div',{},el('dt',{},label),el('dd',{},text))))),
+        el('div',{},el('dt',{},label),el('dd',{},text),
+          explanation(label)?el('p',{},explanation(label).text):null,
+          workExplanationEvidence(explanation(label),label))))),
     el('p',{className:'caption'},'最近读取尝试：'+dataTime(summary.observedAt)),
     el('p',{className:summary.historical?'warning':'caption'},'最后成功快照：'+dataTime(summary.snapshotAt)+(summary.snapshotAgeSeconds!==null?` · 距今 ${Math.round(summary.snapshotAgeSeconds/3600*10)/10} 小时`:'')),
     summary.failure?el('p',{className:'warning'},'来源状态：'+summary.failure):null,
@@ -242,7 +258,8 @@ function definitionView(project){
 function factsView(project,history=false){
   return el('div',{className:'stack'},...projectFacts(project,{history}).map((group,index)=>el(index<2?'section':'details',{className:'stack'},
     el(index<2?'h3':'summary',{},group.title),el('dl',{},...group.fields.map(f=>el('div',{},el('dt',{},f.label),
-      el('dd',{className:f.known?'':'muted'},f.text),
+      el('dd',{className:f.known?'':'muted'},f.explanation?.text??f.text),
+      workExplanationEvidence(f.explanation,f.label),
       f.provenance?el('details',{},el('summary',{},f.label+'的来源'),
         el('p',{},f.provenance.path),el('p',{className:'caption'},'来源选择器：'+JSON.stringify(f.provenance.selector)),
         el('p',{className:'caption'},'观察时间：'+time(f.provenance.observed_at)),

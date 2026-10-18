@@ -26,6 +26,7 @@ from hub.connection_refresh import (GENESIS_HASH, HeadConflictError, LedgerBusyE
                                     refresh as refresh_projects)
 from hub.connection_sources import SourceResolver
 from hub.service_contract import ServiceError
+from hub.field_explanations import field_explanations
 
 
 QUERY_FIELDS = {"q", "status", "freshness", "order", "offset", "limit"}
@@ -909,6 +910,7 @@ class ProjectService:
         return {"schema_version": "1.0", "project_id": row["project_id"],
                 "name": row["name"], "declared": declared_view,
                 "definition": self._definition(declared, latest, row["freshness"], snapshot["authority"], connection_read_allowed),
+                "field_explanations": field_explanations(declared, latest, row["freshness"], snapshot["authority"], connection_read_allowed),
                 "business": business, "last_success_snapshot": last_success_snapshot,
                 "operational": {"facts": [], "latest_attempt": source_record,
                                 "last_success": copy.deepcopy(previous)},

@@ -66,6 +66,49 @@ function factText(key, value) {
   return Array.isArray(value) ? (value.join('\n') || '来源未列出证据') : String(value);
 }
 
+function validSourceSelector(selector) {
+  if(selector===null||typeof selector!=='object'||Array.isArray(selector))return false;
+  const keys=Object.keys(selector),text=value=>typeof value==='string'&&value.trim().length>0&&value.trim().length<=16000;
+  if(keys.length===1&&keys[0]==='path')return Array.isArray(selector.path)
+    &&selector.path.length>0&&selector.path.length<=20
+    &&selector.path.every(part=>(typeof part==='string'&&part.length>0&&part.length<=160)
+      ||(typeof part==='number'&&Number.isInteger(part)&&part>=0));
+  if(keys.length!==2||!keys.includes('heading')||!text(selector.heading))return false;
+  const key=keys.find(name=>name!=='heading');
+  return key==='ordered_item'?Number.isInteger(selector[key])&&selector[key]>0
+    :['label','boolean_label','table_label'].includes(key)&&text(selector[key]);
+}
+
+// Registry commentary is optional. A changed source falls back to its original
+// fact without changing collection, business values or acceptance authority.
+function fieldExplanation(project,key,value,proof) {
+  const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
+  const hash=v=>typeof v==='string'&&/^[0-9a-f]{64}$/.test(v);
+  const text=(v,max)=>typeof v==='string'&&v.trim().length>0&&v.length<=max;
+  const envelope=project?.field_explanations,entry=envelope?.fields?.[key];
+  if(!['current_work.objective','current_work.phase','current_work.round','current_work.next_action','progress.counting_basis'].includes(key)
+    ||envelope?.schema_version!=='1.0'||envelope.project_id!==project.project_id
+    ||!object(entry)||!text(entry.text,4000)||typeof value!=='string')return null;
+  const binding=entry.binding,decl=entry.declaration,registry=project?.provenance?.registry_sha256;
+  const record=project?.business?.source_record;
+  const selectorKey=s=>JSON.stringify(Object.entries(s).sort(([a],[b])=>a.localeCompare(b)));
+  const path=p=>typeof p==='string'&&p.length<=16000&&!/[\\:]/.test(p)&&!p.startsWith('/')
+    &&p.split('/').every(part=>part&&part!=='.'&&part!=='..'&&part!=='~')
+    &&/\.(md|txt|ya?ml|json)$/i.test(p);
+  if(record?.project_id!==project.project_id||record?.authority?.registry_hash!==registry
+    ||!object(binding)||binding.value!==value||binding.source_ref!==proof?.source_ref
+    ||typeof binding.source_ref!=='string'||! /^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$/.test(binding.source_ref)
+    ||!hash(binding.sha256)||binding.sha256!==proof?.sha256
+    ||!validSourceSelector(binding.selector)||!validSourceSelector(proof?.selector)
+    ||selectorKey(binding.selector)!==selectorKey(proof.selector)
+    ||!object(decl)||decl.kind!=='registry'||decl.field!=='hub_field_explanations.fields.'+key
+    ||!hash(registry)||decl.registry_sha256!==registry||decl.sha256!==registry
+    ||!Array.isArray(decl.basis)||decl.basis.length<1||decl.basis.length>8
+    ||!decl.basis.every(ref=>object(ref)&&path(ref.path)&&hash(ref.sha256)&&text(ref.locator,512)))return null;
+  const original=typeof proof.raw_value==='string'?proof.raw_value:String(value);
+  return {text:entry.text,original,basis:decl.basis.map(ref=>({...ref})),registrySha256:registry};
+}
+
 // These are projections of validated authority records, never process/task/commit
 // heuristics. A stale last-success is available only as explicitly dated history.
 export function projectFacts(project, {history=false}={}) {
@@ -81,6 +124,7 @@ export function projectFacts(project, {history=false}={}) {
     return {key,label,known,text:known?factText(key,value):'未知 · 来源未提供当前值',
       reason:known?null:(history ? record?.unknown_fields?.[key] : project?.business?.unknown_fields?.[key]) || record?.unknown_fields?.[key]
         || project?.freshness?.stale_reason || '当前来源或字段证据不可用。',
+      explanation:known&&!history?fieldExplanation(project,key,value,proof):null,
       provenance:known?{path:source.path,selector:proof.selector,sha256:proof.sha256,
         observed_at:record.observed_at}:null};
   })}));
@@ -95,7 +139,6 @@ export function projectTasks(tasks, projectId) {
 export function validDefinitionSource(source,key) {
   const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
   const hash=value=>typeof value==='string'&&/^[0-9a-f]{64}$/.test(value);
-  const text=value=>typeof value==='string'&&value.trim().length>0&&value.trim().length<=16000;
   if(!object(source)||!hash(source.registry_sha256)||!hash(source.sha256))return false;
   if(source.kind==='registry'){
     const legacy={official_name:'name',purpose:'description',project_type:'project_type'};
@@ -106,15 +149,7 @@ export function validDefinitionSource(source,key) {
     ||typeof source.source_ref!=='string'||! /^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$/.test(source.source_ref)
     ||typeof source.observed_at!=='string'||! /T.*(?:Z|[+-]\d{2}:\d{2})$/.test(source.observed_at)
     ||!Number.isFinite(Date.parse(source.observed_at))||!object(source.selector))return false;
-  const selector=source.selector,keys=Object.keys(selector);
-  if(keys.length===1&&keys[0]==='path')return Array.isArray(selector.path)
-    &&selector.path.length>0&&selector.path.length<=20
-    &&selector.path.every(part=>(typeof part==='string'&&part.length>0&&part.length<=160)
-      ||(typeof part==='number'&&Number.isInteger(part)&&part>=0));
-  if(keys.length!==2||!keys.includes('heading')||!text(selector.heading))return false;
-  const selectorKey=keys.find(name=>name!=='heading');
-  return selectorKey==='ordered_item'?Number.isInteger(selector.ordered_item)&&selector.ordered_item>0
-    :['label','boolean_label','table_label'].includes(selectorKey)&&text(selector[selectorKey]);
+  return validSourceSelector(source.selector);
 }
 
 export function projectDefinition(project) {
@@ -160,6 +195,7 @@ export function projectSummary(project) {
   const allFacts=Object.values(facts),knownFacts=allFacts.filter(field=>field.known).length;
   const snapshot=project?.last_success_snapshot;
   return {
+    fieldExplanations:Object.fromEntries(Object.values(facts).filter(f=>f.explanation).map(f=>[f.key,f.explanation])),
     fields:[
       ['来源阶段标识',value('current_work.phase')], ['来源轮次标识',value('current_work.round')],
       ['当前目标',value('current_work.objective')], ['工作状态',value('current_work.status')],
