@@ -50,6 +50,7 @@ def _no_sidecars(store):
 
 def _snapshot(store, raw):
     from .task_store import SCHEMA, SCHEMA_VERSION, MAX_TASKS, MAX_EVENTS, TERMINAL, ORDINARY_DRAFT_TABLES
+    from .rr_feedback import RR_DDL, RR_TABLES, RRFeedbackError, validate_snapshot
 
     with contextlib.closing(sqlite3.connect(':memory:')) as db, \
             contextlib.closing(sqlite3.connect(':memory:')) as expected:
@@ -60,6 +61,10 @@ def _snapshot(store, raw):
         if optional:
             if len(optional)!=2:raise blocked('RESTORE_SCHEMA_UNSUPPORTED')
             for statement in ORDINARY_DRAFT_TABLES.values():expected.execute(statement)
+        rr_optional=db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'rr_%'").fetchall()
+        if rr_optional:
+            if {row[0] for row in rr_optional} != set(RR_TABLES):raise blocked('RESTORE_SCHEMA_UNSUPPORTED')
+            for statement in RR_DDL:expected.execute(statement)
         schema = 'SELECT type,name,tbl_name,sql FROM sqlite_master ORDER BY type,name'
         # Only the known schema is eligible, excluding triggers, views and custom DDL.
         if db.execute(schema).fetchall() != expected.execute(schema).fetchall():
@@ -93,6 +98,9 @@ def _snapshot(store, raw):
         tables=('meta','tasks','events','grants','sqlite_sequence')+tuple(ORDINARY_DRAFT_TABLES if optional else ())
         content = {table: [list(row) for row in db.execute('SELECT * FROM ' + table + ' ORDER BY rowid')]
                    for table in tables}
+        if rr_optional:
+            try:content.update(validate_snapshot(db))
+            except RRFeedbackError:raise blocked('RESTORE_DATABASE_CORRUPT') from None
         # Also reject non-JSON SQLite values rather than alter their representation.
         canonical(content)
         return profile, content
