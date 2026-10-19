@@ -15,6 +15,7 @@ from .rr_binding import load_binding, browser_binding, denied, SOCKET, KEY_PROVI
 from .rr_payload import canonical_json
 from .rr_feedback import RRFeedbackStore
 from .rr_read_model import RRReadModel
+from .rr_guard import CurrentGuard
 from .rr_service import RRApplication, UnixRRServer, build_manifest, public_resources
 
 
@@ -103,10 +104,12 @@ def attach_rr_gateway(server, *, code_root, binding_path, key_fd=None):
     gateway=None;runtime=None
     try:
         if getattr(server,'rr_runtime',None) is not None:raise denied()
-        binding,store,source=load_binding(binding_path,code_root=code_root,store=server.tasks.store)
+        current=CurrentGuard(server,code_root,binding_path)
+        binding,store,source=load_binding(binding_path,code_root=code_root,store=server.tasks.store,reader=current.read)
         if server.projects.root != store.root:raise denied()
         if not binding['browser_enabled']:
             return None
+        current.freeze(binding)
         browser_binding(binding)
         fd = key_fd if key_fd is not None else request_key_fd(binding)
         key_fd=None
@@ -116,7 +119,7 @@ def attach_rr_gateway(server, *, code_root, binding_path, key_fd=None):
         resources=public_resources(code_root);manifest=build_manifest(code_root,resources,pages,source=source)
         auth=GatewayAuth(key,binding['devices'],binding['project_id'],binding['origin'],binding['gateway_uid'],binding['agent_uid'])
         model=RRReadModel(server.projects,store,ids,manifest['source'])
-        app=RRApplication(RRFeedbackStore(store),auth,manifest,resources,read_model=model)
+        app=RRApplication(RRFeedbackStore(store),auth,manifest,resources,read_model=model,current_guard=current.check)
         gateway=UnixRRServer(SOCKET,app,socket_gid=binding['gateway_gid'])
         runtime=RRRuntime(gateway);old_close=server.server_close
         def close_owned():

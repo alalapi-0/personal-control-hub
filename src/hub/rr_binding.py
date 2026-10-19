@@ -20,12 +20,12 @@ def denied():
     return RRFeedbackError(503, 'RR_INSTALLATION_NOT_READY')
 
 
-def private_json(path, maximum=131072):
+def private_json(path, maximum=131072, *, reader=None):
     from .rr_cli import _regular, _directories
     path = Path(path)
     _directories(path.parent)
     try:
-        raw = _regular(path, maximum, private=True)
+        raw = (reader or _regular)(path, maximum, private=True)
         value = json.loads(raw)
         if canonical_json(value) != raw:
             raise denied()
@@ -34,10 +34,10 @@ def private_json(path, maximum=131072):
         raise denied() from None
 
 
-def verify_program(code_root, program_id):
+def verify_program(code_root, program_id, *, reader=None):
     from .rr_cli import _regular, _directories
     code_root = Path(code_root).absolute()
-    manifest = private_json(code_root / 'rr-runtime-manifest.json')
+    manifest = private_json(code_root / 'rr-runtime-manifest.json', reader=reader)
     if set(manifest) != {'schema','program_id','files','source'} or manifest['schema'] != 1:
         raise denied()
     files = manifest['files']
@@ -52,7 +52,7 @@ def verify_program(code_root, program_id):
             raise denied()
         target = code_root / path
         _directories(target.parent)
-        raw = _regular(target, 2*1024*1024)
+        raw = (reader or _regular)(target, 2*1024*1024)
         if item != {'size':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}:
             raise denied()
     source = manifest['source']
@@ -62,15 +62,15 @@ def verify_program(code_root, program_id):
     return source
 
 
-def load_binding(path, *, code_root, store=None):
+def load_binding(path, *, code_root, store=None, reader=None):
     from .rr_cli import _directories
     code_root = Path(code_root).absolute()
-    install = private_json(code_root / 'rr-installation.json')
+    install = private_json(code_root / 'rr-installation.json', reader=reader)
     if (set(install) != {'schema','project_id','program_id','code_root','data_root','binding_path'}
             or install['schema'] != 1 or install['project_id'] != 'personal-control-hub'
             or install['code_root'] != str(code_root) or install['binding_path'] != str(Path(path).absolute())):
         raise denied()
-    binding = private_json(path)
+    binding = private_json(path, reader=reader)
     if (type(binding) is not dict or set(binding) != BINDING_KEYS or binding['schema'] != 2
             or binding['project_id'] != 'personal-control-hub'
             or any(binding[k] != install[k] for k in ('project_id','program_id','code_root','data_root'))
@@ -97,11 +97,13 @@ def load_binding(path, *, code_root, store=None):
         info = target.lstat()
         if info.st_uid != os.getuid() or info.st_mode & 0o077 or target.is_symlink() or info.st_nlink != 1:
             raise denied()
+    from .rr_cli import _regular
+    registration = (reader or _regular)(store.registration_path, 16384, private=True)
     if ([store.path.stat().st_dev,store.path.stat().st_ino] != binding['ledger_identity']
-            or hashlib.sha256(store.registration_path.read_bytes()).hexdigest() != binding['storage_registration_sha256']):
+            or hashlib.sha256(registration).hexdigest() != binding['storage_registration_sha256']):
         raise denied()
     store.check_storage(readonly=True)
-    source = verify_program(code_root, binding['program_id'])
+    source = verify_program(code_root, binding['program_id'], reader=reader)
     return binding, store, source
 
 

@@ -139,6 +139,7 @@ class V2Tests(unittest.TestCase):
         original=GatewayAuth
         def auth(*args):return original(*args,fixture=True)
         with mock.patch('hub.rr_runtime.load_binding',return_value=(binding,self.task,{'commit':'a'*40,'dirty':False})),\
+             mock.patch('hub.rr_runtime.CurrentGuard'),\
              mock.patch('hub.rr_runtime.browser_binding'),mock.patch('hub.rr_runtime.GatewayAuth',side_effect=auth),\
              mock.patch('hub.rr_runtime.UnixRRServer',side_effect=Gateway):
             runtime=attach_rr_gateway(server,code_root=REPO,binding_path='unused',key_fd=sealed())

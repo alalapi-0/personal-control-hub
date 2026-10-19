@@ -116,6 +116,26 @@ its exact socket inode through server.server_close. Normal8766 management routin
 and Owner credential directives are retained; ordinary executor defaults OFF.
 No separate Browser business writer process or runtime is started.
 
+The same Owner process also installs a current-identity guard. The initial
+existing program/content verification captures bounded file SHA-256 and stable
+metadata for binding, registration, installation/runtime manifests and every
+runtime-manifest member. Each Browser request checks those metadata, physical
+registered root/ancestor and ledger identities, and the exact service/store
+objects. It does not reread source files, rehash the repository, start findmnt,
+or create a monitoring thread on this hot path. Ledger size/timestamps and
+directory timestamps may change during normal database work; their physical
+identities and permissions remain pinned. Existing TaskStore checks still
+enforce registration, mount and storage rules at transaction boundaries.
+
+The guard runs before and after dispatch, before success headers, before each
+64 KiB response write, and in the existing final pre-commit callback alongside
+gateway authorization. Drift latches refusal until a new verified attachment.
+Before headers the response is a fixed503; after headers the connection closes
+without later chunks or a fabricated receipt. A possibly committed submission
+must be recovered by its original UUID after the binding is reconciled. This is
+bounded identity observation, not filesystem locking or resistance to root;
+native provisioning must keep these paths protected from other writers.
+
 Browser endpoint is `/run/pch-rr/browser.sock`. Its parent is Owner-owned,
 gateway group,0750 (or2750 to inherit that group without supplementary-group
 changes); socket0660. Group membership must include the dedicated gateway and
@@ -200,3 +220,25 @@ socket access, mTLS devices mapping, OS-protected sealed-FD provider, exact
 installation/preimage review, and the necessary Owner native authentication.
 No current service, Owner session, blocked Goal, original98/G10/final acceptance,
 real DB or cross-network payload is changed merely by this candidate.
+
+## Local grouped artifact handoff
+
+The fixed Owner-only handoff file is
+`.venv/pch-task-storage/rr-adapter-v1/artifact-manifest.json` under the PCH
+business root. This is a local artifact inventory, not a Browser endpoint or
+permission for the gateway UID to traverse the Owner tree. It uses schema
+`pch-rr-grouped-artifact/v1`, exact delivered source/program/build identities,
+and a `groups` object:
+
+- `runtime_program`: package root and every runtime-manifest file, keyed by
+  relative path with exact `bytes` and `sha256`.
+- `native_metadata`: remaining native packet files, with the same file schema;
+  together these first two groups exhaust the native packet without duplicates.
+- `review_resources`: opaque resource IDs, routes, runtime-relative references,
+  exact byte lengths and SHA-256 for every public asset.
+- `repository_delta`: delivered source/test/document files and their commit.
+- `readonly_data`: bounded actual snapshot files with byte/SHA/revision/time and
+  explicit local-read-only evidence classification.
+
+Snapshots and private native plans remain Owner-only. The artifact does not
+contain HMAC keys, Owner proofs, sessions or an installation/activation result.
