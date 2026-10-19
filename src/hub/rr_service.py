@@ -14,6 +14,17 @@ import subprocess
 from .rr_auth import GatewayDenied, canonical
 
 MAX_BODY = 2129920
+PUBLIC_ASSETS = {
+    'pch-icon': ('icon.svg', 'image/svg+xml'),
+    'pch-style': ('hub.css', 'text/css; charset=utf-8'),
+    'pch-dom': ('dom.mjs', 'text/javascript; charset=utf-8'),
+    'review-page': ('rr.html', 'text/html; charset=utf-8'),
+    'review-script': ('rr.js', 'text/javascript; charset=utf-8'),
+}
+
+
+def public_resources(root):
+    return {ident: Path(root) / 'src/hub/web' / item[0] for ident, item in PUBLIC_ASSETS.items()}
 
 
 class RequestError(Exception):
@@ -21,11 +32,11 @@ class RequestError(Exception):
         self.status, self.code = status, code
 
 
-def build_manifest(repo_root, resources, page_paths=('/',)):
+def build_manifest(repo_root, resources, page_paths=('/',), *, source=None):
     root = Path(repo_root).resolve(strict=True)
     def git(*args):
         return subprocess.check_output(['git', '-C', str(root), *args], stderr=subprocess.DEVNULL, timeout=10).decode().strip()
-    commit = git('rev-parse', 'HEAD')
+    commit = source['commit'] if source is not None else git('rev-parse', 'HEAD')
     if not re.fullmatch('[0-9a-f]{40,64}', commit):
         raise ValueError('source unavailable')
     frozen, build = {}, hashlib.sha256()
@@ -41,21 +52,26 @@ def build_manifest(repo_root, resources, page_paths=('/',)):
             current = current / part
             if current.is_symlink():
                 raise ValueError('resource symlink rejected')
-        if relative.as_posix() != 'src/hub/web/icon.svg' or not path.is_file():
+        expected = PUBLIC_ASSETS.get(ident)
+        if expected is None or relative.as_posix() != 'src/hub/web/' + expected[0] or not path.is_file():
             raise ValueError('resource is not public allowlisted content')
         data = path.read_bytes()
         digest = hashlib.sha256(data).hexdigest()
         frozen[ident] = {'id':ident, 'sha256':digest, 'mode':'readonly', 'preview_version':digest}
         build.update(ident.encode() + data)
-    for name in ('rr_auth.py','rr_service.py','rr_feedback.py','rr_payload.py'):
+    for name in ('rr_auth.py','rr_service.py','rr_feedback.py','rr_payload.py','rr_read_model.py','rr_runtime.py','rr_binding.py','rr_cli.py'):
         build.update((root/'src/hub'/name).read_bytes())
     if not page_paths or any(not isinstance(p, str) or not p.startswith('/') or '?' in p or '#' in p or '..' in p or '\\' in p for p in page_paths):
         raise ValueError('page path rejected')
     return {'schema':1, 'project_id':'personal-control-hub',
-            'source':{'commit':commit,'build_id':build.hexdigest(),'dirty':bool(git('status','--porcelain','--untracked-files=normal'))},
+            'source':{'commit':commit,'build_id':build.hexdigest(),'dirty':source['dirty'] if source is not None else bool(git('status','--porcelain','--untracked-files=normal'))},
             'page_paths':list(page_paths), 'resources':list(frozen.values()),
+            'routes':{'pages':[{'method':'GET','path':p} for p in page_paths if p.startswith('/__rr/review/')],
+                      'resources':[{'method':'GET','path':'/__rr/v1/resources/'+i} for i in frozen],
+                      'data':[{'method':'GET','path':p} for p in ('/__rr/v1/data/projects','/__rr/v1/data/projects/{project_id}','/__rr/v1/data/projects/{project_id}/tasks')],
+                      'feedback':[{'method':m,'path':p} for m,p in [('POST','/__rr/v1/feedback'),('GET','/__rr/v1/feedback/by-request/{UUID}'),('GET','/__rr/v1/feedback/{feedback_id}'),('GET','/__rr/v1/feedback/{feedback_id}/attachments/{attachment_id}')]]},
             'transport':{'websocket':False,'sse':False},
-            'purpose':'PCH public review metadata; private project and task data are excluded.'}
+            'purpose':'PCH real read-only project review, explicit field projection and feedback.'}
 
 
 def parse_multipart(content_type, body):
@@ -93,7 +109,7 @@ def parse_multipart(content_type, body):
         name, filename = disposition.groups()
         media = headers.get('content-type','')
         if name == 'feedback':
-            if filename is not None or media not in ('application/json','application/json; charset=utf-8'):
+            if filename is not None or media not in ('','application/json','application/json; charset=utf-8'):
                 raise RequestError(415, 'RR_JSON_REQUIRED')
             if len(data)>16384:
                 raise RequestError(413, 'RR_JSON_TOO_LARGE')
@@ -124,8 +140,9 @@ def parse_multipart(content_type, body):
 
 
 class RRApplication:
-    def __init__(self, store, auth, manifest, resources):
+    def __init__(self, store, auth, manifest, resources, read_model=None):
         self.store, self.auth = store, auth
+        self.read_model = read_model
         self.manifest = json.loads(canonical(manifest))
         if self.manifest['project_id'] != auth.project_id:
             raise ValueError('project binding mismatch')
@@ -157,9 +174,21 @@ class RRApplication:
             raise RequestError(400, 'RR_BODY_REJECTED')
         if method == 'GET' and path == '/__rr/v1/manifest':
             return 200, self.manifest, 'application/json'
+        if method == 'GET' and path in self.manifest['page_paths'] and path.startswith('/__rr/review/'):
+            if 'review-page' not in self.resources:
+                raise RequestError(503, 'RR_VIEW_NOT_READY')
+            return 200, self.resources['review-page'], 'text/html; charset=utf-8'
         resource = re.fullmatch(r'/__rr/v1/resources/([a-z0-9_-]{1,64})',path)
         if method == 'GET' and resource and resource[1] in self.resources:
-            return 200,self.resources[resource[1]],'image/svg+xml'
+            media = PUBLIC_ASSETS.get(resource[1], ('', 'application/octet-stream'))[1]
+            return 200,self.resources[resource[1]],media
+        data = re.fullmatch(r'/__rr/v1/data/projects(?:/([A-Za-z0-9_-]{1,128})(/tasks)?)?', path)
+        if method == 'GET' and data:
+            if self.read_model is None:
+                raise RequestError(503, 'RR_VIEW_NOT_READY')
+            result = (self.read_model.directory() if data[1] is None else
+                      self.read_model.tasks(data[1]) if data[2] else self.read_model.project(data[1]))
+            return 200, result, 'application/json'
         if method == 'POST' and path == '/__rr/v1/feedback':
             document, attachments = parse_multipart(headers.get('content-type',''),body)
             from .rr_payload import validate_submission
@@ -183,6 +212,9 @@ class RRApplication:
 
 class _Handler(BaseHTTPRequestHandler):
     protocol_version = 'HTTP/1.0'
+    def setup(self):
+        self.request.settimeout(5)
+        super().setup()
     def log_message(self,*args):
         pass
     def send_error(self, code, message=None, explain=None):
@@ -228,7 +260,9 @@ class _Handler(BaseHTTPRequestHandler):
         self.send_header('Content-Length',str(len(data)))
         self.send_header('Cache-Control','no-store')
         self.send_header('X-Content-Type-Options','nosniff')
-        self.send_header('Content-Security-Policy',"default-src 'none'; sandbox")
+        csp = ("default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; "
+               "img-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'none'")
+        self.send_header('Content-Security-Policy', csp if media.startswith('text/html') else "default-src 'none'; sandbox")
         self.end_headers()
         self.wfile.write(data)
     do_GET = do_POST = do_PUT = do_DELETE = do_PATCH = do_OPTIONS = do_HEAD = _run
@@ -245,7 +279,7 @@ class UnixRRServer(socketserver.UnixStreamServer):
         if fixture:
             if not app.auth.fixture or stat.S_IMODE(info.st_mode) != 0o700:
                 raise ValueError('fixture socket directory rejected')
-        elif (app.auth.fixture or socket_gid is None or info.st_gid != socket_gid or stat.S_IMODE(info.st_mode) != 0o750 or socket_gid == os.getegid()):
+        elif (app.auth.fixture or socket_gid is None or info.st_gid != socket_gid or stat.S_IMODE(info.st_mode) not in (0o750,0o2750) or socket_gid == os.getegid()):
             raise ValueError('protected gateway group required')
         # Never unlink an existing socket or overwrite a user path.
         if path.exists() or path.is_symlink():
@@ -254,7 +288,7 @@ class UnixRRServer(socketserver.UnixStreamServer):
         super().__init__(str(path),_Handler)
         self._socket_identity = (path.stat().st_dev,path.stat().st_ino)
         try:
-            if not fixture:
+            if not fixture and path.stat().st_gid != socket_gid:
                 os.chown(path,-1,socket_gid)
             os.chmod(path,0o600 if fixture else 0o660)
         except BaseException:

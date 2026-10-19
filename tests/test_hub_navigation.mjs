@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
 import {parseHubRoute,errorRecovery,api} from '../src/hub/web/common.js';
 
 test('project deep links keep section identity separate from public directory query',()=>{
@@ -9,6 +11,37 @@ test('project deep links keep section identity separate from public directory qu
   const detail=parseHubRoute('#projects/fixture-project-a/tasks');
   assert.deepEqual(detail.parts,['projects','fixture-project-a','tasks']);
   assert.equal(parseHubRoute('#projects/%broken').parts[1],'');
+});
+
+test('late RR feedback response cannot replace a newer project page or its context',async()=>{
+  const node=(tag,attrs={},...children)=>({tag,value:'',...attrs,children,
+    append(...items){this.children.push(...items);},prepend(...items){this.children.unshift(...items);},
+    replaceChildren(...items){this.children=items;},addEventListener(){},setAttribute(){},focus(){}});
+  const main=node('main'),notice=node('notice'),footer=node('pre');
+  const location={hash:'#projects'};let hold=false,release;
+  const envelope=revision=>({revision,observed_at:'2026-10-19T00:00:00Z',data:{projects:[],total:0}});
+  const response=value=>({ok:true,json:async()=>value});
+  const context=vm.createContext({console,AbortController,setTimeout,clearTimeout,location,
+    localStorage:{getItem(){return null;}},el:node,button:(label,fn,attrs)=>node('button',attrs,label),
+    document:{querySelector:selector=>({'#main':main,'#notice':notice,'#rr-context':footer}[selector])},
+    window:{addEventListener(){},scrollTo(){}},
+    fetch:async path=>{
+      if(path.endsWith('/manifest'))return response({source:{},resources:[]});
+      if(hold)return new Promise(resolve=>{release=()=>resolve(response(envelope('old-feedback')));});
+      return response(envelope('current-projects'));
+    }});
+  const source=readFileSync(new URL('../src/hub/web/rr.js',import.meta.url),'utf8');
+  vm.runInContext(source.replace(/^import [^\n]+\n/,''),context);
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(main.children[0].children[0],'项目审核');
+  hold=true;location.hash='#feedback';const old=vm.runInContext('route()',context);
+  assert.equal(typeof release,'function');
+  hold=false;location.hash='#projects';await vm.runInContext('route()',context);
+  const currentContext=footer.textContent;
+  release();await old;
+  assert.equal(main.children[0].children[0],'项目审核');
+  assert.equal(footer.textContent,currentContext);
+  assert.match(footer.textContent,/current-projects/);
 });
 
 test('identity, permission, missing object, conflict, service, timeout and offline have distinct recovery',()=>{

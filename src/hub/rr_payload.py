@@ -316,8 +316,13 @@ def _content(data, content_type):
 
 def validate_submission(document, attachments, project_id):
     """Return canonical body and independently checked, in-document-order bytes."""
-    _keys(document, ('schema', 'client_request_id', 'project_id', 'page_path', 'source', 'resource',
-                     'description', 'expected', 'actual', 'steps', 'submitted_at', 'attachments'))
+    context = document.get('context') if type(document) is dict else None
+    required = ('schema', 'client_request_id', 'project_id', 'page_path', 'source', 'resource',
+                'description', 'expected', 'actual', 'steps', 'submitted_at', 'attachments')
+    _keys(document, required + (('context',) if type(document) is dict and 'context' in document else ()))
+    if type(document) is dict and 'context' in document:
+        _keys(context, ('data_revision', 'observed_at'))
+        _sha(context['data_revision']); timestamp(context['observed_at'])
     body = canonical_json(document)
     if len(body) > MAX_DOCUMENT:
         _bad('RR_DOCUMENT_TOO_LARGE', 413)

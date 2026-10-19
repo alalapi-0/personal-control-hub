@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Start the single-user Hub UI and API on literal loopback."""
 import argparse
+import contextlib
+import os
+import signal
 import subprocess
 import sys
 from pathlib import Path
@@ -18,6 +21,7 @@ from hub.workbench_store import WorkbenchStore
 from hub.task_store import TaskStore
 from hub.task_service import TaskService
 from hub.service_contract import ServiceError
+from hub.rr_payload import RRFeedbackError
 from hub.material_service import MaterialService
 from hub.session_service import SessionService
 from hub.readonly_preview import ReadOnlyPreview, MANIFEST
@@ -119,6 +123,10 @@ def main(argv=None):
     parser.add_argument("--port", type=int, default=8766)
     parser.add_argument('--owner-auth', choices=['environment', 'systemd-credential'],
                         default='environment', help='Explicit Owner proof provider; OS mode has no environment fallback')
+    parser.add_argument('--rr-binding', type=Path,
+                        help='Explicit protected RR installation binding; same-process Browser socket, no independent store')
+    parser.add_argument('--rr-key-fd', type=int,
+                        help='Inherited anonymous sealed credential FD number, never a key value')
     parser.add_argument("--readonly-preview", choices=["computer-study-plan"],
                         help="Start the explicitly granted read-only development fixture")
     ordinary = parser.add_mutually_exclusive_group()
@@ -127,16 +135,29 @@ def main(argv=None):
     ordinary.add_argument('--ordinary-real-readonly-grant', action='append', default=[],
                         help='Explicit existing real ordinary grant ID; starts up to two owned read-only tasks')
     args = parser.parse_args(argv)
+    if args.rr_key_fd is not None and args.rr_binding is None:
+        parser.error('RR credential FD requires the explicit binding')
     if args.ordinary_real_readonly_grant and args.readonly_preview:
         parser.error('Real ordinary execution cannot start a preview runtime')
     server = None
+    rr_key_fd = args.rr_key_fd
+    rr_sigterm = None
     observer = None
     preview = None
     try:
+        if args.rr_binding is not None:
+            rr_sigterm = signal.getsignal(signal.SIGTERM)
+            def stop_rr_process(signum, frame):
+                raise KeyboardInterrupt()
+            signal.signal(signal.SIGTERM, stop_rr_process)
         services = ({'owner_auth': OwnerAuth(provider=SystemdCredentialProvider())}
                     if args.owner_auth == 'systemd-credential' else None)
         server, observer, preview = assemble_server(args.root, host=args.host, port=args.port,
                                                     services=services)
+        if args.rr_binding is not None:
+            from hub.rr_runtime import attach_rr_gateway
+            owned_fd, rr_key_fd = rr_key_fd, None
+            attach_rr_gateway(server, code_root=CODE_ROOT, binding_path=args.rr_binding, key_fd=owned_fd)
         grant_ids = args.ordinary_real_readonly_grant or args.ordinary_readonly_grant
         if grant_ids:
             from hub.ordinary_runtime import OrdinaryRuntime
@@ -165,10 +186,14 @@ def main(argv=None):
         server.serve_forever(poll_interval=0.2)
     except KeyboardInterrupt:
         return 0
-    except (ServiceError, OSError):
+    except (ServiceError, RRFeedbackError, OSError):
         print("Hub local API could not start; check its local configuration.", file=sys.stderr)
         return 1
     finally:
+        if rr_sigterm is not None:
+            signal.signal(signal.SIGTERM, rr_sigterm)
+        if rr_key_fd is not None:
+            with contextlib.suppress(OSError): os.close(rr_key_fd)
         if observer is not None:
             observer.stop()
         if preview is not None:

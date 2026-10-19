@@ -7,6 +7,7 @@
 .design-compare{gap:16px}.design-compare>.stack{gap:8px}.design-compare>[aria-label="比较工具"]{padding:0;border:0;background:transparent}.canvas h2{font-size:1.000000rem;line-height:1.571429rem}.canvas .empty strong{font-size:2.000000rem;line-height:2.857143rem}.canvas .stack{gap:8px}.design-compare .canvas{min-height:320px}.design-compare #decision-title{font-size:1.142857rem;line-height:1.714286rem}
 
 /* Soft material depth: smoky neutrals, broad shadows, no extruded edges. */
+@media(max-width:600px){.rr-review .topbar nav{grid-template-columns:repeat(2,minmax(0,1fr))}.rr-review .topbar nav .button{white-space:nowrap}}
 :root {
   --surface-light:#3B3642;
   --surface-shade:#34303B;

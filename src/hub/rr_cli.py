@@ -71,6 +71,12 @@ def _directories(path):
 def local_context(root):
     """Called with the installation root, never with a browser/CLI path argument."""
     root = Path(root).absolute()
+    installation = root / 'rr-installation.json'
+    if installation.exists() or installation.is_symlink():
+        from .rr_binding import private_json, load_binding
+        record=private_json(installation)
+        config,store,_=load_binding(record['binding_path'],code_root=root)
+        return config, RRFeedbackStore(store, project_id=PROJECT)
     _directories(root)
     info = root.lstat()
     if info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) != 0o700:
@@ -128,21 +134,6 @@ def gateway_group(config):
         raise unavailable() from None
 
 
-def _credential_key():
-    # The environment contains only the provider directory name, never the key.
-    directory = os.environ.get('CREDENTIALS_DIRECTORY')
-    if not directory:
-        raise unavailable()
-    path = Path(directory)
-    if not path.is_absolute() or '..' in path.parts:
-        raise unavailable()
-    _directories(path)
-    raw = _regular(path / 'pch-rr-gateway-key', 64, private=True)
-    if not 32 <= len(raw) <= 64:
-        raise unavailable()
-    return raw
-
-
 def _exclusive(path, raw):
     fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY | os.O_NOFOLLOW, 0o600)
     with os.fdopen(fd, 'wb') as stream:
@@ -167,6 +158,7 @@ def agent_action(root, store, command, *, feedback_id=None, cursor=None, proof=N
         return store.pending(limit=20, cursor=cursor)
     if command == 'read':
         value = store.read_for_agent(feedback_id, agent)
+        root = store.task_store.root
         # All actual bytes were verified in the store. Materialize them privately,
         # with opaque names, so an Agent can inspect content before acknowledging.
         parent = Path(root) / 'data/rr-agent-reads'
@@ -208,7 +200,6 @@ def main(argv=None, *, installation_root=None):
     root = Path(installation_root) if installation_root is not None else Path(__file__).absolute().parents[2]
     parser = argparse.ArgumentParser(description='Explicit protected local PCH RR adapter')
     actions = parser.add_subparsers(dest='command', required=True)
-    actions.add_parser('serve')
     pending = actions.add_parser('pending'); pending.add_argument('--cursor')
     read = actions.add_parser('read'); read.add_argument('feedback_id')
     for action in ('ack', 'result'):
@@ -218,18 +209,6 @@ def main(argv=None, *, installation_root=None):
     args = parser.parse_args(argv)
     try:
         config, store = local_context(root)
-        if args.command == 'serve':
-            from .rr_auth import GatewayAuth
-            from .rr_service import build_manifest, RRApplication, UnixRRServer
-            socket_gid = gateway_group(config)
-            resources = {'pch-icon': root / 'src/hub/web/icon.svg'}
-            manifest = build_manifest(root, resources, page_paths=('/',))
-            auth = GatewayAuth(_credential_key(), config['devices'], PROJECT, config['origin'],
-                               config['gateway_uid'], config['agent_uid'])
-            app = RRApplication(store, auth, manifest, resources)
-            with UnixRRServer(SOCKET, app, socket_gid=socket_gid) as server:
-                server.serve_forever()
-            return 0
         proof = parse_document(_regular(Path(args.proof), 16384, private=True)) if hasattr(args, 'proof') else None
         handling = parse_document(_regular(Path(args.handling), 16384, private=True)) if hasattr(args, 'handling') else None
         if handling is not None and (type(handling) is not dict or set(handling) != {'summary', 'references'}):

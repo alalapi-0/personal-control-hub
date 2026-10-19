@@ -31,6 +31,7 @@ WEB_ASSETS = {
     "/": ("index.html", "text/html; charset=utf-8"),
     "/assets/hub.css": ("hub.css", "text/css; charset=utf-8"),
     "/assets/hub.js": ("hub.js", "text/javascript; charset=utf-8"),
+    "/assets/dom.mjs": ("dom.mjs", "text/javascript; charset=utf-8"),
     "/assets/common.js": ("common.js", "text/javascript; charset=utf-8"),
     "/assets/connection_view.mjs": ("connection_view.mjs", "text/javascript; charset=utf-8"),
     "/assets/directory.mjs": ("directory.mjs", "text/javascript; charset=utf-8"),
