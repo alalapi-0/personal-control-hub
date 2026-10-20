@@ -88,11 +88,39 @@ def fingerprint(value: Any, label: str) -> None:
 
 
 def validate_authority(value: Any) -> dict:
-    exact(value, {"registry_hash", "schema_hash", "adapter_version"}, "authority")
+    legacy = {"registry_hash", "schema_hash", "adapter_version"}
+    require(type(value) is dict and set(value) in (legacy, legacy | {"binding_version", "project_bindings", "registration_bindings"}),
+            "authority: missing or unknown fields")
     require(value["adapter_version"] == VERSION, "unsupported authority adapter")
     for name in ("registry_hash", "schema_hash"):
         fingerprint(value[name], "authority " + name)
+    if "binding_version" in value:
+        require(value['binding_version'] == '1.1', 'unsupported project binding version')
+        require(type(value['project_bindings']) is dict, 'project bindings must be an object')
+        require(type(value['registration_bindings']) is dict, 'registration bindings must be an object')
+        require(set(value['project_bindings']) <= set(value['registration_bindings']), 'unregistered physical binding')
+        for bindings in (value['project_bindings'], value['registration_bindings']):
+            for project, binding in bindings.items():
+                identifier(project, 'binding project')
+                fingerprint(binding, 'project binding')
     return value
+
+
+def authority_matches(left: dict, right: dict, project_ids, *, registration_only=False) -> bool:
+    """Raw registry hashes remain audit identities, never local permission hashes.
+
+    Legacy capsules compare exactly. A legacy/new boundary requires rereading;
+    it cannot upgrade an old snapshot or alter immutable historical events.
+    """
+    validate_authority(left)
+    validate_authority(right)
+    if 'binding_version' not in left or 'binding_version' not in right:
+        return left == right
+    if any(left[k] != right[k] for k in ('schema_hash', 'adapter_version', 'binding_version')):
+        return False
+    maps = ['registration_bindings'] if registration_only else ['registration_bindings', 'project_bindings']
+    return all(p in left[key] and p in right[key] and left[key][p] == right[key][p]
+               for key in maps for p in project_ids)
 
 
 def string(value: Any, label: str) -> None:
@@ -285,6 +313,16 @@ def record_schema() -> dict:
     from hub.review_contract import review_contract_schema
 
     return {"schema_version": VERSION, "schema_language": "hub-typed-validator-v2",
+            "authority_contract": {
+                "legacy": "exact registry_hash/schema_hash/adapter_version; never upgraded implicitly",
+                "binding_version": "1.1",
+                "audit": "registry_hash is the full registry byte hash",
+                "registration_bindings": "per-project registry declaration and effective permission identity",
+                "project_bindings": "explicitly observed root/declaration/route identity; empty for ledger-only queries",
+                "result_binding": "binding_hash must equal its observed project binding; unobserved query capsules cannot produce results",
+                "query": "registration applicability plus last observed physical evidence and read age; no external probes",
+                "refresh": "registration and physical bindings both match; shared schema/security/adapter changes invalidate",
+            },
             "declaration_validator": "hub.connection_records.validate_declaration",
             "record_validator": "hub.connection_records.validate_result",
             "business_fields": FIELDS, "nullable": "all fields; each null requires a reason",
@@ -322,7 +360,7 @@ def validate_result(value: Any) -> dict:
     fields = {"schema_version", "kind", "project_id", "name", "observed_at", "success", "disposition",
                   "authority", "business", "sources", "declaration", "field_provenance", "unknown_fields",
                   "validation_entry", "freshness", "errors", "update_key"}
-    require(type(value) is dict and fields <= set(value) <= fields | {"extensions"},
+    require(type(value) is dict and fields <= set(value) <= fields | {"extensions", "binding_hash"},
             "normalized result: missing or unknown fields")
     require(value["schema_version"] == VERSION and value["kind"] == "source_resolution", "unsupported result schema/kind")
     identifier(value["project_id"], "result project")
@@ -331,6 +369,11 @@ def validate_result(value: Any) -> dict:
     require(type(value["success"]) is bool and type(value["disposition"]) is str and value["disposition"] in READ_STATUSES, "invalid read disposition")
     require(value["success"] == (value["disposition"] == "resolved"), "read success mismatch")
     validate_authority(value["authority"])
+    if 'binding_version' in value['authority']:
+        require(value.get('binding_hash') == value['authority']['project_bindings'].get(value['project_id'])
+                and value.get('binding_hash') is not None, 'result project binding mismatch')
+    else:
+        require('binding_hash' not in value, 'legacy authority cannot claim a project binding')
     expected = empty_business()
     exact(value["business"], set(expected), "business")
     for group, fields in expected.items():
@@ -432,6 +475,8 @@ def update_key(value: dict) -> str:
     identity = {**{key: value[key] for key in ("project_id", "name", "business", "sources", "declaration",
                                                        "disposition", "errors", "unknown_fields", "field_provenance")},
                 "root_binding": value["freshness"]["root_binding"]}
+    if 'binding_hash' in value:
+        identity['binding_hash'] = value['binding_hash']
     if value.get("extensions") is not None:
         from copy import deepcopy
         extension = deepcopy(value["extensions"])

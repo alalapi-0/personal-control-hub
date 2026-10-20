@@ -41,6 +41,10 @@ def _version(result):
     # A metadata-only touch is not a changed source or business fact.
     value=deepcopy(result)
     value.pop('observed_at',None);value.pop('update_key',None)
+    if 'binding_version' in value.get('authority', {}):
+        authority = value['authority']
+        value['authority'] = {k: authority[k] for k in ('schema_hash', 'adapter_version', 'binding_version')}
+        value['authority']['binding_hash'] = authority['project_bindings'].get(value['project_id'])
     for source in value.get('sources',[]):source.pop('modified_at',None)
     for field in value.get('extensions',{}).get('fact',{}).values():
         if field.get('proof'):field['proof'].pop('observed_at',None)
@@ -75,7 +79,7 @@ def incremental_request(root, resolver, ledger, request_id, *, plan=None):
         else:unchanged.append(ident)
         if not result['success']:
             errors.update(error['code'] for error in result['errors'])
-    resolver._check_registry()
+    resolver._check_registry(plan['eligible_project_ids'])
     if not scanned:
         return {'request_id':request_id,'status':'UNCHANGED','appended_count':0,
                 'checked_count':len(unchanged),'unchanged_count':len(unchanged),
@@ -84,7 +88,7 @@ def incremental_request(root, resolver, ledger, request_id, *, plan=None):
         authority=resolver.authority
         validate_result=staticmethod(resolver.validate_result)
         def refresh(self,ident):
-            resolver._check_registry()
+            resolver._check_registry(ident)
             return deepcopy(scanned[ident])
     outcome=refresh(ledger,ScannedResolver(),request_id,list(scanned),expected_head=history['head'])
     return {'request_id':request_id,'status':outcome['request']['status'],
@@ -125,7 +129,7 @@ SCOPE_PATH = "data/connections/sync_scope.yaml"
 
 def scope_plan(root: Path, resolver) -> dict:
     """Qualify a frozen identity list without probing any registered project root."""
-    data, meta = _safe_relative_read(Path(root), SCOPE_PATH, authority_check=resolver._check_registry)
+    data, meta = _safe_relative_read(Path(root), SCOPE_PATH, authority_check=lambda: resolver._check_registry(registration_only=True))
     scope = parse_source(data, "yaml")
     require(type(scope) is dict and set(scope) in ({
         "schema_version", "scope_id", "baseline_total", "project_ids", "excluded_project_ids"}, {

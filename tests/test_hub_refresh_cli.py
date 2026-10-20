@@ -35,6 +35,40 @@ class HubRefreshCliTests(unittest.TestCase):
             code = main(["--root", str(self.fixture.hub), *arguments])
         return code, json.loads(output.getvalue())
 
+    def test_all_query_commands_are_hub_only_and_compare_registration(self):
+        import yaml
+        scope = self.fixture.hub / "data/connections/sync_scope.yaml"
+        scope.parent.mkdir(parents=True, exist_ok=True)
+        scope.write_text(yaml.safe_dump({"schema_version": "1.0", "scope_id": "guarded-cli",
+            "baseline_total": 2, "project_ids": ["a", "b"], "excluded_project_ids": {}}))
+        code, saved = self.invoke("refresh", "--request-id", "query-baseline")
+        self.assertEqual(0, code, saved)
+        ledger = RefreshLedger(self.fixture.hub, result_validator=validate_result)
+        before = ledger.history()
+        self.fixture.projects[0]["name"] = "changed A only"
+        self.fixture.save_registry()
+        original_stat = Path.stat
+        def guarded_stat(path, *args, **kwargs):
+            if any(path == base or base in path.parents for base in (self.a, self.b)):
+                raise AssertionError("query inspected external identity")
+            return original_stat(path, *args, **kwargs)
+        with mock.patch.object(Path, "resolve", side_effect=AssertionError("query resolved root")), \
+             mock.patch.object(Path, "stat", guarded_stat), \
+             mock.patch.object(SourceResolver, "refresh", side_effect=AssertionError("query refreshed source")):
+            for command in ("status", "history", "rebuild", "discover", "validate", "current"):
+                with self.subTest(command=command):
+                    code, value = self.invoke(command)
+                    self.assertEqual(0, code, value)
+                    if command in ("rebuild", "validate"):
+                        projection = value if command == "rebuild" else value["projection"]
+                        self.assertEqual("stale", projection["projects"]["a"]["freshness"])
+                        self.assertEqual("fresh", projection["projects"]["b"]["freshness"])
+                    elif command == "current":
+                        rows = {row["project_id"]: row for row in value["projects"]}
+                        self.assertEqual("fresh", rows["b"]["freshness"]["state"])
+                        self.assertEqual({}, value["authority"]["project_bindings"])
+        self.assertEqual(before, ledger.history())
+
     def test_refresh_retry_history_and_offline_rebuild_keep_public_receipt(self) -> None:
         code, first = self.invoke("refresh", "--request-id", "all")
         self.assertEqual(0, code, first)
@@ -179,14 +213,26 @@ class HubRefreshCliTests(unittest.TestCase):
         self.a.rename(offline)
         code, failed = self.invoke("refresh", "--request-id", "failed-a", "--project", "a")
         self.assertEqual(2, code, failed)
-        offline.rename(self.a)
-        code, succeeded = self.invoke("refresh", "--request-id", "success-b", "--project", "a")
-        self.assertEqual(0, code, succeeded)
         with mock.patch.object(SourceResolver, "refresh",
-                               side_effect=AssertionError("replay must not re-read")):
+                               side_effect=AssertionError("unchanged failed replay must not re-read")):
             code, replay = self.invoke("refresh", "--request-id", "failed-a", "--project", "a")
         self.assertEqual(2, code, replay)
         self.assertEqual([], replay["appended_project_ids"])
+        ledger = RefreshLedger(self.fixture.hub, result_validator=validate_result)
+        failed_history = ledger.history("failed-a")
+        offline.rename(self.a)
+        code, succeeded = self.invoke("refresh", "--request-id", "success-b", "--project", "a")
+        self.assertEqual(0, code, succeeded)
+        # A restored physical root changes applicability; immutable failure remains queryable.
+        with mock.patch.object(SourceResolver, "refresh",
+                               side_effect=AssertionError("changed binding must not resume")):
+            code, conflict = self.invoke("refresh", "--request-id", "failed-a", "--project", "a")
+        self.assertEqual(2, code, conflict)
+        self.assertEqual("REQUEST_IDENTITY_CONFLICT", conflict["error"])
+        self.assertEqual(failed_history["results"], ledger.history("failed-a")["results"])
+        code, historical = self.invoke("history", "--request-id", "failed-a")
+        self.assertEqual(0, code, historical)
+        self.assertEqual("offline", historical["results"][0]["result"]["disposition"])
 
         self.fixture.projects[1].update(
             root_path="/definitely/not/read",
@@ -233,11 +279,16 @@ class HubRefreshCliTests(unittest.TestCase):
         with mock.patch.object(SourceResolver, "refresh", drift_after_first):
             code, result = self.invoke("refresh", "--request-id", "mid-drift")
         self.assertEqual(2, code, result)
-        self.assertEqual("stale", result["projection"]["projects"]["a"]["freshness"])
-        self.assertTrue(result["projection"]["projects"]["a"]["authority_drift"])
+        self.assertTrue(result["projection"]["authority_drift"])
+        self.assertEqual("fresh", result["projection"]["projects"]["a"]["freshness"])
+        self.assertFalse(result["projection"]["projects"]["a"]["authority_drift"])
+        self.assertTrue(result["projection"]["projects"]["b"]["authority_drift"])
+        self.assertNotEqual("fresh", result["projection"]["projects"]["b"]["freshness"])
+        self.assertEqual(["a", "b"], result["request"]["project_ids"])
         preview = json.loads((self.fixture.hub / result["previews"]["projects.json"]).read_text())
         rows = {row["project_id"]: row for row in preview["projects"]}
-        self.assertEqual("stale", rows["a"]["freshness"]["state"])
+        self.assertEqual("fresh", rows["a"]["freshness"]["state"])
+        self.assertEqual("stale", rows["b"]["freshness"]["state"])
         self.assertEqual("renamed-b", rows["b"]["name"])
 
     def test_unavailable_post_refresh_authority_returns_receipt_without_preview(self) -> None:

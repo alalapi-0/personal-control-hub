@@ -1,6 +1,7 @@
 """Registry-complete projection, reusing latest-attempt/last-success separation.
 
-Reads only the Hub ledger, never external roots. A previous successful read is
+Reads only the Hub registry and ledger; queries never probe external roots or sources.
+A previous successful read is
 explicitly historical whenever a newer attempt fails or its authority expires.
 """
 from __future__ import annotations
@@ -25,6 +26,7 @@ from hub.connection_refresh import (GENESIS_HASH, HeadConflictError, LedgerBusyE
                                     RequestConflictError, ResultValidationError,
                                     refresh as refresh_projects)
 from hub.connection_sources import SourceResolver
+from hub.connection_records import authority_matches
 from hub.service_contract import ServiceError
 from hub.field_explanations import field_explanations
 
@@ -64,7 +66,8 @@ def project_snapshot(registry: dict, authority: dict, ledger: RefreshLedger | No
     current = datetime.fromisoformat(observed_at.replace("Z", "+00:00"))
     require(current.tzinfo is not None, "projection timestamp needs timezone")
     # One verified SQLite snapshot prevents mixing refs across concurrent commits.
-    history = ledger.history(current_authority=authority) if ledger else {"head": None, "results": []}
+    registration_only = 'binding_version' in authority and not authority['project_bindings']
+    history = ledger.history(current_authority=authority, registration_only=registration_only) if ledger else {"head": None, "results": []}
     attempts, successes = {}, {}
     for item in history["results"]:
         record = validate_result(item["result"])
@@ -81,7 +84,7 @@ def project_snapshot(registry: dict, authority: dict, ledger: RefreshLedger | No
             previous = None
             if latest and latest["disposition"] != "removed_local":
                 latest = None
-        drift = bool(latest and latest["authority"] != authority)
+        drift = bool(latest and not authority_matches(latest['authority'], authority, [project_id], registration_only=registration_only))
         age = _age(latest["observed_at"], current) if latest else None
         source_age = (_age(latest["sources"][0]["modified_at"], current)
                       if latest and latest["sources"] else None)
@@ -167,7 +170,8 @@ def validate_snapshot(snapshot: dict) -> dict:
             require(row["last_success"] == latest, "successful latest attempt must be the last success")
         age = _age(latest["observed_at"], current) if latest else None
         source_age = _age(latest["sources"][0]["modified_at"], current) if latest and latest["sources"] else None
-        drift = bool(latest and latest["authority"] != snapshot["authority"])
+        drift = bool(latest and not authority_matches(latest['authority'], snapshot['authority'], [row['project_id']],
+            registration_only='binding_version' in snapshot['authority'] and not snapshot['authority']['project_bindings']))
         require(row["freshness"]["read_age_seconds"] == age and row["freshness"]["source_age_seconds"] == source_age
                 and row["freshness"]["authority_drift"] is drift, "freshness evidence mismatch")
         if row["local_presence"] == "removed_local":
@@ -204,9 +208,9 @@ class ProjectService:
         self.ledger_path = ledger_path
         self.relations_path = relations_path
 
-    def _resolver(self) -> SourceResolver:
+    def _resolver(self, *, observe_sources=False) -> SourceResolver:
         try:
-            return SourceResolver(self.root)
+            return SourceResolver(self.root, observe_sources=observe_sources)
         except (RecordError, OSError, TypeError, ValueError) as exc:
             raise _error("PROJECT_REGISTRY_UNAVAILABLE", status=503) from exc
 
@@ -878,6 +882,11 @@ class ProjectService:
                                     "sources": copy.deepcopy(latest["sources"]),
                                     "errors": copy.deepcopy(latest["errors"])}
                                    if latest else None),
+            "physical_identity": {"state": "last_observed" if latest else "unobserved",
+                                  "checked_during_query": False,
+                                  "binding_hash": latest.get("binding_hash") if latest else None,
+                                  "root_binding": latest["freshness"]["root_binding"] if latest else None,
+                                  "observed_at": latest["observed_at"] if latest else None},
             "source_record": source_record,
         }
         business = self._legacy_business(latest, row["freshness"])
@@ -1094,7 +1103,7 @@ class ProjectService:
         last_request = None
         recovery = recovery_summary({"requests": [], "results": []}, eligible)
         if ledger:
-            history = ledger.history(current_authority=resolver.authority)
+            history = ledger.history(current_authority=resolver.authority, registration_only=True)
             if history["head"] != snapshot["ledger_head"]:
                 raise _error("SYNC_HEAD_CHANGED", status=409, retryable=True)
             recovery = recovery_summary(history, eligible)
@@ -1159,7 +1168,7 @@ class ProjectService:
                 or not isinstance(expected["hash"], str)
                 or not SHA256.fullmatch(expected["hash"])):
             raise _error("REFRESH_COMMAND_INVALID")
-        resolver = self._resolver()
+        resolver = self._resolver(observe_sources=True)
         unknown = sorted(set(project_ids) - set(resolver.projects))
         if unknown:
             raise _error("PROJECT_NOT_FOUND", status=404, details={"project_ids": unknown})
@@ -1174,13 +1183,15 @@ class ProjectService:
                                            expected_head=expected)
             try:
                 current = SourceResolver(self.root)
-                state = "matched" if current.authority == resolver.authority else "drifted"
+                state = "matched" if authority_matches(current.authority, resolver.authority, project_ids) else "drifted"
+                outcome['projection'] = ledger.rebuild(current_authority=current.authority,
+                                                       validator=validate_result)
             except (RecordError, OSError, TypeError, ValueError):
                 current, state = None, "unavailable"
             outcome["current_authority"] = {"state": state,
                                             "authority": copy.deepcopy(
                                                 current.authority if current else None)}
-            if state != "matched":
+            if state == "unavailable":
                 outcome["projection"]["authority_drift"] = True
                 for project in outcome["projection"]["projects"].values():
                     project["authority_drift"] = True

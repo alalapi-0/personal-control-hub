@@ -351,7 +351,7 @@ class MetricCollector:
             result["disposition"] = "disabled"
             return result
         try:
-            self.resolver._check_registry()
+            self.resolver._check_registry(project_id)
             registered = Path(project["root_path"]).expanduser()
             _root_path_allowed(registered)
             root = registered.resolve(strict=True)
@@ -402,7 +402,7 @@ class MetricCollector:
             except (OSError, RecordError, ValueError, KeyError, TypeError) as exc:
                 result["issues"].append(issue(project_id, "collector_failure", name,
                     recovery_condition="Inspect source schema and collector; no workflow was executed."))
-        self.resolver._check_registry()
+        self.resolver._check_registry(project_id)
         require(registered.resolve(strict=True) == root, "root binding changed during collection")
         if result["issues"] and result["disposition"] == "resolved":
             result["disposition"] = "partial"

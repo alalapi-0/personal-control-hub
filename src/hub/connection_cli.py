@@ -57,10 +57,11 @@ def _ledger_path(root: Path, configured: str | None) -> Path:
 
 
 def _current_authority(root: Path) -> tuple[dict | None, dict]:
-    """Read only current Hub authority; historical ledger reads do not depend on it."""
+    """Current registration applicability only; no external physical observation."""
     try:
-        authority = SourceResolver(root).authority
-        return authority, {"state": "available", "reason": None}
+        authority = SourceResolver(root, observe_sources=False).authority
+        return authority, {"state": "available", "reason": None,
+                           "comparison_basis": "registration_only", "physical_sources_rechecked": False}
     except (OSError, RecordError, TypeError, ValueError, KeyError):
         return None, {
             "state": "unavailable",
@@ -74,14 +75,14 @@ def _historical_view(root: Path, path: Path, command: str,
     ledger = RefreshLedger(root, path, result_validator=validate_result, read_only=True)
     authority, authority_status = _current_authority(root)
     if command == "history":
-        result = ledger.history(request_id, current_authority=authority)
+        result = ledger.history(request_id, current_authority=authority, registration_only=True)
         for stored in result["results"]:
             validate_result(stored["result"])
         if authority is None:
             for request in result["requests"]:
                 request["authority_drift"] = None
     else:
-        result = ledger.rebuild(current_authority=authority)
+        result = ledger.rebuild(current_authority=authority, registration_only=True)
         if authority is None:
             result["authority_drift"] = None
             for project in result["projects"].values():
@@ -196,7 +197,7 @@ def main(argv: list[str] | None = None) -> int:
             from hub.refresh_schedule import refresh_schedule_status
             result = ProjectService(root, ledger_path=path).sync_status()
             from hub.connection_sync import scope_plan
-            policy = scope_plan(root, SourceResolver(root))["schedule"]
+            policy = scope_plan(root, SourceResolver(root, observe_sources=False))["schedule"]
             result["schedule"] = refresh_schedule_status(interval_hours=policy["interval_hours"])
             print(json.dumps(result, ensure_ascii=False, indent=2))
             return 0
@@ -205,7 +206,7 @@ def main(argv: list[str] | None = None) -> int:
                                       getattr(args, "request_id", None))
             print(json.dumps(result, ensure_ascii=False, indent=2))
             return 0
-        resolver = SourceResolver(root)
+        resolver = SourceResolver(root, observe_sources=args.command in {"sync", "refresh"})
         if args.command in {"discover", "sync"}:
             from hub.connection_sync import daily_request_id, scope_plan, sync_request, scheduled_request, sync_mutex
             plan = scope_plan(root, resolver)
@@ -276,7 +277,7 @@ def main(argv: list[str] | None = None) -> int:
         ledger = (RefreshLedger(root, path, result_validator=validate_result, read_only=True)
                   if path.exists() else None)
         if args.command == "validate":
-            outcome = ledger.rebuild(current_authority=resolver.authority) if ledger else None
+            outcome = ledger.rebuild(current_authority=resolver.authority, registration_only=True) if ledger else None
             print(json.dumps({"valid": True, "schema_version": "2.0", "ledger_initialized": ledger is not None,
                               "projection": outcome}, ensure_ascii=False, indent=2))
             return 0

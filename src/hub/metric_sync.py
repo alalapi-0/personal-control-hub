@@ -143,8 +143,8 @@ class MetricSyncCoordinator:
         )
         self.clock = clock
 
-    def _resolver(self) -> SourceResolver:
-        return SourceResolver(self.root, registry_path=self.registry_path)
+    def _resolver(self, *, observe_sources=True) -> SourceResolver:
+        return SourceResolver(self.root, registry_path=self.registry_path, observe_sources=observe_sources)
 
     @staticmethod
     def _empty_cache(registry: dict) -> dict:
@@ -180,7 +180,7 @@ class MetricSyncCoordinator:
             or not 1 <= limit <= MAX_PAGE_SIZE
         ):
             raise RecordError("invalid metric synchronization cache page")
-        resolver = self._resolver()
+        resolver = self._resolver(observe_sources=False)
         try:
             store = MetricStore(self.root, self.db, read_only=True)
             projection = store.coverage(
@@ -292,7 +292,7 @@ class MetricSyncCoordinator:
             root_identity = (str(root), root_stat.st_dev, root_stat.st_ino)
 
             def check() -> None:
-                resolver._check_registry()
+                resolver._check_registry(project_id)
                 current = registered.resolve(strict=True)
                 current_stat = current.stat()
                 if (

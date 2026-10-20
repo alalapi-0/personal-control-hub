@@ -108,8 +108,13 @@ def _validate_id(value: Any, label: str) -> str:
     return value
 
 
+def _authority_matches(left, right, project_ids, *, registration_only=False):
+    from .connection_records import authority_matches
+    return authority_matches(dict(left), dict(right), project_ids, registration_only=registration_only)
+
+
 def _validate_authority(value: Any) -> dict[str, Any]:
-    if not isinstance(value, Mapping) or set(value) != AUTHORITY_FIELDS:
+    if not isinstance(value, Mapping) or set(value) not in (AUTHORITY_FIELDS, AUTHORITY_FIELDS | {'binding_version', 'project_bindings', 'registration_bindings'}):
         raise RequestConflictError("authority capsule has missing or unknown fields")
     capsule = dict(value)
     for field in AUTHORITY_FIELDS:
@@ -120,6 +125,12 @@ def _validate_authority(value: Any) -> dict[str, Any]:
             raise RequestConflictError(f"authority.{field}: invalid sha256")
     if capsule["adapter_version"] != SCHEMA_VERSION:
         raise RequestConflictError("unsupported adapter version")
+    if 'binding_version' in capsule:
+        from .connection_records import validate_authority
+        try:
+            validate_authority(capsule)
+        except ValueError as exc:
+            raise RequestConflictError('invalid versioned project authority') from exc
     _canonical(capsule)
     return capsule
 
@@ -392,6 +403,8 @@ class RefreshLedger:
         if len(projects) != len(set(projects)):
             raise RequestConflictError("project_ids contain duplicates")
         capsule = _validate_authority(authority)
+        if 'binding_version' in capsule and not all(p in capsule['project_bindings'] for p in projects):
+            raise RequestConflictError('request requires explicitly observed project bindings')
         projects_json, authority_json = _canonical(projects), _canonical(capsule)
         authority_hash = hashlib.sha256(authority_json.encode()).hexdigest()
         with self._write() as connection:
@@ -400,7 +413,7 @@ class RefreshLedger:
                 "SELECT * FROM refresh_requests WHERE request_id=?", (request_id,)).fetchone()
             if existing is not None:
                 if (existing["project_ids_json"] != projects_json
-                        or existing["authority_json"] != authority_json):
+                        or not _authority_matches(json.loads(existing['authority_json']), capsule, projects)):
                     raise RequestConflictError("request ID is already bound to different authority or projects")
                 return self._request_view(connection, existing)
             self._assert_expected(self._head_in(connection), expected_head)
@@ -463,7 +476,7 @@ class RefreshLedger:
                 raise RequestConflictError("project is outside the frozen request")
             if validated.get("project_id") != project_id:
                 raise ResultValidationError("result project does not match append target")
-            if validated.get("authority") != authority:
+            if not _authority_matches(validated.get('authority'), authority, [project_id]):
                 raise RequestConflictError("result authority differs from request authority")
             existing = connection.execute(
                 "SELECT * FROM refresh_results WHERE request_id=? AND project_id=?",
@@ -623,7 +636,7 @@ class RefreshLedger:
                         or payload.get("success") != bool(row["success"])
                         or payload.get("observed_at") != result.get("observed_at")):
                     raise LedgerCorruptionError("stored result identity mismatch")
-                if result.get("authority") != json.loads(request["authority_json"]):
+                if not _authority_matches(result.get('authority'), json.loads(request['authority_json']), [row['project_id']]):
                     raise LedgerCorruptionError("stored result authority mismatch")
                 seen_results.add((row["request_id"], row["project_id"]))
             elif event["event_type"] == "REQUEST_FINISHED":
@@ -654,7 +667,8 @@ class RefreshLedger:
         return events, results
 
     def history(self, request_id: str | None = None, *,
-                current_authority: Mapping[str, Any] | None = None) -> dict[str, Any]:
+                current_authority: Mapping[str, Any] | None = None,
+                registration_only: bool = False) -> dict[str, Any]:
         authority = _validate_authority(current_authority) if current_authority is not None else None
         connection = self._connect()
         try:
@@ -676,7 +690,7 @@ class RefreshLedger:
             requests = []
             for row in request_rows:
                 view = self._request_view(connection, row)
-                view["authority_drift"] = authority is not None and view["authority"] != authority
+                view["authority_drift"] = authority is not None and not _authority_matches(view['authority'], authority, view['project_ids'], registration_only=registration_only)
                 requests.append(view)
             return {"schema_version": SCHEMA_VERSION, "head": self._head_in(connection),
                     "requests": requests,
@@ -694,9 +708,10 @@ class RefreshLedger:
             connection.close()
 
     def rebuild(self, *, current_authority: Mapping[str, Any] | None = None,
-                validator: Callable[[dict[str, Any]], dict[str, Any]] | None = None) -> dict[str, Any]:
+                validator: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
+                registration_only: bool = False) -> dict[str, Any]:
         """Verify immutable storage and derive latest-attempt/last-success views."""
-        history = self.history(current_authority=current_authority)
+        history = self.history(current_authority=current_authority, registration_only=registration_only)
         callback = validator or self.result_validator
         if callback is None:
             raise ResultValidationError("offline rebuild requires the bound result authority validator")
@@ -718,8 +733,8 @@ class RefreshLedger:
                          "disposition": validated.get("disposition"),
                          "success": stored["success"]}
             project["latest_attempt"] = reference
-            project["authority_drift"] = (current_authority is not None and
-                                           validated["authority"] != current_authority)
+            project["authority_drift"] = (current_authority is not None and not
+                _authority_matches(validated['authority'], current_authority, [stored['project_id']], registration_only=registration_only))
             if stored["success"]:
                 project["last_success"] = reference
                 project["freshness"] = "fresh"

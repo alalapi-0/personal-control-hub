@@ -47,6 +47,67 @@ class MetricsTests(unittest.TestCase):
         return self.store.save(request, dict(project_id="p", observed_at=observed, disposition="partial",
                   metrics=rows, metric_definitions=metric_catalog(rows), issues=[], source_versions={}))
 
+    def test_single_collect_ignores_unrelated_registration_and_keeps_global_audit(self):
+        import yaml
+        from connection_fixtures import Fixture
+        f = Fixture()
+        self.addCleanup(f.close)
+        a, _ = f.add("a")
+        b, _ = f.add("b")
+        config = f.hub / "data/connections/metric_sources.yaml"
+        config.parent.mkdir(parents=True)
+        config.write_text(yaml.safe_dump({"schema_version": "1.0", "projects": {"b": {
+            "adapter": "declared", "sources": [{"path": "facts.json", "business_time": ["at"],
+                "metrics": [{"id": "work.done", "unit": "items", "selector": ["done"], "counting_basis": "Unique fixture IDs"}]}]}}}))
+        (b / "facts.json").write_text(json.dumps({"done": 2, "at": AT}))
+        collector = MetricCollector(f.hub, clock=lambda: AT)
+        original_identity = collector.identity
+        original_audit = collector.resolver.authority["registry_hash"]
+        fired = []
+        from hub.metric_git import collect_git
+        def collect(*args, **kwargs):
+            value = collect_git(*args, **kwargs)
+            if not fired:
+                fired.append(True); f.projects[0]["name"] = "A changed while B collects"; f.save_registry()
+            return value
+        with patch("hub.metric_git.collect_git", collect):
+            result = collector.collect("b")
+        self.assertTrue(fired)
+        self.assertTrue(any(row["value"] == 2 for row in result["metrics"]))
+        self.assertEqual(original_identity, result["collector_identity"])
+        current = MetricCollector(f.hub, clock=lambda: AT)
+        self.assertNotEqual(original_audit, current.resolver.authority["registry_hash"])
+        self.assertNotEqual(original_identity, current.identity)
+
+    def test_explicit_collect_rejects_own_permission_root_declaration_and_shared_drift(self):
+        import shutil, yaml
+        from connection_fixtures import Fixture
+        for mutation in ("permission", "root", "declaration", "shared"):
+            with self.subTest(mutation=mutation):
+                f = Fixture()
+                try:
+                    root, declaration = f.add("b")
+                    config = f.hub / "data/connections/metric_sources.yaml"
+                    config.parent.mkdir(parents=True)
+                    config.write_text(yaml.safe_dump({"schema_version": "1.0", "projects": {}}))
+                    collector = MetricCollector(f.hub, clock=lambda: AT)
+                    if mutation == "permission":
+                        f.projects[0]["connection_read_allowed"] = False; f.save_registry()
+                    elif mutation == "root":
+                        old = root.with_name("old-b"); root.rename(old); shutil.copytree(old, root)
+                    elif mutation == "declaration":
+                        declaration["max_read_age_seconds"] = 123
+                        (root / "hub.connection.yaml").write_text(yaml.safe_dump(declaration))
+                    else:
+                        registry = f.hub / "data/registry/external_projects.yaml"
+                        value = yaml.safe_load(registry.read_text()); value["security_policy"] = {"revision": 2}
+                        registry.write_text(yaml.safe_dump(value))
+                    result = collector.collect("b")
+                    self.assertEqual("offline", result["disposition"])
+                    self.assertEqual([], result["metrics"])
+                finally:
+                    f.close()
+
     def test_history_delta_idempotency_and_restart(self):
         first = self.save("first", [self.row()])
         self.assertEqual(first["changed_metrics"], 1)

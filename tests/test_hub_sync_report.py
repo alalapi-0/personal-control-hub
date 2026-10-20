@@ -43,6 +43,8 @@ class SyncReportTests(unittest.TestCase):
         value = yaml.safe_load(declaration.read_text())
         value['mapping'] = {}
         declaration.write_text(yaml.safe_dump(value))
+        # The new request explicitly captures the revised declaration identity.
+        self.resolver = type(self.resolver)(self.fixture.hub, clock=self.resolver.clock)
         refresh(self.ledger, self.resolver, 'partial', ['a', 'b'])
         with mock.patch.object(type(self.resolver), 'refresh', side_effect=AssertionError('source probe')):
             status = self.service.sync_status()
@@ -83,7 +85,9 @@ class SyncReportTests(unittest.TestCase):
         self.assertEqual(old_hash, old['registry_sha256'])
         self.assertTrue(old['authority_drift'])
         self.assertNotEqual(old_hash, report['registry_sha256'])
-        self.assertEqual(1, status['counts']['stale'])
+        # B was removed; the retained A binding itself did not change. The
+        # original A/B request still reports drift above because B is missing.
+        self.assertEqual(0, status['counts']['stale'])
         self.assertEqual(1, status['counts']['unread'])
 
     def test_success_failure_and_open_same_id_recovery_are_distinct(self):

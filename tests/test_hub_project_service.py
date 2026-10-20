@@ -87,6 +87,20 @@ class SharedProjectionTests(unittest.TestCase):
         self.fixture.projects[0]["name"] = "renamed"
         self.fixture.save_registry()
         self.resolver = self.fixture.resolver()
+        rows = {row["project_id"]: row for row in self.view()["projects"]}
+        self.assertTrue(rows["a"]["freshness"]["authority_drift"])
+        self.assertEqual("stale", rows["a"]["freshness"]["state"])
+        self.assertFalse(rows["b"]["freshness"]["authority_drift"])
+        self.assertEqual("fresh", rows["b"]["freshness"]["state"])
+        self.fixture.projects[1]["connection_read_allowed"] = False
+        self.fixture.save_registry()
+        self.resolver = self.fixture.resolver()
+        self.assertTrue(self.view()["projects"][1]["freshness"]["authority_drift"])
+        registry = self.fixture.hub / "data/registry/external_projects.yaml"
+        value = yaml.safe_load(registry.read_text())
+        value["security_policy"] = {"revision": 2}
+        registry.write_text(yaml.safe_dump(value))
+        self.resolver = self.fixture.resolver()
         self.assertTrue(all(row["freshness"]["authority_drift"] for row in self.view()["projects"]))
 
     def test_removed_after_success_hides_business_history_without_root_reads(self):
@@ -463,7 +477,7 @@ class ProjectServiceFacadeTests(unittest.TestCase):
         with mock.patch.object(self.service, "_read_ledger", return_value=ledger):
             listing = self.service.list_projects()
         self.assertEqual(2, listing["total"])
-        ledger.history.assert_called_once_with(current_authority=mock.ANY)
+        ledger.history.assert_called_once_with(current_authority=mock.ANY, registration_only=True)
 
     def test_design_unavailable_and_missing_relations_preserve_project_facts(self):
         unavailable = copy.deepcopy(self.design)
@@ -574,6 +588,41 @@ class ProjectServiceFacadeTests(unittest.TestCase):
         self.assertEqual(["a"], caught.exception.details["completed_project_ids"])
         self.assertEqual(["b"], caught.exception.details["remaining_project_ids"])
 
+    def test_queries_do_not_probe_any_external_identity_and_label_last_observation(self):
+        scope = self.fixture.hub / "data/connections/sync_scope.yaml"
+        scope.parent.mkdir(parents=True, exist_ok=True)
+        scope.write_text(yaml.safe_dump({"schema_version": "1.0", "scope_id": "query-fixture",
+            "baseline_total": 2, "project_ids": ["a", "b"], "excluded_project_ids": {}}))
+        self.service.refresh(self.command("observed"))
+        original_stat = Path.stat
+        roots = (self.a, self.b)
+        def no_external_stat(path, *args, **kwargs):
+            if any(path == root or root in path.parents for root in roots):
+                raise AssertionError("GET must not stat external roots/declarations")
+            return original_stat(path, *args, **kwargs)
+        for changes in ({}, {"connection_read_allowed": False},
+                        {"project_type": "cloud"}, {"local_presence": {"status": "removed_local"}}):
+            with self.subTest(changes=changes):
+                previous = copy.deepcopy(self.fixture.projects[0])
+                self.fixture.projects[0].update(changes)
+                self.fixture.save_registry()
+                with mock.patch.object(Path, "resolve", side_effect=AssertionError("GET resolve")), \
+                     mock.patch.object(Path, "stat", no_external_stat), \
+                     mock.patch("hub.project_service.SourceResolver.refresh", side_effect=AssertionError("GET refresh")):
+                    detail = self.service.get_project("a")
+                    self.service.list_projects()
+                    self.service.sync_status()
+                self.assertFalse(detail["source"]["physical_identity"]["checked_during_query"])
+                self.fixture.projects[0] = previous
+                self.fixture.save_registry()
+        # Unobserved physical changes do not become claimed current identity.
+        (self.a / "hub.connection.yaml").write_text("changed declaration")
+        detail = self.service.get_project("a")
+        self.assertEqual("last_observed", detail["source"]["physical_identity"]["state"])
+        self.assertIsNotNone(detail["source"]["physical_identity"]["binding_hash"])
+        refreshed = self.service.refresh(self.command("physical-change", head=self.service.list_projects()["head"]))
+        self.assertNotEqual("fresh", refreshed["projection"]["projects"]["a"]["freshness"])
+
     def test_midrequest_authority_drift_is_explicit(self):
         original = self.fixture.resolver().__class__.refresh
 
@@ -588,7 +637,13 @@ class ProjectServiceFacadeTests(unittest.TestCase):
             outcome = self.service.refresh(self.command("mid-drift", ("a", "b")))
         self.assertEqual("drifted", outcome["current_authority"]["state"])
         self.assertTrue(outcome["projection"]["authority_drift"])
-        self.assertEqual("stale", outcome["projection"]["projects"]["a"]["freshness"])
+        self.assertEqual("fresh", outcome["projection"]["projects"]["a"]["freshness"])
+        self.assertFalse(outcome["projection"]["projects"]["a"]["authority_drift"])
+        self.assertTrue(outcome["projection"]["projects"]["b"]["authority_drift"])
+        self.assertNotEqual("fresh", outcome["projection"]["projects"]["b"]["freshness"])
+        request = outcome["request"]
+        self.assertEqual(["a", "b"], request["project_ids"])
+        self.assertNotEqual(request["authority"]["registry_hash"], outcome["current_authority"]["authority"]["registry_hash"])
 
     def test_facade_has_no_legacy_bundle_or_manager_dependency(self):
         source = Path(project_module.__file__).read_text()

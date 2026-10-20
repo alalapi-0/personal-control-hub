@@ -123,6 +123,72 @@ class MetricSyncTests(unittest.TestCase):
             if path.is_file()
         }
 
+    def test_cache_missing_and_existing_never_probe_external_identity(self):
+        original_stat = Path.stat
+        def guarded_stat(path, *args, **kwargs):
+            if path == self.project or self.project in path.parents:
+                raise AssertionError("cache inspected project")
+            return original_stat(path, *args, **kwargs)
+        def cache():
+            with mock.patch.object(Path, "resolve", side_effect=AssertionError("cache resolved root")), \
+                 mock.patch.object(Path, "stat", guarded_stat), \
+                 mock.patch.object(self.coordinator, "_binding", side_effect=AssertionError("cache exported")):
+                return self.coordinator.read_cache()
+        self.assertFalse(cache()["available"])
+        synced = self.coordinator.synchronize("cache-seed", project_ids=["fixture-project"], timeout_seconds=2)
+        self.assertTrue(synced["complete"], synced)
+        self.assertTrue(cache()["available"])
+        self.assertEqual(1, cache()["projects_total"])
+
+    def test_unrelated_inflight_edit_does_not_break_single_export(self):
+        import hub.metric_sync as module
+        self.fixture.add("unrelated-a")
+        original = module._read_export_entry
+        changed = []
+        def read(*args, **kwargs):
+            value = original(*args, **kwargs)
+            if not changed:
+                changed.append(True)
+                self.fixture.projects[1]["name"] = "unrelated A changed"
+                self.fixture.save_registry()
+            return value
+        with mock.patch.object(module, "_read_export_entry", read):
+            result = self.coordinator.synchronize("single-b", project_ids=["fixture-project"], timeout_seconds=2)
+        self.assertTrue(changed)
+        self.assertTrue(result["complete"], result)
+        self.assertEqual({}, result["errors"])
+
+    def test_explicit_export_binding_rejects_own_physical_permission_and_shared_drift(self):
+        import copy, shutil
+        from hub.connection_sources import SourceResolver
+        from hub.metric_sync import MetricSyncUnitError
+        for mutation in ("permission", "root", "declaration", "shared"):
+            with self.subTest(mutation=mutation):
+                f = Fixture()
+                try:
+                    root, declaration = f.add("b")
+                    declaration["metric_export"] = {"entry": EXPORT_ENTRY, "snapshot": ".hub/status.json"}
+                    (root / "hub.connection.yaml").write_text(yaml.safe_dump(declaration))
+                    entry = root / EXPORT_ENTRY
+                    entry.parent.mkdir(); entry.write_text("pass\n")
+                    resolver = SourceResolver(f.hub)
+                    binding = MetricSyncCoordinator(f.hub)._binding(resolver, "b")
+                    if mutation == "permission":
+                        f.projects[0]["connection_read_allowed"] = False; f.save_registry()
+                    elif mutation == "root":
+                        old = root.with_name("old-b"); root.rename(old); shutil.copytree(old, root)
+                    elif mutation == "declaration":
+                        declaration["max_read_age_seconds"] = 123
+                        (root / "hub.connection.yaml").write_text(yaml.safe_dump(declaration))
+                    else:
+                        registry = f.hub / "data/registry/external_projects.yaml"
+                        value = yaml.safe_load(registry.read_text()); value["security_policy"] = {"revision": 2}
+                        registry.write_text(yaml.safe_dump(value))
+                    with self.assertRaises((RecordError, MetricSyncUnitError, OSError)):
+                        binding["check"]()
+                finally:
+                    f.close()
+
     def test_startup_emits_cache_before_export_and_imports_snapshot_only(self):
         before = self.project_files()
         events = []

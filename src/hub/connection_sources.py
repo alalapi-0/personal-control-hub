@@ -13,11 +13,64 @@ from hub.connection_records import (FIELDS, VERSION, RecordError, content_hash,
                                     credential_path_component, empty_business, put_field,
                                     record_schema, relative_path, require, update_key,
                                     validate_declaration, validate_result)
+from hub.connection_records import authority_matches
+from hub.connection_records import FORBIDDEN_PARTS, CREDENTIAL_PATH_TOKENS, CREDENTIAL_PATH_NAMES
 from hub.connections import parse_owned_hub_state, parse_source, select_value, validate_registry_value
 
 MAX_SOURCE_BYTES = 1024 * 1024
 MAX_OWNED_HUB_STATE_BYTES = 2 * 1024 * 1024
 DECLARATION_PATH = "hub.connection.yaml"
+
+
+def _project_binding(project: dict) -> str:
+    """Permission/root/declaration identity, not mutable source fact contents.
+
+    Only metadata is observed here. Actual declaration bytes, source aliases and
+    descriptor identities are still checked by the bounded reader below.
+    Excluded identities never resolve/stat their roots.
+    """
+    context = {'project': project, 'root': None, 'declaration': None, 'routes': []}
+    if (project.get('local_presence', {}).get('status') == 'removed_local'
+            or project.get('current_state_status') == 'removed_local'
+            or project.get('connection_read_allowed', project.get('enabled')) is not True
+            or project.get('access_profile') == 'no_current_goal_access'
+            or project.get('project_type') in {'cloud', 'cloud_project'}
+            or project.get('root_kind') == 'cloud'):
+        return content_hash(context)
+    try:
+        registered = Path(project['root_path']).expanduser()
+        _root_path_allowed(registered)
+        root = registered.resolve(strict=True)
+        _root_path_allowed(root)
+        info = root.stat()
+        context['root'] = [str(root), info.st_dev, info.st_ino]
+        declaration = (root / DECLARATION_PATH).lstat()
+        context['declaration'] = [declaration.st_dev, declaration.st_ino, declaration.st_mode,
+                                  declaration.st_size, declaration.st_mtime_ns, declaration.st_ctime_ns]
+        for raw in project.get('current_state_paths', []):
+            path = Path(raw).expanduser()
+            if path.is_absolute():
+                _root_path_allowed(path)
+                resolved = path.resolve(strict=False)
+                _root_path_allowed(resolved)
+                context['routes'].append([raw, str(resolved)])
+    except (OSError, RecordError, ValueError, KeyError) as exc:
+        context['unavailable'] = type(exc).__name__
+    return content_hash(context)
+
+
+def _authority(registry: dict, raw: bytes, project_ids=None, *, observe_sources=True) -> dict:
+    return {'registry_hash': hashlib.sha256(raw).hexdigest(),
+            'schema_hash': content_hash({'record': record_schema(),
+                'binding_contract': {'version': '1.1', 'forbidden_parts': sorted(FORBIDDEN_PARTS),
+                    'credential_tokens': sorted(CREDENTIAL_PATH_TOKENS),
+                    'credential_names': sorted(CREDENTIAL_PATH_NAMES)},
+                'shared_registry_contract': {k: v for k, v in registry.items() if k != 'projects'}}),
+            'adapter_version': VERSION, 'binding_version': '1.1',
+            'registration_bindings': {p['id']: content_hash(p) for p in registry['projects']
+                                      if project_ids is None or p['id'] in project_ids},
+            'project_bindings': {p['id']: _project_binding(p) for p in registry['projects']
+                                 if observe_sources and (project_ids is None or p['id'] in project_ids)}}
 
 
 class SourceFailure(RecordError):
@@ -90,30 +143,40 @@ def _safe_relative_read(root: Path, relative: str, *, authority_check: Callable[
 
 
 class SourceResolver:
-    def __init__(self, root: Path, *, registry_path: Path | None = None, clock: Callable[[], str] = now):
+    def __init__(self, root: Path, *, registry_path: Path | None = None, clock: Callable[[], str] = now,
+                 observe_sources: bool = True):
         self.root = Path(root)
         self.registry_path = registry_path or self.root / "data/registry/external_projects.yaml"
         self.registry_bytes = self.registry_path.read_bytes()
         self.registry = validate_registry_value(parse_source(self.registry_bytes, "yaml"))
         require(self.registry_bytes == self.registry_path.read_bytes(), "registry changed during load")
         self.projects = {row["id"]: row for row in self.registry["projects"]}
-        self.authority = {"registry_hash": hashlib.sha256(self.registry_bytes).hexdigest(),
-                          "schema_hash": content_hash(record_schema()), "adapter_version": VERSION}
+        self.observe_sources = observe_sources
+        self.authority = _authority(self.registry, self.registry_bytes, observe_sources=observe_sources)
         self.clock = clock
 
     @staticmethod
     def validate_result(value: dict) -> dict:
         return validate_result(value)
 
-    def _check_registry(self) -> None:
-        if self.registry_path.read_bytes() != self.registry_bytes:
-            raise SourceFailure("authority_drift", "Registry changed during refresh; start a new request.")
+    def _check_registry(self, project_id=None, *, registration_only=None) -> None:
+        data = self.registry_path.read_bytes()
+        registry = validate_registry_value(parse_source(data, 'yaml'))
+        ids = (self.projects if project_id is None else
+               [project_id] if isinstance(project_id, str) else project_id)
+        registration_only = not self.observe_sources if registration_only is None else registration_only
+        current = _authority(registry, data, ids, observe_sources=not registration_only)
+        if (data != self.registry_path.read_bytes()
+                or not authority_matches(self.authority, current, ids, registration_only=registration_only)):
+            raise SourceFailure("authority_drift", "Effective project authority changed during refresh; start a new request.")
 
     def refresh(self, project_id: str) -> dict:
+        require(self.observe_sources, "ledger-only resolver cannot refresh; construct an observing resolver")
         project = self.projects[project_id]
         result = {"schema_version": VERSION, "kind": "source_resolution", "project_id": project_id,
                   "name": project["name"], "observed_at": self.clock(), "success": False,
                   "disposition": "invalid", "authority": dict(self.authority), "business": empty_business(),
+                  "binding_hash": self.authority['project_bindings'][project_id],
                   "sources": [], "declaration": None, "field_provenance": {},
                   "unknown_fields": {key: "No current source result." for key in FIELDS},
                   "validation_entry": [], "errors": [], "update_key": "",
@@ -130,7 +193,7 @@ class SourceResolver:
                     or project.get("project_type") in {"cloud", "cloud_project"}
                     or project.get("root_kind") == "cloud"):
                 raise SourceFailure("disabled", "Registry currently disables this source route.")
-            self._check_registry()
+            self._check_registry(project_id, registration_only=True)
             registered = Path(project["root_path"]).expanduser()
             _root_path_allowed(registered)
             root = registered.resolve(strict=True)
@@ -142,7 +205,7 @@ class SourceResolver:
             result["freshness"]["root_binding"] = content_hash(binding)
 
             def check() -> None:
-                self._check_registry()
+                self._check_registry(project_id, registration_only=True)
                 try:
                     resolved = registered.resolve(strict=True)
                     current_stat = resolved.stat()
@@ -250,6 +313,10 @@ class SourceResolver:
             require(source_metadata == metadata, "source changed during normalization")
             recheck, _ = _safe_relative_read(root, DECLARATION_PATH, authority_check=check)
             require(hashlib.sha256(recheck).hexdigest() == result["declaration"]["sha256"], "declaration changed during read")
+            # Failed reads retain their precise failure disposition. Only a
+            # complete successful candidate can reach the final physical binding
+            # comparison; no changed root/declaration can publish current facts.
+            self._check_registry(project_id)
             result["success"] = True
             result["disposition"] = "resolved"
             result["freshness"].update(read_status="resolved", stale=False, reason=None)

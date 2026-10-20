@@ -45,6 +45,19 @@ class DailySyncTests(unittest.TestCase):
             code = main(["--root", str(self.fixture.hub), *args])
         return code, json.loads(output.getvalue())
 
+    def test_cli_sync_still_observes_real_selected_roots(self):
+        original = Path.resolve
+        observed = []
+        def resolving(path, *args, **kwargs):
+            if path in (self.a, self.b):
+                observed.append(str(path))
+            return original(path, *args, **kwargs)
+        with mock.patch.object(Path, "resolve", resolving):
+            code, result = self.cli("sync", "--request-id", "observing-sync")
+        self.assertEqual(0, code, result)
+        self.assertTrue({str(self.a), str(self.b)} <= set(observed))
+        self.assertEqual(2, result["appended_count"])
+
     def test_same_request_skips_committed_sources_and_new_id_reads_again(self):
         first, code = self.run_sync("one")
         self.assertEqual(0, code)
@@ -96,6 +109,9 @@ class DailySyncTests(unittest.TestCase):
             declaration = yaml.safe_load((root / "hub.connection.yaml").read_text())
             declaration["mapping"] = {}
             (root / "hub.connection.yaml").write_text(yaml.safe_dump(declaration))
+        # Freeze the revised declaration before this new explicit request.
+        self.resolver = self.fixture.resolver()
+        self.resolver.clock = now
         result, code = self.run_sync("partial")
         self.assertEqual(0, code)
         self.assertEqual({}, result["failure_code_counts"])
