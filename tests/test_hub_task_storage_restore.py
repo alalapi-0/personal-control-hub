@@ -272,3 +272,172 @@ class OfflineTaskRestoreTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(json.loads(result.stdout)['state'], 'ready')
         self.assertEqual(self.bytes(self.store), self.source_bytes)
+
+
+class PlanOfflineRestoreTests(unittest.TestCase):
+    copied = OfflineTaskRestoreTests.copied
+    pins = OfflineTaskRestoreTests.pins
+    bytes = OfflineTaskRestoreTests.bytes
+    restore = OfflineTaskRestoreTests.restore
+    rejects_unchanged = OfflineTaskRestoreTests.rejects_unchanged
+
+    def setUp(self):
+        import test_hub_plan_admission as fixtures
+        self.fixture=fixtures.ContractPlanIntegrationTests();self.fixture.setUp();self.addCleanup(self.fixture.doCleanups)
+        self.fixture.settled();self.store=self.fixture.store
+        self.store.archive_plan_completed(self.fixture.p['plan_id'],authority=self.fixture.cap)
+        self.root=self.store.root.parent;self.number=0;self.source_bytes=self.bytes(self.store)
+
+    def content(self,store):
+        from hub.task_storage_restore import _snapshot
+        return _snapshot(store,store.path.read_bytes())[1]
+
+    def mutated(self,statement,params=()):
+        with sqlite3.connect(':memory:')as db:
+            db.deserialize(self.store.path.read_bytes());db.execute(statement,params);db.commit();return db.serialize()
+
+    def test_extended_snapshot_and_full_offline_restore_preserve_every_table(self):
+        original=self.content(self.store);task=self.store.task('P1-R1-PCH-BASE');events=self.store.events('P1-R1-PCH-BASE')
+        self.assertEqual(len(original['plan_archive_tasks']),1);self.assertTrue(original['plan_archive_events'])
+        copied=self.copied();result=self.restore(copied)
+        self.assertEqual(result['state'],'ready');self.assertEqual(self.content(copied),original)
+        self.assertEqual(result['business_sha256'],digest(original));self.assertEqual(copied.task(task['id']),task);self.assertEqual(copied.events(task['id']),events)
+        self.assertEqual(self.bytes(self.store),self.source_bytes)
+
+    def test_strict_complete_schema_no_partial_custom_ddl_or_unknown_version(self):
+        from hub.task_storage_restore import _snapshot
+        statements=['DROP TABLE plan_conflicts','DROP INDEX plan_archive_event_id',
+                    'CREATE INDEX surprise ON plan_receipts(task_id)',
+                    'CREATE VIEW unexpected AS SELECT *FROM plan_inputs',
+                    'CREATE TRIGGER unexpected AFTER INSERT ON plan_inputs BEGIN DELETE FROM plan_receipts; END',
+                    'PRAGMA ignore_check_constraints=ON']
+        for sql in statements[:-1]:
+            with self.subTest(sql=sql),self.assertRaises(ServiceError):_snapshot(self.store,self.mutated(sql))
+        with sqlite3.connect(':memory:')as db:
+            db.deserialize(self.store.path.read_bytes());db.execute(statements[-1]);db.execute('UPDATE plan_schema SET version=99');db.commit()
+            with self.assertRaises(ServiceError):_snapshot(self.store,db.serialize())
+
+    def test_hashes_links_sequences_and_nonterminal_archive_are_rejected(self):
+        from hub.task_storage_restore import _snapshot
+        statements=["UPDATE plan_inputs SET hash='bad'","UPDATE plan_receipts SET hash='bad'",
+                    "UPDATE plan_archive_tasks SET payload_hash='bad'","UPDATE plan_archive_events SET hash='bad'",
+                    "UPDATE plan_archive_events SET task_id='missing-task'","UPDATE plan_archive_tasks SET status='running'",
+                    'UPDATE plan_archive_tasks SET sequence=-1','UPDATE plan_archive_events SET sequence=sequence+10000',
+                    "UPDATE sqlite_sequence SET seq=0 WHERE name='tasks'",
+                    "UPDATE plan_archive_tasks SET parent='missing-parent'",
+                    "UPDATE plan_archive_tasks SET owner='different-owner'",'UPDATE plan_archive_tasks SET lease_until=lease_until+1',
+                    'INSERT INTO tasks SELECT *FROM plan_archive_tasks']
+        for sql in statements:
+            with self.subTest(sql=sql),self.assertRaises(ServiceError):_snapshot(self.store,self.mutated(sql))
+
+    def test_canonical_metadata_mutation_with_recomputed_hash_still_rejects(self):
+        from hub.task_storage_restore import _snapshot
+        for table,change in [('plan_inputs','id'),('plan_receipts','task'),('plan_receipts','attempt'),('plan_receipts','proof'),('plan_receipts','effect'),('plan_archive_events','fence')]:
+            with self.subTest(table=table,change=change):
+                with sqlite3.connect(':memory:')as db:
+                    db.deserialize(self.store.path.read_bytes());selector=" WHERE event_key LIKE 'rebuild-claim-%'" if change=='fence' else ''
+                    value=json.loads(db.execute('SELECT body FROM '+table+selector).fetchone()[0])
+                    if change=='id':value['plan_id']='different-plan'
+                    if change=='task':value['task_id']='P1-R1-PCH-OFFLINE'
+                    if change=='attempt':value['attempt_id']='wrong-attempt'
+                    if change=='proof':value['provenance']['receipt_sha256']='e'*64
+                    if change=='effect':value['effect_state']='unknown';value['unknowns']=['Unresolved']
+                    if change=='fence':value['fence']='e'*64
+                    db.execute('UPDATE '+table+' SET body=?,hash=?'+selector,(canonical(value).decode(),digest(value)));db.commit()
+                    with self.assertRaises(ServiceError):_snapshot(self.store,db.serialize())
+
+    def test_every_extended_table_contributes_to_business_content_hash(self):
+        from hub.task_storage_restore import _snapshot
+        original=self.content(self.store)
+        raw=self.mutated("UPDATE plan_archive_events SET received=received+0.01 WHERE event_key='rebuild-package'")
+        changed=_snapshot(self.store,raw)[1]
+        self.assertNotEqual(digest(original),digest(changed));self.assertNotEqual(original['plan_archive_events'],changed['plan_archive_events'])
+
+    def test_historical_proof_expiry_is_preserved_not_reissued(self):
+        before=self.content(self.store)
+        with patch('time.time',return_value=self.fixture.f.now+86400):after=self.content(self.store)
+        self.assertEqual(after,before)
+
+    def test_extended_faults_pins_and_confirmations_keep_original_protection(self):
+        for phase in ('before_restore_pending','after_restore_pending','after_restore_database','before_restore_ready','after_restore_ready'):
+            with self.subTest(phase=phase):
+                copied=self.copied();before=self.content(copied)
+                def fault(current):
+                    if current==phase:raise OSError('synthetic extended restore failure')
+                copied.fault=fault
+                with self.assertRaises(ServiceError):self.restore(copied)
+                self.assertEqual(self.content(copied),before);self.assertEqual(self.bytes(self.store),self.source_bytes)
+        copied=self.copied();self.rejects_unchanged(copied,'RESTORE_OFFLINE_CONFIRMATION_REQUIRED',**self.pins(copied))
+        pins=self.pins(copied);pins['database_sha256']='0'*64;self.rejects_unchanged(copied,**pins,confirm_offline=True)
+
+    def test_unlinked_conflict_and_capacity_overflow_reject(self):
+        from hub.task_storage_restore import _snapshot
+        with sqlite3.connect(':memory:')as db:
+            db.deserialize(self.store.path.read_bytes());row=db.execute('SELECT *FROM plan_receipts').fetchone()
+            value=json.loads(row[2]);value['attempt_id']='other-attempt'
+            db.execute('INSERT INTO plan_conflicts VALUES(?,?,?,?)',('missing-plan',row[1],canonical(value).decode(),digest(value)));db.commit()
+            with self.assertRaises(ServiceError):_snapshot(self.store,db.serialize())
+        # A second unique archived row exceeds the one-task plan's archive bound.
+        with sqlite3.connect(':memory:')as db:
+            db.deserialize(self.store.path.read_bytes());row=list(db.execute('SELECT *FROM plan_archive_tasks').fetchone());row[0]=2;row[1]='P1-R1-PCH-OFFLINE'
+            db.execute('INSERT INTO plan_archive_tasks VALUES('+','.join('?'for _ in row)+')',row);db.commit()
+            with self.assertRaises(ServiceError):_snapshot(self.store,db.serialize())
+
+
+class PlanRRDraftRestoreTests(unittest.TestCase):
+    def test_nonempty_rr_drafts_and_plan_coexist_in_offline_restore(self):
+        import test_hub_rr_feedback as rr_fixture
+        from test_hub_plan_admission import plan,task,BASE
+        from hub.plan_admission import PlanAuthority
+        from hub.task_storage_restore import _snapshot
+        rr=rr_fixture.FeedbackStoreTests();rr.setUp();self.addCleanup(rr.doCleanups)
+        rr.submit([rr_fixture.attachment()])
+        command={'request_id':'fixture-draft','expected_revision':0,'project_id':'fixture','parent_task_id':None,'value':{'objective':'Retained synthetic draft'}}
+        rr.task.save_ordinary_draft(command,'fixture-owner',lambda:None)
+        p=plan([task(BASE)]);cap=PlanAuthority.configured({'plan_sha256':digest(p)},authorize=lambda:None,controls=lambda:{'state':'active','revision':1},routes=lambda _:False,package_for=lambda _:None)
+        rr.task.import_plan(p,authority=cap);original=_snapshot(rr.task,rr.task.path.read_bytes())[1]
+        target=rr.root/'restored';target.mkdir(mode=0o700);copied=TaskStore(target);copied.path.parent.mkdir(parents=True,mode=0o700)
+        shutil.copy2(rr.task.path,copied.path);shutil.copy2(rr.task.registration_path,copied.registration_path)
+        result=copied.restore_storage(database_sha256=sha(copied.path),registration_sha256=sha(copied.registration_path),confirm_offline=True)
+        self.assertEqual(result['state'],'ready');self.assertEqual(_snapshot(copied,copied.path.read_bytes())[1],original)
+        for table in ('plan_schema','plan_inputs','rr_feedback','rr_attachments','ordinary_drafts','ordinary_draft_requests'):self.assertTrue(original[table])
+        with sqlite3.connect(rr.task.path)as src,sqlite3.connect(copied.path)as dst:
+            self.assertEqual(src.execute('SELECT data FROM rr_attachments').fetchall(),dst.execute('SELECT data FROM rr_attachments').fetchall())
+
+
+class PlanReceiptHistoryRestoreTests(unittest.TestCase):
+    def test_unknown_and_conflicting_bootstrap_history_survive_without_redispatch(self):
+        import copy
+        import test_hub_plan_admission as fixtures
+        from hub.task_storage_restore import _snapshot
+        f=fixtures.PlanStoreTests();f.setUp();self.addCleanup(f.doCleanups)
+        f.store.import_plan(f.p,authority=f.cap)
+        first=f.evidence(fixtures.BASE);f.records[fixtures.BASE]=first;f.configure();f.store.record_plan_evidence(f.p['plan_id'],first,authority=f.cap)
+        conflict=copy.deepcopy(first);conflict['attempt_id']='second-original-attempt';f.records[fixtures.BASE]=conflict;f.configure();f.store.record_plan_evidence(f.p['plan_id'],conflict,authority=f.cap)
+        unknown=f.evidence(fixtures.POLICY,unknown=True);f.records[fixtures.POLICY]=unknown;f.configure();f.store.record_plan_evidence(f.p['plan_id'],unknown,authority=f.cap)
+        before=_snapshot(f.store,f.store.path.read_bytes())[1]
+        self.assertEqual(len(before['plan_receipts']),2);self.assertEqual(len(before['plan_conflicts']),1)
+        root=f.root.parent/'copy';root.mkdir(mode=0o700);copy_store=TaskStore(root);copy_store.path.parent.mkdir(parents=True,mode=0o700)
+        shutil.copy2(f.store.path,copy_store.path);shutil.copy2(f.store.registration_path,copy_store.registration_path)
+        result=copy_store.restore_storage(database_sha256=sha(copy_store.path),registration_sha256=sha(copy_store.registration_path),confirm_offline=True)
+        self.assertEqual(result['business_sha256'],digest(before));self.assertEqual(_snapshot(copy_store,copy_store.path.read_bytes())[1],before)
+        self.assertEqual(copy_store.tasks(),[])
+
+
+class ArchivedPlanConflictRestoreTests(unittest.TestCase):
+    setUp=PlanOfflineRestoreTests.setUp
+    copied=PlanOfflineRestoreTests.copied
+    pins=PlanOfflineRestoreTests.pins
+    restore=PlanOfflineRestoreTests.restore
+    bytes=PlanOfflineRestoreTests.bytes
+    def test_archived_original_and_later_valid_conflict_are_both_preserved(self):
+        import copy
+        from hub.task_storage_restore import _snapshot
+        r=copy.deepcopy(self.fixture.records['P1-R1-PCH-BASE']);r['evidence_ref']='synthetic/later-root-record.json'
+        self.fixture.records[r['task_id']]=r;self.fixture.configure()
+        result=self.store.record_plan_evidence(self.fixture.p['plan_id'],r,authority=self.fixture.cap)
+        self.assertTrue(result['requires_reconcile'])
+        before=_snapshot(self.store,self.store.path.read_bytes())[1]
+        self.assertEqual(len(before['plan_conflicts']),1);self.assertEqual(len(before['plan_archive_tasks']),1)
+        copied=self.copied();self.restore(copied);self.assertEqual(_snapshot(copied,copied.path.read_bytes())[1],before)
+        self.assertEqual(copied.plan_ready(self.fixture.p['plan_id'],authority=self.fixture.cap)['ready'],[])

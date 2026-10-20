@@ -59,9 +59,9 @@ def _decode(raw, expected):
         raise RRFeedbackError(503, 'RR_STORE_CORRUPT') from None
 
 
-@functools.lru_cache(maxsize=4)
-def _expected_schema(with_rr, with_drafts=False):
-    from .task_store import SCHEMA, ORDINARY_DRAFT_TABLES
+@functools.lru_cache(maxsize=8)
+def _expected_schema(with_rr, with_drafts=False, with_plan=False):
+    from .task_store import SCHEMA, ORDINARY_DRAFT_TABLES, PLAN_DDL
     with contextlib.closing(sqlite3.connect(':memory:')) as db:
         db.executescript(SCHEMA)
         if with_drafts:
@@ -70,17 +70,23 @@ def _expected_schema(with_rr, with_drafts=False):
         if with_rr:
             for ddl in RR_DDL:
                 db.execute(ddl)
+        if with_plan:
+            for ddl in PLAN_DDL:
+                db.execute(ddl)
         return tuple(db.execute(_SCHEMA_QUERY).fetchall())
 
 
 def schema_present(db):
-    """Accept exact known base schema or exact base plus complete RR schema."""
+    """Accept only complete known optional schemas; plans confer no RR authority."""
     actual = tuple(tuple(row) for row in db.execute(_SCHEMA_QUERY))
     for drafts in (False, True):
-        if actual == _expected_schema(False, drafts):
-            return False
-        if actual == _expected_schema(True, drafts):
-            return True
+        for plans in (False, True):
+            for rr in (False, True):
+                if actual == _expected_schema(rr, drafts, plans):
+                    if plans and tuple(tuple(row) for row in db.execute(
+                            'SELECT version FROM plan_schema')) != ((1,),):
+                        raise RRFeedbackError(503, 'RR_STORE_SCHEMA_REJECTED')
+                    return rr
     raise RRFeedbackError(503, 'RR_STORE_SCHEMA_REJECTED')
 
 

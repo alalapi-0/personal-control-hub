@@ -6,6 +6,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import secrets
 import sqlite3
 import stat
@@ -47,8 +48,22 @@ CREATE TABLE events(sequence INTEGER PRIMARY KEY AUTOINCREMENT,
 '''
 
 
+PLAN_TABLES = ('plan_schema','plan_inputs','plan_receipts','plan_conflicts','plan_archive_tasks','plan_archive_events')
+PLAN_DDL = (
+    'CREATE TABLE plan_schema(version INTEGER NOT NULL CHECK(version=1))',
+    'INSERT INTO plan_schema VALUES(1)',
+    'CREATE TABLE plan_inputs(id TEXT PRIMARY KEY,body TEXT NOT NULL,hash TEXT NOT NULL)',
+    'CREATE TABLE plan_receipts(plan_id TEXT NOT NULL,task_id TEXT NOT NULL,body TEXT NOT NULL,hash TEXT NOT NULL,PRIMARY KEY(plan_id,task_id))',
+    'CREATE TABLE plan_conflicts(plan_id TEXT NOT NULL,task_id TEXT NOT NULL,body TEXT NOT NULL,hash TEXT NOT NULL,PRIMARY KEY(plan_id,task_id,hash))',
+    'CREATE TABLE plan_archive_tasks AS SELECT * FROM tasks WHERE 0',
+    'CREATE UNIQUE INDEX plan_archive_task_id ON plan_archive_tasks(id)',
+    'CREATE TABLE plan_archive_events AS SELECT * FROM events WHERE 0',
+    'CREATE UNIQUE INDEX plan_archive_event_sequence ON plan_archive_events(sequence)',
+    'CREATE UNIQUE INDEX plan_archive_event_id ON plan_archive_events(task_id,event_key)')
+
+
 def stable_id(value):
-    if not isinstance(value, str) or not ID_RE.fullmatch(value):
+    if not isinstance(value, str) or not (ID_RE.fullmatch(value) or re.fullmatch(r'P[0-9]+-[A-Za-z0-9]+(?:[-_.][A-Za-z0-9]+)*',value)):
         raise ServiceError('INVALID_TASK_ID')
     return value
 
@@ -495,7 +510,7 @@ class TaskStore:
         if len(canonical(payload)) > 8192 or len(canonical(intent)) > 49152:
             raise ServiceError('TASK_PAYLOAD_CAPACITY', status=413)
         with self._connection(True,guard=authorize) as connection:
-            old = connection.execute('SELECT * FROM tasks WHERE id=?', (ident,)).fetchone()
+            old = self._task_row(connection,ident)
             if old:
                 if old['payload_hash'] != hashed: raise ServiceError('TASK_REQUEST_CONFLICT', status=409)
                 return self._task(old), True
@@ -507,7 +522,7 @@ class TaskStore:
             return self._task(row), False
 
     def _rebuild_rows(self,connection,ident):
-        return [{'sequence':r['sequence'],'key':r['event_key'],'received':r['received'],'data':self._decode(r['body'],r['hash'])} for r in connection.execute("SELECT * FROM events WHERE task_id=? AND event_key LIKE 'rebuild-%' ORDER BY sequence",(ident,))]
+        return self._history_rows(connection,ident,prefix='rebuild-')
 
     def rebuild_package(self,ident):
         from .rebuild_contracts import validate
@@ -526,23 +541,27 @@ class TaskStore:
         return grant
 
     def prepare_rebuild(self,package,*,authority):
-        from .rebuild_contracts import validate,require_authority,reject
+        from .rebuild_contracts import validate,require_authority
         package=validate(package,'package');authority=require_authority(authority);authority._authorize()
         with self._connection(True) as connection:
-            grant=self._rebuild_check(connection,package,authority)
-            row=connection.execute('SELECT * FROM tasks WHERE id=?',(package['task_id'],)).fetchone()
-            if row:
-                prior=self._rebuild_rows(connection,package['task_id'])
-                old=next((r['data'] for r in prior if r['key']=='rebuild-package'),None)
-                if old!=package:reject('REBUILD_PACKAGE_CONFLICT')
-                replayed=True
-            else:
-                if connection.execute('SELECT count(*) FROM tasks').fetchone()[0]>=MAX_TASKS:reject('TASK_CAPACITY')
-                payload={'kind':'rebuild_project','request_id':package['task_id'],'project_id':package['project_id'],'parent_task_id':None,'mode':'new','effect':package['effects']['mode']}
-                intent={'grant':grant,'grant_hash':digest(grant),'package_sha256':digest(package),'owner_context':authority.snapshot()['owner_context']}
-                connection.execute('INSERT INTO tasks(id,payload,payload_hash,intent,intent_hash,project,parent,status,created) VALUES(?,?,?,?,?,?,?,?,?)',(package['task_id'],canonical(payload).decode(),digest(payload),canonical(intent).decode(),digest(intent),package['project_id'],None,'queued',time.time()))
-                self._append_event(connection,package['task_id'],'rebuild-package',package);replayed=False
-            self._rebuild_check(connection,package,authority)
+            return self._prepare_rebuild(connection,package,authority)
+
+    def _prepare_rebuild(self,connection,package,authority):
+        from .rebuild_contracts import reject
+        grant=self._rebuild_check(connection,package,authority)
+        row=self._task_row(connection,package['task_id'])
+        if row:
+            prior=self._rebuild_rows(connection,package['task_id'])
+            old=next((r['data'] for r in prior if r['key']=='rebuild-package'),None)
+            if old!=package:reject('REBUILD_PACKAGE_CONFLICT')
+            replayed=True
+        else:
+            if connection.execute('SELECT count(*) FROM tasks').fetchone()[0]>=MAX_TASKS:reject('TASK_CAPACITY')
+            payload={'kind':'rebuild_project','request_id':package['task_id'],'project_id':package['project_id'],'parent_task_id':None,'mode':'new','effect':package['effects']['mode']}
+            intent={'grant':grant,'grant_hash':digest(grant),'package_sha256':digest(package),'owner_context':authority.snapshot()['owner_context']}
+            connection.execute('INSERT INTO tasks(id,payload,payload_hash,intent,intent_hash,project,parent,status,created) VALUES(?,?,?,?,?,?,?,?,?)',(package['task_id'],canonical(payload).decode(),digest(payload),canonical(intent).decode(),digest(intent),package['project_id'],None,'queued',time.time()))
+            self._append_event(connection,package['task_id'],'rebuild-package',package);replayed=False
+        self._rebuild_check(connection,package,authority)
         return {'replayed':replayed,'execution_started_by_this_call':False}
 
     def claim_rebuild(self,ident,owner,*,authority):
@@ -610,7 +629,7 @@ class TaskStore:
         package=validate(package,'package');attempt=validate(attempt,'attempt');authority=require_authority(authority);authority._authorize()
         with self._connection(True) as connection:
             grant=self._rebuild_check(connection,package,authority)
-            row=connection.execute('SELECT * FROM tasks WHERE id=?',(package['task_id'],)).fetchone()
+            row=self._task_row(connection,package['task_id'])
             if not row:reject('TASK_NOT_FOUND')
             task=self._task(row);rows=self._rebuild_rows(connection,task['id']);prior={r['key']:r['data'] for r in rows}
             if prior.get('rebuild-package')!=package:reject('REBUILD_PACKAGE_CONFLICT')
@@ -628,27 +647,31 @@ class TaskStore:
                 if any(r['effect_state']=='unknown' or any(c['exit']!=0 for c in r['checks']) for r in receipts):reject('REBUILD_RETRY_DIAGNOSIS_REQUIRED')
                 active=connection.execute("SELECT count(*) FROM tasks WHERE status IN ('running','waiting_input','waiting_approval','validating','requires_reconcile')").fetchone()[0]
                 if active>package['budget']['capacity']:reject('REBUILD_CAPACITY')
-                for dep in package['dependencies']:
-                    drow=connection.execute('SELECT * FROM tasks WHERE id=?',(dep['task_id'],)).fetchone()
-                    if not drow or drow['status']!='checks_complete' or drow['cancel']:reject('REBUILD_DEPENDENCY_FAILED')
-                    history={r['key']:r['data'] for r in self._rebuild_rows(connection,dep['task_id'])}
-                    matches=[r for k,r in history.items() if k.startswith('rebuild-receipt-') and digest(r)==dep['receipt_sha256']]
-                    if len(matches)!=1:reject('REBUILD_DEPENDENCY_FAILED')
-                    receipt=matches[0];dp=validate(history.get('rebuild-package'),'package');da=validate(history.get('rebuild-attempt-'+receipt['attempt_id']),'attempt');receipt_binding(receipt,dp,da)
-                    proof=authority.snapshot().get('verified_dependencies',{}).get(dep['receipt_sha256'])
-                    settled_evidence(dp,receipt,proof,da)
-                    from .ordinary_tasks import check_registration,validate_grant,validate_scoped_write_grant
-                    from .rebuild_contracts import current_versions
-                    dg=self._task(drow)['intent']['grant']
-                    stored_dep=connection.execute('SELECT body,hash FROM grants WHERE id=?',(dg['grant_id'],)).fetchone()
-                    if not stored_dep or self._decode(stored_dep['body'],stored_dep['hash'])!=dg:reject('REBUILD_DEPENDENCY_FAILED')
-                    check_registration(dg,self.root)
-                    if dg['kind']=='rebuild_scoped_write':validate_scoped_write_grant(dg)
-                    else:validate_grant(dg,live=True)
-                    if current_versions(dg)!=receipt['end_versions']:reject('REBUILD_DEPENDENCY_FAILED')
+                self._rebuild_dependencies(connection,package,authority)
                 self._append_event(connection,task['id'],key,attempt);replayed=False
             self._rebuild_check(connection,package,authority)
         return {'replayed':replayed,'attempt_sha256':digest(attempt),'execution_started_by_this_call':False}
+
+    def _rebuild_dependencies(self,connection,package,authority):
+        from .rebuild_contracts import reject,validate,receipt_binding,settled_evidence
+        for dep in package['dependencies']:
+            drow=self._task_row(connection,dep['task_id'])
+            if not drow or drow['status']!='checks_complete' or drow['cancel']:reject('REBUILD_DEPENDENCY_FAILED')
+            history={r['key']:r['data'] for r in self._rebuild_rows(connection,dep['task_id'])}
+            matches=[r for k,r in history.items() if k.startswith('rebuild-receipt-') and digest(r)==dep['receipt_sha256']]
+            if len(matches)!=1:reject('REBUILD_DEPENDENCY_FAILED')
+            receipt=matches[0];dp=validate(history.get('rebuild-package'),'package');da=validate(history.get('rebuild-attempt-'+receipt['attempt_id']),'attempt');receipt_binding(receipt,dp,da)
+            proof=authority.snapshot().get('verified_dependencies',{}).get(dep['receipt_sha256'])
+            settled_evidence(dp,receipt,proof,da)
+            from .ordinary_tasks import check_registration,validate_grant,validate_scoped_write_grant
+            from .rebuild_contracts import current_versions
+            dg=self._task(drow)['intent']['grant']
+            stored_dep=connection.execute('SELECT body,hash FROM grants WHERE id=?',(dg['grant_id'],)).fetchone()
+            if not stored_dep or self._decode(stored_dep['body'],stored_dep['hash'])!=dg:reject('REBUILD_DEPENDENCY_FAILED')
+            check_registration(dg,self.root)
+            if dg['kind']=='rebuild_scoped_write':validate_scoped_write_grant(dg)
+            else:validate_grant(dg,live=True)
+            if current_versions(dg)!=receipt['end_versions']:reject('REBUILD_DEPENDENCY_FAILED')
 
     def record_rebuild_receipt(self,receipt,*,authority):
         from .rebuild_contracts import validate,require_authority,receipt_binding,reject
@@ -712,14 +735,16 @@ class TaskStore:
         stable_id(ident)
         with self._connection() as connection:
             scope,ids=self._selected_scope(selected_grant_ids)
-            row = connection.execute('SELECT * FROM tasks WHERE id=?'+scope, (ident,*ids)).fetchone() if connection else None
+            row=connection.execute('SELECT *FROM tasks WHERE id=?'+scope,(ident,*ids)).fetchone()
+            if row is None and self._plan_schema(connection):row=connection.execute('SELECT *FROM plan_archive_tasks WHERE id=?'+scope,(ident,*ids)).fetchone()
             return self._task(row) if row else None
 
     def tasks(self, *, selected_grant_ids=None):
         scope,ids=self._selected_scope(selected_grant_ids)
         with self._connection() as connection:
-            return [self._task(row) for row in connection.execute(
-                'SELECT * FROM tasks WHERE 1=1'+scope+' ORDER BY sequence DESC',ids)] if connection else []
+            rows=list(connection.execute('SELECT *FROM tasks WHERE 1=1'+scope,ids))
+            if self._plan_schema(connection):rows+=list(connection.execute('SELECT *FROM plan_archive_tasks WHERE 1=1'+scope,ids))
+            return [self._task(row) for row in sorted(rows,key=lambda r:r['sequence'],reverse=True)]
 
     def _parallel_read_claim(self, connection, tasks):
         """Narrow concurrency exception, revalidated inside the atomic claim.
@@ -1620,6 +1645,7 @@ class TaskStore:
             return receipt
 
     def _append_event(self, connection, ident, key, value):
+        if self._plan_schema(connection) and connection.execute('SELECT id FROM plan_archive_tasks WHERE id=?',(ident,)).fetchone():raise ServiceError('TASK_ARCHIVED_READONLY',status=409)
         stable_id(key); body = canonical(value).decode()
         if len(body.encode()) > 8192: raise ServiceError('TASK_EVENT_CAPACITY', status=507)
         old = connection.execute('SELECT hash FROM events WHERE task_id=? AND event_key=?',(ident,key)).fetchone()
@@ -1732,7 +1758,185 @@ class TaskStore:
             if not row or not control or row['owner']!=control['worker_owner'] or row['lease_until']<time.time() or row['thread_id']!=control['thread_id'] or row['turn_id']!=control['turn_id']:raise ServiceError('TASK_CONTROL_BINDING_REJECTED',status=409)
             if control['version']==1:self._append_event(connection,ident,'control-decision-'+control['request_digest'],{'id':control_id,'decision':'decline','status':reason,'at':time.time()})
 
+    def _history_rows(self,connection,ident,*,prefix=None):
+        clause=' AND event_key LIKE ?' if prefix else ''
+        args=(ident,prefix+'%') if prefix else (ident,)
+        rows=list(connection.execute('SELECT *FROM events WHERE task_id=?'+clause,args))
+        if self._plan_schema(connection):rows+=list(connection.execute('SELECT *FROM plan_archive_events WHERE task_id=?'+clause,args))
+        return [{'sequence':r['sequence'],'key':r['event_key'],'received':r['received'],'data':self._decode(r['body'],r['hash'])} for r in sorted(rows,key=lambda r:r['sequence'])]
+
     def events(self, ident):
+        with self._connection() as connection:return self._history_rows(connection,stable_id(ident))
+
+    # Additive plan storage v1. Existing task/event/byte limits remain unchanged.
+    def _plan_schema(self,connection,*,create=False):
+        present=connection.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='plan_schema'").fetchone()
+        if not present:
+            if not create:return False
+            for sql in PLAN_DDL:connection.execute(sql)
+            self.fault('after_plan_schema')
+        if [r[0]for r in connection.execute('SELECT version FROM plan_schema')]!=[1]:raise ServiceError('PLAN_SCHEMA_UNSUPPORTED',status=503)
+        return True
+
+    def _task_row(self,connection,ident):
+        row=connection.execute('SELECT * FROM tasks WHERE id=?',(ident,)).fetchone()
+        if row is None and self._plan_schema(connection):row=connection.execute('SELECT * FROM plan_archive_tasks WHERE id=?',(ident,)).fetchone()
+        return row
+
+    def _plan_input(self,connection,ident,authority):
+        from .plan_admission import authority as require,validate_plan,plan_id,reject
+        authority=require(authority)
+        if not self._plan_schema(connection):reject('PLAN_NOT_IMPORTED')
+        row=connection.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(plan_id(ident),)).fetchone()
+        if not row:reject('PLAN_NOT_IMPORTED')
+        plan=validate_plan(self._decode(*row));authority.check(plan)
+        return plan
+
+    def import_plan(self,plan,*,authority):
+        from .plan_admission import authority as require,validate_plan,reject
+        authority=require(authority);plan=validate_plan(plan);authority.check(plan)
+        with self._connection(True) as connection:
+            self._plan_schema(connection,create=True)
+            row=connection.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(plan['plan_id'],)).fetchone()
+            if row and self._decode(*row)!=plan:reject('PLAN_CONFLICT_REQUIRES_RECONCILE')
+            if not row:
+                if connection.execute('SELECT count(*)FROM plan_inputs').fetchone()[0]>=4:reject('PLAN_CAPACITY')
+                connection.execute('INSERT INTO plan_inputs VALUES(?,?,?)',(plan['plan_id'],canonical(plan).decode(),digest(plan)))
+            authority.check(plan);self.fault('before_plan_import_commit')
+        return {'replayed':row is not None,'execution_rows_created':0,'plan_sha256':digest(plan)}
+
+    def record_plan_evidence(self,plan_id,record,*,authority):
+        from .plan_admission import BOOTSTRAP_IDS,reject
+        with self._connection(True) as connection:
+            plan=self._plan_input(connection,plan_id,authority);accepted=authority.verify(record)
+            definition=next((t for t in plan['tasks']if t['id']==record['task_id']),None)
+            if not definition:reject('PLAN_TASK_UNKNOWN')
+            if record['origin']=='bootstrap' and record['task_id']not in BOOTSTRAP_IDS:reject('PLAN_BOOTSTRAP_REJECTED')
+            if record['origin']=='historical' and definition['status']!='done':reject('PLAN_EVIDENCE_UNVERIFIED')
+            task=self._task_row(connection,record['task_id'])
+            if record['origin']=='contract':
+                if not task or task['status']!='checks_complete' or task['cancel']:reject('PLAN_EVIDENCE_UNVERIFIED')
+                from .rebuild_contracts import settled_evidence
+                history={r['key']:r['data']for r in self._rebuild_rows(connection,record['task_id'])}
+                package=history.get('rebuild-package');attempt=history.get('rebuild-attempt-'+record['attempt_id']);receipt=history.get('rebuild-receipt-'+record['receipt_id'])
+                if not receipt or digest(receipt)!=record['receipt_sha256']:reject('PLAN_EVIDENCE_UNVERIFIED')
+                settled_evidence(package,receipt,record['provenance'],attempt)
+            elif task is not None:reject('PLAN_BOOTSTRAP_EXISTING_EFFECT_REQUIRES_RECONCILE')
+            old=connection.execute('SELECT body,hash FROM plan_receipts WHERE plan_id=? AND task_id=?',(plan_id,record['task_id'])).fetchone()
+            if old and self._decode(*old)!=record:
+                connection.execute('INSERT OR IGNORE INTO plan_conflicts VALUES(?,?,?,?)',(plan_id,record['task_id'],canonical(record).decode(),digest(record)))
+                result={'replayed':False,'requires_reconcile':True}
+            else:
+                if not old:connection.execute('INSERT INTO plan_receipts VALUES(?,?,?,?)',(plan_id,record['task_id'],canonical(record).decode(),digest(record)))
+                result={'replayed':old is not None,'requires_reconcile':not accepted}
+            authority.check(plan);authority.verify(record)
+        return result
+
+    def _plan_state(self,connection,plan,authority):
+        from .plan_admission import reject
+        accepted=set();states={}
+        for row in connection.execute('SELECT task_id,body,hash FROM plan_receipts WHERE plan_id=?',(plan['plan_id'],)):
+            value=self._decode(row['body'],row['hash'])
+            if value['task_id']!=row['task_id']:reject('PLAN_EVIDENCE_UNVERIFIED')
+            try:verified=authority.verify(value)
+            except ServiceError:verified=False
+            if verified:accepted.add(row['task_id'])
+            else:states[row['task_id']]='requires_reconcile'
+        for row in connection.execute('SELECT task_id,body,hash FROM plan_conflicts WHERE plan_id=?',(plan['plan_id'],)):
+            self._decode(row['body'],row['hash']);accepted.discard(row['task_id']);states[row['task_id']]='requires_reconcile'
+        for row in connection.execute('SELECT id,status,cancel FROM tasks'):
+            states[row['id']]=row['status']
+            if row['cancel'] or row['status']!='checks_complete':accepted.discard(row['id'])
+        if self._plan_schema(connection):
+            for row in connection.execute('SELECT id,status,cancel FROM plan_archive_tasks'):
+                states[row['id']]=row['status']
+                if row['cancel'] or row['status']!='checks_complete':accepted.discard(row['id'])
+        definitions={t['id']:t for t in plan['tasks']}
+        while True:
+            invalid={ident for ident in accepted if not set(definitions[ident]['depends_on'])<=accepted}
+            if not invalid:break
+            accepted-=invalid
+            for ident in invalid:states[ident]='requires_reconcile'
+        controls=authority._controls()
+        if type(controls)is not dict or controls.get('state')not in {'active','paused','cancelled'} or type(controls.get('revision'))is not int:reject('PLAN_CONTROL_UNKNOWN')
+        return states,accepted,controls
+
+    def plan_ready(self,plan_id,*,authority):
+        from .plan_admission import ready_window,ROUTES
         with self._connection() as connection:
-            return [{'sequence':r['sequence'],'key':r['event_key'],'received':r['received'],'data':self._decode(r['body'],r['hash'])}
-                    for r in connection.execute('SELECT * FROM events WHERE task_id=? ORDER BY sequence',(stable_id(ident),))] if connection else []
+            plan=self._plan_input(connection,plan_id,authority);states,accepted,controls=self._plan_state(connection,plan,authority)
+            eligible=lambda task:ROUTES in accepted and authority._routes(task) is True
+            ready=ready_window(plan,states,accepted,eligible) if controls['state']=='active' else []
+        return {'ready':ready,'accepted':sorted(accepted),'control_revision':controls['revision'],'execution_authority':False}
+
+    def admit_plan_window(self,plan_id,*,authority):
+        from .plan_admission import ready_window,ROUTES,WINDOW,reject
+        from .rebuild_contracts import validate,require_authority
+        with self._connection(True) as connection:
+            plan=self._plan_input(connection,plan_id,authority);states,accepted,controls=self._plan_state(connection,plan,authority)
+            definitions={t['id']:t for t in plan['tasks']}
+            pending=sum(1 for ident in states if ident in definitions and ident not in accepted)
+            ready=ready_window(plan,states,accepted,lambda task:ROUTES in accepted and authority._routes(task) is True,limit=max(0,WINDOW-pending)) if controls['state']=='active' else []
+            admitted=[];unavailable=[];dependencies_unavailable=[];budget_unavailable=[]
+            for ident in ready:
+                supplied=authority._package(ident)
+                if supplied is None:unavailable.append(ident);continue
+                package,cap=supplied;package=validate(package,'package');cap=require_authority(cap)
+                definition=definitions[ident]
+                if any(package[k]!=definition[v] for k,v in [('task_id','id'),('project_id','project_id'),('phase_id','phase_id'),('round_id','round_id')]) or package['route']['owner_route']!=definition['owner_route']:reject('PLAN_PACKAGE_MISMATCH')
+                if package['plan']!={'revision':plan['revision'],'sha256':digest(plan)} or package['lineage']['goal_id']!=plan['plan_id']:reject('PLAN_PACKAGE_MISMATCH')
+                if {x['task_id']for x in package['dependencies']}!=set(definition['depends_on']):reject('PLAN_DEPENDENCY_MISMATCH')
+                if authority._controls()!=controls:reject('PLAN_CONTROL_CHANGED')
+                if package['budget']['deadline']<=time.time():budget_unavailable.append(ident);continue
+                try:self._rebuild_dependencies(connection,package,cap)
+                except ServiceError as error:
+                    if error.code.startswith('REBUILD_DEPENDENCY'):
+                        dependencies_unavailable.append(ident);continue
+                    raise
+                self._prepare_rebuild(connection,package,cap);admitted.append(ident)
+            if authority._controls()!=controls:reject('PLAN_CONTROL_CHANGED')
+            authority.check(plan)
+        return {'admitted':admitted,'unavailable_authority':unavailable,'unavailable_dependency_receipts':dependencies_unavailable,'unavailable_budget':budget_unavailable,'window':WINDOW,'execution_started':False}
+
+    def archive_plan_completed(self,plan_id,*,authority):
+        """Same SQLite, exact original rows/sequences. Only verified settled work."""
+        from .plan_admission import WINDOW,reject
+        with self._connection(True) as connection:
+            plan=self._plan_input(connection,plan_id,authority);states,accepted,controls=self._plan_state(connection,plan,authority)
+            if controls['state']!='active':reject('PLAN_CONTROL_BLOCKED')
+            moved=[]
+            for ident in sorted(accepted):
+                row=connection.execute('SELECT * FROM tasks WHERE id=?',(ident,)).fetchone()
+                if not row:continue
+                if row['status']!='checks_complete' or row['cancel']:reject('PLAN_ARCHIVE_UNSETTLED')
+                # Original settled receipt was verified when recorded; revalidate
+                # complete contract evidence, not static planning status.
+                evidence=connection.execute('SELECT body,hash FROM plan_receipts WHERE plan_id=? AND task_id=?',(plan_id,ident)).fetchone()
+                record=self._decode(*evidence)
+                if record['origin']!='contract':reject('PLAN_ARCHIVE_UNSETTLED')
+                from .rebuild_contracts import settled_evidence
+                history={r['key']:r['data']for r in self._rebuild_rows(connection,ident)}
+                settled_evidence(history['rebuild-package'],history['rebuild-receipt-'+record['receipt_id']],record['provenance'],history['rebuild-attempt-'+record['attempt_id']])
+                self._task(row)
+                for event in connection.execute('SELECT body,hash FROM events WHERE task_id=?',(ident,)):self._decode(*event)
+                connection.execute('INSERT INTO plan_archive_tasks SELECT * FROM tasks WHERE id=?',(ident,))
+                connection.execute('INSERT INTO plan_archive_events SELECT * FROM events WHERE task_id=?',(ident,))
+                connection.execute('DELETE FROM events WHERE task_id=?',(ident,));connection.execute('DELETE FROM tasks WHERE id=?',(ident,));moved.append(ident)
+            if connection.execute('SELECT count(*)FROM plan_archive_tasks').fetchone()[0]>len(plan['tasks']):reject('PLAN_ARCHIVE_CAPACITY')
+            event_cap=2048*((len(plan['tasks'])+WINDOW-1)//WINDOW)
+            if connection.execute('SELECT count(*)FROM plan_archive_events').fetchone()[0]>event_cap:reject('PLAN_ARCHIVE_CAPACITY')
+            if authority._controls()!=controls:reject('PLAN_CONTROL_CHANGED')
+            authority.check(plan);self.fault('before_plan_archive_commit')
+        return {'archived':moved,'history_deleted':False,'schema_version':1}
+
+    def restore_plan_archive(self,plan_id,*,authority):
+        """Rollback storage placement only, never reverse accepted effects."""
+        from .plan_admission import reject
+        with self._connection(True) as connection:
+            plan=self._plan_input(connection,plan_id,authority)
+            if connection.execute('SELECT count(*)FROM tasks').fetchone()[0]+connection.execute('SELECT count(*)FROM plan_archive_tasks').fetchone()[0]>MAX_TASKS:reject('PLAN_ROLLBACK_CAPACITY')
+            if connection.execute('SELECT count(*)FROM events').fetchone()[0]+connection.execute('SELECT count(*)FROM plan_archive_events').fetchone()[0]>MAX_EVENTS:reject('PLAN_ROLLBACK_CAPACITY')
+            connection.execute('INSERT INTO tasks SELECT *FROM plan_archive_tasks');connection.execute('INSERT INTO events SELECT *FROM plan_archive_events')
+            connection.execute('DELETE FROM plan_archive_events');connection.execute('DELETE FROM plan_archive_tasks')
+            authority.check(plan);self.fault('before_plan_restore_commit')
+        return {'restored':True,'effects_reverted':False,'static_inputs_retained':True}

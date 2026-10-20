@@ -27,6 +27,7 @@ def lifecycle(task, events):
     receipt. Older receipts without turn_status do not establish that claim.
     checks_complete always awaits owner review; it never means human accepted.
     """
+    engineering = type(task.get('payload')) is dict and task['payload'].get('kind') == 'rebuild_project'
     task_id = _identifier(task.get('id'))
     thread_id = _identifier(task.get('thread_id'))
     turn_id = _identifier(task.get('turn_id'))
@@ -79,7 +80,7 @@ def lifecycle(task, events):
     elif status in _TERMINAL:
         stage, reason = status, 'durable_task_status'
     elif status == 'checks_complete':
-        stage, reason = 'await_owner_review', 'checks_complete_not_human_acceptance'
+        stage, reason = ('checks_complete', 'engineering_receipt_verification_pending') if engineering else ('await_owner_review', 'checks_complete_not_human_acceptance')
     elif status == 'validating':
         stage, reason = 'validating', 'durable_task_status'
     elif status in {'waiting_input', 'waiting_approval'}:
@@ -104,7 +105,7 @@ def lifecycle(task, events):
         'provider_accepted': provider_bound,
         'provider_started': bool(started and status != 'queued'),
         'cancel_requested': task.get('cancel') in (True, 1),
-        'owner_review_required': status == 'checks_complete',
+        'owner_review_required': status == 'checks_complete' and not engineering,
         'human_accepted': False,
         'last_evidence_sequence': last_sequence, 'evidence': evidence,
     }

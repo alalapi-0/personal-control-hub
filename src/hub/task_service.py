@@ -105,7 +105,9 @@ def validate_grant(grant, *, live=False):
 
 class TaskService:
     def __init__(self,projects,annotations,store, *, test_gate=False, writer_check=None, runtime_status=None, ordinary_enabled=False,
-                 ordinary_grant_ids=None, rebuild_binding=None, rebuild_authority=None):
+                 ordinary_grant_ids=None, rebuild_binding=None, rebuild_authority=None, plan_authority=None):
+        from .plan_admission import authority as plan_capability
+        self.__plan_authority=plan_capability(plan_authority) if plan_authority is not None else None
         self.projects,self.annotations,self.store=projects,annotations,store
         self.test_gate=test_gate
         # An internal lease cannot certify an unrelated writer's absence.
@@ -142,6 +144,24 @@ class TaskService:
 
     def record_rebuild_receipt(self,receipt,*,owner_context,authorize=None):
         return self.store.record_rebuild_receipt(receipt,authority=self._contract_authority(owner_context,authorize))
+
+    def _plan_authority(self,owner_context):
+        from .plan_admission import authority,reject
+        cap=authority(self.__plan_authority);cap._authorize()
+        if cap.snapshot().get('owner_context')!=owner_context:reject('TASK_OWNER_REJECTED')
+        return cap
+
+    def import_plan(self,plan,*,owner_context):
+        return self.store.import_plan(plan,authority=self._plan_authority(owner_context))
+
+    def plan_ready(self,plan_id,*,owner_context):
+        return self.store.plan_ready(plan_id,authority=self._plan_authority(owner_context))
+
+    def admit_plan_window(self,plan_id,*,owner_context):
+        return self.store.admit_plan_window(plan_id,authority=self._plan_authority(owner_context))
+
+    def record_plan_evidence(self,plan_id,record,*,owner_context):
+        return self.store.record_plan_evidence(plan_id,record,authority=self._plan_authority(owner_context))
 
     @staticmethod
     def _ordinary_scope_ids(value):
