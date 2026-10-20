@@ -115,6 +115,7 @@ class IncrementalSyncTests(unittest.TestCase):
 
     def test_scheduled_open_resumes_missing_only_failure_is_durable_then_recovers(self):
         morning=datetime(2026,10,16,0,0,tzinfo=timezone.utc)
+        self.resolver.clock=lambda:morning.isoformat()
         original=self.resolver.refresh
         def interrupt(ident):
             if ident=='b':raise KeyboardInterrupt()
@@ -127,6 +128,7 @@ class IncrementalSyncTests(unittest.TestCase):
         read.assert_called_once_with('b');self.assertEqual(code,0)
         old_bytes=(self.a/'STATE.yaml').read_bytes();(self.a/'STATE.yaml').write_text('broken: [')
         evening=morning+timedelta(hours=12)
+        self.resolver.clock=lambda:evening.isoformat()
         failed,code=scheduled_request(self.fixture.hub,self.resolver,self.ledger,instant=evening)
         self.assertEqual(code,2);self.assertEqual(failed['status'],'FINISHED')
         summary=recovery_summary(self.ledger.history(current_authority=self.resolver.authority),{'a','b'})
@@ -136,7 +138,23 @@ class IncrementalSyncTests(unittest.TestCase):
         with mock.patch.object(self.resolver,'refresh',side_effect=AssertionError('durable failure reread')):
             repeated,code=scheduled_request(self.fixture.hub,self.resolver,self.ledger,instant=evening)
         self.assertEqual(code,2);self.assertEqual(repeated['appended_count'],0)
-        recovered,code=scheduled_request(self.fixture.hub,self.resolver,self.ledger,instant=morning+timedelta(days=1))
+        # Time alone cannot retry the same failed version. Supply actual bounded
+        # source-change evidence, with the original failed result as its anchor.
+        from hub.connection_sync import project_recovery, _source_version
+        from hub.connection_records import content_hash
+        recovery_time=morning+timedelta(days=1)
+        self.resolver.clock=lambda:recovery_time.isoformat()
+        previous=project_recovery(self.ledger.history(),'a',recovery_time)
+        from hub.connection_sync import record_recovery_observation
+        record_recovery_observation(self.ledger,self.resolver,'explicit-recovery-proof','a')
+        proof=self.ledger.history()['observation_results'][-1]
+        observed=proof['result']
+        event={'kind':'source_changed','failure_ref':previous['failure_ref'],
+               'source_version':_source_version(observed),
+               'binding_hash':self.resolver.authority['project_bindings']['a'],
+               'evidence_hash':proof['result_hash'],'proof_ref':proof['result_ref']}
+        recovered,code=scheduled_request(self.fixture.hub,self.resolver,self.ledger,
+            instant=recovery_time,recovery_events={'a':event})
         self.assertEqual(code,0);self.assertEqual(recovered['appended_count'],2)
 
     def test_manual_and_scheduled_cli_share_mutex_and_do_not_launch_other_runtimes(self):

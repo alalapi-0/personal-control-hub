@@ -135,6 +135,32 @@ def _validate_authority(value: Any) -> dict[str, Any]:
     return capsule
 
 
+def _execution_metadata(value, *, observation=False):
+    """Optional event protocol 1.0; legacy payloads are never rewritten."""
+    keys = ({'version', 'source_version', 'substantive_binding', 'admission_ref', 'admission_kind', 'failure_ref'} if observation
+            else {'version', 'method_version', 'role', 'project_inputs'})
+    if type(value) is not dict or set(value) != keys or value.get('version') != '1.0':
+        raise ResultValidationError('unsupported execution metadata')
+    hashes = ('source_version', 'substantive_binding', 'admission_ref', 'failure_ref') if observation else ('method_version',)
+    for key in hashes:
+        if value[key] is not None and (type(value[key]) is not str or not SHA256.fullmatch(value[key])):
+            raise ResultValidationError('invalid execution metadata hash')
+    if observation and value['substantive_binding'] is None:
+        raise ResultValidationError('substantive observation required')
+    if observation and (value['admission_kind'] not in {None, 'B', 'S', 'T', 'D'} or
+            (value['admission_kind'] is None) != (value['failure_ref'] is None) or
+            (value['admission_kind'] is None) != (value['admission_ref'] is None)):
+        raise ResultValidationError('invalid admission kind')
+    if not observation:
+        if value['method_version'] is None or value['role'] not in {'automatic', 'observation'} or type(value['project_inputs']) is not dict:
+            raise ResultValidationError('invalid attempt metadata')
+        for ident, digest in value['project_inputs'].items():
+            _validate_id(ident, 'metadata project')
+            if type(digest) is not str or not SHA256.fullmatch(digest):
+                raise ResultValidationError('invalid project input hash')
+    return json.loads(_canonical(value))
+
+
 def _safe_database_path(root: Path, path: Path | str | None, *, create: bool) -> Path:
     root = Path(root).absolute()
     if root.is_symlink() or not root.is_dir():
@@ -394,7 +420,10 @@ class RefreshLedger:
 
     def begin_request(self, request_id: str, project_ids: Sequence[str],
                       authority: Mapping[str, Any], *,
-                      expected_head: Mapping[str, Any] | None = None) -> dict[str, Any]:
+                      expected_head: Mapping[str, Any] | None = None,
+                      attempt_metadata: dict | None = None) -> dict[str, Any]:
+        if attempt_metadata is not None:
+            attempt_metadata = _execution_metadata(attempt_metadata)
         request_id = _validate_id(request_id, "request_id")
         if (not isinstance(project_ids, Sequence) or isinstance(project_ids, (str, bytes))
                 or not project_ids):
@@ -403,6 +432,8 @@ class RefreshLedger:
         if len(projects) != len(set(projects)):
             raise RequestConflictError("project_ids contain duplicates")
         capsule = _validate_authority(authority)
+        if attempt_metadata is not None and set(attempt_metadata['project_inputs']) != set(projects):
+            raise RequestConflictError('attempt metadata scope mismatch')
         if 'binding_version' in capsule and not all(p in capsule['project_bindings'] for p in projects):
             raise RequestConflictError('request requires explicitly observed project bindings')
         projects_json, authority_json = _canonical(projects), _canonical(capsule)
@@ -415,6 +446,9 @@ class RefreshLedger:
                 if (existing["project_ids_json"] != projects_json
                         or not _authority_matches(json.loads(existing['authority_json']), capsule, projects)):
                     raise RequestConflictError("request ID is already bound to different authority or projects")
+                saved = json.loads(connection.execute('SELECT payload_json FROM refresh_events WHERE sequence=?', (existing['begin_sequence'],)).fetchone()[0]).get('attempt_metadata')
+                if saved != attempt_metadata:
+                    raise RequestConflictError('request attempt metadata conflict')
                 return self._request_view(connection, existing)
             self._assert_expected(self._head_in(connection), expected_head)
             started_at = _validate_timestamp(self.clock(), "started_at")
@@ -426,6 +460,7 @@ class RefreshLedger:
             payload = {"schema_version": SCHEMA_VERSION, "request_id": request_id,
                        "project_ids": projects, "authority": capsule,
                        "authority_hash": authority_hash, "started_at": started_at}
+            if attempt_metadata is not None: payload['attempt_metadata'] = attempt_metadata
             sequence, _ = self._append_event(connection, "REQUEST_BEGUN", request_id,
                                              None, started_at, payload)
             if sequence != next_sequence:
@@ -458,10 +493,18 @@ class RefreshLedger:
     def append_project_result(self, request_id: str, project_id: str,
                               result: dict[str, Any], *,
                               validator: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
-                              expected_head: Mapping[str, Any] | None = None) -> dict[str, Any]:
+                              expected_head: Mapping[str, Any] | None = None,
+                              observation_metadata: dict | None = None) -> dict[str, Any]:
+        if observation_metadata is not None:
+            observation_metadata = _execution_metadata(observation_metadata, observation=True)
         request_id = _validate_id(request_id, "request_id")
         project_id = _validate_id(project_id, "project_id")
         validated = self._validate_result(result, validator)
+        if observation_metadata is not None:
+            from .connection_records import content_hash
+            source_version = content_hash([{k: x[k] for k in ('id', 'path', 'sha256')} for x in validated['sources']]) if validated['sources'] else None
+            if observation_metadata['source_version'] != source_version:
+                raise ResultValidationError('observation source identity differs from result')
         result_json = _canonical(validated)
         result_hash = hashlib.sha256(result_json.encode()).hexdigest()
         with self._write() as connection:
@@ -470,6 +513,15 @@ class RefreshLedger:
                 "SELECT * FROM refresh_requests WHERE request_id=?", (request_id,)).fetchone()
             if request is None:
                 raise RequestConflictError("unknown request ID")
+            if observation_metadata is not None:
+                begun = json.loads(connection.execute('SELECT payload_json FROM refresh_events WHERE sequence=?', (request['begin_sequence'],)).fetchone()[0]).get('attempt_metadata')
+                if begun is None or observation_metadata['substantive_binding'] != begun['project_inputs'].get(project_id):
+                    raise ResultValidationError('observation lacks matching attempt input')
+                if observation_metadata['failure_ref'] is not None and connection.execute('SELECT 1 FROM refresh_results WHERE project_id=? AND result_hash=? AND success=0', (project_id, observation_metadata['failure_ref'])).fetchone() is None:
+                    raise ResultValidationError('observation failure linkage missing')
+            request_metadata = json.loads(connection.execute('SELECT payload_json FROM refresh_events WHERE sequence=?', (request['begin_sequence'],)).fetchone()[0]).get('attempt_metadata')
+            if request_metadata and request_metadata['role'] == 'observation' and (observation_metadata is None or observation_metadata['admission_kind'] is not None):
+                raise ResultValidationError('proof role requires a non-admission observation')
             projects = json.loads(request["project_ids_json"])
             authority = json.loads(request["authority_json"])
             if project_id not in projects:
@@ -484,6 +536,9 @@ class RefreshLedger:
             if existing is not None:
                 if existing["result_hash"] != result_hash or existing["result_json"] != result_json:
                     raise ResultConflictError("project already has a different immutable result")
+                saved = json.loads(connection.execute('SELECT payload_json FROM refresh_events WHERE sequence=?', (existing['event_sequence'],)).fetchone()[0]).get('observation_metadata')
+                if saved != observation_metadata:
+                    raise ResultConflictError('project observation metadata conflict')
                 return self._result_view(existing)
             if request["status"] != "OPEN":
                 raise RequestConflictError("finished request cannot accept another result")
@@ -494,6 +549,7 @@ class RefreshLedger:
                        "project_id": project_id, "result_ref": result_ref,
                        "result_hash": result_hash, "success": validated["success"],
                        "observed_at": validated["observed_at"]}
+            if observation_metadata is not None: payload['observation_metadata'] = observation_metadata
             sequence, _ = self._append_event(connection, "PROJECT_RESULT", request_id,
                                              project_id, created_at, payload)
             connection.execute(
@@ -602,6 +658,14 @@ class RefreshLedger:
             if request is None:
                 raise LedgerCorruptionError("event references a missing request")
             if event["event_type"] == "REQUEST_BEGUN":
+                if 'attempt_metadata' in payload:
+                    try:
+                        metadata = _execution_metadata(payload['attempt_metadata'])
+                        if set(metadata['project_inputs']) != set(json.loads(request['project_ids_json'])):
+                            raise ResultValidationError('metadata scope mismatch')
+                    except RefreshLedgerError as exc:
+                        raise LedgerCorruptionError('invalid attempt metadata') from exc
+                payload = {k: v for k, v in payload.items() if k != 'attempt_metadata'}
                 if event["project_id"] is not None or request["begin_sequence"] != event["sequence"]:
                     raise LedgerCorruptionError("begin event reference mismatch")
                 if (set(payload) != {"schema_version", "request_id", "project_ids", "authority",
@@ -615,6 +679,11 @@ class RefreshLedger:
                         or _canonical(payload.get("project_ids")) != request["project_ids_json"]):
                     raise LedgerCorruptionError("begin event authority mismatch")
             elif event["event_type"] == "PROJECT_RESULT":
+                if 'observation_metadata' in payload:
+                    try: _execution_metadata(payload['observation_metadata'], observation=True)
+                    except RefreshLedgerError as exc:
+                        raise LedgerCorruptionError('invalid observation metadata') from exc
+                payload = {k: v for k, v in payload.items() if k != 'observation_metadata'}
                 row = result_by_sequence.get(event["sequence"])
                 if row is None or row["request_id"] != event["request_id"] or row["project_id"] != event["project_id"]:
                     raise LedgerCorruptionError("project event has a broken result reference")
@@ -638,6 +707,19 @@ class RefreshLedger:
                     raise LedgerCorruptionError("stored result identity mismatch")
                 if not _authority_matches(result.get('authority'), json.loads(request['authority_json']), [row['project_id']]):
                     raise LedgerCorruptionError("stored result authority mismatch")
+                original_payload = json.loads(event['payload_json'])
+                metadata = original_payload.get('observation_metadata')
+                request_metadata = next((json.loads(e['payload_json']).get('attempt_metadata') for e in events if e['sequence'] == request['begin_sequence']), None)
+                if request_metadata and request_metadata['role'] == 'observation' and (metadata is None or metadata['admission_kind'] is not None):
+                    raise LedgerCorruptionError('proof role lacks a non-admission observation')
+                if metadata is not None:
+                    begun = next((json.loads(e['payload_json']).get('attempt_metadata') for e in events if e['sequence'] == request['begin_sequence']), None)
+                    from .connection_records import content_hash
+                    source_version = content_hash([{k: x[k] for k in ('id', 'path', 'sha256')} for x in result['sources']]) if result['sources'] else None
+                    if (begun is None or metadata['substantive_binding'] != begun['project_inputs'].get(row['project_id']) or metadata['source_version'] != source_version):
+                        raise LedgerCorruptionError('observation identity mismatch')
+                    if metadata['failure_ref'] is not None and not any(r['project_id'] == row['project_id'] and r['result_hash'] == metadata['failure_ref'] and not r['success'] and r['event_sequence'] < row['event_sequence'] for r in results):
+                        raise LedgerCorruptionError('observation failure linkage mismatch')
                 seen_results.add((row["request_id"], row["project_id"]))
             elif event["event_type"] == "REQUEST_FINISHED":
                 if request["finish_sequence"] != event["sequence"] or request["status"] != "FINISHED":
@@ -687,20 +769,36 @@ class RefreshLedger:
                 allowed = {request_id}
                 events = [row for row in events if row["request_id"] in allowed]
                 results = [row for row in results if row["request_id"] in allowed]
-            requests = []
+            attempts = {e['request_id']: json.loads(e['payload_json']).get('attempt_metadata')
+                        for e in events if e['event_type'] == 'REQUEST_BEGUN'}
+            requests, observation_requests = [], []
             for row in request_rows:
                 view = self._request_view(connection, row)
                 view["authority_drift"] = authority is not None and not _authority_matches(view['authority'], authority, view['project_ids'], registration_only=registration_only)
-                requests.append(view)
+                metadata = attempts.get(row['request_id'])
+                channel = observation_requests if metadata and metadata['role'] == 'observation' else requests
+                channel.append(view)
+            # Classification is a read-only view over the fully verified snapshot.
+            # Proof observations retain their complete immutable records and events,
+            # but never become latest business attempts for existing consumers.
+            observations = {e['sequence']: json.loads(e['payload_json']).get('observation_metadata')
+                            for e in events if e['event_type'] == 'PROJECT_RESULT'}
+            business_results, observation_results = [], []
+            for row in results:
+                attempt = attempts.get(row['request_id'])
+                view = {**self._result_view(row), 'attempt_metadata': attempt,
+                        'observation_metadata': observations.get(row['event_sequence'])}
+                channel = observation_results if attempt and attempt['role'] == 'observation' else business_results
+                channel.append(view)
             return {"schema_version": SCHEMA_VERSION, "head": self._head_in(connection),
-                    "requests": requests,
+                    "requests": requests, "observation_requests": observation_requests,
                     "events": [{"sequence": row["sequence"], "event_id": row["event_id"],
                                 "event_type": row["event_type"], "request_id": row["request_id"],
                                 "project_id": row["project_id"], "created_at": row["created_at"],
                                 "payload": json.loads(row["payload_json"]),
                                 "previous_hash": row["previous_hash"], "event_hash": row["event_hash"]}
                                for row in events],
-                    "results": [self._result_view(row) for row in results]}
+                    "results": business_results, "observation_results": observation_results}
         except sqlite3.Error as exc:
             self._translate_sqlite(exc)
             raise AssertionError("unreachable")
@@ -731,7 +829,9 @@ class RefreshLedger:
                          "result_hash": stored["result_hash"],
                          "observed_at": validated["observed_at"],
                          "disposition": validated.get("disposition"),
-                         "success": stored["success"]}
+                         "success": stored["success"],
+                         "attempt_metadata": stored.get('attempt_metadata'),
+                         "observation_metadata": stored.get('observation_metadata')}
             project["latest_attempt"] = reference
             project["authority_drift"] = (current_authority is not None and not
                 _authority_matches(validated['authority'], current_authority, [stored['project_id']], registration_only=registration_only))
@@ -766,14 +866,15 @@ def _resolver_authority(resolver: Any) -> Mapping[str, Any]:
 
 def refresh(ledger: RefreshLedger, resolver: Any, request_id: str,
             project_ids: Sequence[str], *,
-            expected_head: Mapping[str, Any] | None = None) -> dict[str, Any]:
+            expected_head: Mapping[str, Any] | None = None,
+            attempt_metadata: dict | None = None, observation_factory=None) -> dict[str, Any]:
     """Resume or execute one bounded request, committing each project immediately."""
     validator = getattr(resolver, "validate_result", None)
     if not callable(validator) or not callable(getattr(resolver, "refresh", None)):
         raise ResultValidationError("resolver must provide refresh and validate_result")
     authority = _resolver_authority(resolver)
     request = ledger.begin_request(request_id, project_ids, authority,
-                                   expected_head=expected_head)
+                                   expected_head=expected_head, attempt_metadata=attempt_metadata)
     completed = set(request["completed_project_ids"])
     failures: dict[str, str] = {}
     appended: list[str] = []
@@ -783,7 +884,8 @@ def refresh(ledger: RefreshLedger, resolver: Any, request_id: str,
         try:
             result = resolver.refresh(project_id)
             ledger.append_project_result(request_id, project_id, result,
-                                         validator=validator)
+                                         validator=validator, observation_metadata=(observation_factory(project_id, result)
+                                             if observation_factory is not None else None))
             appended.append(project_id)
         except ResultValidationError as exc:
             failures[project_id] = exc.code
@@ -793,7 +895,8 @@ def refresh(ledger: RefreshLedger, resolver: Any, request_id: str,
             # Resolver exceptions are not fabricated into source facts. A later
             # call resumes this exact missing project without re-reading commits.
             failures[project_id] = type(exc).__name__
-    request = ledger.history(request_id)["requests"][0]
+    request_history = ledger.history(request_id)
+    request = (request_history['requests'] + request_history['observation_requests'])[0]
     if not request["remaining_project_ids"]:
         request = ledger.finish_request(request_id)
     # A ledger-level dispatcher can validate immutable results from older schema/registry

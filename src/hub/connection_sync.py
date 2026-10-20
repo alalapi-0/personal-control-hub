@@ -4,7 +4,7 @@ from __future__ import annotations
 from collections import Counter
 from contextlib import contextmanager
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timezone
 import fcntl
 import os
 from pathlib import Path
@@ -12,13 +12,14 @@ import stat
 import time
 from zoneinfo import ZoneInfo
 
-from hub.connection_records import identifier, require, string
+from hub.connection_records import (identifier, require, string, content_hash, fingerprint,
+                                    empty_business, FIELDS, update_key, authority_matches)
 from hub.connection_refresh import RequestConflictError, refresh
 from hub.connection_sources import _safe_relative_read
 from hub.connections import parse_source
 from hub.service_contract import ServiceError
 
-from hub.refresh_schedule import schedule_policy, latest_due_slot
+from hub.refresh_schedule import schedule_policy, latest_due_slot, retry_readiness
 
 
 @contextmanager
@@ -97,11 +98,272 @@ def incremental_request(root, resolver, ledger, request_id, *, plan=None):
             'failure_code_counts':dict(errors),'head':outcome['projection']['head']},2 if errors else 0
 
 
-def scheduled_request(root,resolver,ledger,*,instant=None,plan=None,incremental_only=False):
+
+def _source_version(result):
+    return content_hash([{k: source[k] for k in ('id', 'path', 'sha256')}
+                         for source in result['sources']]) if result['sources'] else None
+
+
+def _loaded_method_version():
+    # Fingerprint loaded code objects, including bounded reader, parser and validators.
+    # Never hash mutable on-disk files and call that a hot reload.
+    from types import CodeType, FunctionType
+    from hub import connection_sources, connection_records, connections
+    def stable(value):
+        if isinstance(value, FunctionType): return stable(value.__code__)
+        if type(value) is dict: return {k: stable(v) for k, v in sorted(value.items())}
+        if isinstance(value, CodeType):
+            return [value.co_code.hex(), list(value.co_names), [stable(c) for c in value.co_consts]]
+        if isinstance(value, (tuple, frozenset)):
+            items = [stable(c) for c in value]
+            return sorted(items, key=repr) if isinstance(value, frozenset) else items
+        if isinstance(value, bytes): return value.hex()
+        return value if value is None or type(value) in (str, int, bool, float) else repr(value)
+    functions = {}
+    for module in (connection_sources, connection_records, connections):
+        for name, value in vars(module).items():
+            if isinstance(value, FunctionType): functions[module.__name__ + '.' + name] = [stable(value.__code__), stable(value.__defaults__), stable(value.__kwdefaults__)]
+    for name, value in vars(connection_sources.SourceResolver).items():
+        if isinstance(value, FunctionType): functions['SourceResolver.' + name] = [stable(value.__code__), stable(value.__defaults__), stable(value.__kwdefaults__)]
+    functions['loaded_reader_limits'] = [connection_sources.MAX_SOURCE_BYTES, connection_sources.MAX_OWNED_HUB_STATE_BYTES, connection_sources.DECLARATION_PATH]
+    return content_hash(functions)
+
+
+def _method_version():
+    return _loaded_method_version()
+
+
+def _substantive_binding(resolver, ident):
+    """Bounded root/declaration observation; no business state body is read.
+
+    Permission authority retains full stat binding. Retry identity excludes stat-only
+    declaration touches and includes actual declaration bytes plus stable root inode.
+    """
+    from hub.connection_sources import DECLARATION_PATH, _root_path_allowed
+    require(getattr(resolver, 'observe_sources', True), 'retry observation requires an observing resolver')
+    project = resolver.projects[ident]
+    resolver._check_registry(ident)
+    value = {'registration': {key: project.get(key) for key in ('id', 'root_path', 'enabled', 'connection_read_allowed', 'access_profile', 'local_presence', 'current_state_status', 'project_type', 'root_kind', 'current_state_paths', 'hub_source_ref', 'hub_field_mapping')},
+             'root': None, 'declaration': None, 'routes': []}
+    if (project.get('enabled') is not True or
+            project.get('local_presence', {}).get('status') == 'removed_local' or
+            project.get('current_state_status') == 'removed_local' or
+            project.get('connection_read_allowed', project.get('enabled')) is not True or
+            project.get('access_profile') == 'no_current_goal_access' or
+            project.get('project_type') in {'cloud', 'cloud_project'} or project.get('root_kind') == 'cloud'):
+        return content_hash(value)
+    try:
+        root = Path(project['root_path']).expanduser()
+        _root_path_allowed(root); root = root.resolve(strict=True); _root_path_allowed(root)
+        info = root.stat(); value['root'] = [str(root), info.st_dev, info.st_ino]
+        data, _ = _safe_relative_read(root, DECLARATION_PATH,
+                                    authority_check=lambda: resolver._check_registry(ident))
+        import hashlib
+        value['declaration'] = hashlib.sha256(data).hexdigest()
+        for raw in project.get('current_state_paths', []):
+            path = Path(raw).expanduser()
+            if path.is_absolute():
+                _root_path_allowed(path); resolved = path.resolve(strict=False); _root_path_allowed(resolved)
+                value['routes'].append([raw, str(resolved)])
+    except (OSError, ValueError, KeyError):
+        # Missing registered input is an unavailable identity, never a fallback
+        # path. SourceResolver records the precise per-project invalid result.
+        pass
+    return content_hash(value)
+
+
+def _attempt_metadata(resolver, ids, *, role='automatic'):
+    return {'version': '1.0', 'method_version': _method_version(), 'role': role,
+            'project_inputs': {ident: _substantive_binding(resolver, ident) for ident in ids}}
+
+
+def _observation(result, substantive, admission_ref=None, admission_kind=None, failure_ref=None):
+    return {'version': '1.0', 'source_version': _source_version(result),
+            'substantive_binding': substantive, 'admission_ref': admission_ref, 'admission_kind': admission_kind, 'failure_ref': failure_ref}
+
+
+def record_recovery_observation(ledger, resolver, request_id, ident):
+    """Explicit permitted observation, not automatic admission; fixture/runtime boundary unchanged."""
+    require(ident in resolver.projects and resolver.projects[ident].get('enabled') is True, 'observation project not enabled')
+    metadata = _attempt_metadata(resolver, [ident], role='observation')
+    return refresh(ledger, resolver, request_id, [ident], attempt_metadata=metadata,
+        observation_factory=lambda pid, result: _observation(result, metadata['project_inputs'][pid]))
+
+
+def project_recovery(history, ident, instant=None):
+    chain = []
+    for stored in history['results']:
+        if stored['project_id'] != ident: continue
+        attempt = stored.get('attempt_metadata')
+        result = stored['result']
+        if result['success']:
+            chain = []
+            continue
+        observation = stored.get('observation_metadata') or {}
+        source = _source_version(result)
+        errors = content_hash(result['errors'])
+        method = attempt['method_version'] if attempt else None
+        substantive = observation.get('substantive_binding')
+        chain.append({'project_id': ident, 'failure_ref': stored['result_hash'],
+            'failure_event_sequence': stored['event_sequence'],
+            'observed_at': result['observed_at'], 'source_version': source,
+            'binding_hash': result.get('binding_hash'), 'substantive_binding': substantive,
+            'schema_hash': result['authority']['schema_hash'],
+            'adapter_version': result['authority']['adapter_version'],
+            'error_fingerprint': errors, 'error_codes': [e['code'] for e in result['errors']],
+            'method_version': method, 'admission_ref': observation.get('admission_ref'),
+            'admission_kind': observation.get('admission_kind'),
+            'failure_signature': content_hash([source, substantive, result['authority']['schema_hash'],
+                result['authority']['adapter_version'], errors, method])})
+    return retry_readiness(chain, instant or datetime.now(timezone.utc))
+
+
+def _retry_admission(history, resolver, ident, instant, event):
+    state = project_recovery(history, ident, instant)
+    if state['state'] == 'ready': return state, None
+    # Deadline is independent of diagnosis/cap state. Unknown legacy method/input
+    # cannot be silently inferred from this process or upgraded by a hash claim.
+    if state['clock_regressed'] or instant < datetime.fromisoformat(state['deadline_at']):
+        return state, None
+    substantive = _substantive_binding(resolver, ident)
+    method = _method_version()
+    current = resolver.authority['project_bindings'].get(ident)
+    evidence = None
+    changed = (state['substantive_binding'] is not None and substantive != state['substantive_binding'])
+    shared = (resolver.authority['schema_hash'] != state['schema_hash'] or
+              resolver.authority['adapter_version'] != state['adapter_version'])
+    if (changed or shared) and state['state'] != 'event_wait':
+        evidence = {'kind': 'B', 'source': None, 'hash': content_hash([ident, state['failure_ref'], substantive, resolver.authority['schema_hash'], method])}
+    if event is not None:
+        require(type(event) is dict and set(event) == {'kind', 'failure_ref', 'source_version',
+            'binding_hash', 'evidence_hash', 'proof_ref'}, 'invalid recovery event fields')
+        require(event['kind'] in {'source_changed', 'transient', 'diagnosed'}, 'invalid recovery kind')
+        for key in ('failure_ref', 'binding_hash', 'evidence_hash'): fingerprint(event[key], 'recovery ' + key)
+        if event['source_version'] is not None: fingerprint(event['source_version'], 'recovery source')
+        require(type(event['proof_ref']) is str, 'recovery proof reference required')
+        proof = next((row for row in history.get('observation_results', []) if row['result_ref'] == event['proof_ref'] and row['project_id'] == ident), None)
+        used = {row.get('observation_metadata', {}).get('admission_ref') for row in history['results'] if row.get('observation_metadata')}
+        if (proof is not None and proof.get('attempt_metadata') and
+                proof['attempt_metadata']['role'] == 'observation' and
+                proof['attempt_metadata']['method_version'] == method and proof.get('observation_metadata') and
+                proof['event_sequence'] > state['failure_event_sequence'] and
+                event['failure_ref'] == state['failure_ref'] and event['binding_hash'] == current and
+                event['evidence_hash'] == proof['result_hash'] and event['evidence_hash'] not in used and
+                _source_version(proof['result']) == event['source_version'] and
+                authority_matches(proof['result']['authority'], resolver.authority, [ident]) and
+                proof['observation_metadata']['substantive_binding'] == substantive and
+                datetime.fromisoformat(state['observed_at'].replace('Z', '+00:00')) <=
+                    datetime.fromisoformat(proof['result']['observed_at'].replace('Z', '+00:00')) <= instant):
+            source_changed = event['source_version'] is not None and event['source_version'] != state['source_version']
+            method_changed = state['method_version'] is not None and method != state['method_version']
+            kind = event['kind']
+            if ((kind == 'source_changed' and source_changed and state['no_progress_count'] < 2) or
+                (kind == 'diagnosed' and (source_changed or method_changed or changed)) or
+                (kind == 'transient' and state['transient_retries'] == 0 and state['no_progress_count'] < 2 and
+                 set(state['error_codes']) & {'offline', 'permission_denied'} and proof['success'])):
+                evidence = {'kind': {'source_changed': 'S', 'diagnosed': 'D', 'transient': 'T'}[kind],
+                            'source': event['source_version'], 'hash': event['evidence_hash']}
+    if evidence is None: return state, None
+    return state, {**evidence, 'method': method, 'substantive': substantive, 'failure_ref': state['failure_ref']}
+
+
+def _automatic_snapshot(root, resolver, ledger, request_id, plan, instant, events, paused):
+    history = ledger.history()
+    existing = next((row for row in history['requests'] if row['request_id'] == request_id), None)
+    deferred = {}; retries = {}; healthy = []
+    for ident in plan['eligible_project_ids']:
+        if ident in paused:
+            deferred[ident] = {'state': 'paused', 'next_retry_at': None,
+                               'recovery_condition': 'Explicit synchronization resume required.'}
+            continue
+        try:
+            state, evidence = _retry_admission(history, resolver, ident, instant, events.get(ident))
+        except ValueError:
+            state, evidence = project_recovery(history, ident, instant), None
+            state['event_rejection'] = 'invalid_recovery_event'
+        if state['state'] == 'ready': healthy.append(ident)
+        elif evidence is not None: retries[ident] = evidence
+        else: deferred[ident] = state
+    # Existing request selection/committed bytes are immutable, even after recovery.
+    # Finished replay is ledger-only; a qualifying recovery gets a distinct ID.
+    if existing and existing['status'] == 'FINISHED':
+        failures = Counter(error['code'] for row in history['results']
+            if row['request_id'] == request_id and not row['success'] for error in row['result']['errors'])
+        payload = {'request_id': request_id, 'status': 'FINISHED', 'appended_count': 0,
+                   'failure_code_counts': dict(failures), 'head': history['head']}
+    elif existing or healthy:
+        selected = existing['project_ids'] if existing else healthy
+        allowed = set(selected) - set(paused)
+        class AdmittedResolver:
+            authority = resolver.authority
+            validate_result = staticmethod(resolver.validate_result)
+            def refresh(self, ident):
+                if ident not in allowed: raise RuntimeError('automatic_project_paused')
+                return resolver.refresh(ident)
+        # Reuse original stored method metadata on crash recovery, never the
+        # current implementation as a claim about already committed history.
+        metadata = next((e['payload'].get('attempt_metadata') for e in history['events']
+            if e['request_id'] == request_id and e['event_type'] == 'REQUEST_BEGUN'), None) if existing else _attempt_metadata(resolver, selected)
+        if existing and metadata and metadata['method_version'] != _method_version():
+            raise RequestConflictError('open automatic request method changed; preserve committed units and diagnose missing scope')
+        outcome = refresh(ledger, AdmittedResolver(), request_id, selected,
+            attempt_metadata=metadata, observation_factory=(lambda pid, result:
+                _observation(result, metadata['project_inputs'][pid])) if metadata else None)
+        failures = Counter(error['code'] for row in ledger.history(request_id)['results']
+            if not row['success'] for error in row['result']['errors'])
+        payload = {'request_id': request_id, 'status': outcome['request']['status'],
+                   'appended_count': len(outcome['appended_project_ids']),
+                   'failure_code_counts': dict(failures), 'head': ledger.head}
+    else:
+        payload = {'request_id': request_id, 'status': 'DEFERRED', 'appended_count': 0,
+                   'failure_code_counts': {}, 'head': ledger.head}
+    attempts = []
+    for ident, evidence in retries.items():
+        # Opaque ID is only deduplication, never a source of admission authority.
+        retry_id = 'recovery.' + content_hash([ident, project_recovery(history, ident, instant)['failure_ref'], evidence])
+        class RecoveryResolver:
+            authority = resolver.authority
+            validate_result = staticmethod(resolver.validate_result)
+            def refresh(self, project_id):
+                result = resolver.refresh(project_id)
+                if evidence['kind'] != 'B' and _source_version(result) != evidence['source']:
+                    result.pop('extensions', None)
+                    message = 'Recovery event source version mismatches the actual bounded read.'
+                    result.update(success=False, disposition='invalid', business=empty_business(),
+                        field_provenance={}, unknown_fields={key: message for key in FIELDS},
+                        errors=[{'code': 'invalid', 'message': message}])
+                    result['freshness'].update(read_status='invalid', stale=True, reason=message)
+                    result['update_key'] = update_key(result)
+                return result
+        metadata = {'version': '1.0', 'method_version': evidence['method'], 'role': 'automatic',
+                    'project_inputs': {ident: evidence['substantive']}}
+        outcome = refresh(ledger, RecoveryResolver(), retry_id, [ident], attempt_metadata=metadata,
+            observation_factory=lambda pid, result: _observation(result, evidence['substantive'], evidence['hash'], evidence['kind'], evidence['failure_ref']))
+        attempts.append(retry_id)
+        payload['appended_count'] += len(outcome['appended_project_ids'])
+        payload['head'] = ledger.head
+        for stored in ledger.history(retry_id)['results']:
+            if not stored['success']:
+                for error in stored['result']['errors']:
+                    payload['failure_code_counts'][error['code']] = payload['failure_code_counts'].get(error['code'], 0) + 1
+    if attempts and payload['status'] == 'DEFERRED': payload['status'] = 'RECOVERY'
+    current = ledger.history()
+    payload.update(deferred_projects=deferred, recovery_request_ids=attempts,
+                   scope_total=plan['scope_total'], scope_project_ids=list(plan['project_ids']),
+                   recovery=recovery_summary(current, set(plan['eligible_project_ids']), instant=instant))
+    latest = {row['project_id']: row['result'] for row in current['results']}
+    failed = any(not latest[ident]['success'] for ident in plan['eligible_project_ids'] if ident in latest)
+    return payload, 2 if deferred or failed or payload['failure_code_counts'] else 0
+
+def scheduled_request(root,resolver,ledger,*,instant=None,plan=None,incremental_only=False,
+                      recovery_events=None, paused_project_ids=()):
     """One finite latest-due snapshot, or an explicit manual incremental read."""
     instant=instant or datetime.now(ZoneInfo('Asia/Tokyo'))
     require(instant.tzinfo is not None,'scheduled instant needs timezone')
     plan=plan if plan is not None else scope_plan(root,resolver)
+    require(recovery_events is None or type(recovery_events) is dict, 'recovery event map required')
+    require(isinstance(paused_project_ids, (tuple, list, set, frozenset)), 'paused project ID collection required')
+    require(set(paused_project_ids) <= set(plan['project_ids']), 'pause identities outside frozen scope')
     policy=plan['schedule']
     started=time.monotonic()
     with sync_mutex(ledger):
@@ -115,7 +377,8 @@ def scheduled_request(root,resolver,ledger,*,instant=None,plan=None,incremental_
         else:
             slot=latest_due_slot(instant,policy['interval_hours'])
             ident=f"{plan['scope_id']}.snapshot.{policy['interval_hours']}h.{slot.strftime('%Y-%m-%dT%H-%M')}"
-            payload,code=sync_request(root,resolver,ledger,ident,plan=plan)
+            payload,code=_automatic_snapshot(root,resolver,ledger,ident,plan,instant,
+                recovery_events or {}, set(paused_project_ids))
             mode='snapshot'
         elapsed=time.monotonic()-started
         payload.update(mode=mode,scheduled_at=instant.isoformat(),elapsed_seconds=elapsed,
@@ -187,7 +450,7 @@ def scope_plan(root: Path, resolver) -> dict:
             "outside_scope_count": len(set(resolver.projects) - set(ids))}
 
 
-def recovery_summary(history: dict, eligible: set[str]) -> dict:
+def recovery_summary(history: dict, eligible: set[str], *, instant=None) -> dict:
     """Derive finite request recovery from the existing immutable ledger only.
 
     A successful source read says nothing about business or human acceptance.
@@ -222,7 +485,8 @@ def recovery_summary(history: dict, eligible: set[str]) -> dict:
                           "can_resume": request["status"] == "OPEN" and not request["authority_drift"]})
     success = [row for row in summaries if row["status"] == "FINISHED" and not row["failed"]]
     failed = [row for row in summaries if row["failed"]]
-    return {"last_success": success[-1] if success else None,
+    return {"projects": {ident: project_recovery(history, ident, instant) for ident in sorted(eligible)},
+            "last_success": success[-1] if success else None,
             "last_failure": failed[-1] if failed else None,
             "open_requests": [row for row in summaries if row["status"] == "OPEN"],
             "request_versions": versions,

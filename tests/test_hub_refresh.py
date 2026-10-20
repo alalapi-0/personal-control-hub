@@ -126,6 +126,81 @@ class RefreshLedgerTests(unittest.TestCase):
         with closing(sqlite3.connect(self.path)) as connection:
             self.assertEqual("wal", connection.execute("PRAGMA journal_mode=WAL").fetchone()[0])
 
+    def test_optional_event_metadata_replay_conflicts_and_legacy_bytes(self):
+        ledger = self.ledger()
+        ledger.begin_request('old', ['a'], self.capsule)
+        self.append(ledger, 'old', 'a', success=False)
+        before = ledger.history('old')['events']
+        self.assertNotIn('attempt_metadata', before[0]['payload'])
+        self.assertNotIn('observation_metadata', before[1]['payload'])
+        ledger.begin_request('old', ['a'], self.capsule)
+        self.assertEqual(before, ledger.history('old')['events'])
+        attempt = {'version': '1.0', 'role': 'automatic', 'method_version': 'a' * 64,
+                   'project_inputs': {'a': 'b' * 64}}
+        observation = {'version': '1.0', 'source_version': None,
+            'substantive_binding': 'b' * 64, 'admission_ref': None,
+            'admission_kind': None, 'failure_ref': None}
+        ledger.begin_request('new', ['a'], self.capsule, attempt_metadata=attempt)
+        result = make_result('a', self.capsule, success=False)
+        ledger.append_project_result('new', 'a', result, observation_metadata=observation)
+        saved = ledger.history('new')
+        self.assertEqual(attempt, saved['events'][0]['payload']['attempt_metadata'])
+        self.assertEqual(observation, saved['results'][0]['observation_metadata'])
+        self.assertEqual(attempt, self.ledger(read_only=True).rebuild()['projects']['a']['latest_attempt']['attempt_metadata'])
+        ledger.begin_request('new', ['a'], self.capsule, attempt_metadata=attempt)
+        ledger.append_project_result('new', 'a', result, observation_metadata=observation)
+        self.assertEqual(saved, ledger.history('new'))
+        with self.assertRaises(RequestConflictError): ledger.begin_request('new', ['a'], self.capsule)
+        with self.assertRaises(RequestConflictError):
+            ledger.begin_request('new', ['a'], self.capsule, attempt_metadata=dict(attempt, method_version='c' * 64))
+        with self.assertRaises(ResultConflictError): ledger.append_project_result('new', 'a', result)
+        with self.assertRaises(ResultValidationError):
+            ledger.begin_request('unknown', ['a'], self.capsule, attempt_metadata=dict(attempt, version='9.0'))
+        with self.assertRaises(ResultValidationError):
+            ledger.begin_request('extra', ['a'], self.capsule, attempt_metadata=dict(attempt, extra=True))
+        self.assertEqual(before, ledger.history('old')['events'])
+        with closing(sqlite3.connect(self.path)) as connection:
+            payload = saved['events'][0]['payload']
+            payload['attempt_metadata']['method_version'] = 'd' * 64
+            connection.execute('UPDATE refresh_events SET payload_json=? WHERE sequence=?',
+                               (canonical(payload), saved['events'][0]['sequence']))
+            connection.commit()
+        with self.assertRaises(LedgerCorruptionError): self.ledger(read_only=True).history()
+
+    def test_proof_channel_is_verified_before_history_selection(self):
+        ledger = self.ledger()
+        ledger.begin_request('business', ['a'], self.capsule)
+        self.append(ledger, 'business', 'a', success=False)
+        metadata = {'version': '1.0', 'role': 'observation', 'method_version': 'a' * 64,
+                    'project_inputs': {'a': 'b' * 64}}
+        observation = {'version': '1.0', 'source_version': None, 'substantive_binding': 'b' * 64,
+                       'admission_ref': None, 'admission_kind': None, 'failure_ref': None}
+        ledger.begin_request('proof', ['a'], self.capsule, attempt_metadata=metadata)
+        result = make_result('a', self.capsule, success=False)
+        with self.assertRaises(ResultValidationError): ledger.append_project_result('proof', 'a', result)
+        with self.assertRaises(ResultValidationError):
+            ledger.append_project_result('proof', 'a', result, observation_metadata=dict(observation, version='9.0'))
+        ledger.append_project_result('proof', 'a', result, observation_metadata=observation)
+        ledger.finish_request('proof')
+        history = ledger.history()
+        self.assertEqual(['business'], [row['request_id'] for row in history['results']])
+        self.assertEqual(['proof'], [row['request_id'] for row in history['observation_results']])
+        self.assertEqual([], ledger.history('business')['observation_results'])
+        self.assertEqual([], ledger.history('proof')['results'])
+        self.assertEqual([], ledger.history('proof')['requests'])
+        self.assertEqual(['proof'], [row['request_id'] for row in ledger.history('proof')['observation_requests']])
+        self.assertEqual(2, len(history['requests']) + len(history['observation_requests']))
+        self.assertEqual(2, len(history['results']) + len(history['observation_results']))
+        self.assertEqual('business', ledger.rebuild()['projects']['a']['latest_attempt']['request_id'])
+        proof_event = next(e for e in history['events'] if e['event_type'] == 'PROJECT_RESULT' and e['request_id'] == 'proof')
+        proof_event['payload']['observation_metadata']['substantive_binding'] = 'f' * 64
+        with closing(sqlite3.connect(self.path)) as connection:
+            connection.execute('UPDATE refresh_events SET payload_json=? WHERE sequence=?',
+                               (canonical(proof_event['payload']), proof_event['sequence']))
+            connection.commit()
+        with self.assertRaises(LedgerCorruptionError): ledger.history('business')
+        with self.assertRaises(LedgerCorruptionError): self.ledger(read_only=True).rebuild()
+
     def test_per_project_commits_survive_restart_and_another_failure(self) -> None:
         ledger = self.ledger()
         ledger.begin_request("batch", ["a", "b", "c"], self.capsule,

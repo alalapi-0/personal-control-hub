@@ -53,6 +53,37 @@ def latest_due_slot(instant: datetime, interval_hours: int = 12) -> datetime:
     return anchor
 
 
+
+def retry_readiness(failures: list[dict], instant: datetime) -> dict:
+    """Pure projection. A deadline is eligibility, never permission to reread."""
+    if instant.tzinfo is None:
+        raise ValueError('retry instant needs timezone')
+    if not failures:
+        return {'state': 'ready', 'failure_count': 0, 'next_retry_at': None,
+                'recovery_condition': 'No unresolved source failure.'}
+    first, last = failures[0], failures[-1]
+    began = datetime.fromisoformat(first['observed_at'].replace('Z', '+00:00'))
+    observed = datetime.fromisoformat(last['observed_at'].replace('Z', '+00:00'))
+    delay = (30, 120, 600)[min(len(failures) - 1, 2)]
+    cap = began + timedelta(minutes=15)
+    deadline = min(observed + timedelta(seconds=delay), cap)
+    streak = 0
+    for item in reversed(failures):
+        if item['failure_signature'] != last['failure_signature']:
+            break
+        streak += 1
+    state = ('event_wait' if instant >= cap or instant < observed else 'diagnosis_required'
+             if streak >= 2 else 'retry_wait'
+             if instant < deadline else 'retry_due')
+    return {**last, 'state': state, 'failure_count': len(failures),
+            'no_progress_count': streak, 'diagnosis_required': streak >= 2, 'backoff_seconds': delay, 'clock_regressed': instant < observed,
+            'first_failure_at': first['observed_at'], 'cap_at': cap.isoformat(),
+            'deadline_at': deadline.isoformat(),
+            'next_retry_at': deadline.isoformat() if instant < cap else None,
+            'transient_retries': sum(item.get('admission_kind') == 'T' for item in failures),
+            'recovery_condition': ('Diagnosed repair with a new source or method version.'
+                if streak >= 2 else 'Relevant changed source/binding evidence; at most one demonstrated transient retry.')}
+
 def _elapsed_seconds(start,end):
     """Compare only complete timestamps in the same reported timezone."""
     try:
