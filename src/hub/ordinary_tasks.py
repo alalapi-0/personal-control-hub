@@ -161,3 +161,131 @@ def prompt(spec, *, input_files=()):
             'Project: '+spec['project_id']+'\nInput version: '+spec['input_version']+'\n'
             'Registered inputs: '+', '.join(str(_input_path(item['path'])) for item in input_files)+'\n'
             'Objective: '+spec['objective']+'\nScope: '+spec['scope']+'\n')
+
+
+def validate_scoped_write_grant(value, *, live=False):
+    """Distinct source-only v2 profile. Legacy validators still reject writes.
+
+    This validates an explicit grant; it never registers one or starts a writer.
+    """
+    extra={'profile_version','task_id','lineage','workspace','allowed_modules','write_paths','write_baselines','sandbox','writer_handoff'}
+    if type(value)is not dict or set(value)!=GRANT_FIELDS|extra or value.get('kind')!='rebuild_scoped_write':
+        raise ServiceError('INVALID_SCOPED_WRITE_GRANT',status=403)
+    candidate={k:copy.deepcopy(value[k]) for k in GRANT_FIELDS}
+    # Reuse metadata checks without reinterpreting a historical readonly record.
+    candidate.update(kind=KIND,effect='read_only',max_turn_seconds=min(value['max_turn_seconds'],600))
+    candidate['input_version']=_version(candidate)
+    validate_grant_metadata(candidate)
+    if (value['profile_version']!='2.0' or value['effect']!='scoped_write'
+            or type(value['max_turn_seconds'])is not int or not 1<=value['max_turn_seconds']<=900
+            or not _sha(value['input_version'])):
+        raise ServiceError('INVALID_SCOPED_WRITE_GRANT',status=403)
+    stable_id(value['task_id'])
+    from .rebuild_contracts import exact_paths
+    modules=exact_paths(value['allowed_modules']);paths=exact_paths(value['write_paths'])
+    if not modules or not paths or any(not any(p==m or p.startswith(m+'/') for m in modules) for p in paths):
+        raise ServiceError('INVALID_SCOPED_WRITE_GRANT',status=403)
+    baselines=value['write_baselines']
+    if type(baselines)is not dict or set(baselines)!=set(paths):raise ServiceError('SCOPED_BASELINE_REQUIRED',status=403)
+    for path,item in baselines.items():
+        if not (type(item)is dict and (item=={'state':'absent'} or set(item)=={'state','sha256'} and item['state']=='file' and _sha(item['sha256']))):
+            raise ServiceError('SCOPED_BASELINE_REQUIRED',status=403)
+    for item in value['input_files']:
+        if item['path'] in baselines and baselines[item['path']]!={'state':'file','sha256':item['sha256']}:
+            raise ServiceError('SCOPED_BASELINE_CONFLICT',status=403)
+    if value['input_version']!=scoped_input_version(value):raise ServiceError('SCOPED_BASELINE_CONFLICT',status=403)
+    if value['sandbox']!={'version':'1.0','profile':'exact_scoped_write_v1','read_paths':[i['path'] for i in value['input_files']],'write_paths':paths}:
+        raise ServiceError('SCOPED_SANDBOX_REJECTED',status=403)
+    proof=value['writer_handoff']
+    if (type(proof)is not dict or set(proof)!={'task_id','root_identity','evidence_ref','sha256','source'}
+            or proof['source']!='root_verified' or proof['task_id']!=value['task_id']
+            or proof['root_identity']!=value['root_identity'] or not _sha(proof['sha256'])):
+        raise ServiceError('SCOPED_WRITER_HANDOFF_REQUIRED',status=403)
+    _input_path(proof['evidence_ref'])
+    if not time.time()<value['expires_at']<time.time()+86400:raise ServiceError('GRANT_EXPIRED',status=403)
+    if live:
+        observed=scoped_observation(value)
+        if any(observed[p]!=baselines[p] for p in paths):raise ServiceError('SCOPED_BASELINE_CHANGED',status=409)
+    return copy.deepcopy(value)
+
+
+def observe_scoped_paths(root, identity, paths):
+    """Bounded no-follow file/absence observations; errors are never absence.
+
+    All absolute and relative directory components are opened by descriptor.
+    An absent path is proven by two no-follow lookups under a stable parent.
+    """
+    from .task_service import root_identity
+    root=Path(root)
+    if root_identity(root)!=identity:raise ServiceError('GRANT_VERSION_STALE',status=409)
+    if type(paths)is not list or len(paths)>48 or len(set(paths))!=len(paths):raise ServiceError('ORDINARY_INPUT_REJECTED',status=403)
+    result={}
+    def stamp(info):return (info.st_dev,info.st_ino,info.st_mode,info.st_nlink,info.st_size,info.st_mtime_ns,info.st_ctime_ns)
+    for raw in sorted(paths):
+        relative=_input_path(raw);fds=[];links=[]
+        try:
+            parent=os.open(root.anchor,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW);fds.append(parent)
+            for component in root.parts[1:]:
+                old_parent=parent
+                parent=os.open(component,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW,dir_fd=parent);fds.append(parent)
+                links.append((old_parent,component,parent))
+            absent=False
+            for index,component in enumerate(relative.parts):
+                parent_before=os.fstat(parent)
+                try:info=os.stat(component,dir_fd=parent,follow_symlinks=False)
+                except FileNotFoundError:
+                    # ENOENT of this literal component is distinct from unreadable,
+                    # symlink, dangling symlink, non-directory and unsafe roots.
+                    try:os.stat(component,dir_fd=parent,follow_symlinks=False)
+                    except FileNotFoundError:pass
+                    else:raise ServiceError('ORDINARY_INPUT_CHANGED',status=409)
+                    if stamp(parent_before)!=stamp(os.fstat(parent)):raise ServiceError('ORDINARY_INPUT_CHANGED',status=409)
+                    absent=True;break
+                if index<len(relative.parts)-1:
+                    if not stat.S_ISDIR(info.st_mode):raise ServiceError('ORDINARY_INPUT_REJECTED',status=403)
+                    old_parent=parent
+                    parent=os.open(component,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW,dir_fd=parent);fds.append(parent)
+                    links.append((old_parent,component,parent))
+                    if stamp(info)!=stamp(os.fstat(parent)):raise ServiceError('ORDINARY_INPUT_CHANGED',status=409)
+                else:
+                    if not stat.S_ISREG(info.st_mode) or info.st_nlink!=1 or info.st_size>1048576:raise ServiceError('ORDINARY_INPUT_REJECTED',status=403)
+                    fd=os.open(component,os.O_RDONLY|os.O_NONBLOCK|os.O_NOFOLLOW,dir_fd=parent);fds.append(fd)
+                    if stamp(info)!=stamp(os.fstat(fd)):raise ServiceError('ORDINARY_INPUT_CHANGED',status=409)
+                    chunks=[];remaining=1048577
+                    while remaining:
+                        chunk=os.read(fd,min(65536,remaining))
+                        if not chunk:break
+                        chunks.append(chunk);remaining-=len(chunk)
+                    data=b''.join(chunks)
+                    if len(data)>1048576 or stamp(info)!=stamp(os.fstat(fd)) or stamp(info)!=stamp(os.stat(component,dir_fd=parent,follow_symlinks=False)):
+                        raise ServiceError('ORDINARY_INPUT_CHANGED',status=409)
+                    result[raw]={'state':'file','sha256':hashlib.sha256(data).hexdigest()}
+            if absent:result[raw]={'state':'absent'}
+            for parent_fd,name,child_fd in links:
+                named=os.stat(name,dir_fd=parent_fd,follow_symlinks=False);opened=os.fstat(child_fd)
+                if (named.st_dev,named.st_ino,named.st_mode)!=(opened.st_dev,opened.st_ino,opened.st_mode):
+                    raise ServiceError('ORDINARY_INPUT_CHANGED',status=409)
+        except OSError:
+            raise ServiceError('ORDINARY_INPUT_UNAVAILABLE',status=409) from None
+        finally:
+            for fd in reversed(fds):os.close(fd)
+    if root_identity(root)!=identity:raise ServiceError('GRANT_VERSION_STALE',status=409)
+    return result
+
+
+def scoped_input_version(grant, *, states=None):
+    """Includes literal path and explicit file/absence states for the whole scope."""
+    if states is None:
+        states={i['path']:{'state':'file','sha256':i['sha256']} for i in grant['input_files']}
+        states.update(grant['write_baselines'])
+    return digest({'profile':'scoped_paths_v1',**{k:grant[k] for k in ('project_id','root_identity','registry_hash','workspace','effect','allowed_modules','write_paths')},'path_states':states})
+
+
+def scoped_observation(grant):
+    """Every read input and authorized write path, with no implicit write grants."""
+    paths=sorted(set(grant['write_paths'])|{i['path'] for i in grant['input_files']})
+    ws=grant['workspace'];states=observe_scoped_paths(ws['worktree'],ws['worktree_identity'],paths)
+    for item in grant['input_files']:
+        if item['path'] not in grant['write_paths'] and states[item['path']]!={'state':'file','sha256':item['sha256']}:
+            raise ServiceError('ORDINARY_INPUT_CHANGED',status=409)
+    return states

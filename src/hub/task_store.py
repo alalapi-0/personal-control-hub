@@ -506,6 +506,183 @@ class TaskStore:
             row = connection.execute('SELECT * FROM tasks WHERE id=?', (ident,)).fetchone()
             return self._task(row), False
 
+    def _rebuild_rows(self,connection,ident):
+        return [{'sequence':r['sequence'],'key':r['event_key'],'received':r['received'],'data':self._decode(r['body'],r['hash'])} for r in connection.execute("SELECT * FROM events WHERE task_id=? AND event_key LIKE 'rebuild-%' ORDER BY sequence",(ident,))]
+
+    def rebuild_package(self,ident):
+        from .rebuild_contracts import validate
+        with self._connection() as connection:
+            rows=self._rebuild_rows(connection,stable_id(ident)) if connection else []
+            values=[r['data'] for r in rows if r['key']=='rebuild-package']
+            return validate(values[0],'package') if values else None
+
+    def _rebuild_check(self,connection,package,authority,receipt=None):
+        from .rebuild_contracts import require_authority,reject
+        authority=require_authority(authority);authority._authorize()
+        if digest(package)!=authority.snapshot()['package_sha256']:reject('REBUILD_AUTHORITY_MISMATCH')
+        row=connection.execute('SELECT body,hash FROM grants WHERE id=?',(package['grant']['grant_id'],)).fetchone()
+        if not row:reject('REBUILD_GRANT_REQUIRED')
+        grant=self._decode(row['body'],row['hash']);authority.check(self,package,grant,receipt)
+        return grant
+
+    def prepare_rebuild(self,package,*,authority):
+        from .rebuild_contracts import validate,require_authority,reject
+        package=validate(package,'package');authority=require_authority(authority);authority._authorize()
+        with self._connection(True) as connection:
+            grant=self._rebuild_check(connection,package,authority)
+            row=connection.execute('SELECT * FROM tasks WHERE id=?',(package['task_id'],)).fetchone()
+            if row:
+                prior=self._rebuild_rows(connection,package['task_id'])
+                old=next((r['data'] for r in prior if r['key']=='rebuild-package'),None)
+                if old!=package:reject('REBUILD_PACKAGE_CONFLICT')
+                replayed=True
+            else:
+                if connection.execute('SELECT count(*) FROM tasks').fetchone()[0]>=MAX_TASKS:reject('TASK_CAPACITY')
+                payload={'kind':'rebuild_project','request_id':package['task_id'],'project_id':package['project_id'],'parent_task_id':None,'mode':'new','effect':package['effects']['mode']}
+                intent={'grant':grant,'grant_hash':digest(grant),'package_sha256':digest(package),'owner_context':authority.snapshot()['owner_context']}
+                connection.execute('INSERT INTO tasks(id,payload,payload_hash,intent,intent_hash,project,parent,status,created) VALUES(?,?,?,?,?,?,?,?,?)',(package['task_id'],canonical(payload).decode(),digest(payload),canonical(intent).decode(),digest(intent),package['project_id'],None,'queued',time.time()))
+                self._append_event(connection,package['task_id'],'rebuild-package',package);replayed=False
+            self._rebuild_check(connection,package,authority)
+        return {'replayed':replayed,'execution_started_by_this_call':False}
+
+    def claim_rebuild(self,ident,owner,*,authority):
+        """Internal contract-only claim. Default TaskWorker never consumes this kind."""
+        from .rebuild_contracts import require_authority,validate,fence,reject
+        authority=require_authority(authority);authority._authorize();stable_id(owner)
+        with self._connection(True) as connection:
+            row=connection.execute('SELECT * FROM tasks WHERE id=?',(stable_id(ident),)).fetchone()
+            if not row:reject('TASK_NOT_FOUND')
+            rows=self._rebuild_rows(connection,ident);package=validate(next(r['data'] for r in rows if r['key']=='rebuild-package'),'package')
+            self._rebuild_check(connection,package,authority)
+            if row['status']!='queued' or row['cancel'] or self._task(row)['payload']['kind']!='rebuild_project':reject('REBUILD_CLAIM_REJECTED')
+            now=time.time();claim={'schema_version':'2.0','provenance':'task_store','task_id':ident,'owner':owner,'generation':secrets.token_hex(16),'started_at':now,'expires_at':now+15}
+            claim['fence']=fence(claim)
+            self._append_event(connection,ident,'rebuild-claim-'+claim['generation'],claim)
+            connection.execute("UPDATE tasks SET owner=?,lease_until=?,status='running' WHERE id=?",(owner,now+15,ident))
+            self._rebuild_check(connection,package,authority)
+        return claim
+
+    def _lease_coverage(self,connection,task,*,start,end,now):
+        from .rebuild_contracts import fence,reject
+        rows=self._rebuild_rows(connection,task['id']);claims=[r for r in rows if r['key'].startswith('rebuild-claim-')]
+        if not claims:reject('REBUILD_LEASE_REJECTED')
+        first=claims[-1];claim=first['data'];until=claim['expires_at']
+        if (claim['provenance']!='task_store' or claim['fence']!=fence(claim) or first['key']!='rebuild-claim-'+claim['generation']
+                or not 0<=first['received']-claim['started_at']<=1 or until!=claim['started_at']+15
+                or task['owner']!=claim['owner'] or task['cancel'] or task['status']!='running'
+                or not claim['started_at']<=start<=end<=now):reject('REBUILD_LEASE_REJECTED')
+        for row in rows:
+            if row['sequence']<=first['sequence']:continue
+            if row['key'].startswith('rebuild-lease-stop-') and row['data']['at']<=end:reject('REBUILD_LEASE_REJECTED')
+            if not row['key'].startswith('rebuild-renew-'):continue
+            r=row['data']
+            if (r['provenance']!='task_store' or r['generation']!=claim['generation'] or r['owner']!=claim['owner'] or r['fence']!=claim['fence']
+                    or r['task_id']!=task['id'] or r['prior_expires_at']!=until or not claim['started_at']<=r['at']<=until
+                    or r['expires_at']!=r['at']+15 or not 0<=row['received']-r['at']<=1):reject('REBUILD_LEASE_REJECTED')
+            until=r['expires_at']
+        if end>until or task['lease_until']!=until or now>=until:reject('REBUILD_LEASE_REJECTED')
+        return claim,until
+
+    def _renew_rebuild(self,connection,row,now,status=None):
+        if not row:return
+        if not connection.execute("SELECT 1 FROM events WHERE task_id=? AND event_key LIKE 'rebuild-claim-%' LIMIT 1",(row['id'],)).fetchone():return
+        task=self._task(row)
+        if task['payload'].get('kind')!='rebuild_project':return
+        from .rebuild_contracts import reject
+        if task['status']!='running' and status in TERMINAL:return
+        claim,_=self._lease_coverage(connection,task,start=now,end=now,now=now)
+        if status is not None and status!='running':
+            self._append_event(connection,task['id'],'rebuild-lease-stop-'+secrets.token_hex(8),{'at':now,'status':status,'generation':claim['generation']});return
+        self._append_event(connection,task['id'],'rebuild-renew-'+secrets.token_hex(8),{'provenance':'task_store','task_id':task['id'],'owner':task['owner'],'generation':claim['generation'],'fence':claim['fence'],'prior_expires_at':task['lease_until'],'at':now,'expires_at':now+15})
+
+    def reconcile_rebuild(self,ident,*,authority):
+        from .rebuild_contracts import require_authority,validate
+        authority=require_authority(authority);authority._authorize()
+        with self._connection(True) as connection:
+            rows=self._rebuild_rows(connection,ident)
+            package=validate(next(r['data'] for r in rows if r['key']=='rebuild-package'),'package')
+            self._rebuild_check(connection,package,authority)
+            connection.execute("UPDATE tasks SET status='requires_reconcile' WHERE id=? AND cancel=0 AND status IN ('running','validating')",(ident,))
+            self._append_event(connection,ident,'rebuild-reconcile-'+secrets.token_hex(8),{'reason':'invalid_lease_coverage','requires_reconcile':True,'at':time.time()})
+
+    def record_rebuild_attempt(self,package,attempt,*,authority):
+        from .rebuild_contracts import validate,require_authority,bind,receipt_binding,settled_evidence,reject
+        package=validate(package,'package');attempt=validate(attempt,'attempt');authority=require_authority(authority);authority._authorize()
+        with self._connection(True) as connection:
+            grant=self._rebuild_check(connection,package,authority)
+            row=connection.execute('SELECT * FROM tasks WHERE id=?',(package['task_id'],)).fetchone()
+            if not row:reject('TASK_NOT_FOUND')
+            task=self._task(row);rows=self._rebuild_rows(connection,task['id']);prior={r['key']:r['data'] for r in rows}
+            if prior.get('rebuild-package')!=package:reject('REBUILD_PACKAGE_CONFLICT')
+            key='rebuild-attempt-'+attempt['attempt_id']
+            if key in prior:
+                if prior[key]!=attempt:reject('REBUILD_ATTEMPT_CONFLICT')
+                replayed=True
+            else:
+                claim,_=self._lease_coverage(connection,task,start=attempt['started_at'],end=time.time(),now=time.time())
+                bind(package,attempt,task,grant,authority,claim,now=time.time())
+                attempts=[v for k,v in prior.items() if k.startswith('rebuild-attempt-')]
+                receipts=[v for k,v in prior.items() if k.startswith('rebuild-receipt-')]
+                if len(attempts)>=package['budget']['remaining_attempts'] or sum(a['budget_reservation']['seconds'] for a in attempts)+attempt['budget_reservation']['seconds']>package['budget']['remaining_seconds']:reject('REBUILD_BUDGET_EXHAUSTED')
+                if any(a['attempt_id'] not in {r['attempt_id'] for r in receipts} for a in attempts):reject('REBUILD_ATTEMPT_UNRESOLVED')
+                if any(r['effect_state']=='unknown' or any(c['exit']!=0 for c in r['checks']) for r in receipts):reject('REBUILD_RETRY_DIAGNOSIS_REQUIRED')
+                active=connection.execute("SELECT count(*) FROM tasks WHERE status IN ('running','waiting_input','waiting_approval','validating','requires_reconcile')").fetchone()[0]
+                if active>package['budget']['capacity']:reject('REBUILD_CAPACITY')
+                for dep in package['dependencies']:
+                    drow=connection.execute('SELECT * FROM tasks WHERE id=?',(dep['task_id'],)).fetchone()
+                    if not drow or drow['status']!='checks_complete' or drow['cancel']:reject('REBUILD_DEPENDENCY_FAILED')
+                    history={r['key']:r['data'] for r in self._rebuild_rows(connection,dep['task_id'])}
+                    matches=[r for k,r in history.items() if k.startswith('rebuild-receipt-') and digest(r)==dep['receipt_sha256']]
+                    if len(matches)!=1:reject('REBUILD_DEPENDENCY_FAILED')
+                    receipt=matches[0];dp=validate(history.get('rebuild-package'),'package');da=validate(history.get('rebuild-attempt-'+receipt['attempt_id']),'attempt');receipt_binding(receipt,dp,da)
+                    proof=authority.snapshot().get('verified_dependencies',{}).get(dep['receipt_sha256'])
+                    settled_evidence(dp,receipt,proof,da)
+                    from .ordinary_tasks import check_registration,validate_grant,validate_scoped_write_grant
+                    from .rebuild_contracts import current_versions
+                    dg=self._task(drow)['intent']['grant']
+                    stored_dep=connection.execute('SELECT body,hash FROM grants WHERE id=?',(dg['grant_id'],)).fetchone()
+                    if not stored_dep or self._decode(stored_dep['body'],stored_dep['hash'])!=dg:reject('REBUILD_DEPENDENCY_FAILED')
+                    check_registration(dg,self.root)
+                    if dg['kind']=='rebuild_scoped_write':validate_scoped_write_grant(dg)
+                    else:validate_grant(dg,live=True)
+                    if current_versions(dg)!=receipt['end_versions']:reject('REBUILD_DEPENDENCY_FAILED')
+                self._append_event(connection,task['id'],key,attempt);replayed=False
+            self._rebuild_check(connection,package,authority)
+        return {'replayed':replayed,'attempt_sha256':digest(attempt),'execution_started_by_this_call':False}
+
+    def record_rebuild_receipt(self,receipt,*,authority):
+        from .rebuild_contracts import validate,require_authority,receipt_binding,reject
+        receipt=validate(receipt,'receipt');authority=require_authority(authority);authority._authorize();lease_error=False
+        with self._connection(True) as connection:
+            rows=self._rebuild_rows(connection,receipt['task_id']);evidence={r['key']:r['data'] for r in rows}
+            package=validate(evidence.get('rebuild-package'),'package');attempt=validate(evidence.get('rebuild-attempt-'+receipt['attempt_id']),'attempt')
+            self._rebuild_check(connection,package,authority,receipt);receipt_binding(receipt,package,attempt)
+            key='rebuild-receipt-'+receipt['receipt_id']
+            if key in evidence:
+                if evidence[key]!=receipt:reject('REBUILD_RECEIPT_CONFLICT')
+                replayed=True
+            else:
+                if any(v['attempt_id']==receipt['attempt_id'] for k,v in evidence.items() if k.startswith('rebuild-receipt-')):reject('REBUILD_RECEIPT_AMBIGUOUS')
+                task=self._task(connection.execute('SELECT * FROM tasks WHERE id=?',(receipt['task_id'],)).fetchone())
+                try:
+                    claim,_=self._lease_coverage(connection,task,start=receipt['started_at'],end=receipt['ended_at'],now=time.time())
+                    if claim['generation']!=attempt['lease']['generation'] or claim['fence']!=attempt['lease']['fence']:reject('REBUILD_LEASE_REJECTED')
+                except ServiceError as error:
+                    if error.code!='REBUILD_LEASE_REJECTED':raise
+                    if not task['cancel'] and task['status'] in {'running','validating'}:
+                        connection.execute("UPDATE tasks SET status='requires_reconcile' WHERE id=?",(task['id'],))
+                    self._append_event(connection,task['id'],'rebuild-reconcile-'+secrets.token_hex(8),{'reason':'invalid_lease_coverage','requires_reconcile':True,'at':time.time()});lease_error=True
+                if not lease_error:
+                    self._append_event(connection,task['id'],key,receipt)
+                    if receipt['effect_state']=='unknown':
+                        if not task['cancel'] and task['status'] in {'running','validating'}:
+                            connection.execute("UPDATE tasks SET status='requires_reconcile' WHERE id=?",(task['id'],))
+                        self._append_event(connection,task['id'],'rebuild-reconcile-'+receipt['receipt_id'],{'reason':'unknown_effect','requires_reconcile':True,'receipt_sha256':digest(receipt),'at':time.time()})
+                replayed=False
+            self._rebuild_check(connection,package,authority,receipt)
+        if lease_error:raise ServiceError('REBUILD_LEASE_REJECTED',status=409,outcome='REQUIRES_RECONCILE')
+        return {'replayed':replayed,'settled':False,**({'requires_reconcile':True} if receipt['effect_state']=='unknown' else {})}
+
     def _task(self, row):
         task = dict(row)
         task['payload'] = self._decode(task['payload'], task.pop('payload_hash'))
@@ -897,6 +1074,7 @@ class TaskStore:
             for row in rows:
                 parent = connection.execute('SELECT id,status,thread_id,turn_id,provider_status,cancel FROM tasks WHERE id=?'+selection, (row['parent'],*ids)).fetchone() if row['parent'] else None
                 task = self._task(row)
+                if task['payload'].get('kind')=='rebuild_project':continue
                 if (row['parent'] or task['payload']['mode'] == 'busy_feedback') and not parent_binding_matches(task['intent'], parent):
                     connection.execute("UPDATE tasks SET status='requires_reconcile' WHERE id=?", (row['id'],)); continue
                 if parent and parent['status'] not in TERMINAL: continue
@@ -989,14 +1167,18 @@ class TaskStore:
                 if key in values and row[key] is not None and values[key] != row[key]:
                     raise ServiceError('TASK_BINDING_CONFLICT', status=409)
             # Column names come only from the fixed allowlist, values remain parameters.
+            renewed_at=time.time()
+            self._renew_rebuild(connection,row,renewed_at,values.get('status'))
             columns = ','.join(key+'=?' for key in values)
             success_guard=' AND cancel=0'if values.get('status')=='checks_complete'else''
-            cursor = connection.execute('UPDATE tasks SET '+columns+',lease_until=? WHERE id=? AND owner=?'+success_guard, (*values.values(),time.time()+15,ident,owner))
+            cursor = connection.execute('UPDATE tasks SET '+columns+',lease_until=? WHERE id=? AND owner=?'+success_guard, (*values.values(),renewed_at+15,ident,owner))
             if cursor.rowcount != 1: raise ServiceError('TASK_OWNER_CONFLICT', status=409)
 
     def heartbeat(self, ident, owner):
         with self._connection(True) as connection:
             now=time.time()
+            row=connection.execute('SELECT * FROM tasks WHERE id=? AND owner=?',(ident,owner)).fetchone()
+            self._renew_rebuild(connection,row,now)
             cursor=connection.execute('UPDATE tasks SET lease_until=? WHERE id=? AND owner=? AND lease_until>=? AND status NOT IN (?,?,?,?,?)',
                 (now+15,ident,owner,now,*sorted(TERMINAL)))
             if cursor.rowcount!=1: raise ServiceError('TASK_OWNER_CONFLICT',status=409)
@@ -1450,6 +1632,7 @@ class TaskStore:
         return True
 
     def event(self, ident, key, value):
+        if key.startswith('rebuild-'):raise ServiceError('REBUILD_TRUSTED_EVENT_REQUIRED',status=403)
         with self._connection(True) as connection:return self._append_event(connection,ident,key,value)
 
     def _controls(self, connection, ident):

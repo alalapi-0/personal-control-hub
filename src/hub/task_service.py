@@ -105,7 +105,7 @@ def validate_grant(grant, *, live=False):
 
 class TaskService:
     def __init__(self,projects,annotations,store, *, test_gate=False, writer_check=None, runtime_status=None, ordinary_enabled=False,
-                 ordinary_grant_ids=None):
+                 ordinary_grant_ids=None, rebuild_binding=None, rebuild_authority=None):
         self.projects,self.annotations,self.store=projects,annotations,store
         self.test_gate=test_gate
         # An internal lease cannot certify an unrelated writer's absence.
@@ -114,6 +114,34 @@ class TaskService:
         self.runtime_status=runtime_status
         self.ordinary_enabled=ordinary_enabled is True
         self.ordinary_grant_ids=ordinary_grant_ids
+        from .rebuild_contracts import require_authority
+        if rebuild_binding is not None:raise ServiceError('REBUILD_AUTHORITY_REQUIRED',status=403)
+        self.__rebuild_authority=require_authority(rebuild_authority) if rebuild_authority is not None else None
+
+    @property
+    def rebuild_binding(self):
+        return self.__rebuild_authority.snapshot() if self.__rebuild_authority else None
+
+    def _contract_authority(self,owner_context,authorize):
+        if authorize is not None:raise ServiceError('REBUILD_CALLER_AUTHORITY_REJECTED',status=403)
+        authority=self.__rebuild_authority
+        if authority is None:raise ServiceError('REBUILD_ROUTE_UNCONFIGURED',status=403)
+        authority._authorize()
+        if owner_context!=authority.snapshot()['owner_context']:raise ServiceError('TASK_OWNER_REJECTED',status=403)
+        return authority
+
+    def prepare_rebuild(self,package,*,owner_context,authorize=None):
+        return self.store.prepare_rebuild(package,authority=self._contract_authority(owner_context,authorize))
+
+    def admit_rebuild(self,package,attempt,*,owner_context,authorize=None):
+        authority=self._contract_authority(owner_context,authorize)
+        try:return self.store.record_rebuild_attempt(package,attempt,authority=authority)
+        except ServiceError as error:
+            if error.code=='REBUILD_LEASE_REJECTED':self.store.reconcile_rebuild(package['task_id'],authority=authority)
+            raise
+
+    def record_rebuild_receipt(self,receipt,*,owner_context,authorize=None):
+        return self.store.record_rebuild_receipt(receipt,authority=self._contract_authority(owner_context,authorize))
 
     @staticmethod
     def _ordinary_scope_ids(value):
