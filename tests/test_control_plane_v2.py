@@ -266,10 +266,10 @@ def test_registry_historical_manifest_and_current_hub_epoch_are_distinct_authori
     # identity changes must not masquerade as a live acceptance of that epoch.
     registry_sha = hashlib.sha256((ROOT / "data/registry/external_projects.yaml").read_bytes()).hexdigest()
     assert registry_sha != storage_state["parent_hub"]["project_registry_sha256_current"]
-    # Current reads bind the exact current registry bytes, independently of
-    # recorded historical external manifests. Constructor never probes roots.
+    # Explicit registry-only construction binds the exact current registry bytes,
+    # independently of historical external manifests, without probing roots.
     with patch.object(Path, "resolve", side_effect=AssertionError("registry authority probed roots")):
-        current_authority = SourceResolver(ROOT).authority
+        current_authority = SourceResolver(ROOT, observe_sources=False).authority
     assert current_authority["registry_hash"] == registry_sha
     assert epoch["state"] == "FROZEN_CLOSED"
     assert epoch["capture_count"] == epoch["capture_limit"] == 1
