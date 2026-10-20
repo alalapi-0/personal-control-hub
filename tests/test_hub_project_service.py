@@ -301,7 +301,11 @@ class ProjectServiceFacadeTests(unittest.TestCase):
         self.assertEqual({"schema_version", "project_id", "name", "declared", "business",
                           "operational", "freshness", "source", "errors", "relations",
                           "design", "provenance", "management", "definition", "last_success_snapshot",
-                          "field_explanations"}, set(detail))
+                          "field_explanations", "semantics"}, set(detail))
+        self.assertEqual("1.0", detail["semantics"]["schema_version"])
+        self.assertEqual({"purpose", "outputs", "current_work", "next_action", "actor"},
+                         set(detail["semantics"]["explanations"]))
+        self.assertEqual("unobserved", detail["semantics"]["collection_health"]["state"])
         self.assertEqual({"schema_version": "1.0", "project_id": "a", "fields": {}},
                          detail["field_explanations"])
         self.assertFalse(detail["management"]["available"])

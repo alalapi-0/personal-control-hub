@@ -12,6 +12,102 @@ from connection_fixtures import Fixture
 from hub.connection_sources import _safe_relative_read
 
 
+class ProjectSemanticProjectionTests(unittest.TestCase):
+    def setUp(self):
+        self.fixture = Fixture(); self.addCleanup(self.fixture.close)
+        self.root, self.declaration = self.fixture.add('a')
+        self.fixture.projects[0]['description'] = 'Synthetic control project purpose'
+        self.fixture.projects[0]['project_definition'] = {'outputs': {'state': 'known', 'value': ['Synthetic export bundle'], 'reason': None}}
+        self.fixture.save_registry()
+
+    def collect(self, state, *, mapping=None):
+        from hub.connection_sources import SourceResolver
+        from hub.connection_refresh import RefreshLedger, refresh
+        from hub.connection_records import validate_result
+        from hub.project_service import ProjectService
+        if mapping is not None:
+            self.declaration['mapping'] = mapping
+            (self.root / 'hub.connection.yaml').write_text(yaml.safe_dump(self.declaration))
+        (self.root / 'STATE.yaml').write_text(yaml.safe_dump(state))
+        resolver = SourceResolver(self.fixture.hub)
+        ledger = RefreshLedger(self.fixture.hub, result_validator=validate_result)
+        self.assertEqual({}, refresh(ledger, resolver, 'semantic-fixture', ['a'])['resolver_errors'])
+        dto = ProjectService(self.fixture.hub).get_project('a')
+        return dto
+
+    def test_read_success_with_unknown_business_keeps_five_concrete_unknowns(self):
+        self.fixture.projects[0].pop('project_definition')
+        self.fixture.save_registry()
+        dto = self.collect({}, mapping={})
+        semantic = dto['semantics']
+        self.assertEqual({'purpose', 'outputs', 'current_work', 'next_action', 'actor'}, set(semantic['explanations']))
+        self.assertEqual('success', semantic['collection_health']['state'])
+        self.assertEqual('resolved', semantic['availability']['source_disposition'])
+        self.assertEqual('unknown', semantic['business_state']['state'])
+        self.assertFalse(semantic['completeness']['core_complete'])
+        self.assertEqual('unknown', semantic['progress']['scope'])
+        self.assertTrue(semantic['progress']['scope_unknown_reason'])
+        self.assertEqual('unknown', semantic['fact_time']['fact_time_state'])
+        self.assertTrue(semantic['fact_time']['fact_time_unknown_reason'])
+        self.assertEqual('Synthetic control project purpose', semantic['explanations']['purpose']['value'])
+        self.assertEqual('registry', semantic['explanations']['purpose']['source']['kind'])
+        for key in ('outputs', 'current_work', 'next_action', 'actor'):
+            self.assertEqual('unknown', semantic['explanations'][key]['state'])
+            self.assertIsNone(semantic['explanations'][key]['value'])
+            self.assertTrue(semantic['explanations'][key]['unknown_reason'])
+        self.assertEqual('unknown', semantic['availability']['outputs']['state'])
+        self.assertEqual({'origin': 'hub_authored_interpretation', 'fields': {}}, semantic['interpretations'])
+
+    def test_every_unread_active_identity_has_five_explanations_without_root_probes(self):
+        from hub.project_service import ProjectService
+        self.fixture.add('b')
+        with mock.patch('hub.connection_sources._project_binding', side_effect=AssertionError('GET probed root')):
+            projects = ProjectService(self.fixture.hub).list_projects()['projects']
+        self.assertEqual({'a', 'b'}, {project['project_id'] for project in projects})
+        for project in projects:
+            semantic = project['semantics']
+            self.assertEqual('unobserved', semantic['collection_health']['state'])
+            self.assertEqual({'purpose', 'outputs', 'current_work', 'next_action', 'actor'}, set(semantic['explanations']))
+            for item in semantic['explanations'].values():
+                self.assertTrue(item['source'] is not None or item['unknown_reason'])
+            for key in ('current_work', 'next_action', 'actor'):
+                self.assertEqual('unknown', semantic['explanations'][key]['state'])
+                self.assertIsNone(semantic['explanations'][key]['value'])
+
+    def test_active_project_keeps_local_blocker_and_exact_field_sources(self):
+        state = copy.deepcopy(self.fixture.business)
+        state['current_work']['status'] = 'active'
+        state['blockers'][0].update(code='local_dependency', reason='Local export blocked', affected_items=['export-check'])
+        dto = self.collect(state)
+        semantic = dto['semantics']
+        self.assertEqual('active', semantic['business_state']['value'])
+        self.assertEqual(['Synthetic export bundle'], semantic['explanations']['outputs']['value'])
+        self.assertEqual('project_definition.outputs', semantic['explanations']['outputs']['source']['field'])
+        self.assertEqual('Local export blocked', semantic['blockers']['value'][0]['reason'])
+        self.assertEqual(['export-check'], semantic['blockers']['value'][0]['affected_items'])
+        for key, field in (('current_work', 'current_work.objective'), ('next_action', 'current_work.next_action'), ('actor', 'current_work.owner_role')):
+            item = semantic['explanations'][key]
+            self.assertEqual('known', item['state'])
+            self.assertEqual(field, item['source']['field'])
+            self.assertEqual('STATE.yaml', item['source']['path'])
+            self.assertEqual(dto['business']['source_record']['field_provenance'][field]['sha256'], item['source']['sha256'])
+            self.assertEqual(field.split('.'), item['source']['selector']['path'])
+        self.assertEqual('active', dto['business']['normalized_status'])
+
+    def test_local_four_of_four_never_completes_project_or_makes_outputs_available(self):
+        state = copy.deepcopy(self.fixture.business)
+        state['current_work'].update(status='active', completed=False)
+        state['progress'].update(completed=4, total=4, counting_basis='Four local export checks; project remains active')
+        dto = self.collect(state); semantic = dto['semantics']
+        self.assertEqual((4, 4), (semantic['progress']['completed']['value'], semantic['progress']['total']['value']))
+        self.assertEqual('source_declared_units', semantic['progress']['scope'])
+        self.assertIn('local export checks', semantic['progress']['counting_basis']['value'])
+        self.assertFalse(semantic['progress']['project_completion_inferred'])
+        self.assertFalse(semantic['progress']['current_work_completed']['value'])
+        self.assertEqual('active', semantic['business_state']['value'])
+        self.assertEqual('unknown', semantic['availability']['outputs']['state'])
+
+
 class RegistryFieldMappingTests(unittest.TestCase):
     def setUp(self):
         self.fixture = Fixture()

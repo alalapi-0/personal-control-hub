@@ -93,6 +93,22 @@ class FieldExplanationTests(unittest.TestCase):
         self.assertEqual(failed['field_explanations']['fields'], {})
         self.assertNotIn('field_explanations', failed['last_success_snapshot'])
 
+    def test_semantic_interpretation_remains_separate_and_cannot_replace_source_fact(self):
+        dto = self.service.get_project('a')
+        item = dto['semantics']['explanations']['next_action']
+        commentary = dto['semantics']['interpretations']
+        self.assertEqual('Review candidate B', item['value'])
+        self.assertEqual('source_fact', item['source']['kind'])
+        self.assertEqual('hub_authored_interpretation', commentary['origin'])
+        self.assertEqual(dto['field_explanations']['fields'], commentary['fields'])
+        self.assertEqual('下一步：复核候选 B 的变化。', commentary['fields'][KEY]['text'])
+        (self.root / 'STATE.yaml').unlink()
+        self.collect('failed-semantic-source')
+        failed = self.service.get_project('a')['semantics']
+        self.assertEqual('failed', failed['collection_health']['state'])
+        self.assertEqual('unknown', failed['explanations']['next_action']['state'])
+        self.assertEqual({}, failed['interpretations']['fields'])
+
     def test_no_source_reads_on_detail_or_listing(self):
         with mock.patch('hub.connection_sources._safe_relative_read', side_effect=AssertionError('GET read')), \
                 mock.patch.object(SourceResolver, 'refresh', side_effect=AssertionError('GET refresh')):

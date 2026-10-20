@@ -847,6 +847,55 @@ class ProjectService:
         return {"schema_version": "1.0", "read_only": True, "fields": fields,
                 "missing": [name for name, item in fields.items() if item["state"] in {"missing", "unknown", "unavailable"}]}
 
+    @staticmethod
+    def _semantics(definition, business, record, freshness, read_allowed, commentary):
+        """Read-only explanation of existing facts; no source I/O or completion inference."""
+        def definition_item(name):
+            field = definition['fields'][name]
+            known = field['state'] in {'known', 'empty', 'not_applicable'} and field['source'] is not None
+            return {'state': field['state'] if known else 'unknown',
+                    'value': copy.deepcopy(field['value']) if known else None,
+                    'source': copy.deepcopy(field['source']),
+                    'unknown_reason': None if known else name + ': ' + (field['reason'] or 'No published definition value.')}
+
+        def fact(key):
+            value = business['fields']
+            for part in key.split('.'):
+                value = value[part]
+            proof = record.get('field_provenance', {}).get(key) if record else None
+            source = next((item for item in (record or {}).get('sources', [])
+                           if proof and item['id'] == proof['source_ref'] and item['sha256'] == proof['sha256']), None)
+            known = (read_allowed and business['state'] == 'current' and
+                     key in business['quality']['current_coverage']['fields'] and source is not None)
+            return {'state': 'known' if known else 'unknown',
+                    'value': copy.deepcopy(value) if known else None,
+                    'source': {'kind': 'source_fact', 'field': key, 'path': source['path'],
+                               'observed_at': record['observed_at'], **copy.deepcopy(proof)} if known else None,
+                    'unknown_reason': None if known else key + ': ' +
+                        (business['unknown_fields'].get(key) or freshness['reason'] or 'No current source value with field evidence.')}
+
+        counting_basis = fact('progress.counting_basis')
+        return {'schema_version': '1.0', 'read_only': True,
+                'explanations': {'purpose': definition_item('purpose'), 'outputs': definition_item('outputs'),
+                                 'current_work': fact('current_work.objective'),
+                                 'next_action': fact('current_work.next_action'), 'actor': fact('current_work.owner_role')},
+                'collection_health': {'state': 'unobserved' if not record else 'success' if record['success'] else 'failed',
+                                      'collected_at': record['observed_at'] if record else None,
+                                      'applicability': freshness['state'], 'read_allowed': read_allowed},
+                'fact_time': ProjectService._fact_time(record if read_allowed else None, freshness),
+                'completeness': copy.deepcopy(business['quality']),
+                'business_state': fact('current_work.status'), 'blockers': fact('blockers'),
+                'progress': {'completed': fact('progress.completed'), 'total': fact('progress.total'),
+                             'counting_basis': counting_basis,
+                             'scope': 'source_declared_units' if counting_basis['state'] == 'known' else 'unknown',
+                             'scope_unknown_reason': counting_basis['unknown_reason'],
+                             'current_work_completed': fact('current_work.completed'),
+                             'project_completion_inferred': False},
+                'availability': {'source_disposition': record['disposition'] if record else 'unobserved',
+                                 'outputs': {'state': 'unknown', 'reason': 'Output definitions do not verify artifact existence or usability.'}},
+                'interpretations': {'origin': 'hub_authored_interpretation',
+                                    'fields': copy.deepcopy(commentary['fields'])}}
+
     def _dto(self, declared: dict, snapshot: dict, row: dict, relation: dict,
              design_snapshot: dict | None) -> dict:
         latest, previous = row["latest_attempt"], row["last_success"]
@@ -916,10 +965,12 @@ class ProjectService:
                                 if latest and not latest["success"] else
                                 "等待下次计划刷新，或显式刷新以核对当前来源。"),
         }
+        definition = self._definition(declared, latest, row['freshness'], snapshot['authority'], connection_read_allowed)
+        commentary = field_explanations(declared, latest, row['freshness'], snapshot['authority'], connection_read_allowed)
         return {"schema_version": "1.0", "project_id": row["project_id"],
                 "name": row["name"], "declared": declared_view,
-                "definition": self._definition(declared, latest, row["freshness"], snapshot["authority"], connection_read_allowed),
-                "field_explanations": field_explanations(declared, latest, row["freshness"], snapshot["authority"], connection_read_allowed),
+                "definition": definition, "field_explanations": commentary,
+                "semantics": self._semantics(definition, business, latest, row['freshness'], connection_read_allowed, commentary),
                 "business": business, "last_success_snapshot": last_success_snapshot,
                 "operational": {"facts": [], "latest_attempt": source_record,
                                 "last_success": copy.deepcopy(previous)},
