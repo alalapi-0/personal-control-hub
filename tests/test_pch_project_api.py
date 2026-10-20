@@ -106,8 +106,17 @@ class ProjectAPITests(unittest.TestCase):
         self.commit()
         dto = self.service.get_project("a")
         self.assertEqual(set(dto), {"schema_version", "project_id", "name", "declared", "business",
-                                    "operational", "freshness", "source", "errors", "relations", "design", "provenance", "management", "definition", "last_success_snapshot", "field_explanations"})
+                                    "operational", "freshness", "source", "errors", "relations", "design", "provenance", "management", "definition", "last_success_snapshot", "field_explanations", "semantics"})
         self.assertEqual(dto["field_explanations"], {"schema_version": "1.0", "project_id": "a", "fields": {}})
+        semantics = dto["semantics"]
+        self.assertEqual("1.0", semantics["schema_version"])
+        self.assertEqual({"purpose", "outputs", "current_work", "next_action", "actor"},
+                         set(semantics["explanations"]))
+        self.assertIs(semantics["progress"]["current_work_completed"]["value"], False)
+        self.assertEqual(0, semantics["progress"]["completed"]["value"])
+        self.assertEqual("known", semantics["blockers"]["state"])
+        self.assertEqual([], semantics["blockers"]["value"])
+        self.assertFalse(semantics["progress"]["project_completion_inferred"])
         success = dto["last_success_snapshot"]
         self.assertEqual(set(success), {"available", "state", "observed_at", "age_seconds",
                                         "source_mtime_age_seconds", "fields", "reason", "recovery_action"})
