@@ -66,7 +66,30 @@ class ServiceProtocolTests(unittest.TestCase):
         scope.write_text(yaml.safe_dump({'schema_version':'1.0','scope_id':'service-fixture',
             'baseline_total':2,'project_ids':['a','b'],'excluded_project_ids':{}}))
         repository = Path(__file__).resolve().parents[1]
-        frozen = fixture.base / 'frozen'
+        # Program preflight checks every ancestor: /tmp is intentionally unsafe.
+        # Only the frozen-code fixture needs this private parent; source/data
+        # fixtures retain their original independent placement and assertions.
+        import stat
+        from hub.rr_cli import _directories
+        from hub.rr_feedback import RRFeedbackError
+        parent = Path(tempfile.gettempdir())
+        try:
+            _directories(parent)
+            info = parent.lstat()
+            private = info.st_uid == os.getuid() and stat.S_IMODE(info.st_mode) == 0o700
+        except (OSError, RRFeedbackError):
+            private = False
+        if not private:
+            parent = repository
+            _directories(parent)
+            self.assertEqual(os.getuid(), parent.lstat().st_uid)
+        program_fixture = tempfile.TemporaryDirectory(prefix='.pch-service-program-', dir=parent)
+        self.addCleanup(program_fixture.cleanup)
+        program_parent = Path(program_fixture.name)
+        _directories(program_parent)
+        self.assertEqual(os.getuid(), program_parent.lstat().st_uid)
+        self.assertEqual(0o700, stat.S_IMODE(program_parent.lstat().st_mode))
+        frozen = program_parent / 'frozen'
         files = {}
         for source in sorted((repository / 'src/hub').rglob('*.py')) + [repository / 'scripts/hub_sync.py']:
             relative = str(source.relative_to(repository)); raw = source.read_bytes()
