@@ -96,7 +96,12 @@ function feedbackForm(){
 async function route(){
   const token=++generation;main.replaceChildren(el('p',{role:'status'},'正在读取项目…'));
   try{manifest??=await request('/__rr/v1/manifest');if(token!==generation)return;
-    const parts=location.hash.slice(1).split('/');
+    let viewPath=location.hash.slice(1);
+    if(!viewPath){
+      if(!manifest.page_paths.includes(location.pathname))throw new Error('RR_PAGE_NOT_ALLOWED');
+      viewPath=location.pathname.slice('/__rr/review/'.length);
+    }
+    const parts=viewPath.split('/');
     if(parts[0]==='feedback'){logicalPath='/__rr/review/';const envelope=await request('/__rr/v1/data/projects');if(token!==generation)return;showContext(envelope);
       main.replaceChildren(el('h1',{},'反馈记录'),el('p',{},pending?'可按本浏览器保存的原请求查询实际回执。':'本浏览器尚无反馈恢复记录。'),button('核对原请求',()=>recover().catch(()=>message('未取得原请求回执。',true))),feedbackForm());}
     else if(parts[0]==='projects'&&parts[1])await detail(decodeURIComponent(parts[1]),token);else await directory(token);
