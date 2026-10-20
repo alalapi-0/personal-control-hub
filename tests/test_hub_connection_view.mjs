@@ -139,8 +139,9 @@ function withWorkExplanation(key='current_work.objective'){
     r.business.progress={counting_basis:'Heterogeneous results have no agreed weights'};
     r.field_provenance[key]={source_ref:'state',sha256:'a'.repeat(64),selector:{path:['progress','counting_basis']}};
   }
-  p.project_id='a';r.project_id='a';r.authority={registry_hash:'c'.repeat(64)};
-  p.provenance={registry_sha256:'c'.repeat(64)};
+  p.project_id='a';r.project_id='a';r.disposition='resolved';
+  r.authority={registry_hash:'c'.repeat(64),schema_hash:'b'.repeat(64),adapter_version:'2.0'};
+  p.provenance={registry_sha256:'c'.repeat(64),schema_sha256:'b'.repeat(64),adapter_version:'2.0'};
   const value=key.split('.').reduce((v,k)=>v[k],r.business),proof=r.field_provenance[key];
   proof.raw_value=value;
   p.field_explanations={schema_version:'1.0',project_id:'a',fields:{[key]:{
@@ -171,6 +172,7 @@ test('unbound or malformed commentary never substitutes a known source value',()
   const key='current_work.objective';
   const changes=[
     p=>p.field_explanations.project_id='other',p=>p.business.source_record.project_id='other',
+    p=>{delete p.project_id;delete p.business.source_record.project_id;delete p.field_explanations.project_id;},
     p=>p.business.source_record.authority.registry_hash='e'.repeat(64),
     p=>p.field_explanations.schema_version='2.0',p=>p.field_explanations.fields[key].text='',
     p=>p.field_explanations.fields[key].text='x'.repeat(4001),
@@ -193,6 +195,45 @@ test('unbound or malformed commentary never substitutes a known source value',()
     assert.equal(field.known,true);assert.equal(field.text,'Repair preview');
     assert.equal(field.explanation,null);assert.deepEqual(projectSummary(p).fieldExplanations,{});
   }
+});
+
+function withScopedWorkExplanation(){
+  const p=withWorkExplanation(),r=p.business.source_record;
+  Object.assign(r.authority,{binding_version:'1.1',registration_bindings:{a:'f'.repeat(64)},project_bindings:{a:'a'.repeat(64)}});
+  r.binding_hash='a'.repeat(64);
+  p.provenance.project_binding={version:'1.1',project_id:'a',registration_sha256:'f'.repeat(64),
+    observed_sha256:null,comparison_basis:'registration_only'};
+  return p;
+}
+
+test('scoped commentary survives unrelated audit changes and rejects true applicability mismatches',()=>{
+  const p=withScopedWorkExplanation(),key='current_work.objective';
+  p.provenance.registry_sha256='e'.repeat(64);
+  Object.assign(p.field_explanations.fields[key].declaration,{registry_sha256:'e'.repeat(64),sha256:'e'.repeat(64)});
+  assert.equal(facts(p)[key].explanation.text,'按来源材料整理的中文说明');
+  const changes=[
+    p=>p.provenance.project_binding.registration_sha256='d'.repeat(64),
+    p=>p.provenance.project_binding.project_id='other',
+    p=>p.provenance.project_binding.version='9.0',
+    p=>p.provenance.project_binding.comparison_basis='unknown',
+    p=>p.provenance.project_binding.observed_sha256='d'.repeat(64),
+    p=>delete p.provenance.project_binding,
+    p=>p.provenance.schema_sha256='d'.repeat(64),
+    p=>p.provenance.adapter_version='9.0',
+    p=>p.business.source_record.authority.binding_version='9.0',
+    p=>delete p.business.source_record.authority.registration_bindings.a,
+    p=>delete p.business.source_record.authority.project_bindings.a,
+    p=>p.business.source_record.binding_hash='d'.repeat(64),
+    p=>delete p.business.source_record.binding_hash,
+    p=>p.business.source_record.disposition='invalid',
+    p=>{delete p.business.source_record.authority.binding_version;delete p.business.source_record.authority.project_bindings;delete p.business.source_record.authority.registration_bindings;},
+  ];
+  for(const change of changes){const changed=structuredClone(p);change(changed);assert.equal(facts(changed)[key].explanation,null);}
+  const observed=structuredClone(p);
+  Object.assign(observed.provenance.project_binding,{comparison_basis:'observed',observed_sha256:'a'.repeat(64)});
+  assert.ok(facts(observed)[key].explanation);
+  observed.provenance.project_binding.observed_sha256='d'.repeat(64);
+  assert.equal(facts(observed)[key].explanation,null);
 });
 
 test('a naturally changed source retains its new fact and discards the old commentary',()=>{

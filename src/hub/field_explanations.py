@@ -8,7 +8,8 @@ from __future__ import annotations
 import copy
 
 from hub.connection_records import (exact, fingerprint, get_field, identifier,
-                                    relative_path, require, string, validate_selector)
+                                    relative_path, require, string, validate_selector,
+                                    authority_matches, RecordError)
 
 FIELDS = frozenset({'current_work.' + name for name in ('objective', 'phase', 'round', 'next_action')}
                    | {'progress.counting_basis'})
@@ -51,10 +52,15 @@ def field_explanations(declared, record, freshness, authority, read_allowed):
     on load; this helper never changes the registry, ledger or normalized facts.
     """
     result = {'schema_version': '1.0', 'project_id': declared['id'], 'fields': {}}
+    try:
+        matched = bool(record) and authority_matches(record.get('authority'), authority, [declared['id']],
+            registration_only='binding_version' in authority and not authority['project_bindings'])
+    except (RecordError, KeyError, TypeError):
+        matched = False
     if (not read_allowed or not record or record.get('project_id') != declared['id']
             or record.get('success') is not True or record.get('disposition') != 'resolved'
             or freshness.get('state') != 'fresh' or freshness.get('authority_drift', False)
-            or record.get('authority') != authority
+            or not matched
             or declared.get('local_presence', {}).get('status') == 'removed_local'
             or declared.get('current_state_status') == 'removed_local'
             or declared.get('access_profile') == 'no_current_goal_access'

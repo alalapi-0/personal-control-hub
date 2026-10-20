@@ -17,7 +17,7 @@ from test_hub_timeline_pipeline import SyntheticDesignService
 import test_hub_local_service as transport
 from hub.connection_sources import SourceResolver
 from hub.connection_refresh import RefreshLedger, refresh
-from hub.connection_records import validate_result
+from hub.connection_records import validate_result, update_key
 from hub.local_service import HubHTTPServer
 from hub.preview_service import PreviewService, page_catalog
 from hub.project_service import ProjectService
@@ -128,8 +128,26 @@ class PagePipelineTests(unittest.TestCase):
         self.fixture.save_registry(); result = page_catalog(self.service)
         self.assertEqual(result['total'], 206); self.assertEqual(len(result['projects']), 206)
         self.assertEqual(len({p['project_id'] for p in result['projects']}), 206)
-        self.assertTrue(all(not row['page_inventory']['available'] for row in result['projects']))
-        self.assertTrue(all(row['page_inventory']['value'] is None for row in result['projects']))
+        rows = {row['project_id']: row for row in result['projects']}
+        self.assertTrue(rows['business']['page_inventory']['available'])
+        self.assertEqual(self.value, rows['business']['page_inventory']['value'])
+        self.assertTrue(all(not rows[f'p{n:03d}']['page_inventory']['available'] for n in range(205)))
+        self.assertTrue(all(rows[f'p{n:03d}']['page_inventory']['value'] is None for n in range(205)))
+        # A genuine three-field legacy capsule never gains current new authority.
+        legacy = copy.deepcopy(self.ledger.history('pages')['results'][0]['result'])
+        legacy['authority'] = {key: legacy['authority'][key]
+            for key in ('registry_hash', 'schema_hash', 'adapter_version')}
+        legacy.pop('binding_hash')
+        legacy['update_key'] = update_key(legacy)
+        validate_result(legacy)
+        self.ledger.begin_request('legacy-pages', ['business'], legacy['authority'])
+        self.ledger.append_project_result('legacy-pages', 'business', legacy)
+        self.ledger.finish_request('legacy-pages')
+        historical = page_catalog(self.service)
+        self.assertEqual(206, historical['total'])
+        self.assertTrue(all(not row['page_inventory']['available'] for row in historical['projects']))
+        self.assertTrue(all(row['page_inventory']['value'] is None for row in historical['projects']))
+        self.assertEqual(legacy, self.ledger.history('legacy-pages')['results'][0]['result'])
 
     def test_unknown_field_and_known_empty_inventory_remain_distinct(self):
         self.write(None); self.publish('unknown-pages')

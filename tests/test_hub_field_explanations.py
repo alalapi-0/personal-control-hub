@@ -124,7 +124,8 @@ class FieldExplanationTests(unittest.TestCase):
                 self.assertEqual(self.project(freshness={'state': state})['fields'], {})
         self.assertEqual(self.project(freshness={'state': 'fresh', 'authority_drift': True})['fields'], {})
         self.assertEqual(self.project(read=False)['fields'], {})
-        authority = {**self.authority, 'registry_hash': 'd' * 64}
+        authority = copy.deepcopy(self.authority)
+        authority['registration_bindings']['a'] = 'd' * 64
         self.assertEqual(self.project(authority=authority)['fields'], {})
         failed = {**self.record, 'success': False, 'disposition': 'invalid'}
         self.assertEqual(self.project(record=failed)['fields'], {})
@@ -133,6 +134,56 @@ class FieldExplanationTests(unittest.TestCase):
                        {'access_profile': 'no_current_goal_access'}):
             with self.subTest(values=values):
                 self.assertEqual(self.project(row={**self.row, **values})['fields'], {})
+
+    def test_unrelated_registry_changes_retain_annotations_and_actual_dto_renders(self):
+        import json, subprocess
+        from pathlib import Path
+        self.fixture.add('unrelated-b')
+        self.fixture.projects[1]['name'] = 'Unrelated renamed project'
+        self.fixture.save_registry()
+        dto = self.service.get_project('a')
+        self.assertNotEqual(dto['provenance']['registry_sha256'], self.record['authority']['registry_hash'])
+        self.assertIn(KEY, dto['field_explanations']['fields'])
+        self.assertEqual(dto['business']['source_record'], self.record)
+        scoped = dto['provenance']['project_binding']
+        self.assertEqual(set(scoped), {'version', 'project_id', 'registration_sha256', 'observed_sha256', 'comparison_basis'})
+        self.assertEqual(scoped['comparison_basis'], 'registration_only')
+        self.assertIsNone(scoped['observed_sha256'])
+        module = (Path(__file__).resolve().parents[1] / 'src/hub/web/connection_view.mjs').as_uri()
+        script = ("import {projectFacts} from " + json.dumps(module) + ";"
+            "let input='';for await(const part of process.stdin)input+=part;"
+            "const p=JSON.parse(input);console.log(JSON.stringify(projectFacts(p).flatMap(g=>g.fields).find(f=>f.key==='current_work.next_action')));")
+        def project(value):
+            result = subprocess.run(['node', '--input-type=module', '-e', script],
+                input=json.dumps(value), text=True, capture_output=True, timeout=10)
+            self.assertEqual(0, result.returncode, result.stderr)
+            return json.loads(result.stdout)
+        self.assertEqual(project(dto)['explanation']['text'], dto['field_explanations']['fields'][KEY]['text'])
+        for name in ('registration', 'schema', 'adapter', 'unknown_version', 'missing_binding', 'permission'):
+            with self.subTest(name=name):
+                changed = copy.deepcopy(dto)
+                if name == 'registration': changed['provenance']['project_binding']['registration_sha256'] = 'e' * 64
+                elif name == 'schema': changed['provenance']['schema_sha256'] = 'e' * 64
+                elif name == 'adapter': changed['provenance']['adapter_version'] = '99'
+                elif name == 'unknown_version': changed['provenance']['project_binding']['version'] = '99'
+                elif name == 'missing_binding': changed['provenance'].pop('project_binding')
+                else: changed['declared']['connection_read_allowed'] = False
+                self.assertIsNone(project(changed)['explanation'])
+
+    def test_selected_shared_unknown_and_legacy_boundaries_reject(self):
+        for name in ('registration', 'schema', 'adapter', 'unknown', 'missing', 'legacy'):
+            with self.subTest(name=name):
+                authority = copy.deepcopy(self.authority)
+                if name == 'registration': authority['registration_bindings']['a'] = 'c' * 64
+                elif name == 'schema': authority['schema_hash'] = 'c' * 64
+                elif name == 'adapter': authority['adapter_version'] = '99'
+                elif name == 'unknown': authority['binding_version'] = '99'
+                elif name == 'missing': authority['registration_bindings'].pop('a'); authority['project_bindings'].pop('a')
+                else: authority = {key: authority[key] for key in ('registry_hash', 'schema_hash', 'adapter_version')}
+                self.assertEqual({}, self.project(authority=authority)['fields'])
+        # Full audit changes alone do not change a selected project's permission.
+        authority = copy.deepcopy(self.authority); authority['registry_hash'] = 'd' * 64
+        self.assertIn(KEY, self.project(authority=authority)['fields'])
 
     def test_new_source_refresh_succeeds_but_old_commentary_is_absent(self):
         state = copy.deepcopy(self.fixture.business)

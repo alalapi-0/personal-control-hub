@@ -238,9 +238,9 @@ class FunctionalFixture:
                 fixture.probes.append(('source-refresh', fixture.directory_roots[project_id]))
                 return super().refresh(project_id)
         class IsolatedProjects(ProjectService):
-            def _resolver(self):
+            def _resolver(self, *, observe_sources=False):
                 fixture.probes.append(('registry', fixture.root / 'data/registry/external_projects.yaml'))
-                return IsolatedResolver(fixture.root)
+                return IsolatedResolver(fixture.root, observe_sources=observe_sources)
         self.projects = IsolatedProjects(self.root)
         connections = self.root / 'data/connections'
         connections.mkdir(parents=True, exist_ok=True)
@@ -257,7 +257,7 @@ class FunctionalFixture:
         validate_management_config(management)
         (connections / 'management_config.yaml').write_text(yaml.safe_dump(management, sort_keys=False))
         self.refresh_ledger = RefreshLedger(self.root, result_validator=validate_result)
-        refresh(self.refresh_ledger, self.projects._resolver(), 'fixture-initial-source', list(self.directory_roots))
+        refresh(self.refresh_ledger, self.projects._resolver(observe_sources=True), 'fixture-initial-source', list(self.directory_roots))
         material = self.root / 'docs/reports/ui_design_governance/functional-fixture'
         material.mkdir(parents=True)
         self.design_store = DesignStore(self.root, material / 'fixture-store.json', fixture=True,
@@ -852,7 +852,7 @@ class FunctionalFixture:
     def sync(self, only_project_id=None):
         if only_project_id is not None and only_project_id not in self.roots:
             raise ValueError('Only synthetic task projects A/B may be selected')
-        resolver = self.projects._resolver()
+        resolver = self.projects._resolver(observe_sources=True)
         ledger = RefreshLedger(self.root, result_validator=validate_result)
         result, code = sync_request(self.root, resolver, ledger, 'fixture-control-' + secrets.token_hex(8),
                                    project_ids=[only_project_id] if only_project_id else None)

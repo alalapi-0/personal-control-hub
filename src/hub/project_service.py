@@ -938,6 +938,13 @@ class ProjectService:
                 "provenance": {"registry_sha256": snapshot["authority"]["registry_hash"],
                                "schema_sha256": snapshot["authority"]["schema_hash"],
                                "adapter_version": snapshot["authority"]["adapter_version"],
+                               "project_binding": ({
+                                   "version": snapshot["authority"]["binding_version"],
+                                   "project_id": row["project_id"],
+                                   "registration_sha256": snapshot["authority"]["registration_bindings"].get(row["project_id"]),
+                                   "observed_sha256": snapshot["authority"]["project_bindings"].get(row["project_id"]),
+                                   "comparison_basis": "registration_only" if not snapshot["authority"]["project_bindings"] else "observed",
+                               } if "binding_version" in snapshot["authority"] else None),
                                "ledger_head": copy.deepcopy(snapshot["ledger_head"]),
                                "latest_result_hash": content_hash(latest) if latest else None,
                                "last_success_result_hash": content_hash(previous) if previous else None,

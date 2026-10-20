@@ -79,6 +79,33 @@ function validSourceSelector(selector) {
     :['label','boolean_label','table_label'].includes(key)&&text(selector[key]);
 }
 
+// A query proves selected-project registration applicability, not a new physical
+// observation. Legacy authority remains exact; mixed/unknown capsules fail closed.
+function annotationAuthorityMatches(project,record) {
+  const object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
+  const hash=v=>typeof v==='string'&&/^[0-9a-f]{64}$/.test(v);
+  const exact=(v,keys)=>object(v)&&Object.keys(v).length===keys.length&&keys.every(k=>Object.hasOwn(v,k));
+  const current=project?.provenance, saved=record?.authority, binding=current?.project_binding;
+  if(typeof project?.project_id!=='string'||! /^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$/.test(project.project_id)
+    ||!object(current)||!object(saved)||record?.project_id!==project?.project_id
+    ||record?.schema_version!=='2.0'||record?.disposition!=='resolved'
+    ||!hash(current.registry_sha256)||!hash(saved.registry_hash)
+    ||!hash(current.schema_sha256)||saved.schema_hash!==current.schema_sha256
+    ||current.adapter_version!=='2.0'||saved.adapter_version!==current.adapter_version)return false;
+  const legacy=['registry_hash','schema_hash','adapter_version'];
+  if(!Object.hasOwn(saved,'binding_version')&&binding==null)
+    return exact(saved,legacy)&&!Object.hasOwn(record,'binding_hash')&&saved.registry_hash===current.registry_sha256;
+  if(!exact(saved,[...legacy,'binding_version','registration_bindings','project_bindings'])
+    ||!exact(binding,['version','project_id','registration_sha256','observed_sha256','comparison_basis'])
+    ||saved.binding_version!=='1.1'||binding.version!=='1.1'||binding.project_id!==project.project_id
+    ||!object(saved.registration_bindings)||!object(saved.project_bindings)
+    ||!hash(binding.registration_sha256)||saved.registration_bindings[project.project_id]!==binding.registration_sha256
+    ||!hash(record.binding_hash)||saved.project_bindings[project.project_id]!==record.binding_hash)return false;
+  if(binding.comparison_basis==='registration_only')return binding.observed_sha256===null;
+  return binding.comparison_basis==='observed'&&hash(binding.observed_sha256)
+    &&binding.observed_sha256===record.binding_hash;
+}
+
 // Registry commentary is optional. A changed source falls back to its original
 // fact without changing collection, business values or acceptance authority.
 function fieldExplanation(project,key,value,proof) {
@@ -95,7 +122,7 @@ function fieldExplanation(project,key,value,proof) {
   const path=p=>typeof p==='string'&&p.length<=16000&&!/[\\:]/.test(p)&&!p.startsWith('/')
     &&p.split('/').every(part=>part&&part!=='.'&&part!=='..'&&part!=='~')
     &&/\.(md|txt|ya?ml|json)$/i.test(p);
-  if(record?.project_id!==project.project_id||record?.authority?.registry_hash!==registry
+  if(!annotationAuthorityMatches(project,record)
     ||!object(binding)||binding.value!==value||binding.source_ref!==proof?.source_ref
     ||typeof binding.source_ref!=='string'||! /^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$/.test(binding.source_ref)
     ||!hash(binding.sha256)||binding.sha256!==proof?.sha256
