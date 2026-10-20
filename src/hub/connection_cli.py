@@ -98,6 +98,52 @@ def _historical_view(root: Path, path: Path, command: str,
     return result
 
 
+def _service_receipt(payload, data_exit, ledger, plan):
+    """Operational success is ledger-derived, never a payload status/exit allowlist."""
+    from .connection_refresh import IncompleteRequestError
+    from .connection_sync import project_recovery
+    from datetime import datetime
+    history = ledger.history()
+    require(history['head'] == payload['head'], 'service verification head changed')
+    for row in history['results'] + history['observation_results']:
+        validate_result(row['result'])
+    requests = {row['request_id']: row for row in history['requests']}
+    ids = [payload['request_id'], *payload.get('recovery_request_ids', [])]
+    verified = []
+    for ident in ids:
+        request = requests.get(ident)
+        if request is None:
+            if ident != payload['request_id']: raise IncompleteRequestError('missing recovery request')
+            continue
+        results = [row for row in history['results'] if row['request_id'] == ident]
+        if (request['status'] != 'FINISHED' or request['remaining_project_ids'] or
+                set(request['project_ids']) != {row['project_id'] for row in results}):
+            raise IncompleteRequestError('service request lacks complete durable results')
+        verified.append(ident)
+    # A legitimate wait is derived from each project's durable failure chain;
+    # no unfinished request or arbitrary DEFERRED payload can pass as no-work.
+    eligible = set(plan['eligible_project_ids'])
+    for request in history['requests']:
+        if request['status'] != 'FINISHED' and eligible.intersection(request['project_ids']):
+            raise IncompleteRequestError('unfinished scoped request requires recovery')
+    if not verified:
+        instant = datetime.fromisoformat(payload['scheduled_at'])
+        require(payload['status'] == 'DEFERRED' and payload['appended_count'] == 0,
+                'unverified service receipt')
+        deferred = payload.get('deferred_projects', {})
+        require(set(deferred) == eligible, 'service no-work scope mismatch')
+        for ident in eligible:
+            state = project_recovery(history, ident, instant)
+            require(state['state'] != 'ready' and deferred[ident] == state,
+                    'service no-work lacks durable recovery evidence')
+    return {'interface': 'pch-refresh-service-v1', 'operational_success': True,
+            'classification': 'completed_degraded' if verified and data_exit else
+                              'completed' if verified else 'no_work',
+            'data_exit_code': data_exit, 'verified_request_ids': verified,
+            'scope_total': plan['scope_total'], 'eligible_total': len(eligible),
+            'verified_head': history['head']}
+
+
 def write_previews(root: Path, directory: str, snapshot: dict) -> dict:
     destination = Path(directory)
     if not destination.is_absolute():
@@ -149,6 +195,10 @@ def main(argv: list[str] | None = None) -> int:
     identity.add_argument("--scheduled", action="store_true", help="One finite snapshot for the latest 12/24-hour due slot")
     identity.add_argument("--incremental", action="store_true", help="One bounded incremental check")
     sync.add_argument("--project-id", action="append", dest="projects")
+    for command in ('service-scheduled-v1', 'service-precheck-v1'):
+        service = commands.add_parser(command, help='Pinned managed-service interface version 1')
+        service.add_argument('--program-id', required=True)
+        service.add_argument('--runtime-manifest', type=Path)
     history = commands.add_parser("history")
     history.add_argument("--request-id")
     commands.add_parser("rebuild")
@@ -166,6 +216,28 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(record_schema(), ensure_ascii=False, indent=2))
             return 0
         root = args.root.absolute()
+        if args.command in {'service-scheduled-v1', 'service-precheck-v1'}:
+            from hub.systemd_refresh import preflight_runtime
+            program = preflight_runtime(args.program_id, args.runtime_manifest)
+            if args.command == 'service-precheck-v1':
+                print(json.dumps({'valid': True, 'preflight': program}, ensure_ascii=False))
+                return 0
+            from hub.connection_sync import scope_plan, scheduled_request
+            resolver = SourceResolver(root)
+            plan = scope_plan(root, resolver)
+            ledger = RefreshLedger(root, _ledger_path(root, args.db), result_validator=validate_result)
+            payload, data_exit = scheduled_request(root, resolver, ledger, plan=plan)
+            receipt = _service_receipt(payload, data_exit, ledger, plan)
+            from hub.project_service import ProjectService
+            quality = ProjectService(root, ledger_path=ledger.path).sync_status()
+            require(quality['head'] == receipt['verified_head'] and
+                    quality['scope_total'] == plan['scope_total'] and
+                    set(quality['eligible_project_ids']) == set(plan['eligible_project_ids']),
+                    'service quality projection changed during verification')
+            payload['service_execution'] = {**receipt, 'program': program,
+                'quality_counts': quality['counts'], 'current_failure_codes': quality['failure_codes']}
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+            return 0
         if args.command == "register":
             from hub.connection_sources import _safe_relative_read
             from hub.registration import register_project

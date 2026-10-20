@@ -21,9 +21,48 @@ def _argument(path: Path) -> str:
     return '"' + value + '"'
 
 
+def preflight_runtime(program_id: str, manifest: Path | None = None) -> dict:
+    """Verify this loaded program against the pinned existing runtime manifest."""
+    import sys
+    from .rr_binding import verify_program
+    from .connection_records import require
+    code_root = Path(__file__).absolute().parents[2]
+    expected = code_root / 'rr-runtime-manifest.json'
+    manifest = expected if manifest is None else Path(manifest)
+    require(bool(re.fullmatch('[0-9a-f]{64}', program_id)), 'invalid pinned program identity')
+    require(manifest.is_absolute() and '..' not in manifest.parts and manifest == expected,
+            'manifest must belong to the executing code root')
+    import json
+    from .rr_cli import _regular
+    from .rr_payload import RRFeedbackError
+    from .connection_records import RecordError
+    captured = {}
+    def checked_reader(path, maximum, *, private=False):
+        raw = _regular(path, maximum, private=private)
+        if path == manifest: captured['manifest'] = raw
+        return raw
+    try:
+        source = verify_program(code_root, program_id, reader=checked_reader)
+    except RRFeedbackError:
+        raise RecordError('runtime manifest verification failed') from None
+    files = json.loads(captured['manifest'])['files']
+    require({'scripts/hub_sync.py', 'src/hub/connection_cli.py', 'src/hub/systemd_refresh.py'} <= set(files),
+            'service entry and precheck must be manifested')
+    for name, module in tuple(sys.modules.items()):
+        if name == 'hub' or name.startswith('hub.'):
+            origin = getattr(module, '__file__', None)
+            require(origin is not None, 'loaded Hub module has no file identity')
+            try: relative = str(Path(origin).absolute().relative_to(code_root))
+            except ValueError:
+                require(False, 'loaded Hub dependency is outside the manifested code root')
+            require(relative in files, 'loaded Hub dependency is not manifested')
+    return {'interface': 'pch-refresh-service-v1', 'program_id': program_id, 'source': source}
+
+
 def render_units(root: Path, code_root: Path, python: Path, *,
                  time: str = "09:00", timezone: str = "Asia/Tokyo", incremental: bool = False,
-                 unit_prefix: str = "personal-control-hub-refresh", interval_hours: int = 12) -> dict[str, str]:
+                 unit_prefix: str = "personal-control-hub-refresh", interval_hours: int = 12,
+                 program_id: str | None = None, runtime_manifest: Path | None = None) -> dict[str, str]:
     if not re.fullmatch(r'[a-z][a-z0-9-]{0,79}',unit_prefix):raise ValueError('Invalid unit prefix.')
     policy = schedule_policy({'interval_hours': interval_hours})
     if time!='09:00' or timezone!='Asia/Tokyo':
@@ -39,7 +78,18 @@ def render_units(root: Path, code_root: Path, python: Path, *,
     # systemd retains quote characters there and rejects the resulting path.
     working_directory = str(root).replace('%', '%%')
     script = _argument(code_root / "scripts/hub_sync.py")
-    mode='--scheduled'
+    mode='sync --scheduled'
+    precheck=''
+    if runtime_manifest is not None and program_id is None:
+        raise ValueError('A manifest requires a pinned program identity.')
+    if program_id is not None:
+        if not re.fullmatch('[0-9a-f]{64}', program_id): raise ValueError('Invalid program identity.')
+        manifest = runtime_manifest if runtime_manifest is not None else code_root / 'rr-runtime-manifest.json'
+        if manifest != code_root / 'rr-runtime-manifest.json':
+            raise ValueError('Manifest must be inside the same frozen program.')
+        binding = '--program-id ' + program_id + ' --runtime-manifest ' + _argument(manifest)
+        precheck = f'ExecStartPre={python_arg} {script} --root {root_arg} service-precheck-v1 {binding}\n'
+        mode = 'service-scheduled-v1 ' + binding
     service = f"""{MARKER}
 [Unit]
 Description=Personal Control Hub finite local source refresh
@@ -47,7 +97,7 @@ Description=Personal Control Hub finite local source refresh
 [Service]
 Type=oneshot
 WorkingDirectory={working_directory}
-ExecStart={python_arg} {script} --root {root_arg} sync {mode}
+{precheck}ExecStart={python_arg} {script} --root {root_arg} {mode}
 UMask=0077
 NoNewPrivileges=true
 Nice=10
@@ -76,6 +126,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", required=True, type=Path)
     parser.add_argument("--code-root", required=True, type=Path)
     parser.add_argument("--python", required=True, type=Path)
+    parser.add_argument("--program-id", help="Opt in to verified service-v1 using this frozen program identity")
+    parser.add_argument("--runtime-manifest", type=Path)
     parser.add_argument("--time", default="09:00")
     parser.add_argument("--timezone", default="Asia/Tokyo")
     parser.add_argument("--incremental",action='store_true',help='Deprecated compatibility option; uses the configured snapshot cadence')
@@ -84,7 +136,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--unit-dir", required=True, type=Path)
     args = parser.parse_args(argv)
     units = render_units(args.root, args.code_root, args.python,
-                         time=args.time, timezone=args.timezone,incremental=args.incremental,unit_prefix=args.unit_prefix,interval_hours=args.interval_hours)
+                         time=args.time, timezone=args.timezone,incremental=args.incremental,unit_prefix=args.unit_prefix,interval_hours=args.interval_hours,program_id=args.program_id,runtime_manifest=args.runtime_manifest)
     # Never overwrite an existing operator-owned or previously installed unit.
     # Changes use an explicit reviewed preimage rather than a broad replace flag.
     args.unit_dir.mkdir(parents=True, exist_ok=True)
