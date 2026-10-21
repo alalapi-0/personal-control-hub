@@ -48,7 +48,11 @@ def verify_program(code_root, program_id, *, reader=None):
         raise denied()
     for name, item in files.items():
         path = Path(name)
-        if path.is_absolute() or '..' in path.parts or not path.parts or path.parts[0] not in {'src','scripts','project.yaml'}:
+        # Match schema names before Path normalization can erase alternate spellings.
+        if (path.is_absolute() or '..' in path.parts or not path.parts
+                or (path.parts[0] not in {'src','scripts','project.yaml'} and name not in {
+                    'schemas/rebuild/task-package.schema.json',
+                    'schemas/rebuild/receipt.schema.json'})):
             raise denied()
         target = code_root / path
         _directories(target.parent)
