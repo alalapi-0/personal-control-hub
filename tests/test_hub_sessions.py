@@ -164,6 +164,45 @@ class SessionHTTPTests(unittest.TestCase):
         self.assertNotIn(ID,str(body));self.assertIsNone(self.server.session_view.cache)
 
 
+    def test_official_owner_only_read_forbids_http_selectors_and_redacts_failure(self):
+        from hub.codex_adapter import OfficialMetadataProfile
+        calls = []
+        class Metadata:
+            transport = 'mock'
+            next_id = 1
+            fail = False
+            def open(adapter):
+                if adapter.fail:
+                    raise ServiceError('CODEX_PROTOCOL_REJECTED', status=503,
+                                       details={'private_path': '/PRIVATE-PROFILE'})
+            def call(adapter, method, params):
+                calls.append((method, params)); adapter.next_id += 1
+                if method == 'thread/read':
+                    return {'thread': {**row(source='exec'), 'cwd': '/synthetic/delivery', 'sessionId': OTHER}}
+                return {'data': [], 'nextCursor': None}
+            def close(adapter): pass
+        adapter = Metadata()
+        profile = OfficialMetadataProfile(ID, HUB_ROOT, Path('/synthetic/delivery'),
+            Path('/synthetic/schemas'), Path('/synthetic/binary'), 'a'*64)
+        self.server.session_view = SessionService(hub_root=HUB_ROOT, official_metadata_profile=profile,
+            adapter_factory=lambda root: adapter, identity=lambda: 'synthetic-generation')
+        self.assertEqual(self.call(path='/api/sessions')[0], 401)
+        self.assertEqual(calls, [])
+        self.login()
+        for query in ('profile=official_metadata_0.163', 'thread_id='+ID, 'root=/synthetic',
+                      'binding=/synthetic/binding', 'sha256='+'a'*64):
+            self.assertEqual(self.call(path='/api/sessions?'+query)[0], 400)
+        self.assertEqual(calls, [])
+        status, _, body = self.call(path='/api/sessions')
+        self.assertEqual(status, 200)
+        self.assertEqual(body['data']['sources'][0]['rows'][0]['session_id'], OTHER)
+        self.assertFalse(body['data']['native_execution_admission'])
+        self.server.session_view.cache = None; adapter.fail = True
+        status, _, body = self.call(path='/api/sessions')
+        self.assertEqual(status, 503)
+        self.assertNotIn('PRIVATE', str(body))
+
+
 class SessionDataRootTests(unittest.TestCase):
     def test_explicit_data_root_keeps_native_cwd_separate_from_code_root(self):
         import tempfile
@@ -580,3 +619,226 @@ class OfficialMetadataTests(unittest.TestCase):
         self.assertFalse(result['native_execution_admission'])
         for value in ('readState', 'PRIVATE', 'writer_absent', 'goal_stopped'):
             self.assertNotIn(value, str(result))
+
+
+class OfficialMetadataBindingTests(unittest.TestCase):
+    def setUp(self):
+        import tempfile,json,hashlib
+        self.temp = tempfile.TemporaryDirectory(prefix='hub-binding-')
+        self.addCleanup(self.temp.cleanup)
+        self.top = Path(self.temp.name)
+        for name in ('canonical', 'delivery', 'schemas'): (self.top/name).mkdir()
+        (self.top/'binary').write_text('synthetic non-executable; never run')
+        self.path = self.top/'binding.json'
+        self.value = {'schema': 'pch-official-metadata-binding/1', 'profile': 'official_metadata_0.163',
+            'expected_thread': ID, 'canonical_root': str(self.top/'canonical'),
+            'delivery_root': str(self.top/'delivery'), 'schema_dir': str(self.top/'schemas'),
+            'binary': str(self.top/'binary'), 'binary_sha256': 'a'*64}
+        self.write()
+
+    def write(self, value=None, raw=None):
+        import json,hashlib
+        self.path.write_bytes(raw if raw is not None else json.dumps(value or self.value).encode())
+        self.path.chmod(0o600)
+        self.pin = hashlib.sha256(self.path.read_bytes()).hexdigest()
+
+    def load(self, **kwargs):
+        from hub.session_service import load_official_metadata_binding
+        return load_official_metadata_binding(kwargs.get('path', str(self.path)),
+            kwargs.get('pin', self.pin), server_root=kwargs.get('root', self.top/'canonical'))
+
+    def test_valid_pinned_profile_construction_has_no_native_or_store_work(self):
+        from hub.codex_adapter import OfficialMetadataAdapter
+        with patch.object(OfficialMetadataAdapter, 'open', side_effect=AssertionError('native spawn')), \
+             patch('hub.session_service.environment_identity', side_effect=AssertionError('legacy fallback')):
+            profile = self.load()
+            service = SessionService(hub_root=self.top/'canonical', official_metadata_profile=profile)
+        self.assertEqual(profile.profile.expected_thread, ID)
+        self.assertEqual(profile.profile.delivery_root, self.top/'delivery')
+        self.assertIs(service.official_metadata_binding, profile)
+        self.assertIsNone(service.cache)
+        self.assertIsNone(service.metadata_read_id)
+        self.assertFalse((self.top/'canonical'/'data').exists())
+
+    def test_bad_pin_alias_mode_link_owner_size_and_drift_are_redacted(self):
+        import os
+        from types import SimpleNamespace
+        from hub.session_service import load_official_metadata_binding
+        def rejected(**kwargs):
+            with self.assertRaises(ServiceError) as error: self.load(**kwargs)
+            self.assertEqual(error.exception.code, 'OFFICIAL_METADATA_BINDING_REJECTED')
+            self.assertNotIn(str(self.top), str(error.exception.as_dict()))
+        rejected(pin='b'*64);rejected(pin=None);rejected(path='relative.json')
+        rejected(path=str(self.top)+'/./binding.json')
+        link=self.top/'symlink';link.symlink_to(self.path);rejected(path=str(link));link.unlink()
+        link=self.top/'hardlink';os.link(self.path,link);rejected();link.unlink()
+        self.path.chmod(0o644);rejected();self.path.chmod(0o600)
+        with patch('hub.session_service.os.getuid', return_value=os.getuid()+1): rejected()
+        self.write(raw=b'x'*16385);rejected();self.write()
+        actual=os.fstat
+        calls=[0]
+        def changed(fd):
+            import stat
+            info=actual(fd)
+            if stat.S_ISREG(info.st_mode):calls[0]+=1
+            if stat.S_ISREG(info.st_mode) and calls[0]==2:
+                return SimpleNamespace(**{key:getattr(info,key)+(1 if key=='st_mtime_ns' else 0)
+                    for key in ('st_dev','st_ino','st_size','st_mode','st_uid','st_gid','st_nlink','st_mtime_ns','st_ctime_ns')})
+            return info
+        with patch('hub.session_service.os.fstat', side_effect=changed): rejected()
+
+    def test_schema_keys_types_duplicate_root_and_target_aliases_reject(self):
+        import json
+        for change in ({'schema': 1}, {'profile': 'legacy'}, {'expected_thread': None},
+                       {'binary_sha256': False}, {'schema_dir': []}, {'extra': True},
+                       {'canonical_root': str(self.top/'delivery')}, {'delivery_root': '/relative/../forged'},
+                       {'binary': str(self.top)+'/./binary'}):
+            with self.subTest(change=change):
+                self.write({**self.value, **change})
+                with self.assertRaises(ServiceError):self.load()
+        self.write(raw=b'{"schema":1,"schema":2}')
+        with self.assertRaises(ServiceError):self.load()
+        self.write(raw=b'[]')
+        with self.assertRaises(ServiceError):self.load()
+        self.write(raw=b'{malformed')
+        with self.assertRaises(ServiceError):self.load()
+        self.write();link=self.top/'alias';link.symlink_to(self.top/'delivery',target_is_directory=True)
+        self.write({**self.value,'delivery_root':str(link)})
+        with self.assertRaises(ServiceError):self.load()
+        self.write();link=self.top/'parent-alias';link.symlink_to(self.top,target_is_directory=True)
+        with self.assertRaises(ServiceError):self.load(path=str(link/'binding.json'))
+
+    def test_post_load_delivery_alias_rejected_before_factory_or_open(self):
+        from unittest.mock import Mock
+        loaded = self.load()
+        factory = Mock(side_effect=AssertionError('factory must not observe invalid inputs'))
+        service = SessionService(hub_root=self.top/'canonical', official_metadata_profile=loaded,
+                                 adapter_factory=factory, identity=lambda: 'synthetic')
+        original=self.top/'delivery';saved=self.top/'saved-delivery';original.rename(saved)
+        original.symlink_to(saved,target_is_directory=True)
+        with self.assertRaises(ServiceError) as error:service.catalog(lambda:'owner')
+        self.assertEqual(error.exception.code,'OFFICIAL_METADATA_BINDING_REJECTED')
+        factory.assert_not_called()
+        self.assertIsNone(service.cache)
+
+    def guarded_service(self, binding=None):
+        from unittest.mock import Mock
+        loaded = binding if binding is not None else self.load()
+        adapter = Mock(); adapter.transport = 'mock'; adapter.next_id = 1
+        def call(method, params):
+            adapter.next_id += 1
+            if method == 'thread/read':
+                return {'thread': {**row(source='exec'), 'cwd': str(loaded.profile.delivery_root), 'sessionId': OTHER}}
+            return {'data': [], 'nextCursor': None}
+        adapter.call.side_effect = call
+        factory = Mock(return_value=adapter)
+        service = SessionService(hub_root=self.top/'canonical', official_metadata_profile=loaded,
+                                 adapter_factory=factory, identity=Mock(return_value='synthetic'))
+        return service, factory, adapter
+
+    def assert_guard_rejects(self, service, factory, adapter):
+        with self.assertRaises(ServiceError) as error: service.catalog(lambda:'owner')
+        self.assertEqual(error.exception.code,'OFFICIAL_METADATA_BINDING_REJECTED')
+        self.assertNotIn(str(self.top),str(error.exception.as_dict()))
+        factory.assert_not_called(); adapter.open.assert_not_called()
+        self.assertIsNone(service.cache)
+
+    def test_bound_target_replacement_or_alias_rejects_before_factory(self):
+        for name in ('delivery', 'schemas', 'binary'):
+            for alias in (False, True):
+                with self.subTest(target=name, alias=alias):
+                    service,factory,adapter=self.guarded_service()
+                    target=self.top/name; saved=self.top/('saved-'+name); target.rename(saved)
+                    if alias: target.symlink_to(saved,target_is_directory=name!='binary')
+                    elif name=='binary':target.write_bytes(saved.read_bytes())
+                    else:target.mkdir()
+                    self.assert_guard_rejects(service,factory,adapter)
+                    service.identity.assert_not_called()
+                    if target.is_symlink() or target.is_file():target.unlink()
+                    else:target.rmdir()
+                    saved.rename(target)
+
+    def test_schema_binary_and_binding_parent_replacements_are_pinned(self):
+        import hashlib
+        for name in ('schema', 'binary', 'binding'):
+            for alias in (False, True):
+                with self.subTest(parent=name,alias=alias):
+                    self.write()  # Each case starts from the original valid projection.
+                    parent=self.top/(name+'-parent-'+str(alias));parent.mkdir()
+                    if name=='binding':
+                        leaf=parent/'binding.json';raw=self.path.read_bytes();leaf.write_bytes(raw);leaf.chmod(0o600)
+                        loaded=self.load(path=str(leaf),pin=hashlib.sha256(raw).hexdigest())
+                    else:
+                        leaf=parent/('schemas' if name=='schema' else 'binary')
+                        if name=='schema':leaf.mkdir()
+                        else:leaf.write_text('synthetic')
+                        self.write({**self.value,'schema_dir' if name=='schema' else 'binary':str(leaf)})
+                        loaded=self.load()
+                    service,factory,adapter=self.guarded_service(loaded)
+                    saved=parent.with_name(parent.name+'-saved');parent.rename(saved)
+                    if alias:parent.symlink_to(saved,target_is_directory=True)
+                    else:
+                        parent.mkdir()
+                        if name=='schema':(parent/leaf.name).mkdir()
+                        else:
+                            (parent/leaf.name).write_bytes((saved/leaf.name).read_bytes())
+                            (parent/leaf.name).chmod(0o600)
+                    self.assert_guard_rejects(service,factory,adapter)
+
+    def test_protected_binding_replacement_drift_mode_and_hardlink_reject(self):
+        import os,hashlib
+        for variant in ('replacement','content','mode','symlink','hardlink'):
+            with self.subTest(variant=variant):
+                target=self.top/('binding-'+variant+'.json');raw=self.path.read_bytes()
+                target.write_bytes(raw);target.chmod(0o600)
+                loaded=self.load(path=str(target),pin=hashlib.sha256(raw).hexdigest())
+                service,factory,adapter=self.guarded_service(loaded)
+                if variant=='content':target.write_bytes(raw+b' ')
+                elif variant=='mode':target.chmod(0o644)
+                else:
+                    saved=target.with_suffix('.saved');target.rename(saved)
+                    if variant=='replacement':target.write_bytes(raw);target.chmod(0o600)
+                    elif variant=='symlink':target.symlink_to(saved)
+                    else:os.link(saved,target)
+                self.assert_guard_rejects(service,factory,adapter)
+
+    def test_cache_cannot_hide_binding_or_delivery_drift(self):
+        for variant in ('binding','delivery'):
+            with self.subTest(variant=variant):
+                service,factory,adapter=self.guarded_service()
+                first=service.catalog(lambda:'owner')
+                self.assertFalse(first['native_execution_admission'])
+                self.assertIsNotNone(service.cache)
+                factory.reset_mock();adapter.open.reset_mock()
+                if variant=='binding':
+                    self.path.write_bytes(self.path.read_bytes()+b' ')
+                else:
+                    delivery=self.top/'delivery';delivery.rename(self.top/'cache-saved-delivery');delivery.mkdir()
+                self.assert_guard_rejects(service,factory,adapter)
+                if variant=='binding':self.write()
+
+    def test_unchanged_guard_tolerates_unrelated_directory_entry_churn(self):
+        from dataclasses import FrozenInstanceError
+        loaded=self.load();service,factory,adapter=self.guarded_service(loaded)
+        for directory in (self.top,self.top/'delivery',self.top/'schemas',self.top/'canonical'):
+            (directory/'unrelated-entry').write_text('synthetic unrelated content')
+            (directory/'unrelated-directory').mkdir()
+        loaded.check()
+        first=service.catalog(lambda:'owner')
+        for directory in (self.top,self.top/'delivery',self.top/'schemas',self.top/'canonical'):
+            (directory/'unrelated-entry').unlink();(directory/'unrelated-directory').rmdir()
+        loaded.check()
+        second=service.catalog(lambda:'owner')
+        self.assertEqual(first['generation'],second['generation'])
+        factory.assert_called_once();adapter.open.assert_called_once()
+        with self.assertRaises(FrozenInstanceError):loaded.components=()
+
+    def test_drift_inside_factory_is_rechecked_before_adapter_open(self):
+        service,factory,adapter=self.guarded_service()
+        def factory_changes_input(root):
+            target=self.top/'delivery';target.rename(self.top/'factory-saved');target.symlink_to(self.top/'factory-saved')
+            return adapter
+        factory.side_effect=factory_changes_input
+        with self.assertRaises(ServiceError):service.catalog(lambda:'owner')
+        factory.assert_called_once();adapter.open.assert_not_called()
+        self.assertIsNone(service.cache)

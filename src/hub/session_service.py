@@ -2,7 +2,10 @@
 from __future__ import annotations
 
 import copy
+from dataclasses import dataclass
 import hashlib
+import json
+import stat
 import os
 from pathlib import Path
 import re
@@ -22,6 +25,111 @@ HUB_ROOT = Path(__file__).resolve().parents[2]
 SOURCES = ('cli', 'appServer', 'vscode')
 THREAD_ID = re.compile(r'^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$')
 TTL = 10
+
+
+@dataclass(frozen=True)
+class OfficialMetadataBinding:
+    """Immutable local input guard, not execution or OS-enforcement authority."""
+    profile: OfficialMetadataProfile
+    path: Path
+    sha256: str
+    components: tuple
+
+    def check(self):
+        current = load_official_metadata_binding(self.path, self.sha256,
+                                                server_root=self.profile.canonical_root)
+        if current != self:
+            raise ServiceError('OFFICIAL_METADATA_BINDING_REJECTED', status=503)
+
+
+def load_official_metadata_binding(path, sha256, *, server_root):
+    """Read a pinned server-only projection; it never grants execution authority."""
+    descriptors = []
+    components = {}
+    def remember(path, info):
+        identity = (info.st_dev, info.st_ino, stat.S_IFMT(info.st_mode),
+                    stat.S_IMODE(info.st_mode), info.st_uid, info.st_gid)
+        # Directory entries legitimately churn. Pin identity/type/security, not
+        # directory times, sizes or link counts. Files retain full change checks.
+        if not stat.S_ISDIR(info.st_mode):
+            identity += (info.st_nlink, info.st_size, info.st_mtime_ns, info.st_ctime_ns)
+        key = str(path)
+        if key in components and components[key] != identity:
+            raise ValueError('component changed')
+        components[key] = identity
+    def absolute(value):
+        if (type(value) is not str or not Path(value).is_absolute()
+                or str(Path(value)) != value or '..' in Path(value).parts):
+            raise ValueError('path')
+        return Path(value)
+    def parent(path):
+        descriptors.append(os.open('/', os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW))
+        current = Path('/')
+        remember(current, os.fstat(descriptors[-1]))
+        for part in path.parts[1:-1]:
+            descriptors.append(os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
+                                       dir_fd=descriptors[-1]))
+            current = current / part
+            remember(current, os.fstat(descriptors[-1]))
+        return descriptors[-1]
+    def fingerprint(info):
+        return (info.st_dev, info.st_ino, info.st_size, info.st_mode, info.st_uid,
+                info.st_gid, info.st_nlink, info.st_mtime_ns, info.st_ctime_ns)
+    def pairs(values):
+        result = {}
+        for key, value in values:
+            if key in result:
+                raise ValueError('duplicate')
+            result[key] = value
+        return result
+    try:
+        path = absolute(str(path) if isinstance(path, Path) else path)
+        root = absolute(str(server_root) if isinstance(server_root, Path) else server_root)
+        if type(sha256) is not str or not re.fullmatch('[0-9a-f]{64}', sha256):
+            raise ValueError('pin')
+        directory = parent(path)
+        fd = os.open(path.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=directory)
+        with os.fdopen(fd, 'rb') as stream:
+            before = os.fstat(stream.fileno())
+            if (not stat.S_ISREG(before.st_mode) or before.st_uid != os.getuid()
+                    or stat.S_IMODE(before.st_mode) != 0o600 or before.st_nlink != 1
+                    or not 0 < before.st_size <= 16384):
+                raise ValueError('file')
+            raw = stream.read(16385)
+            after = os.fstat(stream.fileno())
+            current = os.stat(path.name, dir_fd=directory, follow_symlinks=False)
+            if (len(raw) != before.st_size or fingerprint(before) != fingerprint(after)
+                    or fingerprint(after) != fingerprint(current)
+                    or hashlib.sha256(raw).hexdigest() != sha256):
+                raise ValueError('changed')
+            remember(path, after)
+        binding = json.loads(raw, object_pairs_hook=pairs,
+                             parse_constant=lambda value: (_ for _ in ()).throw(ValueError('constant')))
+        keys = {'schema', 'profile', 'expected_thread', 'canonical_root', 'delivery_root',
+                'schema_dir', 'binary', 'binary_sha256'}
+        if (type(binding) is not dict or set(binding) != keys
+                or binding['schema'] != 'pch-official-metadata-binding/1'
+                or binding['profile'] != 'official_metadata_0.163'):
+            raise ValueError('binding')
+        paths = {key: absolute(binding[key]) for key in ('canonical_root', 'delivery_root', 'schema_dir', 'binary')}
+        if paths['canonical_root'] != root:
+            raise ValueError('root')
+        # Check every component without resolving aliases or reading binary/schema content.
+        for key, target in paths.items():
+            directory = parent(target)
+            info = os.stat(target.name, dir_fd=directory, follow_symlinks=False)
+            if not (stat.S_ISREG(info.st_mode) if key == 'binary' else stat.S_ISDIR(info.st_mode)):
+                raise ValueError('alias or type')
+            remember(target, info)
+        profile = OfficialMetadataProfile(binding['expected_thread'], paths['canonical_root'],
+                                          paths['delivery_root'], paths['schema_dir'], paths['binary'],
+                                          binding['binary_sha256'])
+        return OfficialMetadataBinding(profile, path, sha256, tuple(sorted(components.items())))
+    except (OSError, ValueError, TypeError, ServiceError, RecursionError):
+        raise ServiceError('OFFICIAL_METADATA_BINDING_REJECTED', status=503) from None
+    finally:
+        for descriptor in reversed(descriptors):
+            os.close(descriptor)
 
 
 def environment_identity(root=HUB_ROOT):
@@ -46,6 +154,12 @@ class SessionService:
                 or '..' in Path(hub_root).parts):
             raise ServiceError('SESSION_ROOT_REJECTED')
         self.hub_root = Path(hub_root)
+        # The existing server-only injection accepts a loaded guarded binding;
+        # adapters still receive the unchanged frozen protocol profile.
+        self.official_metadata_binding = (official_metadata_profile
+            if type(official_metadata_profile) is OfficialMetadataBinding else None)
+        if self.official_metadata_binding is not None:
+            official_metadata_profile = self.official_metadata_binding.profile
         self.official_metadata_profile = official_metadata_profile
         if official_metadata_profile is not None:
             if (type(official_metadata_profile) is not OfficialMetadataProfile
@@ -78,6 +192,10 @@ class SessionService:
             self.cache = None
             raise
 
+    def _check_metadata_binding(self):
+        if self.official_metadata_binding is not None:
+            self.official_metadata_binding.check()
+
     def _view(self):
         data = copy.deepcopy(self.cache['data'])
         data['age_seconds'] = max(0, self.clock()-self.cache['created'])
@@ -109,12 +227,14 @@ class SessionService:
             raise ServiceError('SESSION_DISCOVERY_BUSY', status=503, retryable=True)
         try:
             self._authorize(authorize, owner)
+            self._check_metadata_binding()
             environment = self.identity()
             now = self.clock()
             if self.cache and (self.cache['owner'], self.cache['environment']) == (owner, environment):
                 age = now-self.cache['created']
                 if 0 <= age < TTL:
                     self._authorize(authorize, owner)
+                    self._check_metadata_binding()
                     return self._view()
             self.cache = None
             if self.official_metadata_profile is not None:
@@ -196,9 +316,11 @@ class SessionService:
 
     def _official_catalog(self, authorize, owner, environment):
         profile = self.official_metadata_profile
+        self._check_metadata_binding()
         adapter = self.adapter_factory(profile.delivery_root)
         turns, seen, cursor, complete = [], set(), None, False
         try:
+            self._check_metadata_binding()
             adapter.open()
             self._authorize(authorize, owner)
             result = adapter.call('thread/read', {'threadId': profile.expected_thread, 'includeTurns': False})
@@ -245,6 +367,7 @@ class SessionService:
             return self._view()
         finally:
             adapter.close()
+            self._check_metadata_binding()
             self._authorize(authorize, owner)
             if self.identity() != environment:
                 raise ServiceError('SESSION_GENERATION_CHANGED', status=409)

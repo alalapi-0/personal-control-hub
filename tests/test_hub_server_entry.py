@@ -202,3 +202,60 @@ class ServerEntryTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(calls, [('construct', self.data), ('stop',)])
         self.assertEqual({str(p.relative_to(self.data)): p.read_bytes() for p in self.data.rglob('*') if p.is_file()}, before)
+
+    def test_official_binding_pair_and_invalid_explicit_binding_never_fall_back(self):
+        from hub.service_contract import ServiceError
+        for args in (['--official-metadata-binding','/synthetic/binding'],
+                     ['--official-metadata-binding-sha256','a'*64]):
+            with self.subTest(args=args), contextlib.redirect_stderr(io.StringIO()), \
+                 patch.object(self.entry,'assemble_server') as assemble, self.assertRaises(SystemExit):
+                self.entry.main(args)
+            assemble.assert_not_called()
+        with patch.object(self.entry,'load_official_metadata_binding',
+                          side_effect=ServiceError('OFFICIAL_METADATA_BINDING_REJECTED')), \
+             patch.object(self.entry,'assemble_server') as assemble:
+            code, state=self.run_entry(['--root',str(self.data),'--official-metadata-binding','/synthetic/binding',
+                                       '--official-metadata-binding-sha256','a'*64])
+        self.assertEqual(code,1);assemble.assert_not_called();self.assertEqual(state,{})
+
+    def test_official_binding_uses_existing_injection_without_native_or_db_start(self):
+        import json,hashlib
+        from hub.codex_adapter import OfficialMetadataAdapter
+        for name in ('delivery','schemas'): (Path(self.temp.name)/name).mkdir()
+        binary=Path(self.temp.name)/'binary';binary.write_text('synthetic only')
+        binding=Path(self.temp.name)/'binding.json'
+        binding.write_text(json.dumps({'schema':'pch-official-metadata-binding/1','profile':'official_metadata_0.163',
+            'expected_thread':'00000000-0000-7000-8000-000000000001','canonical_root':str(self.data),
+            'delivery_root':str(Path(self.temp.name)/'delivery'),'schema_dir':str(Path(self.temp.name)/'schemas'),
+            'binary':str(binary),'binary_sha256':'a'*64}));binding.chmod(0o600)
+        pin=hashlib.sha256(binding.read_bytes()).hexdigest()
+        with patch.object(OfficialMetadataAdapter,'open',side_effect=AssertionError('native start')):
+            code,state=self.run_entry(['--root',str(self.data),'--official-metadata-binding',str(binding),
+                                      '--official-metadata-binding-sha256',pin])
+        self.assertEqual(code,0)
+        self.assertEqual(state['session_view'].official_metadata_profile.delivery_root,Path(self.temp.name)/'delivery')
+        self.assertEqual(state['session_view'].hub_root,self.data)
+        self.assertFalse(list(self.data.iterdir()))
+        self.assertFalse(state['tasks'].ordinary_enabled)
+        service=state['session_view']
+        self.assertIsNotNone(service.official_metadata_binding)
+        self.assertIs(service.official_metadata_binding.profile,service.official_metadata_profile)
+        delivery=Path(self.temp.name)/'delivery';delivery.rename(Path(self.temp.name)/'old-delivery')
+        delivery.symlink_to(Path(self.temp.name)/'old-delivery',target_is_directory=True)
+        from hub.service_contract import ServiceError
+        with patch.object(service,'adapter_factory') as factory:
+            with self.assertRaises(ServiceError) as error:service.catalog(lambda:'synthetic-owner')
+            self.assertEqual(error.exception.code,'OFFICIAL_METADATA_BINDING_REJECTED')
+        factory.assert_not_called();self.assertIsNone(service.cache)
+
+    def test_real_bad_binding_pin_is_redacted_before_server_assembly(self):
+        path=Path(self.temp.name)/'private-binding.json';path.write_text('{}');path.chmod(0o600)
+        output=io.StringIO()
+        with patch.object(self.entry,'assemble_server') as assemble, \
+             contextlib.redirect_stderr(output),contextlib.redirect_stdout(io.StringIO()):
+            code=self.entry.main(['--root',str(self.data),'--official-metadata-binding',str(path),
+                                  '--official-metadata-binding-sha256','a'*64])
+        self.assertEqual(code,1);assemble.assert_not_called()
+        self.assertNotIn(str(path),output.getvalue())
+        self.assertIn('could not start',output.getvalue())
+        self.assertFalse(list(self.data.iterdir()))

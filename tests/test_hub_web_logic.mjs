@@ -5,7 +5,7 @@ const { __test } = await import("../src/hub/web/designs.js");
 const { api, validRefreshCommand, connectionState, ownerLogin, ownerLogout } = await import("../src/hub/web/common.js");
 const { metricText, metricState, watchHost } = await import('../src/hub/web/host.js');
 const {materialUrl,reviewLink}=await import('../src/hub/web/materials.js');
-const {sessionState,sourceState}=await import('../src/hub/web/sessions.js');
+const {sessionState,sourceState,sourceLabels,nativeSessionId,sessionObservation}=await import('../src/hub/web/sessions.js');
 const { normalizedPoint, rectangle, sameBinding, validPending } = await import('../src/hub/web/workbench.js');
 const {messageGate,validDescriptor}=await import('../src/hub/web/preview_bridge.js');
 const {validLivePreview}=await import('../src/hub/web/live_preview.js');
@@ -275,4 +275,26 @@ test('host view schedules only while visible online and attached, with bounded s
   assert.equal(applied,1);assert.equal(timers.size,1);
   current=false;await watcher.wake();assert.equal(reads,2);assert.equal(timers.size,0);
   watcher.stop();visible=true;current=true;await watcher.wake();assert.equal(reads,2);
+});
+
+
+test('official registered thread metadata preserves independent identity and bounded pagination wording',()=>{
+  assert.equal(sourceLabels.exec,'codex exec 来源');
+  assert.equal(nativeSessionId({id:'thread-a',session_id:'session-b'}),'session-b');
+  for(const session_id of [null,undefined,'','  ',false]){
+    const text=nativeSessionId({id:'thread-a',session_id});
+    assert.match(text,/未提供独立会话 ID/);assert.ok(!text.includes('thread-a'));
+  }
+  const data={profile:'official_metadata_0.163',classification:'native_metadata',
+    sources:[{source:'exec',rows:[{id:'thread-a'}]}],metadata_read:{pages_complete:false}};
+  const partial=sessionObservation(data);
+  assert.match(partial.caption,/已登记线程/);assert.ok(!partial.caption.includes('三项'));
+  assert.match(partial.pagination,/尚未确认完整/);
+  assert.match(sessionObservation({...data,metadata_read:{}}).pagination,/尚未确认完整/);
+  const complete=sessionObservation({...data,metadata_read:{pages_complete:true}});
+  assert.match(complete.pagination,/本次轮次分页已到末页/);
+  assert.match(complete.pagination,/不表示已发现全部会话/);
+  assert.match(sessionObservation({...data,classification:'mock'}).caption,/隔离样本/);
+  assert.match(sessionObservation({classification:'native_metadata'}).caption,/每类最多三项/);
+  assert.equal(sessionState({state:'idle_unverified',continue_enabled:true}),'报告空闲 · 继续权限待核对');
 });

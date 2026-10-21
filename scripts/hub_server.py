@@ -23,7 +23,7 @@ from hub.task_service import TaskService
 from hub.service_contract import ServiceError
 from hub.rr_payload import RRFeedbackError
 from hub.material_service import MaterialService
-from hub.session_service import SessionService
+from hub.session_service import SessionService, load_official_metadata_binding
 from hub.readonly_preview import ReadOnlyPreview, MANIFEST
 from hub.owner_auth import OwnerAuth, SystemdCredentialProvider
 
@@ -127,6 +127,8 @@ def main(argv=None):
                         help='Explicit protected RR installation binding; same-process Browser socket, no independent store')
     parser.add_argument('--rr-key-fd', type=int,
                         help='Inherited anonymous sealed credential FD number, never a key value')
+    parser.add_argument('--official-metadata-binding', help='Explicit protected local metadata binding; no execution grant')
+    parser.add_argument('--official-metadata-binding-sha256', help='Exact SHA256 of the protected metadata binding')
     parser.add_argument("--readonly-preview", choices=["computer-study-plan"],
                         help="Start the explicitly granted read-only development fixture")
     ordinary = parser.add_mutually_exclusive_group()
@@ -139,12 +141,17 @@ def main(argv=None):
         parser.error('RR credential FD requires the explicit binding')
     if args.ordinary_real_readonly_grant and args.readonly_preview:
         parser.error('Real ordinary execution cannot start a preview runtime')
+    if (args.official_metadata_binding is None) != (args.official_metadata_binding_sha256 is None):
+        parser.error('Official metadata binding requires both path and SHA256')
     server = None
     rr_key_fd = args.rr_key_fd
     rr_sigterm = None
     observer = None
     preview = None
     try:
+        metadata_binding = (load_official_metadata_binding(args.official_metadata_binding,
+            args.official_metadata_binding_sha256, server_root=args.root)
+            if args.official_metadata_binding is not None else None)
         if args.rr_binding is not None:
             rr_sigterm = signal.getsignal(signal.SIGTERM)
             def stop_rr_process(signum, frame):
@@ -152,6 +159,9 @@ def main(argv=None):
             signal.signal(signal.SIGTERM, stop_rr_process)
         services = ({'owner_auth': OwnerAuth(provider=SystemdCredentialProvider())}
                     if args.owner_auth == 'systemd-credential' else None)
+        if metadata_binding is not None:
+            services = dict(services or {})
+            services['session_view'] = SessionService(hub_root=args.root, official_metadata_profile=metadata_binding)
         server, observer, preview = assemble_server(args.root, host=args.host, port=args.port,
                                                     services=services)
         if args.rr_binding is not None:

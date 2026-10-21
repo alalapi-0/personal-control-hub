@@ -1,6 +1,6 @@
 import {el,button,api} from './common.js';
 
-export const sourceLabels={cli:'CLI 来源',appServer:'App Server 来源',vscode:'IDE / 桌面来源'};
+export const sourceLabels={cli:'CLI 来源',appServer:'App Server 来源',vscode:'IDE / 桌面来源',exec:'codex exec 来源'};
 export function sessionState(row){
   return ({busy:'正在执行 · 未取得运行控制权',idle_unverified:'报告空闲 · 继续权限待核对',
     notLoaded:'未加载 · 不能据此判断空闲',error:'会话状态异常',unknown:'运行状态未知'})[row?.state]||'运行状态未知';
@@ -8,6 +8,19 @@ export function sessionState(row){
 export function sourceState(group){
   return ({supported_empty:'本次筛选无匹配会话',readonly:'可读取元数据',error:'此次读取失败',
     unsupported:'当前接口不支持',unprobed:'尚未探测',stale:'记录已过期'})[group?.state]||'来源能力未知';
+}
+
+export function nativeSessionId(row){
+  return typeof row?.session_id==='string'&&row.session_id.trim().length>0?row.session_id:'暂不可用 · 未提供独立会话 ID';
+}
+export function sessionObservation(data){
+  const official=data?.profile==='official_metadata_0.163';
+  const prefix=data?.classification==='native_metadata'?'Linux 后端实际读取':'隔离样本 · 不代表真实会话可用';
+  return {official,caption:official?prefix+' · 仅核对已登记线程，不是会话目录发现':
+    data?.classification==='native_metadata'?prefix+' · 每类最多三项':prefix,
+    pagination:official?(data?.metadata_read?.pages_complete===true?
+      '本次轮次分页已到末页；不表示已发现全部会话。':'轮次分页尚未确认完整；仍有未读取或未知的记录。'):
+      '本次仅读取最多三项；翻页结果未读取，不能用于绑定。'};
 }
 
 export async function renderSessions(target,{isCurrent=()=>true}={}){
@@ -35,17 +48,19 @@ export async function renderSessions(target,{isCurrent=()=>true}={}){
       const data=await api('/api/sessions');
       if(!isCurrent()||!live)return;
       hadRows=true;
+      const observation=sessionObservation(data);
       content.replaceChildren(el('h2',{},data.project),
-        el('p',{className:'caption'},data.classification==='native_metadata'?'Linux 后端实际读取 · 每类最多三项':'隔离样本 · 不代表真实会话可用'),
+        el('p',{className:'caption'},observation.caption),
         el('p',{className:'warning'},'所有继续操作保持关闭；“未加载”和“报告空闲”都不足以确认可安全继续。'));
       for(const group of data.sources||[]){
         const panel=el('section',{className:'panel stack'},el('h3',{},sourceLabels[group.source]||'来源待核对'),
           el('p',{},sourceState(group)));
-        if(group.has_cursor)panel.append(el('p',{className:'caption'},'本次仅读取最多三项；翻页结果未读取，不能用于绑定。'));
+        if(group.has_cursor||observation.official)panel.append(el('p',{className:'caption'},observation.pagination));
         if(group.state==='error')panel.append(el('p',{className:'caption'},'保留读取失败；可重新核对，尚未发送任务。'));
         for(const row of group.rows||[]){
           panel.append(el('article',{className:'panel stack'},el('h4',{},'既有会话'),el('p',{},sessionState(row)),
-            el('p',{className:'caption'},'准确会话 ID'),el('code',{},row.id),
+            el('p',{className:'caption'},'线程 ID（Thread）'),el('code',{},row.id),
+            el('p',{className:'caption'},'原生会话 ID（Session）'),el('code',{},nativeSessionId(row)),
             el('button',{type:'button',disabled:true},'继续会话 · 尚未授权')));
         }
         content.append(panel);
