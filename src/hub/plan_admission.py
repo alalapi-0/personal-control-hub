@@ -91,6 +91,10 @@ def plan_history(value):
  Legacy raw plans are read unchanged. Revision envelopes retain every original
  canonical plan/hash and CAS request. Old readers reject this explicit format.
  """
+ from .dispatch_budget import split,validate as validate_budget
+ inner,budget=split(value)
+ if budget is not None:
+  result=plan_history(inner);validate_budget(budget,result[0]['plan_id']);return result
  if type(value)is not dict or value.get('schema_version')!='plan-revisions/1':
   p=validate_plan(value);return p,{digest(p):p},[]
  if set(value)!={'schema_version','plan_id','current_sha256','versions','requests'}:reject('PLAN_HISTORY_CORRUPT')

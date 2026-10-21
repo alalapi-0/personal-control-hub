@@ -651,6 +651,7 @@ class TaskStore:
             task=self._task(row);rows=self._rebuild_rows(connection,task['id']);prior={r['key']:r['data'] for r in rows}
             if prior.get('rebuild-package')!=package:reject('REBUILD_PACKAGE_CONFLICT')
             key='rebuild-attempt-'+attempt['attempt_id']
+            self._dispatch_attempt_budget(connection,package,attempt,authority,replayed=prior.get(key)==attempt)
             if key in prior:
                 if prior[key]!=attempt:reject('REBUILD_ATTEMPT_CONFLICT')
                 replayed=True
@@ -668,6 +669,88 @@ class TaskStore:
             self._rebuild_check(connection,package,authority)
             self._rebuild_dependencies(connection,package,authority)
         return {'replayed':replayed,'attempt_sha256':digest(attempt),'execution_started_by_this_call':False}
+
+    def _dispatch_attempt_budget(self,db,package,attempt,root_authority,*,replayed):
+        from .dispatch_budget import split,authority,reject,executor_binding_matches
+        if not self._plan_schema(db):
+            if root_authority._budget is not None:reject('DISPATCH_POLICY_REQUIRED')
+            return # Pre-policy legacy behavior, not PCH runtime adoption.
+        raw=db.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(package['lineage']['goal_id'],)).fetchone()
+        if raw is None:
+            if root_authority._budget is not None:reject('DISPATCH_POLICY_REQUIRED')
+            return
+        _,budget=split(self._decode(*raw))
+        if budget is None:
+            if root_authority._budget is not None:reject('DISPATCH_POLICY_REQUIRED')
+            return
+        cap=authority(root_authority._budget);plan=self._plan_input(db,package['lineage']['goal_id'],cap._plan)
+        from .dispatch_budget import validate
+        validate(budget,plan['plan_id'])
+        ident=root_authority.snapshot().get('dispatch_id');rows=[r for r in budget['reservations']if r['request']['dispatch_id']==ident]
+        if len(rows)!=1:reject('DISPATCH_RESERVATION_REQUIRED')
+        row=rows[0];r=row['request'];link={'dispatch_id':ident,'task_id':package['task_id'],'attempt_id':attempt['attempt_id'],'package_sha256':digest(package),'executor_sha256':digest(attempt['executor'])}
+        cap.check(plan,budget['policy'],'attempt',link)
+        if (r['task_id']!=package['task_id']or r['attempt_id']!=attempt['attempt_id']or r['package_sha256']!=digest(package)
+                or not executor_binding_matches(r['executor'],attempt['executor'])or r['effect']!=package['effects']['mode']
+                or r['seconds']<attempt['budget_reservation']['seconds']or attempt['started_at']+attempt['budget_reservation']['seconds']>r['deadline']
+                or not replayed and row['closures']):reject('DISPATCH_RESERVATION_MISMATCH')
+
+    def _dispatch_budget_operation(self,plan_id,operation,body,cap):
+        from .dispatch_budget import authority,policy,request,closure,split,wrap,validate,status,reject
+        cap=authority(cap);observed=[];context={}
+        def guard():
+            cap._authorize()
+            if context:
+                controls=cap.check(context['plan'],context['policy'],operation,body)
+                if observed and controls!=observed[0]:reject('DISPATCH_CONTROL_CHANGED')
+        with self._connection(True,guard=guard)as db:
+            plan=self._plan_input(db,plan_id,cap._plan)
+            raw=db.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(plan_id,)).fetchone();history,budget=split(self._decode(*raw))
+            p=policy(body)if operation=='baseline'else budget['policy']if budget else None
+            if p is None:reject('DISPATCH_POLICY_REQUIRED')
+            context.update(plan=plan,policy=p);observed.append(cap.check(plan,p,operation,body));replayed=False
+            if operation=='baseline':
+                if p['lineage_id']!=plan_id:reject('DISPATCH_LINEAGE_MISMATCH')
+                if budget is not None:
+                    if budget['policy']!=p:reject('DISPATCH_BASELINE_CONFLICT')
+                    replayed=True
+                else:budget={'schema_version':'dispatch-budget/1','policy':p,'reservations':[]}
+            elif operation=='reserve':
+                r=request(body);old=next((x for x in budget['reservations']if x['request']['dispatch_id']==r['dispatch_id']),None)
+                if old:
+                    if old['request']!=r:reject('DISPATCH_REQUEST_CONFLICT')
+                    replayed=True
+                else:
+                    if r['dispatch_id']in p['covered_dispatch_ids']:reject('DISPATCH_ALREADY_COVERED')
+                    now=time.time()
+                    if not now+r['seconds']<=r['deadline']<=now+900:reject('DISPATCH_DEADLINE')
+                    if len(budget['reservations'])>=480:reject('DISPATCH_CAPACITY')
+                    budget['reservations'].append({'request':r,'sha256':digest(r),'reserved_at':now,'closures':[]})
+            elif operation=='close':
+                proof=closure(body);row=next((x for x in budget['reservations']if x['request']['dispatch_id']==proof['dispatch_id']),None)
+                if row is None or row['sha256']!=proof['reservation_sha256']:reject('DISPATCH_CLOSURE_MISMATCH')
+                old=next((c for x in budget['reservations']for c in x['closures']if c['closure_id']==proof['closure_id']),None)
+                if old:
+                    if old!=proof:reject('DISPATCH_CLOSURE_CONFLICT')
+                    replayed=True
+                else:row['closures'].append(proof)
+            elif operation!='status':reject()
+            validate(budget,plan_id);guard()
+            if operation!='status'and not replayed:
+                value=wrap(history,budget)
+                db.execute('UPDATE plan_inputs SET body=?,hash=? WHERE id=?',(canonical(value).decode(),digest(value),plan_id))
+                self.fault('before_dispatch_budget_commit');guard()
+            result=status(budget)
+        return {'replayed':replayed,**result,'invoked':False}
+
+    def initialize_dispatch_budget(self,plan_id,baseline,*,authority):
+        return self._dispatch_budget_operation(plan_id,'baseline',baseline,authority)
+    def reserve_dispatch(self,plan_id,request,*,authority):
+        return self._dispatch_budget_operation(plan_id,'reserve',request,authority)
+    def close_dispatch_resources(self,plan_id,proof,*,authority):
+        return self._dispatch_budget_operation(plan_id,'close',proof,authority)
+    def dispatch_budget_status(self,plan_id,*,authority):
+        return self._dispatch_budget_operation(plan_id,'status',{},authority)
 
     def _rebuild_bootstrap_dependency(self,connection,package,dep,authority):
         """Absent contract rows only; use current, verified plan witnesses in-place.
@@ -1905,6 +1988,9 @@ class TaskStore:
             if not rollback:versions[digest(target)]=target
             requests.append(command)
             body={'schema_version':'plan-revisions/1','plan_id':target['plan_id'],'current_sha256':digest(target),'versions':[{'sha256':h,'plan':p}for h,p in versions.items()],'requests':requests}
+            from .dispatch_budget import split as split_budget,wrap as wrap_budget
+            _,retained_budget=split_budget(self._decode(*row))
+            body=wrap_budget(body,retained_budget)
             plan_history(body)
             db.execute('UPDATE plan_inputs SET body=?,hash=? WHERE id=?',(canonical(body).decode(),digest(body),target['plan_id']))
             def guard():
