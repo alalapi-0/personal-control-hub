@@ -236,3 +236,38 @@ class PlanRRCompatibilityTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+class RevisionRRRestoreTests(unittest.TestCase):
+    def test_revision_history_with_original_contract_archive_rr_and_drafts_restores(self):
+        from test_hub_plan_admission import ContractPlanIntegrationTests
+        from hub.plan_admission import plan_history
+        f=ContractPlanIntegrationTests();f.setUp();self.addCleanup(f.doCleanups)
+        f.settled();old=copy.deepcopy(f.p);old_events=f.store.events(BASE)
+        f.store.archive_plan_completed(f.p['plan_id'],authority=f.cap)
+        target=copy.deepcopy(old);target['revision']='2';f.p=target;f.configure()
+        binding=f.cap.snapshot();binding['reconcile_from_sha256']=digest(old)
+        cap=PlanAuthority.configured(binding,authorize=lambda:None,controls=lambda:{'state':'active','revision':1},routes=lambda _:False,package_for=lambda _:None)
+        f.store.reconcile_plan(target,expected_sha256=digest(old),request_id='revision-archive',authority=cap)
+        self.assertIn(BASE,f.store.plan_ready(old['plan_id'],authority=cap)['accepted'])
+        # A new revision cannot relabel the old package/receipt as a new PASS.
+        forged=copy.deepcopy(f.records[BASE]);forged['plan_sha256']=digest(target)
+        bad_binding=copy.deepcopy(binding);bad_binding['verified_evidence'][BASE]=digest(forged)
+        bad_cap=PlanAuthority.configured(bad_binding,authorize=lambda:None,controls=lambda:{'state':'active','revision':1},routes=lambda _:False,package_for=lambda _:None)
+        from hub.service_contract import ServiceError
+        before=f.store.path.read_bytes()
+        with self.assertRaises(ServiceError):f.store.record_plan_evidence(old['plan_id'],forged,authority=bad_cap)
+        self.assertEqual(f.store.path.read_bytes(),before)
+        helper=PlanRRCompatibilityTests();helper.store=f.store
+        helper.save_draft();rr=RRFeedbackStore(f.store);ident,_,_=helper.rr_journey(rr)
+        content=_snapshot(f.store,f.store.path.read_bytes())[1]
+        with f.store._connection()as db:
+            history=f.store._decode(*db.execute('SELECT body,hash FROM plan_inputs').fetchone())
+        self.assertEqual(len(plan_history(history)[1]),2)
+        target_root=f.store.root.parent/'revision-restored';target_root.mkdir(mode=0o700)
+        copied=TaskStore(target_root);copied.path.parent.mkdir(parents=True,mode=0o700)
+        shutil.copy2(f.store.path,copied.path);shutil.copy2(f.store.registration_path,copied.registration_path)
+        result=copied.restore_storage(database_sha256=feedback.sha(copied.path.read_bytes()),registration_sha256=feedback.sha(copied.registration_path.read_bytes()),confirm_offline=True)
+        self.assertEqual(result['business_sha256'],digest(content));self.assertEqual(_snapshot(copied,copied.path.read_bytes())[1],content)
+        self.assertEqual(copied.events(BASE),old_events)
+        self.assertEqual(RRFeedbackStore(copied).get('device-1',ident)['state'],'processed')
+        self.assertIn(BASE,copied.plan_ready(old['plan_id'],authority=cap)['accepted'])

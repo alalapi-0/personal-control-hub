@@ -1,6 +1,6 @@
 """Synthetic plan inputs never confer execution authority."""
 from pathlib import Path
-import sys,tempfile,unittest,copy
+import sys,tempfile,unittest,copy,json
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 from hub.service_contract import ServiceError
 from hub.workbench_store import digest
@@ -251,3 +251,207 @@ class PlanBudgetAdmissionTests(unittest.TestCase):
   package,cap=self.package(BASE);package['budget']['deadline']=self.f.now-1;self.f.package=package;self.f.configure();self.packages[BASE]=(package,self.f.authority)
   result=self.store.admit_plan_window(self.p['plan_id'],authority=self.cap)
   self.assertEqual(result['admitted'],[]);self.assertEqual(result['unavailable_budget'],[BASE]);self.assertEqual(self.store.tasks(),[])
+
+class PlanRevisionTests(unittest.TestCase):
+ def setUp(self):
+  PlanStoreTests.setUp(self);self.original=copy.deepcopy(self.p);self.store.import_plan(self.p,authority=self.cap);self.version_records={}
+ configure=PlanStoreTests.configure
+ evidence=PlanStoreTests.evidence
+ def bind(self,target,expected):
+  self.p=target;self.configure();binding=self.cap.snapshot();binding['reconcile_from_sha256']=expected;binding['verified_evidence_versions']=copy.deepcopy(self.version_records)
+  self.cap=PlanAuthority.configured(binding,authorize=lambda:None,controls=lambda:copy.deepcopy(self.control),routes=lambda _:True,package_for=lambda ident:self.packages.get(ident))
+ def target(self):
+  p=copy.deepcopy(self.original);p['revision']='2';next(t for t in p['tasks']if t['id']==POLICY)['objective']='Changed synthetic definition';return p
+ def record(self,ident,unknown=False):
+  r=self.evidence(ident,unknown=unknown);self.records[ident]=r;self.version_records.setdefault(ident,{})[r['plan_sha256']]=digest(r)
+  expected=self.cap.snapshot().get('reconcile_from_sha256');self.bind(self.p,expected)
+  self.store.record_plan_evidence(self.p['plan_id'],r,authority=self.cap);return r
+ def test_cas_versions_exact_applicability_receipt_replay_and_guarded_rollback(self):
+  base=self.record(BASE);old=self.record(POLICY);before=self.store.path.read_bytes();p=self.target();self.bind(p,digest(self.original))
+  with self.assertRaises(ServiceError):self.store.admit_plan_window(p['plan_id'],authority=self.cap)
+  self.assertEqual(self.store.path.read_bytes(),before)
+  result=self.store.reconcile_plan(p,expected_sha256=digest(self.original),request_id='revision-one',authority=self.cap)
+  self.assertEqual(result['request']['affected_task_ids'],[POLICY]);self.assertEqual(self.store.tasks(),[])
+  view=self.store.plan_ready(p['plan_id'],authority=self.cap);self.assertIn(BASE,view['accepted']);self.assertNotIn(POLICY,view['accepted']);self.assertIn(POLICY,view['ready'])
+  new=self.record(POLICY);self.assertTrue(self.store.record_plan_evidence(p['plan_id'],new,authority=self.cap)['replayed'])
+  self.assertIn(POLICY,self.store.plan_ready(p['plan_id'],authority=self.cap)['accepted'])
+  with self.store._connection()as db:
+   self.assertEqual(self.store._decode(*db.execute('SELECT body,hash FROM plan_receipts WHERE task_id=?',(POLICY,)).fetchone()),old)
+   self.assertEqual(db.execute('SELECT count(*)FROM plan_conflicts').fetchone()[0],1)
+  self.bind(self.original,digest(p));self.store.reconcile_plan(self.original,expected_sha256=digest(p),request_id='rollback-one',authority=self.cap,rollback=True)
+  self.assertIn(POLICY,self.store.plan_ready(p['plan_id'],authority=self.cap)['accepted'])
+  from hub.task_storage_restore import _snapshot
+  self.assertEqual(len(_snapshot(self.store,self.store.path.read_bytes())[1]['plan_conflicts']),1)
+ def test_request_replay_conflict_and_stale_cas_preserve_bytes(self):
+  p=self.target();expected=digest(self.original);self.bind(p,expected)
+  self.store.reconcile_plan(p,expected_sha256=expected,request_id='revision-one',authority=self.cap);before=self.store.path.read_bytes()
+  self.assertTrue(self.store.reconcile_plan(p,expected_sha256=expected,request_id='revision-one',authority=self.cap)['replayed']);self.assertEqual(self.store.path.read_bytes(),before)
+  for request,target,code in [('stale',p,'PLAN_CAS_STALE'),('revision-one',{**p,'revision':'3'},'PLAN_REVISION_REQUEST_CONFLICT')]:
+   self.bind(target,expected)
+   with self.assertRaises(ServiceError)as error:self.store.reconcile_plan(target,expected_sha256=expected,request_id=request,authority=self.cap)
+   self.assertEqual(error.exception.code,code);self.assertEqual(self.store.path.read_bytes(),before)
+ def test_atomic_fault_and_unknown_commit_can_be_queried_without_reexecution(self):
+  p=self.target();expected=digest(self.original);self.bind(p,expected);before=self.store.path.read_bytes()
+  def fault(phase):
+   if phase=='before_plan_revision_commit':raise OSError('synthetic rollback')
+  self.store.fault=fault
+  with self.assertRaises(OSError):self.store.reconcile_plan(p,expected_sha256=expected,request_id='revision-one',authority=self.cap)
+  self.assertEqual(self.store.path.read_bytes(),before)
+  def lost(phase):
+   if phase=='after_commit':raise OSError('synthetic lost reply')
+  self.store.fault=lost
+  with self.assertRaises(ServiceError)as error:self.store.reconcile_plan(p,expected_sha256=expected,request_id='revision-one',authority=self.cap)
+  self.assertEqual(error.exception.outcome,'UNKNOWN');self.store.fault=lambda _:None
+  status=self.store.plan_revision_status(p['plan_id'],authority=self.cap);self.assertEqual(status['current_sha256'],digest(p));self.assertEqual(len(status['requests']),1)
+  self.assertTrue(self.store.reconcile_plan(p,expected_sha256=expected,request_id='revision-one',authority=self.cap)['replayed'])
+ def test_paused_cancelled_forged_authority_and_changed_control_reject(self):
+  p=self.target();expected=digest(self.original);self.bind(p,expected);before=self.store.path.read_bytes()
+  for state in ('paused','cancelled','unknown'):
+   self.control={'state':state,'revision':2}
+   with self.assertRaises(ServiceError):self.store.reconcile_plan(p,expected_sha256=expected,request_id='revision-one',authority=self.cap)
+   self.assertEqual(self.store.path.read_bytes(),before)
+  self.control={'state':'active','revision':3}
+  with self.assertRaises(ServiceError):self.store.reconcile_plan(p,expected_sha256='e'*64,request_id='revision-one',authority=self.cap)
+  def fault(phase):
+   if phase=='before_commit':self.control={'state':'paused','revision':4}
+  self.store.fault=fault
+  with self.assertRaises(ServiceError):self.store.reconcile_plan(p,expected_sha256=expected,request_id='revision-one',authority=self.cap)
+  self.assertEqual(self.store.path.read_bytes(),before)
+ def test_changed_queued_package_and_unknown_effect_block_switch(self):
+  self.record(POLICY,unknown=True);p=self.target();self.bind(p,digest(self.original));before=self.store.path.read_bytes()
+  with self.assertRaises(ServiceError)as error:self.store.reconcile_plan(p,expected_sha256=digest(self.original),request_id='revision-one',authority=self.cap)
+  self.assertEqual(error.exception.code,'PLAN_REVISION_UNKNOWN_EFFECT');self.assertEqual(self.store.path.read_bytes(),before)
+  self.store.admit({'request_id':POLICY,'project_id':'synthetic','parent_task_id':None},{'synthetic':True});before=self.store.path.read_bytes()
+  with self.assertRaises(ServiceError)as error:self.store.reconcile_plan(p,expected_sha256=digest(self.original),request_id='revision-one',authority=self.cap)
+  self.assertEqual(error.exception.code,'PLAN_REVISION_EXISTING_EFFECT');self.assertEqual(self.store.path.read_bytes(),before)
+ def test_offline_tampered_revision_links_versions_and_affected_set_reject(self):
+  import sqlite3
+  from hub.task_storage_restore import _snapshot
+  from hub.workbench_store import canonical
+  p=self.target();self.bind(p,digest(self.original));self.store.reconcile_plan(p,expected_sha256=digest(self.original),request_id='revision-one',authority=self.cap)
+  raw=self.store.path.read_bytes();_snapshot(self.store,raw)
+  for mutation in ('current','affected','prior','definition','operation'):
+   with self.subTest(mutation=mutation),sqlite3.connect(':memory:')as db:
+    db.deserialize(raw);value=json.loads(db.execute('SELECT body FROM plan_inputs').fetchone()[0])
+    if mutation=='current':value['current_sha256']='e'*64
+    if mutation=='affected':value['requests'][0]['affected_task_ids']=[]
+    if mutation=='prior':value['requests'][0]['from_sha256']='e'*64
+    if mutation=='definition':value['versions'][0]['plan']['tasks'][0]['status']='done'
+    if mutation=='operation':value['requests'][0]['operation']='rollback'
+    db.execute('UPDATE plan_inputs SET body=?,hash=?',(canonical(value).decode(),digest(value)));db.commit()
+    with self.assertRaises(ServiceError):_snapshot(self.store,db.serialize())
+ def test_versioned_priority_contract_preserves_entrances_and_other_priorities(self):
+  p=plan([task(BASE),task(POLICY),task('P2-R2-PCH-DAG')]);p['revision']='1.1.0-synthetic';p['tasks'][2]['dispatch_priority']=20
+  self.assertEqual(ready_window(p,{},set(),lambda _:False),[BASE,POLICY,'P2-R2-PCH-DAG'])
+  for field in ('revision','other_priority','dag_priority'):
+   q=copy.deepcopy(p)
+   if field=='revision':q['revision']='1.0.1-synthetic'
+   if field=='other_priority':q['tasks'].append(task(OFFLINE));q['tasks'][-1]['dispatch_priority']=20
+   if field=='dag_priority':q['tasks'][2]['dispatch_priority']=100
+   with self.subTest(field=field),self.assertRaises(ServiceError):validate_plan(q)
+
+class PlanRevisionServiceTests(unittest.TestCase):
+ def test_existing_service_owner_boundary_and_original_request_query(self):
+  from hub.task_service import TaskService
+  f=PlanRevisionTests();f.setUp();self.addCleanup(f.doCleanups)
+  target=f.target();expected=digest(f.original);f.bind(target,expected)
+  service=TaskService(None,None,f.store,plan_authority=f.cap)
+  before=f.store.path.read_bytes()
+  with self.assertRaises(ServiceError):service.reconcile_plan(target,expected_sha256=expected,request_id='service-revision',owner_context='wrong-owner')
+  self.assertEqual(f.store.path.read_bytes(),before)
+  result=service.reconcile_plan(target,expected_sha256=expected,request_id='service-revision',owner_context='synthetic-owner')
+  status=service.plan_revision_status(target['plan_id'],owner_context='synthetic-owner')
+  self.assertEqual(status['requests'],[result['request']]);self.assertEqual(status['current_sha256'],digest(target));self.assertFalse(status['execution_started'])
+
+class PlanRevisionBoundaryTests(unittest.TestCase):
+ def test_root_original_hash_mapping_is_required_for_unchanged_old_pass(self):
+  f=PlanRevisionTests();f.setUp();self.addCleanup(f.doCleanups)
+  f.record(BASE);target=f.target();f.bind(target,digest(f.original));f.store.reconcile_plan(target,expected_sha256=digest(f.original),request_id='version-mapping',authority=f.cap)
+  binding=f.cap.snapshot();binding['verified_evidence']={};binding['verified_evidence_versions']={}
+  cap=PlanAuthority.configured(binding,authorize=lambda:None,controls=lambda:{'state':'active','revision':1},routes=lambda _:True,package_for=lambda _:None)
+  view=f.store.plan_ready(target['plan_id'],authority=cap)
+  self.assertNotIn(BASE,view['accepted']);self.assertNotIn(BASE,view['ready'])
+ def test_changed_task_set_and_reused_revision_identity_are_not_overwritten(self):
+  f=PlanRevisionTests();f.setUp();self.addCleanup(f.doCleanups);before=f.store.path.read_bytes();old=digest(f.original)
+  for mutation in ('add','remove','reuse_revision'):
+   target=f.target()
+   if mutation=='add':target['tasks'].append(task(OFFLINE))
+   if mutation=='remove':target['tasks']=[t for t in target['tasks']if t['id']!=POLICY]
+   if mutation=='reuse_revision':target['revision']=f.original['revision']
+   f.bind(target,old)
+   with self.subTest(mutation=mutation),self.assertRaises(ServiceError):f.store.reconcile_plan(target,expected_sha256=old,request_id='identity-guard',authority=f.cap)
+   self.assertEqual(f.store.path.read_bytes(),before)
+
+class PlanRevisionExactDefinitionTests(unittest.TestCase):
+ def test_false_and_zero_are_different_definition_versions(self):
+  from hub.plan_admission import changed_definitions
+  old=plan([task(BASE),task(POLICY)]);old['tasks'][1]['synthetic_flag']=False
+  new=copy.deepcopy(old);new['revision']='2';new['tasks'][1]['synthetic_flag']=0
+  self.assertEqual(changed_definitions(old,new),[POLICY])
+
+class PlanRevisionScaleTests(unittest.TestCase):
+ def test_two_large_plans_twelve_receipts_reconcile_replay_and_rollback(self):
+  from hub.workbench_store import canonical
+  f=PlanRevisionTests();f.setUp();self.addCleanup(f.doCleanups)
+  # A separate plan uses the normal Store and default SQLite settings. No real
+  # manifest, cache_spill/journal override or mocked storage check is involved.
+  ids=[BASE,POLICY]+sorted(BOOTSTRAP_IDS-{BASE,POLICY})[:10]
+  rows=[task(ident)for ident in ids]+[task('P3-R1-SCALE%03d'%n)for n in range(247)]
+  for row in rows:row['synthetic_text']='x'*3200
+  old=plan(rows);old['plan_id']='SYNTHETIC-SCALE';f.p=old;f.original=copy.deepcopy(old);f.configure();f.store.import_plan(old,authority=f.cap)
+  for ident in ids:f.record(ident)
+  for old_bytes in [len(canonical(old))]:self.assertGreater(old_bytes,850000);self.assertLess(old_bytes,1000000)
+  target=copy.deepcopy(old);target['revision']='2';target['tasks'][-1]['synthetic_text']='y'*3200
+  self.assertGreater(len(canonical(target)),850000);self.assertLess(len(canonical(target)),1000000)
+  with f.store._connection()as db:
+   original_receipts=[tuple(r)for r in db.execute('SELECT *FROM plan_receipts ORDER BY rowid')];profile=[tuple(r)for r in db.execute('SELECT *FROM storage_profile')]
+  f.bind(target,digest(old));result=f.store.reconcile_plan(target,expected_sha256=digest(old),request_id='scale-revision',authority=f.cap)
+  self.assertEqual(result['request']['affected_task_ids'],[rows[-1]['id']]);self.assertEqual(f.store.tasks(),[])
+  self.assertTrue(f.store.reconcile_plan(target,expected_sha256=digest(old),request_id='scale-revision',authority=f.cap)['replayed'])
+  self.assertEqual(set(f.store.plan_ready(old['plan_id'],authority=f.cap)['accepted']),set(ids))
+  f.bind(old,digest(target));f.store.reconcile_plan(old,expected_sha256=digest(target),request_id='scale-rollback',authority=f.cap,rollback=True)
+  status=f.store.plan_revision_status(old['plan_id'],authority=f.cap);self.assertEqual(status['current_sha256'],digest(old));self.assertEqual(len(status['requests']),2)
+  with f.store._connection()as db:
+   self.assertEqual([tuple(r)for r in db.execute('SELECT *FROM plan_receipts ORDER BY rowid')],original_receipts)
+   self.assertEqual([tuple(r)for r in db.execute('SELECT *FROM storage_profile')],profile)
+  from hub.task_storage_restore import _snapshot
+  content=_snapshot(f.store,f.store.path.read_bytes())[1];self.assertEqual(len(content['plan_receipts']),12)
+  self.assertLess(f.store.path.stat().st_size,16*1024*1024)
+
+class PlanPrecommitStorageGuardTests(unittest.TestCase):
+ def test_uncommitted_profile_schema_and_hash_drift_are_rejected_and_rolled_back(self):
+  from hub.workbench_store import canonical
+  f=PlanStoreTests();f.setUp();self.addCleanup(f.doCleanups)
+  before=f.store.path.read_bytes()
+  for scenario in ('hash','profile','missing','schema'):
+   with self.subTest(scenario=scenario):
+    with self.assertRaises(ServiceError):
+     with f.store._connection(True)as db:
+      if scenario=='hash':db.execute("UPDATE storage_profile SET hash='bad'")
+      if scenario=='missing':db.execute('DELETE FROM storage_profile')
+      if scenario=='schema':db.execute('UPDATE meta SET version=99')
+      if scenario=='profile':
+       value=f.store._decode(*db.execute('SELECT body,hash FROM storage_profile').fetchone());value['inode']+=1
+       db.execute('UPDATE storage_profile SET body=?,hash=?',(canonical(value).decode(),digest(value)))
+    self.assertEqual(f.store.path.read_bytes(),before)
+ def test_registration_mount_and_free_space_are_still_checked_before_commit(self):
+  import os
+  f=PlanStoreTests();f.setUp();self.addCleanup(f.doCleanups)
+  registration=f.store.registration_path;backup=registration.with_name('owned-registration-backup');before=f.store.path.read_bytes()
+  mount=f.store.storage_guard.mount;space=f.store.storage_guard.space
+  for scenario,reason in (('registration','REGISTRATION_MISSING'),('mount','MOUNT_IDENTITY_CHANGED'),('space','LOW_SPACE')):
+   with self.subTest(scenario=scenario):
+    def fault(phase):
+     if phase!='before_commit':return
+     if scenario=='registration':registration.rename(backup)
+     if scenario=='mount':f.store.storage_guard.mount=lambda root:{**f.store.storage_guard.profile['mount'],'source':'changed-synthetic-mount'}
+     if scenario=='space':f.store.storage_guard.space=lambda root:type('Space',(),{'f_bavail':0,'f_frsize':4096})()
+    f.store.fault=fault
+    try:
+     with self.assertRaises(ServiceError)as error:
+      with f.store._connection(True):pass
+     self.assertEqual(error.exception.details['reason_code'],reason)
+    finally:
+     if backup.exists():backup.rename(registration)
+     f.store.storage_guard.mount=mount;f.store.storage_guard.space=space;f.store.fault=lambda _:None
+    self.assertEqual(f.store.path.read_bytes(),before);self.assertEqual(f.store.storage_status()['state'],'ready')

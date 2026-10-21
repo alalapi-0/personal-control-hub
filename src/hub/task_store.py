@@ -100,6 +100,11 @@ class TaskStore:
         self.storage_guard = storage_guard
 
     def check_storage(self,*,readonly=False):
+        return self._check_storage(readonly=readonly)
+
+    def _check_storage(self,*,readonly=False,connection=None):
+        # Only _connection supplies its held transaction here. Public storage
+        # checks still open an independent read-only profile connection.
         exists = self._location()
         components(self.root)
         registration = self._registration()
@@ -114,21 +119,28 @@ class TaskStore:
         info=self.path.lstat()
         if [info.st_dev,info.st_ino]!=registration['ledger_identity']:
             raise blocked('LEDGER_IDENTITY_CHANGED')
-        ledger_profile=self._ledger_profile(allow_legacy=readonly)
+        ledger_profile=self._ledger_profile(allow_legacy=readonly,connection=connection)
         if ledger_profile is not None and ledger_profile!=profile:raise blocked('PROFILE_VERSION_STALE')
         return result if readonly else self.storage_guard.check_space()
 
-    def _ledger_profile(self,*,allow_legacy=False):
+    def _ledger_profile(self,*,allow_legacy=False,connection=None):
+        def read_profile(db):
+            # The held writer uses sqlite3.Row; standalone readers use tuples.
+            versions=[tuple(row) for row in db.execute('SELECT version FROM meta')]
+            if versions==[(1,)]:
+                if allow_legacy:return None
+                raise blocked('PROFILE_REGISTRATION_REQUIRED')
+            if versions!=[(SCHEMA_VERSION,)]:raise ServiceError('TASK_SCHEMA_UNSUPPORTED',status=503)
+            rows=db.execute('SELECT body,hash FROM storage_profile').fetchall()
+            if len(rows)!=1:raise blocked('PROFILE_REJECTED')
+            return self._decode(*rows[0])
         try:
-            with contextlib.closing(sqlite3.connect(self.path.as_uri()+'?mode=ro',uri=True)) as connection:
-                versions=connection.execute('SELECT version FROM meta').fetchall()
-                if versions==[(1,)]:
-                    if allow_legacy:return None
-                    raise blocked('PROFILE_REGISTRATION_REQUIRED')
-                if versions!=[(SCHEMA_VERSION,)]:raise ServiceError('TASK_SCHEMA_UNSUPPORTED',status=503)
-                rows=connection.execute('SELECT body,hash FROM storage_profile').fetchall()
-                if len(rows)!=1:raise blocked('PROFILE_REJECTED')
-                return self._decode(*rows[0])
+            if connection is not None:
+                # An independent reader can deadlock on this writer's spilled
+                # pages. The held connection also sees uncommitted profile drift.
+                return read_profile(connection)
+            with contextlib.closing(sqlite3.connect(self.path.as_uri()+'?mode=ro',uri=True)) as reader:
+                return read_profile(reader)
         except sqlite3.Error:raise ServiceError('TASK_STORE_CORRUPT',status=503)from None
 
     def _registration(self):
@@ -293,7 +305,7 @@ class TaskStore:
             if write:
                 try:self.fault('before_commit')
                 except OSError:raise ServiceError('TASK_NOT_COMMITTED',status=503,outcome='NOT_COMMITTED')from None
-                self.check_storage()
+                self._check_storage(connection=connection)
                 if connection.execute('PRAGMA page_count').fetchone()[0]*connection.execute('PRAGMA page_size').fetchone()[0]>MAX_DATABASE_BYTES:
                     raise ServiceError('TASK_STORAGE_CAPACITY',status=507)
                 if guard is not None:guard()
@@ -1784,26 +1796,88 @@ class TaskStore:
         return row
 
     def _plan_input(self,connection,ident,authority):
-        from .plan_admission import authority as require,validate_plan,plan_id,reject
+        from .plan_admission import authority as require,validate_plan,plan_id,reject,plan_history
         authority=require(authority)
         if not self._plan_schema(connection):reject('PLAN_NOT_IMPORTED')
         row=connection.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(plan_id(ident),)).fetchone()
         if not row:reject('PLAN_NOT_IMPORTED')
-        plan=validate_plan(self._decode(*row));authority.check(plan)
+        plan=plan_history(self._decode(*row))[0];authority.check(plan)
         return plan
 
     def import_plan(self,plan,*,authority):
-        from .plan_admission import authority as require,validate_plan,reject
+        from .plan_admission import authority as require,validate_plan,reject,plan_history
         authority=require(authority);plan=validate_plan(plan);authority.check(plan)
         with self._connection(True) as connection:
             self._plan_schema(connection,create=True)
             row=connection.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(plan['plan_id'],)).fetchone()
-            if row and self._decode(*row)!=plan:reject('PLAN_CONFLICT_REQUIRES_RECONCILE')
+            if row and plan_history(self._decode(*row))[0]!=plan:reject('PLAN_CONFLICT_REQUIRES_RECONCILE')
             if not row:
                 if connection.execute('SELECT count(*)FROM plan_inputs').fetchone()[0]>=4:reject('PLAN_CAPACITY')
                 connection.execute('INSERT INTO plan_inputs VALUES(?,?,?)',(plan['plan_id'],canonical(plan).decode(),digest(plan)))
             authority.check(plan);self.fault('before_plan_import_commit')
         return {'replayed':row is not None,'execution_rows_created':0,'plan_sha256':digest(plan)}
+
+    def plan_revision_status(self,plan_id,*,authority):
+        from .plan_admission import authority as require,plan_id as checked,plan_history,reject
+        cap=require(authority);cap._authorize()
+        with self._connection() as db:
+            if not self._plan_schema(db):reject('PLAN_NOT_IMPORTED')
+            row=db.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(checked(plan_id),)).fetchone()
+            if not row:reject('PLAN_NOT_IMPORTED')
+            current,versions,requests=plan_history(self._decode(*row));binding=cap.snapshot()
+            if digest(current)not in {binding.get('plan_sha256'),binding.get('reconcile_from_sha256')}:reject('PLAN_AUTHORITY_MISMATCH')
+            cap._authorize()
+            return {'plan_id':plan_id,'current_sha256':digest(current),'revision':current['revision'],'version_hashes':list(versions),'requests':requests,'execution_started':False}
+
+    def reconcile_plan(self,plan,*,expected_sha256,request_id,authority,rollback=False):
+        """Root-wired CAS only; immutable packages/attempts/receipts never reset."""
+        from .plan_admission import authority as require,validate_plan,plan_history,changed_definitions,reject
+        cap=require(authority);target=validate_plan(plan);cap.check(target);stable_id(request_id)
+        if type(rollback)is not bool or cap.snapshot().get('reconcile_from_sha256')!=expected_sha256:reject('PLAN_REVISION_AUTHORITY')
+        command={'request_id':request_id,'from_sha256':expected_sha256,'to_sha256':digest(target),'operation':'rollback'if rollback else'reconcile','affected_task_ids':[]}
+        guard_controls=[]
+        def guarded():
+            cap.check(target)
+            if guard_controls and cap._controls()!=guard_controls[0]:reject('PLAN_CONTROL_CHANGED')
+        with self._connection(True,guard=guarded) as db:
+            if not self._plan_schema(db):reject('PLAN_NOT_IMPORTED')
+            row=db.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(target['plan_id'],)).fetchone()
+            if not row:reject('PLAN_NOT_IMPORTED')
+            old,versions,requests=plan_history(self._decode(*row))
+            previous=versions.get(expected_sha256)
+            if previous is None:reject('PLAN_CAS_STALE')
+            command['affected_task_ids']=changed_definitions(previous,target)
+            replay=next((r for r in requests if r['request_id']==request_id),None)
+            if replay:
+                if replay!=command:reject('PLAN_REVISION_REQUEST_CONFLICT')
+                cap.check(target)
+                return {'replayed':True,'current_sha256':digest(old),'request':replay,'execution_rows_created':0}
+            if digest(old)!=expected_sha256:reject('PLAN_CAS_STALE')
+            if digest(target)==expected_sha256:reject('PLAN_REVISION_NO_CHANGE')
+            if rollback!=(digest(target)in versions):reject('PLAN_REVISION_TARGET')
+            if not rollback and any(p['revision']==target['revision']for p in versions.values()):reject('PLAN_REVISION_TARGET')
+            controls=cap._controls()
+            if type(controls)is not dict or controls.get('state')!='active' or type(controls.get('revision'))is not int:reject('PLAN_CONTROL_BLOCKED')
+            guard_controls.append(json.loads(canonical(controls)))
+            for ident in command['affected_task_ids']:
+                # Even a terminal old package has immutable singleton identity.
+                # Re-execution of changed existing packages needs later explicit reconciliation.
+                if self._task_row(db,ident)is not None:reject('PLAN_REVISION_EXISTING_EFFECT')
+                records=[]
+                for table in ('plan_receipts','plan_conflicts'):
+                    records.extend(self._decode(r['body'],r['hash'])for r in db.execute('SELECT body,hash FROM '+table+' WHERE plan_id=? AND task_id=?',(target['plan_id'],ident)))
+                if any(r['effect_state']=='unknown'or r['unknowns']for r in records):reject('PLAN_REVISION_UNKNOWN_EFFECT')
+                if len({r['plan_sha256']for r in records})!=len(records):reject('PLAN_REVISION_UNRESOLVED_CONFLICT')
+            if not rollback:versions[digest(target)]=target
+            requests.append(command)
+            body={'schema_version':'plan-revisions/1','plan_id':target['plan_id'],'current_sha256':digest(target),'versions':[{'sha256':h,'plan':p}for h,p in versions.items()],'requests':requests}
+            plan_history(body)
+            db.execute('UPDATE plan_inputs SET body=?,hash=? WHERE id=?',(canonical(body).decode(),digest(body),target['plan_id']))
+            def guard():
+                cap.check(target)
+                if cap._controls()!=controls:reject('PLAN_CONTROL_CHANGED')
+            guard();self.fault('before_plan_revision_commit');guard()
+        return {'replayed':False,'current_sha256':digest(target),'request':command,'execution_rows_created':0}
 
     def record_plan_evidence(self,plan_id,record,*,authority):
         from .plan_admission import BOOTSTRAP_IDS,reject
@@ -1820,30 +1894,42 @@ class TaskStore:
                 history={r['key']:r['data']for r in self._rebuild_rows(connection,record['task_id'])}
                 package=history.get('rebuild-package');attempt=history.get('rebuild-attempt-'+record['attempt_id']);receipt=history.get('rebuild-receipt-'+record['receipt_id'])
                 if not receipt or digest(receipt)!=record['receipt_sha256']:reject('PLAN_EVIDENCE_UNVERIFIED')
+                if package['plan']!={'revision':plan['revision'],'sha256':digest(plan)}:reject('PLAN_EVIDENCE_UNVERIFIED')
                 settled_evidence(package,receipt,record['provenance'],attempt)
             elif task is not None:reject('PLAN_BOOTSTRAP_EXISTING_EFFECT_REQUIRES_RECONCILE')
             old=connection.execute('SELECT body,hash FROM plan_receipts WHERE plan_id=? AND task_id=?',(plan_id,record['task_id'])).fetchone()
-            if old and self._decode(*old)!=record:
-                connection.execute('INSERT OR IGNORE INTO plan_conflicts VALUES(?,?,?,?)',(plan_id,record['task_id'],canonical(record).decode(),digest(record)))
-                result={'replayed':False,'requires_reconcile':True}
+            same=[]
+            if old:same.append(self._decode(*old))
+            same.extend(self._decode(r['body'],r['hash'])for r in connection.execute('SELECT body,hash FROM plan_conflicts WHERE plan_id=? AND task_id=?',(plan_id,record['task_id'])))
+            version_records=[r for r in same if r['plan_sha256']==record['plan_sha256']]
+            if record in version_records:
+                result={'replayed':True,'requires_reconcile':not accepted or len(version_records)>1}
             else:
-                if not old:connection.execute('INSERT INTO plan_receipts VALUES(?,?,?,?)',(plan_id,record['task_id'],canonical(record).decode(),digest(record)))
-                result={'replayed':old is not None,'requires_reconcile':not accepted}
+                table='plan_receipts'if not old else'plan_conflicts'
+                values=(plan_id,record['task_id'],canonical(record).decode(),digest(record))
+                connection.execute('INSERT INTO '+table+' VALUES(?,?,?,?)',values)
+                result={'replayed':False,'requires_reconcile':not accepted or bool(version_records)}
             authority.check(plan);authority.verify(record)
         return result
 
     def _plan_state(self,connection,plan,authority):
-        from .plan_admission import reject
-        accepted=set();states={}
-        for row in connection.execute('SELECT task_id,body,hash FROM plan_receipts WHERE plan_id=?',(plan['plan_id'],)):
-            value=self._decode(row['body'],row['hash'])
-            if value['task_id']!=row['task_id']:reject('PLAN_EVIDENCE_UNVERIFIED')
-            try:verified=authority.verify(value)
+        from .plan_admission import reject,plan_history
+        raw=connection.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(plan['plan_id'],)).fetchone()
+        _,versions,_=plan_history(self._decode(*raw));definitions={t['id']:t for t in plan['tasks']}
+        accepted=set();states={};groups={}
+        for table in ('plan_receipts','plan_conflicts'):
+            for row in connection.execute('SELECT task_id,body,hash FROM '+table+' WHERE plan_id=?',(plan['plan_id'],)):
+                value=self._decode(row['body'],row['hash']);ident=row['task_id'];h=value['plan_sha256']
+                if value['task_id']!=ident or h not in versions:reject('PLAN_EVIDENCE_UNVERIFIED')
+                origin=next((t for t in versions[h]['tasks']if t['id']==ident),None)
+                if origin is None:reject('PLAN_EVIDENCE_UNVERIFIED')
+                if ident in definitions and digest(origin)==digest(definitions[ident]):groups.setdefault(ident,{}).setdefault(h,[]).append(value)
+        for ident,by_version in groups.items():
+            h=next(h for h in [digest(plan),*reversed(versions)]if h in by_version);records=by_version[h]
+            try:verified=len(records)==1 and authority.verify(records[0],plan_sha256=h)
             except ServiceError:verified=False
-            if verified:accepted.add(row['task_id'])
-            else:states[row['task_id']]='requires_reconcile'
-        for row in connection.execute('SELECT task_id,body,hash FROM plan_conflicts WHERE plan_id=?',(plan['plan_id'],)):
-            self._decode(row['body'],row['hash']);accepted.discard(row['task_id']);states[row['task_id']]='requires_reconcile'
+            if verified:accepted.add(ident)
+            else:states[ident]='requires_reconcile'
         for row in connection.execute('SELECT id,status,cancel FROM tasks'):
             states[row['id']]=row['status']
             if row['cancel'] or row['status']!='checks_complete':accepted.discard(row['id'])
@@ -1913,6 +1999,12 @@ class TaskStore:
                 # complete contract evidence, not static planning status.
                 evidence=connection.execute('SELECT body,hash FROM plan_receipts WHERE plan_id=? AND task_id=?',(plan_id,ident)).fetchone()
                 record=self._decode(*evidence)
+                if record['plan_sha256']!=digest(plan):
+                    candidates=[self._decode(r['body'],r['hash'])for r in connection.execute('SELECT body,hash FROM plan_conflicts WHERE plan_id=? AND task_id=?',(plan_id,ident))]
+                    current=[r for r in candidates if r['plan_sha256']==digest(plan)]
+                    if current:
+                        if len(current)!=1:reject('PLAN_ARCHIVE_UNSETTLED')
+                        record=current[0]
                 if record['origin']!='contract':reject('PLAN_ARCHIVE_UNSETTLED')
                 from .rebuild_contracts import settled_evidence
                 history={r['key']:r['data']for r in self._rebuild_rows(connection,ident)}

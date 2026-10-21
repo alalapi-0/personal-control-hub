@@ -154,6 +154,13 @@ class TaskService:
     def import_plan(self,plan,*,owner_context):
         return self.store.import_plan(plan,authority=self._plan_authority(owner_context))
 
+    def reconcile_plan(self,plan,*,expected_sha256,request_id,owner_context,rollback=False):
+        return self.store.reconcile_plan(plan,expected_sha256=expected_sha256,request_id=request_id,
+            authority=self._plan_authority(owner_context),rollback=rollback)
+
+    def plan_revision_status(self,plan_id,*,owner_context):
+        return self.store.plan_revision_status(plan_id,authority=self._plan_authority(owner_context))
+
     def plan_ready(self,plan_id,*,owner_context):
         return self.store.plan_ready(plan_id,authority=self._plan_authority(owner_context))
 

@@ -37,7 +37,7 @@ def _validate_plan(value):
   if not isinstance(row['owner_route'],str) or not row['owner_route'].startswith('route:'):reject()
   if not isinstance(row['round_id'],str) or not re.fullmatch(r'P[0-9]+-R[0-9]+',row['round_id']):reject()
   if row['phase_id']!=ident.split('-')[0] or row['status'] not in {'planned','done'}:reject()
-  if type(row['dispatch_priority'])is not int or row['dispatch_priority']!=(0 if ident==BASE else 10 if ident==POLICY else 100):reject('PLAN_PRIORITY_REJECTED')
+  if type(row['dispatch_priority'])is not int or row['dispatch_priority']!=(0 if ident==BASE else 10 if ident==POLICY else 20 if ident=='P2-R2-PCH-DAG' and re.match(r'^1\.1\.0(?:-|$)',value['revision']) else 100):reject('PLAN_PRIORITY_REJECTED')
   deps=row['depends_on']
   if type(deps)is not list or len(deps)>MAX_PLAN_TASKS or len(set(deps))!=len(deps):reject()
   if ident in {BASE,POLICY} and deps:reject('PLAN_ENTRANCE_DEPENDENCY')
@@ -80,6 +80,41 @@ def ready_window(plan,states,accepted,capability,*,limit=WINDOW):
   ready.append(row)
  return [row['id'] for row in sorted(ready,key=lambda x:(x['dispatch_priority'],x['id']))[:limit]]
 
+def changed_definitions(old,new):
+ old_by={t['id']:t for t in old['tasks']};new_by={t['id']:t for t in new['tasks']}
+ if old['plan_id']!=new['plan_id'] or old_by.keys()!=new_by.keys():reject('PLAN_REVISION_IDENTITY')
+ return sorted(k for k in old_by if digest(old_by[k])!=digest(new_by[k]))
+
+def plan_history(value):
+ """Strict versioned content in the existing plan_inputs row; no new schema.
+
+ Legacy raw plans are read unchanged. Revision envelopes retain every original
+ canonical plan/hash and CAS request. Old readers reject this explicit format.
+ """
+ if type(value)is not dict or value.get('schema_version')!='plan-revisions/1':
+  p=validate_plan(value);return p,{digest(p):p},[]
+ if set(value)!={'schema_version','plan_id','current_sha256','versions','requests'}:reject('PLAN_HISTORY_CORRUPT')
+ versions=value['versions'];requests=value['requests']
+ if type(versions)is not list or not 1<=len(versions)<=16 or type(requests)is not list or not 1<=len(requests)<=32:reject('PLAN_HISTORY_CAPACITY')
+ known={};revisions=set()
+ for row in versions:
+  if type(row)is not dict or set(row)!={'sha256','plan'}:reject('PLAN_HISTORY_CORRUPT')
+  p=validate_plan(row['plan']);h=digest(p)
+  if h!=row['sha256']or h in known or p['plan_id']!=value['plan_id']or p['revision']in revisions:reject('PLAN_HISTORY_CORRUPT')
+  known[h]=p;revisions.add(p['revision'])
+ current=versions[0]['sha256'];seen={current};ids=set()
+ from .task_store import stable_id
+ for r in requests:
+  if type(r)is not dict or set(r)!={'request_id','from_sha256','to_sha256','operation','affected_task_ids'}:reject('PLAN_HISTORY_CORRUPT')
+  stable_id(r['request_id'])
+  if r['request_id']in ids or r['from_sha256']!=current or r['to_sha256']not in known or r['to_sha256']==current:reject('PLAN_HISTORY_CORRUPT')
+  target=r['to_sha256']
+  if r['operation']not in {'reconcile','rollback'}or (r['operation']=='rollback')!=(target in seen):reject('PLAN_HISTORY_CORRUPT')
+  if r['affected_task_ids']!=changed_definitions(known[current],known[target]):reject('PLAN_HISTORY_CORRUPT')
+  ids.add(r['request_id']);seen.add(target);current=target
+ if seen!=known.keys()or current!=value['current_sha256']:reject('PLAN_HISTORY_CORRUPT')
+ return known[current],known,requests
+
 @dataclass(frozen=True,slots=True)
 class PlanAuthority:
  """Internal server capability, never a request-supplied authorizer or grant."""
@@ -97,12 +132,12 @@ class PlanAuthority:
   self._authorize();b=self.snapshot()
   if digest(plan)!=b.get('plan_sha256'):reject('PLAN_AUTHORITY_MISMATCH')
   return b
- def verify(self,record):
+ def verify(self,record,*,plan_sha256=None):
   self._authorize();b=self.snapshot()
   if len(canonical(record))>8192:reject('PLAN_EVIDENCE_CAPACITY')
   if (type(record)is not dict or not {'schema_version','plan_sha256','task_id','attempt_id','receipt_id','receipt_sha256','evidence_ref','evidence_sha256','effect_state','unknowns','origin','provenance','native_thread_id','session_id'}<=set(record)
-      or b.get('verified_evidence',{}).get(record['task_id'])!=digest(record)):reject('PLAN_EVIDENCE_UNVERIFIED')
-  if record['schema_version']!='1.0' or record['plan_sha256']!=b.get('plan_sha256'):reject('PLAN_EVIDENCE_UNVERIFIED')
+      or b.get('verified_evidence',{}).get(record['task_id'])!=digest(record) and b.get('verified_evidence_versions',{}).get(record['task_id'],{}).get(record['plan_sha256'])!=digest(record)):reject('PLAN_EVIDENCE_UNVERIFIED')
+  if record['schema_version']!='1.0' or record['plan_sha256']!=(b.get('plan_sha256') if plan_sha256 is None else plan_sha256):reject('PLAN_EVIDENCE_UNVERIFIED')
   if record['session_id'] is not None and not isinstance(record['session_id'],str):reject()
   if record['native_thread_id'] is not None and not isinstance(record['native_thread_id'],str):reject()
   from .task_store import stable_id
@@ -132,11 +167,11 @@ def validate_offline_snapshot(store,db):
  def sha(v):return isinstance(v,str) and re.fullmatch('[0-9a-f]{64}',v)
  try:
   if [r[0]for r in db.execute('SELECT version FROM plan_schema')]!=[1]:bad()
-  plans={}
+  plans={};all_versions={}
   for row in db.execute('SELECT *FROM plan_inputs'):
-   p=validate_plan(store._decode(row['body'],row['hash']))
+   p,versions,_=plan_history(store._decode(row['body'],row['hash']))
    if row['id']!=p['plan_id'] or row['id']in plans:bad()
-   plans[row['id']]=p
+   plans[row['id']]=p;all_versions[row['id']]=versions
   if len(plans)>4:bad()
   definitions={pid:{t['id']:t for t in p['tasks']}for pid,p in plans.items()}
   records={};conflicts=[]
@@ -144,7 +179,7 @@ def validate_offline_snapshot(store,db):
    r=store._decode(row['body'],row['hash']);pid=row['plan_id'];ident=row['task_id']
    required={'schema_version','plan_sha256','task_id','attempt_id','receipt_id','receipt_sha256','evidence_ref','evidence_sha256','effect_state','unknowns','origin','provenance','native_thread_id','session_id'}
    if (type(r)is not dict or not required<=set(r) or len(canonical(r))>8192 or pid not in plans or ident not in definitions[pid]
-       or r['schema_version']!='1.0' or r['task_id']!=ident or r['plan_sha256']!=digest(plans[pid])):bad()
+       or r['schema_version']!='1.0' or r['task_id']!=ident or r['plan_sha256']not in all_versions[pid]):bad()
    for k in ('task_id','attempt_id','receipt_id'):stable_id(r[k])
    if not sha(r['receipt_sha256']) or not sha(r['evidence_sha256']) or not isinstance(r['evidence_ref'],str) or not r['evidence_ref']:bad()
    if type(r['provenance'])is not dict or r['provenance'].get('source')!='root_verified':bad()
@@ -154,7 +189,7 @@ def validate_offline_snapshot(store,db):
    if r['origin']=='bootstrap':
     if ident not in BOOTSTRAP_IDS:bad()
    elif r['origin']=='historical':
-    if definitions[pid][ident]['status']!='done':bad()
+    if next(t for t in all_versions[pid][r['plan_sha256']]['tasks']if t['id']==ident)['status']!='done':bad()
    elif r['origin']!='contract':bad()
    return r
   for row in db.execute('SELECT *FROM plan_receipts'):
@@ -202,8 +237,8 @@ def validate_offline_snapshot(store,db):
    if (p['task_id']!=ident or p['project_id']!=task['project'] or task['payload'].get('kind')!='rebuild_project'
        or task['intent'].get('package_sha256')!=digest(p) or digest(receipt)!=r['receipt_sha256']
        or task['intent'].get('grant_hash')!=digest(task['intent']['grant']) or p['grant']['sha256']!=digest(task['intent']['grant'])):bad()
-   definition=definitions[pid][ident]
-   if p['plan']!={'revision':plans[pid]['revision'],'sha256':digest(plans[pid])} or p['lineage']['goal_id']!=pid or any(p[k]!=definition[k]for k in ('project_id','phase_id','round_id'))or p['route']['owner_route']!=definition['owner_route']:bad()
+   origin=all_versions[pid][r['plan_sha256']];definition=next(t for t in origin['tasks']if t['id']==ident)
+   if p['plan']!={'revision':origin['revision'],'sha256':digest(origin)} or p['lineage']['goal_id']!=pid or any(p[k]!=definition[k]for k in ('project_id','phase_id','round_id'))or p['route']['owner_route']!=definition['owner_route']:bad()
    if {d['task_id']for d in p['dependencies']}!=set(definition['depends_on']):bad()
    proof=r['provenance'];expected={'task_id':ident,'package_sha256':digest(p),'attempt_sha256':digest(a),'receipt_sha256':digest(receipt)}
    if any(proof.get(k)!=v for k,v in expected.items()) or not proof.get('evidence_ref') or not sha(proof.get('evidence_sha256')) or not finite(proof.get('expires_at')):bad()
@@ -227,7 +262,7 @@ def validate_offline_snapshot(store,db):
    # Conflicts may be unresolved historical observations, never accepted work.
    if r['origin']=='contract':contract(ident,r,pid)
   for ident in archived:
-   witnesses=[(pid,r)for (pid,key),r in records.items()if key==ident and r['origin']=='contract' and not r['unknowns']and r['effect_state']!='unknown']
+   witnesses=[(pid,r)for (pid,key),r in [*records.items(),*conflicts]if key==ident and r['origin']=='contract' and not r['unknowns']and r['effect_state']!='unknown']
    if not witnesses:bad()
    for pid,r in witnesses:contract(ident,r,pid)
    # Every archived versioned attempt/receipt and original lease link is checked.
