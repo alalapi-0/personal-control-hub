@@ -1,15 +1,15 @@
 # PCH 全项目重构计划入口
 
-计划 PCH-REBUILD-20261020 / 1.0.1-20261020。本轮完成调查与规划；产品实现、原生Goal启动和服务切换留给执行入口。
+PCH-REBUILD-20261020 / 1.1.0-20261021。所有者要求检查平台提示并修订执行路线；[本次完整可读计划](REPLAN_20261021.md)先说明诊断、改动、保留条件及恢复顺序。当前进度与原生Goal实际状态只读STATE的pch_refactor.rebuild_planning_20261020，不把静态文档当运行账本。
 
-范围46个管理身份，44份真实项目独立会话调查，2个已合并别名核对包；其中工作区容器不冒充独立业务产品。8阶段、25轮、259项静态任务（含本轮调查/规划），未来实施208项。完整范围/真实根/原生ID仅保存在所有者本地。
+范围46管理身份、44份真实项目本地计划及2个已合并别名核对包，8阶段25轮259静态任务、208实施验收不变。当前已验收12/208；本次不重做BASE或已完成调查，不重置累计480预算。其他项目未变包按definition_revision/hash复用。
 
-读取顺序：[BASELINE](BASELINE.md) → [MASTER_PLAN](MASTER_PLAN.md) → [MACHINE_PLAN](MACHINE_PLAN.json) → [CONTRACTS](CONTRACTS.md) → [ORCHESTRATION](ORCHESTRATION.md) → [STYLE_PROXY](STYLE_PROXY.md) → [COVERAGE_MATRIX](COVERAGE_MATRIX.md) → [ACCEPTANCE_MATRIX](ACCEPTANCE_MATRIX.md) → [REVIEW_REPORT](REVIEW_REPORT.md)。
+读取：[rebuild-index.json](rebuild-index.json) → [本次修订](REPLAN_20261021.md) → [MASTER_PLAN](MASTER_PLAN.md) → [MACHINE_PLAN](MACHINE_PLAN.json) → [CONTRACTS](CONTRACTS.md) → [ORCHESTRATION](ORCHESTRATION.md) → [STYLE_PROXY](STYLE_PROXY.md) → [COVERAGE_MATRIX](COVERAGE_MATRIX.json) → [ACCEPTANCE_MATRIX](ACCEPTANCE_MATRIX.json) → [REVIEW_REPORT](REVIEW_REPORT.md)。调查历史见[BASELINE](BASELINE.md)。真实根、会话、私有证据沿既有private-index解析，不按名称猜路径。
 
-实际文件、原唯一状态、私有项目索引、适配器与现有/待建运行位置由 [rebuild-index.json](rebuild-index.json) 定位；每个项目有实际本地PLAN/TASKS，已合并根则有标注归并包。私有完整清单、任务全文/路由、报告证据与数据库不公开发布；公开仓库仅同步经核对的非敏感共享契约和本入口，因此从公开clone读取本地私有链接可能不可用。
+P1-R1-PCH-BASE是历史首派发任务，现已完成；恢复从唯一STATE及实际DAG ready选择。ADAPTER沿原ID回到官方原生接口适配，终止私有Codex隔离扩展；其历史实验不结算产品。BUDGET/CONTROL/RECOVER源码按实际能力推进，不以整项ADAPTER作为无关屏障；P3仍保持原ROUTES准入。先沿DAG原ID完成现有TaskStore同ID版本reconcile增量，再采用新定义，不直接覆写DB。所有任务仍须原完整工程、集成、同步及产物验收。
 
-首个就绪实施任务 **P1-R1-PCH-BASE**，路由 **route:personal-control-hub**；核对运行冻结/交付/当前源码与并行写责后才归并。阶段/轮次不是整阶段屏障，按具体DAG ready领取；普通工程无PSH前置。
+[RUN_GOAL_PROMPT](RUN_GOAL_PROMPT.md)是本版原生Goal入口。旧Goal暂停不因本版文件生成自动解除；恢复须核对受支持接口的真实active结果。计划和提示词不证明后台宿主、正式采用、故障恢复或60分钟流转已通过。
 
-[RUN_GOAL_PROMPT](RUN_GOAL_PROMPT.md) 是之后由所有者明确使用的短Goal入口；当前未创建Goal。独立工程审阅适用风险，风格代理仅替代有源码证据的原主观节点。本人事后回看不在任何任务状态、依赖或完成条件内。
+完整路径、任务消息、原生ID、数据库和敏感证据留本地；公开仓库只交付获准共享文档。静态校验：`python3 -B docs/pch-rebuild/validate_plan.py`。它验证版本、DAG、路径、原分母及未变包hash，不执行产品验收。
 
-静态一致性检查：python3 -B docs/pch-rebuild/validate_plan.py。它验证计划与回执/路径/DAG/分母一致，不运行产品验收。未来运行更新现有STATE本任务子条目和原项目状态/TaskStore，静态文档不另作调度状态源。
+完整计划链接属于所有者本地包，公开clone可能不可用；本版共享文档不包含完整私人路径/会话清单或原始任务消息。

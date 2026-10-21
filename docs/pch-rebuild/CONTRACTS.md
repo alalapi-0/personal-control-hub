@@ -1,5 +1,5 @@
 # 同步、画布与执行契约
-计划 PCH-REBUILD-20261020 / 1.0.1-20261020。本文件为设计契约；代码schema尚需对应创建任务实现。既有来源声明、normalized record、TaskStore与ManagementStore优先兼容，不要求各项目统一技术栈。
+计划 PCH-REBUILD-20261020 / 1.1.0-20261021。本文件为设计契约；代码schema尚需对应创建任务实现。既有来源声明、normalized record、TaskStore与ManagementStore优先兼容，不要求各项目统一技术栈。
 
 ## 单一写责
 | 数据 | 权威写者 | 其他方职责 |
@@ -56,3 +56,11 @@ DecisionRequest仅在已有原主观节点出现时携带original_node_ref、问
 事件键使用project_id+source_revision+event_type，投影read-after-change核对相同source_version；partial batch保留每项目结果。跨项目消费者固定producer schema/输入hash，变更后受影响消费者明确stale，reference边只提示。schema major不兼容拒读并给恢复任务；minor新增可选字段保持旧reader，至少覆盖一轮已验证旧消费者回读后才移除旧映射。未知major不猜字段，不让LLM解释成为权威事实。
 
 Receipt中的checks[]各自包含command/steps、exit、scope、candidate_hash、evidence_ref；integration与sync包含相同source revision及四段时间，不以单一passed bool合并。Decision只保存代理身份，不转换成本人授权；retrospective为独立集合，运行DAG不引用其存在或数量。
+
+## 官方原生能力与权限证据
+
+TaskPackage声明backend_kind、observed_capabilities、required_capabilities、authorized_write_scope、native_effective_permissions与各自evidence_ref。字段可映射现有TaskPackage/Attempt，不另建能力数据库。接口未提供的turn/session为null，并保留原因。任务声明、OS配置/拒绝和事后差异是三层证据，不能互相冒充。
+
+只使用经核对的官方原生接口及既有账号/凭据运行方式。精确叶写能力缺失则拒绝需要它的任务，不自动扩大为全项目可写。已有获准任务私有工作树可采用实际已验证的官方workspace能力；它不授权复制凭据/原件、不改变原仓并行写责、不把更宽权限宣称成细粒度隔离。若没有适用授权或能力，保留真实blocked。
+
+原生适配不包含维护Codex fork、helper/内核隔离改造、竞态研究或平台安全保护改造。遇平台拒绝，记录通知/可得请求ID与实际效果，停止同路线，不重措辞规避；独立合法任务继续。此约束不删除必要的普通输入校验、权限核对、工程测试及技术审查。

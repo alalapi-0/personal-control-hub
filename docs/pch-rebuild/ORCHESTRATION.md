@@ -1,5 +1,5 @@
 # 会话路由与无人值守执行设计
-PCH-REBUILD-20261020 / 1.0.1-20261020。本轮只调查和规划，不开启普通执行器、不启动业务Goal、不切服务。
+PCH-REBUILD-20261020 / 1.1.0-20261021。本版为所有者要求的执行路线修订；原Goal已暂停，重启必须取得真实原生active结果；文件写入不代表恢复或服务切换。
 
 ## 已存在与尚待建立
 已实测本机Codex CLI 0.163.0；独立项目调查使用真实cwd、read-only sandbox、JSONL、output-schema，收到thread.started立即落盘。调查路由、原生ID、提示hash、尝试、起止、退出及usage在本地私有索引。session_id接口未提供时为null。各项目会话编写本地PLAN与TASKS，Root核对原稿并整合跨项目依赖/节点拆分后逐仓串行保存，原稿保留在私有回执；这不等于产品可执行。
@@ -47,3 +47,15 @@ retry_wait、requires_reconcile、blocked_external、failed、cancelled分别保
 MACHINE_PLAN.admission_policy是现有TaskStore导入器P2-R2-PCH-DAG待实现的选择规则。BASE priority=0，独立PSH-POLICY=10，其他=100；同优先级按稳定task ID。完成的历史节点只能依赖已完成节点。BASE是唯一首派发最高优先级，PSH-POLICY保留独立ready，不构成全部工程前置。新运行时前bootstrap白名单是机器清单中P1/P2任务；其他任务即使业务依赖ready，也须P2-R1-PCH-ROUTES完成的真实执行能力。此准入复用原STATE/TaskStore，不创建新队列或风格门。
 
 恢复探测turn.completed可能沿同一线程累计；原始resume快照不能直接与原调查快照相加。私有索引分别记录前后快照和有条件派生增量；已知原生应用派发45次，Root/协作/平台内部用量覆盖未知。
+
+## 原生能力边界与本次恢复
+
+1.1.0终止私有Codex源码/二进制路线及尚未启动的v16竞态工作，保留全部原失败、消耗与窄证据，不安装或采用。ADAPTER沿原task ID仅实现PCH到官方原生接口的协议、事件、身份、中断与精确恢复。当前实际版本重新核对，不能把私有扩展称为官方能力。
+
+领取前分别核对授权范围、所需能力和实际原生权限。只读调查、已有获准任务工作区写入及精确叶写分别记录；不以任务提示或事后diff冒充OS执行边界。没有适用授权/能力的任务保持真实unsupported/blocked，不扩大权限、不改平台安全控制。账号问题仍由本人本机处理。
+
+沿现有STATE bootstrap保留已有P1/P2范围，P3继续要求原ROUTES真实能力，不新增授权。先沿DAG原ID核对同ID计划修订冲突；现有import_plan明确返回PLAN_CONFLICT_REQUIRES_RECONCILE。在原TaskStore实现/验证受支持reconcile增量后才能采用本版六项变化，保留旧定义、已验收适用版本、尝试与回执；不直接写DB、不换plan_id/重置历史。该增量未通过不能宣称新版正式准入。BUDGET/CONTROL/RECOVER按机器修订依赖推进源码/fixture工作，真实原生集成仍逐项满足才done。ROUTES、真实任务、RUNTIME、正式采用、故障恢复和60分钟两次跨轮次要求全部保留；不创建替代Goal控制或第二调度器。
+
+原生Goal暂停/恢复只用当前受支持入口，先核对效果。当前工具可get/create及pause/complete/blocked，未暴露resume或objective edit；不能通过修改本地DB、私有RPC、向自身注入消息或create新Goal绕过暂停。已暂停时由用户在原生界面使用官方/goal入口恢复/修订，再以get_goal核实active；不能在此之前声称重启成功。
+
+每次尝试≤15分钟、累计480、保留20次闭环/历史未知预留；具体已用数只读STATE并继续累计。本次重规划、调查、技术审阅也计数。无ready由已有确定性宿主等事件；宿主尚未就绪时保存唯一恢复点，不用模型空转。
