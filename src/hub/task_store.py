@@ -561,6 +561,9 @@ class TaskStore:
     def _prepare_rebuild(self,connection,package,authority):
         from .rebuild_contracts import reject
         grant=self._rebuild_check(connection,package,authority)
+        # Legacy prepare is not execution admission; preserve its deferred checks.
+        # Explicit bootstrap wiring additionally validates its plan at preparation.
+        if authority._plan is not None:self._rebuild_dependencies(connection,package,authority)
         row=self._task_row(connection,package['task_id'])
         if row:
             prior=self._rebuild_rows(connection,package['task_id'])
@@ -574,6 +577,7 @@ class TaskStore:
             connection.execute('INSERT INTO tasks(id,payload,payload_hash,intent,intent_hash,project,parent,status,created) VALUES(?,?,?,?,?,?,?,?,?)',(package['task_id'],canonical(payload).decode(),digest(payload),canonical(intent).decode(),digest(intent),package['project_id'],None,'queued',time.time()))
             self._append_event(connection,package['task_id'],'rebuild-package',package);replayed=False
         self._rebuild_check(connection,package,authority)
+        if authority._plan is not None:self._rebuild_dependencies(connection,package,authority)
         return {'replayed':replayed,'execution_started_by_this_call':False}
 
     def claim_rebuild(self,ident,owner,*,authority):
@@ -641,6 +645,7 @@ class TaskStore:
         package=validate(package,'package');attempt=validate(attempt,'attempt');authority=require_authority(authority);authority._authorize()
         with self._connection(True) as connection:
             grant=self._rebuild_check(connection,package,authority)
+            self._rebuild_dependencies(connection,package,authority)
             row=self._task_row(connection,package['task_id'])
             if not row:reject('TASK_NOT_FOUND')
             task=self._task(row);rows=self._rebuild_rows(connection,task['id']);prior={r['key']:r['data'] for r in rows}
@@ -659,16 +664,45 @@ class TaskStore:
                 if any(r['effect_state']=='unknown' or any(c['exit']!=0 for c in r['checks']) for r in receipts):reject('REBUILD_RETRY_DIAGNOSIS_REQUIRED')
                 active=connection.execute("SELECT count(*) FROM tasks WHERE status IN ('running','waiting_input','waiting_approval','validating','requires_reconcile')").fetchone()[0]
                 if active>package['budget']['capacity']:reject('REBUILD_CAPACITY')
-                self._rebuild_dependencies(connection,package,authority)
                 self._append_event(connection,task['id'],key,attempt);replayed=False
             self._rebuild_check(connection,package,authority)
+            self._rebuild_dependencies(connection,package,authority)
         return {'replayed':replayed,'attempt_sha256':digest(attempt),'execution_started_by_this_call':False}
+
+    def _rebuild_bootstrap_dependency(self,connection,package,dep,authority):
+        """Absent contract rows only; use current, verified plan witnesses in-place.
+
+        A serialized hash mapping is not this capability. Historical receipts
+        remain in plan tables; no retrospective task/grant/attempt is created.
+        """
+        from .plan_admission import BOOTSTRAP_IDS,authority as require_plan
+        from .rebuild_contracts import reject
+        if authority._plan is None:reject('REBUILD_DEPENDENCY_AUTHORITY_REQUIRED')
+        cap=require_plan(authority._plan)
+        plan=self._plan_input(connection,package['lineage']['goal_id'],cap)
+        definitions={t['id']:t for t in plan['tasks']};definition=definitions.get(package['task_id'])
+        if (package['plan']!={'revision':plan['revision'],'sha256':digest(plan)} or definition is None
+                or any(package[k]!=definition[v] for k,v in [('task_id','id'),('project_id','project_id'),('phase_id','phase_id'),('round_id','round_id')])
+                or package['route']['owner_route']!=definition['owner_route']
+                or {d['task_id']for d in package['dependencies']}!=set(definition['depends_on'])):reject('REBUILD_DEPENDENCY_PLAN_MISMATCH')
+        witnesses={}
+        _,accepted,controls=self._plan_state(connection,plan,cap,witnesses=witnesses)
+        ident=dep['task_id'];record=witnesses.get(ident)
+        if (controls['state']!='active' or ident not in BOOTSTRAP_IDS or ident not in accepted or record is None
+                or definitions[ident]['admission_class']!='bootstrap' or record['origin']!='bootstrap'
+                or record['receipt_sha256']!=dep['receipt_sha256']):reject('REBUILD_DEPENDENCY_FAILED')
+        # _plan_state selects one exact applicable version and verifies its full
+        # immutable record hash, known outcome, conflicts and transitive closure.
+        cap.check(plan)
 
     def _rebuild_dependencies(self,connection,package,authority):
         from .rebuild_contracts import reject,validate,receipt_binding,settled_evidence
         for dep in package['dependencies']:
             drow=self._task_row(connection,dep['task_id'])
-            if not drow or drow['status']!='checks_complete' or drow['cancel']:reject('REBUILD_DEPENDENCY_FAILED')
+            if drow is None:
+                self._rebuild_bootstrap_dependency(connection,package,dep,authority)
+                continue
+            if drow['status']!='checks_complete' or drow['cancel']:reject('REBUILD_DEPENDENCY_FAILED')
             history={r['key']:r['data'] for r in self._rebuild_rows(connection,dep['task_id'])}
             matches=[r for k,r in history.items() if k.startswith('rebuild-receipt-') and digest(r)==dep['receipt_sha256']]
             if len(matches)!=1:reject('REBUILD_DEPENDENCY_FAILED')
@@ -1912,11 +1946,12 @@ class TaskStore:
             authority.check(plan);authority.verify(record)
         return result
 
-    def _plan_state(self,connection,plan,authority):
+    def _plan_state(self,connection,plan,authority,*,witnesses=None):
         from .plan_admission import reject,plan_history
         raw=connection.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(plan['plan_id'],)).fetchone()
         _,versions,_=plan_history(self._decode(*raw));definitions={t['id']:t for t in plan['tasks']}
         accepted=set();states={};groups={}
+        if witnesses is not None:witnesses.clear()
         for table in ('plan_receipts','plan_conflicts'):
             for row in connection.execute('SELECT task_id,body,hash FROM '+table+' WHERE plan_id=?',(plan['plan_id'],)):
                 value=self._decode(row['body'],row['hash']);ident=row['task_id'];h=value['plan_sha256']
@@ -1928,7 +1963,9 @@ class TaskStore:
             h=next(h for h in [digest(plan),*reversed(versions)]if h in by_version);records=by_version[h]
             try:verified=len(records)==1 and authority.verify(records[0],plan_sha256=h)
             except ServiceError:verified=False
-            if verified:accepted.add(ident)
+            if verified:
+                accepted.add(ident)
+                if witnesses is not None:witnesses[ident]=records[0]
             else:states[ident]='requires_reconcile'
         for row in connection.execute('SELECT id,status,cancel FROM tasks'):
             states[row['id']]=row['status']
@@ -1945,6 +1982,8 @@ class TaskStore:
             for ident in invalid:states[ident]='requires_reconcile'
         controls=authority._controls()
         if type(controls)is not dict or controls.get('state')not in {'active','paused','cancelled'} or type(controls.get('revision'))is not int:reject('PLAN_CONTROL_UNKNOWN')
+        if witnesses is not None:
+            for ident in set(witnesses)-accepted:del witnesses[ident]
         return states,accepted,controls
 
     def plan_ready(self,plan_id,*,authority):

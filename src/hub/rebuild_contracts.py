@@ -92,11 +92,15 @@ class RootAuthority:
     _workspace: object
     _sandbox: object
     _writer: object
+    _plan: object = None
 
     @classmethod
-    def configured(cls,binding,*,authorize,workspace_check=observe_workspace,sandbox_check,writer_check):
+    def configured(cls,binding,*,authorize,workspace_check=observe_workspace,sandbox_check,writer_check,plan_authority=None):
         if not all(callable(x) for x in (authorize,workspace_check,sandbox_check,writer_check)):reject('REBUILD_AUTHORITY_REQUIRED')
-        return cls(canonical(binding),authorize,workspace_check,sandbox_check,writer_check)
+        if plan_authority is not None:
+            from .plan_admission import authority as require_plan_authority
+            require_plan_authority(plan_authority)
+        return cls(canonical(binding),authorize,workspace_check,sandbox_check,writer_check,plan_authority)
 
     def snapshot(self):return json.loads(self._data)
 
