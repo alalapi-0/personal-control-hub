@@ -13,7 +13,8 @@ import time
 
 from .codex_adapter import (ReadonlyAppServerAdapter, DISCOVERY_SCHEMA_PINS,
                             REGISTERED_CONFIG_SHA256, VERSION, child_environment,
-                            config_fingerprint)
+                            config_fingerprint, OfficialMetadataProfile, OfficialMetadataAdapter,
+                            OFFICIAL_METADATA_VERSION, OFFICIAL_PAGE_LIMIT, OFFICIAL_MAX_PAGES)
 from .service_contract import ServiceError
 from .workbench_store import canonical
 
@@ -40,16 +41,25 @@ def environment_identity(root=HUB_ROOT):
 class SessionService:
     def __init__(self, *, adapter_factory=None, clock=time.monotonic,
                  wall=time.time, identity=None, metadata_read_id=None, excluded_read_ids=(),
-                 hub_root=HUB_ROOT):
+                 hub_root=HUB_ROOT, official_metadata_profile=None):
         if (not isinstance(hub_root, (str, Path)) or not Path(hub_root).is_absolute()
                 or '..' in Path(hub_root).parts):
             raise ServiceError('SESSION_ROOT_REJECTED')
         self.hub_root = Path(hub_root)
+        self.official_metadata_profile = official_metadata_profile
+        if official_metadata_profile is not None:
+            if (type(official_metadata_profile) is not OfficialMetadataProfile
+                    or official_metadata_profile.canonical_root != self.hub_root
+                    or metadata_read_id is not None or excluded_read_ids):
+                raise ServiceError('SESSION_SELECTION_REJECTED')
         from .native_config_registration import load_registration
         self.adapter_factory = adapter_factory or (lambda launch_root: ReadonlyAppServerAdapter(
             launch_root, registration=load_registration(self.hub_root)))
+        if official_metadata_profile is not None:
+            self.adapter_factory = adapter_factory or (lambda root: OfficialMetadataAdapter(official_metadata_profile))
         self.clock, self.wall = clock, wall
-        self.identity = identity or (lambda: environment_identity(self.hub_root))
+        self.identity = identity or (official_metadata_profile.identity if official_metadata_profile else
+                                     lambda: environment_identity(self.hub_root))
         # Optional exact selection is trusted server configuration, never an HTTP field.
         # Ordinary browser discovery performs zero reads and cannot select a thread.
         if metadata_read_id is not None and (type(metadata_read_id) is not str or not THREAD_ID.fullmatch(metadata_read_id)):
@@ -107,6 +117,8 @@ class SessionService:
                     self._authorize(authorize, owner)
                     return self._view()
             self.cache = None
+            if self.official_metadata_profile is not None:
+                return self._official_catalog(authorize, owner, environment)
             groups, seen = [], {}
             read = None
             with tempfile.TemporaryDirectory(prefix='hub-session-discovery-') as directory:
@@ -181,3 +193,58 @@ class SessionService:
             raise
         finally:
             self.lock.release()
+
+    def _official_catalog(self, authorize, owner, environment):
+        profile = self.official_metadata_profile
+        adapter = self.adapter_factory(profile.delivery_root)
+        turns, seen, cursor, complete = [], set(), None, False
+        try:
+            adapter.open()
+            self._authorize(authorize, owner)
+            result = adapter.call('thread/read', {'threadId': profile.expected_thread, 'includeTurns': False})
+            thread = result['thread']
+            if thread['id'] != profile.expected_thread or thread['cwd'] != str(profile.delivery_root):
+                raise ServiceError('SESSION_BINDING_MISMATCH', status=503)
+            for page in range(OFFICIAL_MAX_PAGES):
+                self._authorize(authorize, owner)
+                params = {'threadId': profile.expected_thread, 'itemsView': 'notLoaded',
+                          'limit': OFFICIAL_PAGE_LIMIT, 'sortDirection': 'desc'}
+                if page:
+                    params['cursor'] = cursor
+                result = adapter.call('thread/turns/list', params)
+                for turn in result['data']:
+                    if turn['id'] in seen or turn.get('items') != [] or turn.get('itemsView') != 'notLoaded':
+                        raise ServiceError('SESSION_METADATA_REJECTED', status=503)
+                    seen.add(turn['id'])
+                    turns.append({key: turn.get(key) for key in ('id', 'status', 'startedAt', 'completedAt',
+                                                                'durationMs', 'rootTurnId', 'itemsView')})
+                cursor = result.get('nextCursor')
+                if 'nextCursor' not in result or cursor is None:
+                    complete = 'nextCursor' in result
+                    break
+            self._authorize(authorize, owner)
+            if self.identity() != environment:
+                raise ServiceError('SESSION_GENERATION_CHANGED', status=409)
+            row = {'id': thread['id'], 'session_id': thread.get('sessionId'), 'source': thread['source'] if type(thread['source']) is str else 'unknown',
+                   'state': {'idle': 'idle_unverified', 'notLoaded': 'notLoaded', 'active': 'busy',
+                             'systemError': 'error'}.get(thread['status']['type'], 'unknown'),
+                   'createdAt': thread['createdAt'], 'updatedAt': thread['updatedAt'],
+                   'continue_enabled': False, 'resume_verified': False, 'reason': 'METADATA_IS_NOT_EXECUTION_AUTHORITY'}
+            data = {'project': 'Personal Control Hub', 'scope': 'hub_only', 'profile': 'official_metadata_0.163',
+                    'native_execution_admission': False,
+                    'version': OFFICIAL_METADATA_VERSION, 'classification': 'native_metadata' if adapter.transport ==
+                    'app_server_stdio' else 'mock', 'observed_at': self.wall(), 'ttl_seconds': TTL,
+                    'sources': [{'source': row['source'], 'state': 'readonly', 'rows': [row],
+                                 'has_cursor': not complete}], 'unprobed': ['cloud', 'remote'],
+                    'metadata_read': {'id': row['id'], 'session_id': row['session_id'], 'turns': turns,
+                                      'pages_complete': complete, 'has_next_cursor': cursor is not None,
+                                      'activity_authority': 'unknown', 'resume_verified': False},
+                    'continue_enabled': False, 'resume_verified': False, 'native_calls': adapter.next_id}
+            data['generation'] = hashlib.sha256(canonical(data)).hexdigest()
+            self.cache = {'owner': owner, 'environment': environment, 'created': self.clock(), 'data': data}
+            return self._view()
+        finally:
+            adapter.close()
+            self._authorize(authorize, owner)
+            if self.identity() != environment:
+                raise ServiceError('SESSION_GENERATION_CHANGED', status=409)

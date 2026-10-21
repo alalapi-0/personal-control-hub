@@ -188,3 +188,395 @@ class SessionDataRootTests(unittest.TestCase):
             with self.subTest(root=root), self.assertRaises(ServiceError) as error:
                 SessionService(hub_root=root)
             self.assertEqual(error.exception.code, 'SESSION_ROOT_REJECTED')
+
+
+class OfficialMetadataTests(unittest.TestCase):
+    """Synthetic wire frames only: no native process, model, or account access."""
+    def setUp(self):
+        import io
+        import tempfile
+        from types import SimpleNamespace
+        from hub.codex_adapter import OfficialMetadataProfile, OfficialMetadataAdapter
+        self.temporary = tempfile.TemporaryDirectory(prefix='hub-official-metadata-')
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        self.profile = OfficialMetadataProfile(ID, self.root/'canonical', self.root/'delivery',
+                                               self.root/'schemas', self.root/'binary', 'a'*64)
+        self.adapter = OfficialMetadataAdapter(self.profile)
+        self.adapter.schemas = {name: {} for pair in self.adapter.methods.values() for name in pair}
+        self.adapter.schemas['ThreadReadResponse'] = {'definitions': {'Thread': {
+            'type': 'object', 'required': ['sessionId'], 'properties': {'sessionId': {'type': 'string'}}}},
+            'type': 'object', 'properties': {'thread': {'$ref': '#/definitions/Thread'}}}
+        self.adapter.proc = SimpleNamespace(stdin=io.BytesIO())
+        self.adapter.schemas['RemoteControlStatusChangedNotification'] = {
+            'type': 'object', 'properties': {
+                'environmentId': {'type': ['string', 'null']}, 'installationId': {'type': 'string'},
+                'serverName': {'type': 'string'}, 'status': {'enum': ['disabled', 'connecting', 'connected', 'errored']}},
+            'required': ['installationId', 'serverName', 'status']}
+        self.owner, self.environment = ['owner'], ['v1']
+
+    def initialize(self):
+        from hub.codex_adapter import OFFICIAL_INITIALIZE
+        self.adapter.inbox.put({'id': 1, 'result': {'userAgent': 'synthetic'}})
+        self.adapter.call('initialize', copy.deepcopy(OFFICIAL_INITIALIZE))
+        self.adapter._send({'method': 'initialized', 'params': {}})
+
+    def thread(self):
+        return {**row(source='exec'), 'cwd': str(self.profile.delivery_root), 'sessionId': OTHER}
+
+    def read(self, thread=None):
+        self.adapter.inbox.put({'id': self.adapter.next_id+1, 'result': {'thread': thread or self.thread()}})
+        return self.adapter.call('thread/read', {'threadId': ID, 'includeTurns': False})
+
+    def page(self, cursor=None, result=None):
+        from hub.codex_adapter import OFFICIAL_PAGE_LIMIT
+        params = {'threadId': ID, 'itemsView': 'notLoaded', 'limit': OFFICIAL_PAGE_LIMIT, 'sortDirection': 'desc'}
+        if self.adapter.page_count:
+            params['cursor'] = cursor
+        self.adapter.inbox.put({'id': self.adapter.next_id+1, 'result': result or {
+            'data': [], 'nextCursor': None, 'backwardsCursor': None}})
+        return self.adapter.call('thread/turns/list', params)
+
+    def service(self):
+        service = SessionService(hub_root=self.profile.canonical_root, official_metadata_profile=self.profile,
+                                 adapter_factory=lambda root: self.adapter, identity=lambda: self.environment[0])
+        self.adapter.open = lambda: self.adapter
+        self.adapter.close = lambda: None
+        return service
+
+    def test_explicit_default_open_wire_has_no_legacy_launch_or_diagnostics(self):
+        import hub.codex_adapter as module
+        from types import SimpleNamespace
+        self.adapter.inbox.put({'id': 1, 'result': {'userAgent': 'synthetic'}})
+        with patch.object(self.adapter, '_load_schemas'), patch.object(module, '_official_binary_hash', return_value='a'*64),\
+             patch.object(module.subprocess, 'run', return_value=SimpleNamespace(returncode=0, stdout=module.OFFICIAL_METADATA_VERSION)),\
+             patch.object(module.subprocess, 'Popen', return_value=self.adapter.proc) as spawn,\
+             patch.object(module.threading, 'Thread'):
+            self.adapter.open()
+        self.assertEqual(spawn.call_args.args[0], (str(self.profile.binary), 'app-server'))
+        self.assertEqual(spawn.call_args.kwargs['cwd'], self.profile.delivery_root)
+        self.assertNotIn('CODEX_INTERNAL_APP_SERVER_REMOTE_CONTROL_DISABLED', spawn.call_args.kwargs['env'])
+        import json
+        frames = [json.loads(line) for line in self.adapter.proc.stdin.getvalue().splitlines()]
+        self.assertEqual(frames, [{'id': 1, 'method': 'initialize', 'params': module.OFFICIAL_INITIALIZE},
+                                  {'method': 'initialized', 'params': {}}])
+
+    def test_forbidden_methods_and_parameters_are_zero_wire(self):
+        from hub.codex_adapter import OFFICIAL_INITIALIZE
+        for method in ('thread/list', 'thread/start', 'thread/resume', 'turn/start', 'turn/steer',
+                       'turn/interrupt', 'config/read', 'account/read', 'goal/read', 'command/exec', 'unknown'):
+            with self.subTest(method=method), self.assertRaises(ServiceError):
+                self.adapter.call(method, {})
+            with self.assertRaises(ServiceError):
+                self.adapter._send({'id': 1, 'method': method, 'params': {}})
+        for changes in ({'experimentalApi': True}, {'experimentalApi': 0}, {'explicitGatewayOauth': False}, {'extensions': {}}):
+            params = copy.deepcopy(OFFICIAL_INITIALIZE); params['capabilities'].update(changes)
+            with self.assertRaises(ServiceError): self.adapter.call('initialize', params)
+        self.assertEqual(self.adapter.proc.stdin.getvalue(), b'')
+        self.initialize(); before = self.adapter.proc.stdin.getvalue()
+        for params in ({'threadId': OTHER, 'includeTurns': False}, {'threadId': ID, 'includeTurns': True},
+                       {'threadId': ID, 'includeTurns': 0}, {'threadId': ID, 'includeTurns': False, 'cwd': '/forged'}):
+            with self.assertRaises(ServiceError): self.adapter.call('thread/read', params)
+        self.assertEqual(self.adapter.proc.stdin.getvalue(), before)
+
+    def test_thread_session_independent_missing_and_strict_binding(self):
+        for field, value in [('sessionId', OTHER), ('sessionId', None), ('missing', None)]:
+            self.adapter.metadata_read = False
+            if not self.adapter.initialized: self.initialize()
+            thread = self.thread()
+            if field == 'missing': del thread['sessionId']
+            else: thread[field] = value
+            result = self.read(thread)['thread']
+            self.assertEqual(result.get('sessionId'), value)
+            self.assertEqual(result['source'], 'exec')
+        for changes in ({'id': OTHER}, {'cwd': str(self.profile.canonical_root)}, {'cwd': '/forged'}, {'turns': [1]}):
+            self.adapter.metadata_read = False
+            with self.assertRaises(ServiceError): self.read({**self.thread(), **changes})
+
+    def test_bounded_opaque_pagination_and_no_full_items(self):
+        from hub.codex_adapter import OFFICIAL_MAX_PAGES, OFFICIAL_PAGE_LIMIT
+        self.initialize(); self.read()
+        opaque = '{not a path: PRIVATE cursor}'
+        for index in range(OFFICIAL_MAX_PAGES):
+            self.page(opaque if index else None, {'data': [], 'nextCursor': opaque})
+        before = self.adapter.proc.stdin.getvalue()
+        with self.assertRaises(ServiceError):
+            self.adapter.call('thread/turns/list', {'threadId': ID, 'itemsView': 'notLoaded',
+                'limit': OFFICIAL_PAGE_LIMIT, 'sortDirection': 'desc', 'cursor': opaque})
+        self.assertEqual(before, self.adapter.proc.stdin.getvalue())
+        self.adapter.page_count = 0
+        for params in ({'threadId': ID, 'itemsView': 'full', 'limit': OFFICIAL_PAGE_LIMIT, 'sortDirection': 'desc'},
+                       {'threadId': ID, 'itemsView': 'notLoaded', 'limit': 999, 'sortDirection': 'desc'},
+                       {'threadId': ID, 'itemsView': 'notLoaded', 'limit': OFFICIAL_PAGE_LIMIT, 'sortDirection': 'desc', 'cursor': 'invented'}):
+            with self.assertRaises(ServiceError): self.adapter.call('thread/turns/list', params)
+        for turn in ({'id': ID, 'items': [1], 'itemsView': 'notLoaded', 'status': 'interrupted'},
+                     {'id': ID, 'items': [], 'itemsView': 'full', 'status': 'interrupted'}):
+            with self.assertRaises(ServiceError): self.page(result={'data': [turn], 'nextCursor': None})
+
+    def test_malformed_server_request_eof_never_answers_or_grants(self):
+        import io
+        for raw in (b'[]\n', b'{"id":1,"id":2}\n', b'bad\n', b''):
+            self.adapter.failed = None; self.adapter.proc.stdout = io.BytesIO(raw)
+            self.adapter._read()
+            with self.assertRaises(ServiceError): self.adapter._message(0)
+        self.adapter.failed = None
+        before = self.adapter.proc.stdin.getvalue()
+        self.adapter.inbox.put({'id': 1, 'method': 'item/commandExecution/requestApproval', 'params': {}})
+        with self.assertRaises(ServiceError): self.adapter._message(0)
+        self.assertEqual(self.adapter.proc.stdin.getvalue(), before)
+
+    def test_service_exec_notloaded_interrupted_are_not_admission_and_cache_safe(self):
+        self.initialize(); service = self.service()
+        turn = {'id': ID, 'status': 'interrupted', 'items': [], 'itemsView': 'notLoaded', 'completedAt': None}
+        self.adapter.inbox.put({'id': 2, 'result': {'thread': self.thread()}})
+        self.adapter.inbox.put({'id': 3, 'result': {'data': [turn], 'nextCursor': None}})
+        data = service.catalog(lambda: self.owner[0])
+        self.assertEqual(data['sources'][0]['source'], 'exec')
+        self.assertEqual(data['sources'][0]['rows'][0]['session_id'], OTHER)
+        self.assertIsNone(data['metadata_read']['turns'][0]['completedAt'])
+        self.assertEqual(data['metadata_read']['activity_authority'], 'unknown')
+        self.assertFalse(data['continue_enabled']); self.assertFalse(data['resume_verified'])
+        self.assertNotIn('PRIVATE', str(data)); self.assertNotIn(str(self.profile.delivery_root), str(data))
+        self.assertEqual(service.catalog(lambda: self.owner[0])['generation'], data['generation'])
+        self.owner[0] = None
+        with self.assertRaises(ServiceError): service.catalog(lambda: self.owner[0])
+        self.assertIsNone(service.cache)
+
+    def test_service_owner_generation_change_and_incomplete_pages(self):
+        for mode in ('owner', 'generation', 'incomplete', 'missing_cursor'):
+            self.adapter.metadata_read = False; self.adapter.page_count = 0
+            if not self.adapter.initialized: self.initialize()
+            service = self.service(); self.owner[0] = 'owner'; self.environment[0] = 'v1'
+            self.adapter.inbox.put({'id': self.adapter.next_id+1, 'result': {'thread': self.thread()}})
+            original = self.adapter.call
+            def call(method, params):
+                result = original(method, params)
+                if mode == 'owner': self.owner[0] = None
+                if mode == 'generation': self.environment[0] = 'v2'
+                return result
+            if mode in ('owner', 'generation'):
+                if mode == 'generation':
+                    self.adapter.inbox.put({'id': self.adapter.next_id+2, 'result': {'data': [], 'nextCursor': None}})
+                with patch.object(self.adapter, 'call', side_effect=call), self.assertRaises(ServiceError):
+                    service.catalog(lambda: self.owner[0])
+                self.assertIsNone(service.cache)
+            else:
+                pages = 3 if mode == 'incomplete' else 1
+                for i in range(pages):
+                    result = {'data': [], 'nextCursor': 'opaque'} if mode == 'incomplete' else {'data': []}
+                    self.adapter.inbox.put({'id': self.adapter.next_id+2+i, 'result': result})
+                data = service.catalog(lambda: self.owner[0])
+                self.assertFalse(data['metadata_read']['pages_complete'])
+                self.assertTrue(data['sources'][0]['has_cursor'])
+
+    def test_profile_is_server_configured_and_canonical_binding_required(self):
+        from dataclasses import FrozenInstanceError
+        with self.assertRaises(FrozenInstanceError): self.profile.expected_thread = OTHER
+        for kwargs in ({'hub_root': self.profile.delivery_root}, {'hub_root': self.profile.canonical_root, 'metadata_read_id': ID}):
+            with self.assertRaises(ServiceError): SessionService(official_metadata_profile=self.profile, **kwargs)
+
+    def test_rpc_refusal_and_malformed_response_do_not_fallback(self):
+        from hub.codex_adapter import OFFICIAL_INITIALIZE
+        for value, code in [({'id': True, 'result': {}}, 'CODEX_RESPONSE_CONFLICT'),
+                            ({'id': 1, 'error': {'code': -32601, 'message': 'unsupported'}}, 'CODEX_RPC_REJECTED')]:
+            self.adapter.next_id = 0
+            self.adapter.inbox.put(value)
+            before = len(self.adapter.proc.stdin.getvalue().splitlines())
+            with self.assertRaises(ServiceError) as caught:
+                self.adapter.call('initialize', copy.deepcopy(OFFICIAL_INITIALIZE))
+            self.assertEqual(caught.exception.code, code)
+            self.assertEqual(len(self.adapter.proc.stdin.getvalue().splitlines()), before+1)
+            self.assertFalse(self.adapter.initialized)
+
+    def test_missing_session_public_unknown_and_idle_still_unverified(self):
+        self.initialize(); service = self.service()
+        thread = self.thread(); thread.pop('sessionId'); thread['status'] = {'type': 'idle'}
+        self.adapter.inbox.put({'id': 2, 'result': {'thread': thread}})
+        self.adapter.inbox.put({'id': 3, 'result': {'data': [], 'nextCursor': None}})
+        data = service.catalog(lambda: 'owner')
+        self.assertIsNone(data['metadata_read']['session_id'])
+        self.assertIsNone(data['sources'][0]['rows'][0]['session_id'])
+        self.assertEqual(data['sources'][0]['rows'][0]['state'], 'idle_unverified')
+        self.assertFalse(data['native_execution_admission'])
+        self.assertFalse(data['continue_enabled']); self.assertFalse(data['resume_verified'])
+
+    @staticmethod
+    def remote_notification(status='connected'):
+        return {'emittedAtMs': 123, 'method': 'remoteControl/status/changed', 'params': {
+            'environmentId': None, 'installationId': 'PRIVATE-INSTALLATION',
+            'serverName': 'PRIVATE-SERVER', 'status': status}}
+
+    def test_known_official_notification_interleaving_keeps_metadata_readonly(self):
+        from hub.codex_adapter import OFFICIAL_INITIALIZE
+        self.adapter.schemas['RemoteControlStatusChangedNotification'] = {
+            'type': 'object', 'properties': {
+                'environmentId': {'type': ['string', 'null']}, 'installationId': {'type': 'string'},
+                'serverName': {'type': 'string'}, 'status': {'enum': ['disabled', 'connecting', 'connected', 'errored']}},
+            'required': ['installationId', 'serverName', 'status']}
+        self.adapter.inbox.put(self.remote_notification('connecting'))
+        self.adapter.inbox.put({'id': 1, 'result': {'userAgent': 'synthetic'}})
+        self.adapter.inbox.put(self.remote_notification('connected'))
+        self.adapter.call('initialize', copy.deepcopy(OFFICIAL_INITIALIZE))
+        self.adapter._send({'method': 'initialized', 'params': {}})
+        self.adapter.inbox.put(self.remote_notification('errored'))
+        self.read()
+        self.adapter.inbox.put(self.remote_notification('disabled'))
+        self.page()
+        self.assertTrue(self.adapter.metadata_read)
+        self.assertIsNone(self.adapter.active_profile)
+        self.assertEqual(self.adapter.notifications, [])
+        self.assertEqual(self.adapter.denials, [])
+        import json
+        frames = [json.loads(line) for line in self.adapter.proc.stdin.getvalue().splitlines()]
+        self.assertEqual([frame['method'] for frame in frames],
+                         ['initialize', 'initialized', 'thread/read', 'thread/turns/list'])
+        self.assertNotIn('PRIVATE', str(frames))
+
+    def test_only_known_no_id_notification_is_passive_and_never_answered(self):
+        frames = [self.remote_notification(), self.remote_notification(), self.remote_notification()]
+        frames[2]['id'] = None
+        frames[0]['method'] = 'remoteControl/unknown'
+        frames[1]['id'] = 999
+        for frame in frames:
+            self.adapter.inbox.put(frame)
+            before = self.adapter.proc.stdin.getvalue()
+            with self.assertRaises(ServiceError) as error:
+                self.adapter._message(0)
+            self.assertEqual(error.exception.code, 'DISCOVERY_PROVIDER_REQUEST_DENIED')
+            self.assertEqual(self.adapter.proc.stdin.getvalue(), before)
+            self.assertEqual(self.adapter.metadata_notification_count, 0)
+            self.assertIsNone(self.adapter.metadata_remote_status)
+        for method in ('remoteControl/read', 'remoteControl/start', 'goal/read', 'account/read',
+                       'config/read', 'permissions/read', 'command/exec'):
+            with self.assertRaises(ServiceError): self.adapter.call(method, {})
+        self.assertEqual(self.adapter.proc.stdin.getvalue(), b'')
+
+    def test_notification_bad_schema_extra_parameters_envelope_and_size_fail_closed(self):
+        from hub.codex_adapter import OFFICIAL_NOTIFICATION_BYTES
+        frames = []
+        for change in ({'status': 'unknown'}, {'installationId': 1}, {'serverName': None},
+                       {'environmentId': {}}, {'extraCapability': True}):
+            frame = self.remote_notification(); frame['params'].update(change); frames.append(frame)
+        frame = self.remote_notification(); del frame['params']['status']; frames.append(frame)
+        frame = self.remote_notification(); frame['params'] = []; frames.append(frame)
+        for key, value in [('extra', 'data'), ('emittedAtMs', True), ('emittedAtMs', '123'),
+                           ('emittedAtMs', -1), ('emittedAtMs', 2**53), ('emittedAtMs', float('inf'))]:
+            frame = self.remote_notification(); frame[key] = value; frames.append(frame)
+        frame = self.remote_notification(); frame['params']['serverName'] = 'x'*OFFICIAL_NOTIFICATION_BYTES
+        frames.append(frame)
+        for frame in frames:
+            with self.subTest(frame_keys=list(frame), params_type=type(frame['params']).__name__):
+                self.adapter.inbox.put(frame)
+                with self.assertRaises(ServiceError): self.adapter._message(0)
+                self.assertEqual(self.adapter.metadata_notification_count, 0)
+                self.assertIsNone(self.adapter.metadata_remote_status)
+                self.assertEqual(self.adapter.proc.stdin.getvalue(), b'')
+
+    def test_notification_flood_is_bounded_across_calls(self):
+        from hub.codex_adapter import OFFICIAL_INITIALIZE, OFFICIAL_MAX_NOTIFICATIONS
+        for _ in range(OFFICIAL_MAX_NOTIFICATIONS): self.adapter.inbox.put(self.remote_notification())
+        self.adapter.inbox.put({'id': 1, 'result': {'userAgent': 'synthetic'}})
+        self.adapter.call('initialize', copy.deepcopy(OFFICIAL_INITIALIZE))
+        self.adapter._send({'method': 'initialized', 'params': {}})
+        self.adapter.inbox.put(self.remote_notification())
+        with self.assertRaises(ServiceError) as error: self.read()
+        self.assertEqual(error.exception.code, 'DISCOVERY_NOTIFICATION_CAPACITY')
+        self.assertEqual(self.adapter.metadata_notification_count, OFFICIAL_MAX_NOTIFICATIONS)
+        self.assertFalse(self.adapter.metadata_read)
+        import json
+        frames = [json.loads(line) for line in self.adapter.proc.stdin.getvalue().splitlines()]
+        self.assertEqual([f['method'] for f in frames], ['initialize', 'initialized', 'thread/read'])
+
+    def test_total_deadline_is_not_renewed_by_known_notifications_or_late_response(self):
+        from hub.codex_adapter import OFFICIAL_INITIALIZE
+        self.adapter.inbox.put(self.remote_notification())
+        self.adapter.inbox.put(self.remote_notification('errored'))
+        self.adapter.inbox.put({'id': 1, 'result': {'userAgent': 'synthetic'}})
+        now, waits = [0.0], []
+        original = self.adapter._message
+        def delayed_message(timeout):
+            waits.append(timeout)
+            value = original(timeout)
+            now[0] += .4
+            return value
+        with patch('hub.codex_adapter.time.monotonic', side_effect=lambda: now[0]), \
+             patch.object(self.adapter, '_message', side_effect=delayed_message):
+            with self.assertRaises(ServiceError) as error:
+                self.adapter.call('initialize', copy.deepcopy(OFFICIAL_INITIALIZE), timeout=1)
+        self.assertEqual(error.exception.code, 'CODEX_TIMEOUT')
+        self.assertFalse(self.adapter.initialized)
+        self.assertEqual(self.adapter.metadata_notification_count, 2)
+        self.assertEqual(len(waits), 3)
+        self.assertLessEqual(waits[-1], 1-.8+.0001)
+        self.assertEqual(len(self.adapter.proc.stdin.getvalue().splitlines()), 1)
+
+    def test_connected_errored_observations_do_not_leak_or_enable_execution(self):
+        self.adapter.inbox.put(self.remote_notification('connected'))
+        self.initialize()
+        service = self.service()
+        self.adapter.inbox.put(self.remote_notification('errored'))
+        self.adapter.inbox.put({'id': 2, 'result': {'thread': self.thread()}})
+        self.adapter.inbox.put(self.remote_notification('connecting'))
+        self.adapter.inbox.put({'id': 3, 'result': {'data': [], 'nextCursor': None}})
+        result = service.catalog(lambda: 'owner')
+        self.assertFalse(result['native_execution_admission'])
+        self.assertFalse(result['continue_enabled']); self.assertFalse(result['resume_verified'])
+        self.assertEqual(self.adapter.metadata_remote_status, 'connecting')
+        self.assertIsNone(self.adapter.remote_control_status)
+        self.assertIsNone(self.adapter.active_profile)
+        self.assertEqual(self.adapter.notifications, [])
+        for private in ('PRIVATE', 'installationId', 'environmentId', 'serverName', 'connecting', 'connected', 'errored'):
+            self.assertNotIn(private, str(result))
+
+    def test_observed_read_state_outer_field_is_ignored_and_discarded(self):
+        self.initialize()
+        for read_state in (None, 'notLoaded', {'thread': {'id': OTHER, 'cwd': '/forged'},
+                           'continue_enabled': True, 'resume_verified': True, 'native_execution_admission': True,
+                           'private': 'PRIVATE-READSTATE'}):
+            with self.subTest(read_state_type=type(read_state).__name__):
+                self.adapter.metadata_read = False
+                original = {'thread': self.thread(), 'readState': read_state}
+                snapshot = copy.deepcopy(original)
+                self.adapter.inbox.put({'id': self.adapter.next_id+1, 'result': original})
+                result = self.adapter.call('thread/read', {'threadId': ID, 'includeTurns': False})
+                self.assertEqual(result, {'thread': self.thread()})
+                self.assertNotIn('readState', result)
+                self.assertEqual(original, snapshot)
+                self.assertEqual(result['thread']['sessionId'], OTHER)
+                self.assertIsNone(self.adapter.active_profile)
+
+    def test_read_state_cannot_repair_bad_core_binding_or_unknown_outer_fields(self):
+        self.initialize()
+        good_state = {'thread': self.thread(), 'continue_enabled': True}
+        variants = [{'readState': good_state}]
+        for change in ({'id': OTHER}, {'cwd': '/forged'}, {'turns': [{'body': 'PRIVATE'}]}, {'sessionId': 'forged'}):
+            variants.append({'thread': {**self.thread(), **change}, 'readState': good_state})
+        variants += [{'thread': self.thread(), 'unknownOuter': None},
+                     {'thread': self.thread(), 'readState': None, 'unknownOuter': {'id': ID}}]
+        for result in variants:
+            with self.subTest(keys=list(result)):
+                self.adapter.metadata_read = False
+                self.adapter.inbox.put({'id': self.adapter.next_id+1, 'result': result})
+                with self.assertRaises(ServiceError):
+                    self.adapter.call('thread/read', {'threadId': ID, 'includeTurns': False})
+                self.assertFalse(self.adapter.metadata_read)
+                self.assertIsNone(self.adapter.active_profile)
+
+    def test_read_state_never_enters_public_metadata_or_execution_projection(self):
+        self.initialize(); service = self.service()
+        malicious = {'thread': {'id': OTHER, 'sessionId': ID, 'cwd': '/PRIVATE-OVERRIDE', 'source': 'cli'},
+                     'status': 'idle', 'writer_absent': True, 'goal_stopped': True,
+                     'continue_enabled': True, 'resume_verified': True, 'native_execution_admission': True}
+        self.adapter.inbox.put({'id': 2, 'result': {'thread': self.thread(), 'readState': malicious}})
+        self.adapter.inbox.put({'id': 3, 'result': {'data': [], 'nextCursor': None}})
+        result = service.catalog(lambda: 'owner')
+        observed = result['sources'][0]['rows'][0]
+        self.assertEqual(observed['id'], ID)
+        self.assertEqual(observed['session_id'], OTHER)
+        self.assertEqual(observed['source'], 'exec')
+        self.assertEqual(observed['state'], 'notLoaded')
+        self.assertEqual(result['metadata_read']['activity_authority'], 'unknown')
+        self.assertFalse(result['continue_enabled']); self.assertFalse(result['resume_verified'])
+        self.assertFalse(result['native_execution_admission'])
+        for value in ('readState', 'PRIVATE', 'writer_absent', 'goal_stopped'):
+            self.assertNotIn(value, str(result))

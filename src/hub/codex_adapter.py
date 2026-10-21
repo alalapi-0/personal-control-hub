@@ -14,6 +14,7 @@ import tempfile
 import threading
 import time
 from pathlib import Path
+from dataclasses import dataclass
 
 import jsonschema
 
@@ -756,3 +757,267 @@ class ReadonlyAppServerAdapter(AppServerAdapter):
         if len(self.denials) != before:
             raise ServiceError('DISCOVERY_PROVIDER_REQUEST_DENIED', status=503)
         return value
+
+
+# Public default 0.163 metadata is a separate protocol, not a legacy permission profile.
+OFFICIAL_METADATA_VERSION = 'codex-cli 0.163.0'
+OFFICIAL_METADATA_PINS = {
+    'InitializeParams': 'b55124e7c0f36a1789396daa5578217a92be67f053903696236686e59f6f212e',
+    'InitializeResponse': '62ad689c2cb6379913c1d72749cfd8de5089d35760214123518eb92eef11acc9',
+    'ThreadReadParams': 'dfe040c6ac71d30795b8be3f3ff232e66f362a37f883b491e5d1ea367f470db4',
+    'ThreadReadResponse': '59d458102e90380c1a436346aba78ad3cd64178b022113a63a0d0731a925d60f',
+    'ThreadTurnsListParams': '2a8b93d7d4437cc25e16a1dde16d8db3c338d39e16c5eece2a56e943a21577d7',
+    'ThreadTurnsListResponse': 'eba82395d4479bb28091bbe6f39c929c7c66a30d7b0eeabedac39057ce72aceb',
+    'RemoteControlStatusChangedNotification': '56aa1d58294238557cd8b16199909c2c157a7542b9259ef2deddf40fe4c02c91',
+}
+OFFICIAL_PAGE_LIMIT = 8
+OFFICIAL_MAX_PAGES = 3
+OFFICIAL_MAX_NOTIFICATIONS = 8
+OFFICIAL_NOTIFICATION_BYTES = 16 * 1024
+OFFICIAL_INITIALIZE = {'clientInfo': {'name': 'personal_control_hub_metadata_probe', 'version': '1.1.0'},
+                       'capabilities': {'experimentalApi': False, 'explicitGatewayOauth': True}}
+
+
+def _official_binary_hash(path):
+    # Unlike config_fingerprint, executables may exceed the 1 MiB config bound.
+    try:
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+        with os.fdopen(fd, 'rb') as stream:
+            before = os.fstat(stream.fileno())
+            if (not stat.S_ISREG(before.st_mode) or before.st_nlink != 1
+                    or before.st_size > 1024**3 or before.st_mode & (0o022 | stat.S_ISUID | stat.S_ISGID)
+                    or before.st_uid not in {0, os.getuid()} or not before.st_mode & stat.S_IXUSR):
+                raise ValueError('unsafe binary')
+            digest = hashlib.sha256()
+            for chunk in iter(lambda: stream.read(65536), b''):
+                digest.update(chunk)
+            after = os.fstat(stream.fileno())
+            fields = lambda value: (value.st_dev, value.st_ino, value.st_size, value.st_mode,
+                                    value.st_mtime_ns, value.st_ctime_ns)
+            if fields(before) != fields(after):
+                raise ValueError('changed binary')
+            return digest.hexdigest()
+    except (OSError, ValueError):
+        raise ServiceError('CODEX_EXECUTABLE_DRIFT', status=503) from None
+
+
+@dataclass(frozen=True)
+class OfficialMetadataProfile:
+    """Server-supplied identity binding. Observed metadata never creates authority."""
+    expected_thread: str
+    canonical_root: Path
+    delivery_root: Path
+    schema_dir: Path
+    binary: Path
+    binary_sha256: str
+
+    def __post_init__(self):
+        if (type(self.expected_thread) is not str or not re.fullmatch(
+                r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}', self.expected_thread)
+                or type(self.binary_sha256) is not str or not re.fullmatch('[0-9a-f]{64}', self.binary_sha256)):
+            raise ServiceError('SESSION_SELECTION_REJECTED')
+        for key in ('canonical_root', 'delivery_root', 'schema_dir', 'binary'):
+            value = getattr(self, key)
+            if not isinstance(value, (str, Path)) or not Path(value).is_absolute() or '..' in Path(value).parts:
+                raise ServiceError('SESSION_ROOT_REJECTED')
+            object.__setattr__(self, key, Path(value))
+
+    def identity(self):
+        hashes = OfficialMetadataAdapter(self)._load_schemas()
+        if _official_binary_hash(self.binary) != self.binary_sha256:
+            raise ServiceError('CODEX_EXECUTABLE_DRIFT', status=503)
+        # Hash only; do not parse, retain or expose configuration values.
+        config = config_fingerprint(Path(child_environment()['HOME']) / '.codex/config.toml')
+        return (self, tuple(hashes.items()), config)
+
+
+class OfficialMetadataAdapter(AppServerAdapter):
+    """Explicit official default stdio; bounded metadata only, no execution API."""
+    methods = {'initialize': ('InitializeParams', 'InitializeResponse'),
+               'thread/read': ('ThreadReadParams', 'ThreadReadResponse'),
+               'thread/turns/list': ('ThreadTurnsListParams', 'ThreadTurnsListResponse')}
+
+    def __init__(self, profile):
+        if type(profile) is not OfficialMetadataProfile:
+            raise ServiceError('CODEX_PROFILE_REJECTED')
+        self.profile = profile
+        super().__init__(profile.delivery_root, command=(str(profile.binary), 'app-server'), read_only=True)
+        self.permission_profile = 'official_metadata_0.163'
+        self.page_count = 0
+        self.next_cursor = None
+        self.metadata_read = False
+        self.initialized = False
+        self.initialized_notification = False
+        self.metadata_notification_count = 0
+        # Passive diagnostic only; never a permission, disabled guarantee or writer proof.
+        self.metadata_remote_status = None
+
+    def _load_schemas(self):
+        self.schemas = {}
+        for name, expected in OFFICIAL_METADATA_PINS.items():
+            path = self.profile.schema_dir / ('v1' if name.startswith('Initialize') else 'v2') / (name + '.json')
+            if config_fingerprint(path) != expected:
+                raise ServiceError('CODEX_SCHEMA_CHANGED', status=503)
+            with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW), 'rb') as stream:
+                raw = stream.read(MAX_MESSAGE + 1)
+            if len(raw) > MAX_MESSAGE or hashlib.sha256(raw).hexdigest() != expected:
+                raise ServiceError('CODEX_SCHEMA_CHANGED', status=503)
+            self.schemas[name] = json.loads(raw)
+            self.schema_hashes[name] = expected
+        return self.schema_hashes
+
+    def open(self):
+        self._load_schemas()
+        if _official_binary_hash(self.profile.binary) != self.profile.binary_sha256:
+            raise ServiceError('CODEX_EXECUTABLE_DRIFT', status=503)
+        env = child_environment()
+        run = subprocess.run([str(self.profile.binary), '--version'], capture_output=True, text=True, timeout=5, env=env)
+        if run.returncode or run.stdout.strip() != OFFICIAL_METADATA_VERSION:
+            raise ServiceError('CODEX_VERSION_UNSUPPORTED', status=503)
+        # No legacy permission tables, diagnostics, feature flags or remote-control overrides.
+        if _official_binary_hash(self.profile.binary) != self.profile.binary_sha256:
+            raise ServiceError('CODEX_EXECUTABLE_DRIFT', status=503)
+        self.proc = subprocess.Popen(self.command, cwd=self.root, env=env, stdin=subprocess.PIPE,
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+        self.reader = threading.Thread(target=self._read, name='hub-metadata-stdout', daemon=True)
+        self.error_reader = threading.Thread(target=self._read_errors, name='hub-metadata-stderr', daemon=True)
+        self.reader.start(); self.error_reader.start()
+        try:
+            self.call('initialize', json.loads(json.dumps(OFFICIAL_INITIALIZE)))
+            self._send({'method': 'initialized', 'params': {}})
+        except BaseException:
+            self.close(); raise
+        return self
+
+    def _admit(self, method, params):
+        if type(method) is not str or method not in self.methods:
+            raise ServiceError('DISCOVERY_METHOD_REJECTED', status=403)
+        if type(params) is not dict:
+            raise ServiceError('DISCOVERY_SCOPE_REJECTED', status=403)
+        if method == 'initialize':
+            valid = (not self.initialized and params == OFFICIAL_INITIALIZE
+                     and params['capabilities']['experimentalApi'] is False
+                     and params['capabilities']['explicitGatewayOauth'] is True)
+        elif method == 'thread/read':
+            valid = (self.initialized_notification and not self.metadata_read and params == {
+                'threadId': self.profile.expected_thread, 'includeTurns': False}
+                     and params.get('includeTurns') is False)
+        else:
+            expected = {'threadId': self.profile.expected_thread, 'itemsView': 'notLoaded',
+                        'limit': OFFICIAL_PAGE_LIMIT, 'sortDirection': 'desc'}
+            if self.page_count:
+                expected['cursor'] = self.next_cursor
+            valid = (self.metadata_read and self.page_count < OFFICIAL_MAX_PAGES
+                     and (not self.page_count or self.next_cursor is not None)
+                     and params == expected and type(params.get('limit')) is int)
+        if not valid:
+            raise ServiceError('DISCOVERY_SCOPE_REJECTED', status=403)
+
+    def _send(self, value):
+        if type(value) is not dict:
+            raise ServiceError('DISCOVERY_SCOPE_REJECTED', status=403)
+        if value == {'method': 'initialized', 'params': {}}:
+            if not self.initialized or self.initialized_notification:
+                raise ServiceError('DISCOVERY_SCOPE_REJECTED', status=403)
+            super()._send(value)
+            self.initialized_notification = True
+            return
+        if set(value) != {'id', 'method', 'params'} or type(value['id']) is not int:
+            raise ServiceError('DISCOVERY_SCOPE_REJECTED', status=403)
+        self._admit(value['method'], value['params'])
+        self._validate(self.methods[value['method']][0], value['params'])
+        return super()._send(value)
+
+    def _message(self, timeout):
+        if self.failed:
+            raise ServiceError(self.failed, status=503, outcome='UNKNOWN')
+        try:
+            value = self.inbox.get(timeout=timeout)
+        except queue.Empty:
+            return None
+        if 'method' in value:
+            # Only the actually observed official no-id notification is accepted.
+            # Identity fields are validated and discarded, never retained or exposed.
+            if ('id' in value or value.get('method') != 'remoteControl/status/changed'):
+                raise ServiceError('DISCOVERY_PROVIDER_REQUEST_DENIED', status=503, outcome='UNKNOWN')
+            params = value.get('params')
+            timestamp = value.get('emittedAtMs')
+            if (set(value) - {'method', 'params', 'emittedAtMs'} or type(params) is not dict
+                    or set(params) - {'environmentId', 'installationId', 'serverName', 'status'}
+                    or 'emittedAtMs' in value and (type(timestamp) not in (int, float)
+                        or not math.isfinite(timestamp) or not 0 <= timestamp <= 2**53-1)
+                    or len(canonical(value)) > OFFICIAL_NOTIFICATION_BYTES):
+                raise ServiceError('CODEX_PROTOCOL_REJECTED', status=503, outcome='UNKNOWN')
+            self._validate('RemoteControlStatusChangedNotification', params)
+            if self.metadata_notification_count >= OFFICIAL_MAX_NOTIFICATIONS:
+                raise ServiceError('DISCOVERY_NOTIFICATION_CAPACITY', status=503, outcome='UNKNOWN')
+            self.metadata_notification_count += 1
+            self.metadata_remote_status = params['status']
+            return None
+        return value
+
+    def _result(self, method, result):
+        if method == 'thread/read':
+            thread = result.get('thread') if type(result) is dict else None
+            if (type(thread) is not dict or set(result) - {'thread', 'readState'}
+                    or thread.get('id') != self.profile.expected_thread
+                    or thread.get('cwd') != str(self.profile.delivery_root)
+                    or thread.get('turns') != []):
+                raise ServiceError('SESSION_BINDING_MISMATCH', status=503)
+            # Observed additive readState is opaque, not lifecycle/permission evidence.
+            # Project it away without reading its contents or mutating the wire frame.
+            result = {'thread': thread}
+            # Missing independent session identity is explicitly unknown. Validate all
+            # remaining official fields without inventing a substitute session ID.
+            schema = json.loads(json.dumps(self.schemas['ThreadReadResponse']))
+            definition = schema['definitions']['Thread']
+            definition['required'].remove('sessionId')
+            definition['properties']['sessionId']['type'] = ['string', 'null']
+            try:
+                jsonschema.validate(result, schema)
+            except jsonschema.ValidationError:
+                raise ServiceError('CODEX_PROTOCOL_REJECTED', status=503) from None
+            if thread.get('sessionId') is not None and not re.fullmatch(
+                    r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}', thread['sessionId']):
+                raise ServiceError('SESSION_METADATA_REJECTED', status=503)
+            self.metadata_read = True
+        else:
+            self._validate(self.methods[method][1], result)
+        if method == 'initialize':
+            self.initialized = True
+        if method == 'thread/turns/list':
+            if (set(result) - {'data', 'nextCursor', 'backwardsCursor'} or len(result['data']) > OFFICIAL_PAGE_LIMIT
+                    or any(turn.get('items') != [] or turn.get('itemsView') != 'notLoaded' for turn in result['data'])):
+                raise ServiceError('SESSION_METADATA_REJECTED', status=503)
+            self.page_count += 1
+            self.next_cursor = result.get('nextCursor')
+        return result
+
+    def call(self, method, params, timeout=15):
+        if type(timeout) not in (int, float) or not 0 < timeout <= 15:
+            raise ServiceError('DISCOVERY_SCOPE_REJECTED', status=403)
+        self._admit(method, params)
+        self._validate(self.methods[method][0], params)
+        self.next_id += 1
+        deadline = time.monotonic() + timeout
+        self._send({'id': self.next_id, 'method': method, 'params': params})
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise ServiceError('CODEX_TIMEOUT', status=503, outcome='UNKNOWN')
+            value = self._message(min(.2, remaining))
+            if time.monotonic() >= deadline:
+                raise ServiceError('CODEX_TIMEOUT', status=503, outcome='UNKNOWN')
+            if value is not None:
+                break
+        if (type(value.get('id')) is not int or value.get('id') != self.next_id
+                or set(value) not in ({'id', 'result'}, {'id', 'error'})):
+            raise ServiceError('CODEX_RESPONSE_CONFLICT', status=503, outcome='UNKNOWN')
+        if 'error' in value:
+            error = value['error']
+            message = str(error.get('message', '')) if type(error) is dict else ''
+            raise ServiceError('CODEX_RPC_REJECTED', status=503, outcome='UNKNOWN', details={
+                'method': method, 'rpc_code': error.get('code') if type(error) is dict else None,
+                'message_sha256': hashlib.sha256(message.encode()).hexdigest(),
+                'message_bytes': len(message.encode()), 'raw_message_retained': False})
+        return self._result(method, value['result'])
