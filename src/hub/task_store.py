@@ -1328,6 +1328,28 @@ class TaskStore:
             cursor = connection.execute('UPDATE tasks SET '+columns+',lease_until=? WHERE id=? AND owner=?'+success_guard, (*values.values(),renewed_at+15,ident,owner))
             if cursor.rowcount != 1: raise ServiceError('TASK_OWNER_CONFLICT', status=409)
 
+    def assert_turn_start(self,ident,owner,expected_task,grant,thread_id):
+        """Final persisted pre-RPC check, not a lock across provider acceptance.
+
+        The random claim owner, live lease, immutable intent/payload and native
+        thread bind the existing worker fence. One joined observation includes
+        grant revocation; no new execution authority or RPC is introduced.
+        """
+        with self._connection()as connection:
+            row=connection.execute('SELECT t.*,g.body AS live_grant_body,g.hash AS live_grant_hash '
+                'FROM tasks t LEFT JOIN grants g ON g.id=? WHERE t.id=?',
+                (grant['grant_id'],stable_id(ident))).fetchone()
+            if not row:raise ServiceError('TASK_NOT_FOUND',status=404)
+            if row['cancel']:raise ServiceError('TASK_CANCEL_BEFORE_DISPATCH',status=409)
+            self._task(row) # Preserve existing canonical payload/intent/result hash validation.
+            if (row['owner']!=owner or row['status']!='running' or not row['lease_until']or row['lease_until']<=time.time()
+                    or row['intent_hash']!=digest(expected_task['intent'])or row['payload_hash']!=digest(expected_task['payload'])
+                    or row['thread_id']!=thread_id or row['turn_id']is not None):
+                raise ServiceError('TASK_LEASE_LOST',status=409,outcome='UNKNOWN')
+            if (row['live_grant_body']is None or row['live_grant_hash']!=digest(grant)
+                    or self._decode(row['live_grant_body'],row['live_grant_hash'])!=grant or grant['expires_at']<=time.time()):
+                raise ServiceError('GRANT_VERSION_STALE',status=409)
+
     def heartbeat(self, ident, owner):
         with self._connection(True) as connection:
             now=time.time()
@@ -1439,6 +1461,7 @@ class TaskStore:
             row=connection.execute('SELECT * FROM tasks WHERE id=?',(stable_id(ident),)).fetchone()
             if not row:raise ServiceError('TASK_NOT_FOUND',status=404)
             task=self._task(row)
+            if task['cancel']:raise ServiceError('TASK_CANCELLED',status=409)
             if unstarted and (task['status']not in {'failed','requires_reconcile'} or task['cancel'] or \
                 task['thread_id']is not None or task['turn_id']is not None or task['provider_status']is not None):
                 raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
@@ -1481,7 +1504,7 @@ class TaskStore:
                 raise ServiceError('TASK_EVENT_CAPACITY',status=507)
             connection.execute('INSERT INTO events(task_id,event_key,body,hash,received)VALUES(?,?,?,?,?)',
                 (ident,'reconcile-'+hashed,body,hashed,time.time()))
-            connection.execute("UPDATE tasks SET status='queued',owner=NULL,lease_until=NULL,result=NULL,cancel=0,turn_id=NULL,provider_status=NULL WHERE id=?",(ident,))
+            connection.execute("UPDATE tasks SET status='queued',owner=NULL,lease_until=NULL,result=NULL,turn_id=NULL,provider_status=NULL WHERE id=?",(ident,))
 
     def authorize_business_runtime_amendment(self, ident, *, authority, observation, grant):
         """One explicit owner amendment; retain the same interrupted task/thread.

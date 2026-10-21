@@ -222,6 +222,14 @@ class TaskWorker:
                 if not callable(verify_parent):
                     raise ServiceError('ORDINARY_PARENT_VERIFICATION_UNAVAILABLE',status=409)
                 verify_parent(thread_id,parent['turn_id'])
+            # Hooks/parent verification may commit stop, revocation or a lost
+            # claim. Validate callbacks first, then take the final persisted
+            # observation immediately before the existing provider call.
+            validate_grant(grant,live=True)
+            if ordinary:ordinary_tasks.check_registration(grant,self.store.root)
+            if not self.writer_check(grant):raise ServiceError('EXTERNAL_WRITER_UNKNOWN',status=409)
+            if lease_lost.is_set():raise ServiceError('TASK_LEASE_LOST',outcome='UNKNOWN')
+            self.store.assert_turn_start(ident,self.owner,task,grant,thread_id)
             turn_id=adapter.start(thread_id,text,image)
             self.fault('after_turn_before_binding')
             self.store.update(ident,self.owner,turn_id=turn_id,provider_status='inProgress')

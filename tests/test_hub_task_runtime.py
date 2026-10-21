@@ -503,3 +503,106 @@ class ProtocolBoundaryTests(unittest.TestCase):
         adapter.inbox.put({'id':999,'result':{}})
         with self.assertRaises(ServiceError)as caught:adapter.call('initialize',{})
         self.assertEqual(caught.exception.code,'CODEX_RESPONSE_CONFLICT')
+
+class StopPriorityTests(unittest.TestCase):
+    """Synthetic pre-invocation boundaries; no native adapter is started."""
+    def setUp(self):
+        self.f=TaskRuntimeTests();self.f.setUp();self.addCleanup(self.f.doCleanups)
+
+    def run_at_final_hook(self,change):
+        f=self.f;calls=[]
+        class Counted(FakeAdapter):
+            def start(self,*args):calls.append(args);return super().start(*args)
+        f.service.submit(f.payload)
+        def fault(point):
+            if point=='before_turn':change(f)
+        worker=TaskWorker(f.store,adapter_factory=Counted,writer_check=lambda _:True,fault=fault)
+        worker.run_one();return calls,f.store.task('fixture-task')
+
+    def test_cancel_at_final_hook_never_starts(self):
+        calls,task=self.run_at_final_hook(lambda f:f.store.cancel('fixture-task'))
+        self.assertEqual(calls,[]);self.assertEqual(task['cancel'],1);self.assertEqual(task['status'],'cancelled')
+        self.assertEqual((self.f.workspace/'index.html').read_text(),BEFORE)
+
+    def test_final_grant_revocation_and_expiry_never_start(self):
+        for scenario in ('revoked','expired'):
+            with self.subTest(scenario=scenario):
+                case=StopPriorityTests();case.setUp()
+                try:
+                    def change(f):
+                        if scenario=='revoked':f.store.register_grant({**f.grant,'version':2})
+                        else:
+                            clock=mock.patch('time.time',return_value=f.grant['expires_at']+1);clock.start();case.addCleanup(clock.stop)
+                    calls,_=case.run_at_final_hook(change);self.assertEqual(calls,[])
+                    self.assertEqual((case.f.workspace/'index.html').read_text(),BEFORE)
+                finally:case.doCleanups()
+
+    def test_final_owner_lease_and_intent_fence_never_start(self):
+        from hub.workbench_store import canonical
+        for scenario in ('owner','lease','intent','thread','status'):
+            with self.subTest(scenario=scenario):
+                case=StopPriorityTests();case.setUp()
+                try:
+                    def change(f):
+                        with f.store._connection(True)as db:
+                            if scenario=='owner':db.execute("UPDATE tasks SET owner='foreign-worker' WHERE id='fixture-task'")
+                            elif scenario=='lease':db.execute("UPDATE tasks SET lease_until=? WHERE id='fixture-task'",(time.time()-1,))
+                            elif scenario=='thread':db.execute("UPDATE tasks SET thread_id='foreign-thread' WHERE id='fixture-task'")
+                            elif scenario=='status':db.execute("UPDATE tasks SET status='requires_reconcile' WHERE id='fixture-task'")
+                            else:
+                                row=db.execute("SELECT intent,intent_hash FROM tasks WHERE id='fixture-task'").fetchone();intent=f.store._decode(*row);intent['synthetic_fence']='changed';db.execute("UPDATE tasks SET intent=?,intent_hash=? WHERE id='fixture-task'",(canonical(intent).decode(),digest(intent)))
+                    calls,_=case.run_at_final_hook(change);self.assertEqual(calls,[])
+                finally:case.doCleanups()
+
+    def test_normal_final_boundary_starts_once(self):
+        calls,task=self.run_at_final_hook(lambda _:None)
+        self.assertEqual(len(calls),1);self.assertEqual(task['status'],'checks_complete')
+
+    def test_cancel_committed_by_parent_verification_never_starts_child(self):
+        import test_hub_ordinary_worker as ordinary_fixture
+        from hub.ordinary_tasks import prompt
+        f=ordinary_fixture.OrdinaryWorkerTests();f.setUp();self.addCleanup(f.doCleanups)
+        parent=f.run_worker();self.assertEqual(parent['status'],'checks_complete')
+        f.spec={**f.spec,'request_id':'ordinary-child','mode':'idle_continue','parent_task_id':'ordinary-task'}
+        intent=copy.deepcopy(f.intent);intent.update(task_spec=f.spec,previous_thread=parent['thread_id'],parent_binding={'thread_id':parent['thread_id'],'turn_id':parent['turn_id']},prompt_sha256=hashlib.sha256(prompt(f.spec,input_files=f.grant['input_files']).encode()).hexdigest())
+        f.store.admit(f.spec,intent);calls=[]
+        class ParentCancel(f.Adapter):
+            def verify_parent_binding(self,thread,turn):
+                self_test.assertEqual((thread,turn),(parent['thread_id'],parent['turn_id']))
+                f.store.cancel('ordinary-child',worker_owner=f.store.task('ordinary-child')['owner'])
+            def start(self,*args):calls.append(args);return super().start(*args)
+        self_test=self;TaskWorker(f.store,adapter_factory=ParentCancel,writer_check=lambda _:True).run_one()
+        self.assertEqual(calls,[]);self.assertEqual(f.store.task('ordinary-child')['cancel'],1)
+        self.assertEqual(f.store.task('ordinary-task'),parent)
+
+    def interrupted(self,cancel=False,retired=True):
+        f=self.f
+        class NoEffectInterrupted(FakeAdapter):
+            def start(self,thread,text,image):
+                self.events=[{'method':'turn/started','params':{'threadId':thread,'turn':{'id':'fixture-turn','status':'inProgress'}}},
+                             {'method':'turn/completed','params':{'threadId':thread,'turn':{'id':'fixture-turn','status':'interrupted'}}}]
+                if cancel:f.store.cancel('fixture-task')
+                return 'fixture-turn'
+        f.service.submit(f.payload);worker=TaskWorker(f.store,adapter_factory=NoEffectInterrupted,writer_check=lambda _:True)
+        if retired:worker.identity={'owner':worker.owner,'pid':999999999,'start_ticks':'0'}
+        worker.run_one();task=f.store.task('fixture-task');self.assertEqual(task['status'],'cancelled');self.assertEqual(bool(task['cancel']),cancel)
+        proof={'source':'app_server_stdio.thread/read','root':str(f.workspace),'thread_id':task['thread_id'],'turn_id':task['turn_id'],'thread_status':'idle','turn_status':'interrupted','observed_at':time.time()}
+        return task,proof
+
+    def test_user_cancel_reconcile_preserves_full_row_history_and_bytes(self):
+        task,proof=self.interrupted(cancel=True);events=self.f.store.events(task['id']);raw=self.f.store.path.read_bytes()
+        with self.assertRaisesRegex(ServiceError,'TASK_CANCELLED'):self.f.store.reconcile_owned(task['id'],proof)
+        self.assertEqual(self.f.store.task(task['id']),task);self.assertEqual(self.f.store.events(task['id']),events);self.assertEqual(self.f.store.path.read_bytes(),raw)
+
+    def test_provider_interruption_without_cancel_retains_exact_recovery_proof(self):
+        task,proof=self.interrupted();events=self.f.store.events(task['id'])
+        for changes in ({'turn_id':'wrong'},{'thread_id':'wrong'},{'observed_at':time.time()-60},{'thread_status':'active'}):
+            with self.subTest(changes=changes),self.assertRaises(ServiceError):self.f.store.reconcile_owned(task['id'],{**proof,**changes})
+            self.assertEqual(self.f.store.task(task['id']),task);self.assertEqual(self.f.store.events(task['id']),events)
+        self.f.store.reconcile_owned(task['id'],proof);current=self.f.store.task(task['id'])
+        self.assertEqual(current['cancel'],0);self.assertEqual(current['status'],'queued');self.assertEqual(current['thread_id'],task['thread_id']);self.assertIsNone(current['turn_id']);self.assertEqual(self.f.store.events(task['id'])[:-1],events)
+
+    def test_provider_interruption_with_live_owned_process_cannot_recover(self):
+        task,proof=self.interrupted(retired=False);events=self.f.store.events(task['id'])
+        with self.assertRaisesRegex(ServiceError,'TASK_OWNER_STILL_ACTIVE'):self.f.store.reconcile_owned(task['id'],proof)
+        self.assertEqual(self.f.store.task(task['id']),task);self.assertEqual(self.f.store.events(task['id']),events)
