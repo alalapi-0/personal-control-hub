@@ -53,6 +53,7 @@ class ExecutionTests(unittest.TestCase):
             schemas[name]={'type':'object','properties':{key:{} for key in keys}}
         def obj(properties,required=()):return {'type':'object','properties':properties,'required':list(required)}
         text={'type':'string'};integer={'type':'integer'}
+        schemas['ThreadGoalClearedNotification']=obj({'threadId':text},('threadId',))
         schemas['AccountUpdatedNotification']=obj({'authMode':{'enum':[None,'apikey','chatgpt','chatgptAuthTokens']},
                                                   'planType':{'enum':[None,'free','pro','unknown']}})
         schemas['AccountRateLimitsUpdatedNotification']=obj({'rateLimits':obj({
@@ -420,7 +421,8 @@ class PassiveNotificationTests(unittest.TestCase):
     def test_exact_eleven_notifications_no_extra_rpc(self):
         self.assertEqual(set(module.NOTIFICATIONS),{'remoteControl/status/changed','thread/status/changed',
             'turn/started','turn/completed','item/completed','account/updated','account/rateLimits/updated',
-            'thread/tokenUsage/updated','item/started','item/agentMessage/delta','mcpServer/startupStatus/updated'})
+            'thread/tokenUsage/updated','item/started','item/agentMessage/delta','mcpServer/startupStatus/updated',
+            'thread/goal/cleared'})
         self.assertEqual(set(module.METHODS),{'initialize','thread/resume','turn/start','turn/interrupt'})
 
     def test_baseline_account_notification_interleaved_with_rpc_is_passive(self):
@@ -653,6 +655,58 @@ class PassiveNotificationTests(unittest.TestCase):
         self.assertEqual(f.client.terminal,'completed');f.client.close()
 
 
+    def test_goal_cleared_pending_start_is_hash_only_not_turn_or_goal_authority(self):
+        f=self.f;f.open();f.resume();keys=set(f.client.snapshot())
+        f.notify('thread/goal/cleared',{'threadId':THREAD});f.response(3,{'turn':f.turn()})
+        original=f.wire.receive;observed=[]
+        def receive(deadline):
+            if f.client.events:
+                observed.append((f.client.turn_id,f.client.started_event,f.client.start_reply,
+                                 f.client.terminal,f.client.pending))
+            return original(deadline)
+        f.wire.receive=receive
+        result=f.client.start('SYNTHETIC PROMPT')
+        self.assertEqual(observed,[(None,False,False,None,True)])
+        self.assertEqual(result['turn_id'],TURN);self.assertFalse(f.client.started_event)
+        self.assertTrue(f.client.start_reply);self.assertIsNone(result['terminal'])
+        self.assertEqual(set(result),keys);self.assertEqual(f.client.deadline,57)
+        self.assertFalse(result['exact_leaf_isolation']);self.assertFalse(result['native_execution_admitted'])
+        event=result['events'][0]
+        self.assertEqual(set(event),{'method','sequence','sha256','size_bytes'})
+        self.assertEqual(event['method'],'thread/goal/cleared');self.assertEqual(event['sequence'],1)
+        raw=module.canonical({'method':'thread/goal/cleared','params':{'threadId':THREAD}})
+        self.assertEqual(event['sha256'],hashlib.sha256(raw).hexdigest())
+        self.assertEqual(event['size_bytes'],len(raw));self.assertEqual(len(result['events']),1)
+        self.assertEqual([frame['method']for frame in f.wire.sent],
+                         ['initialize','initialized','thread/resume','turn/start'])
+        self.assertEqual(f.wire.sent[0]['params']['capabilities']['experimentalApi'],False)
+        f.client.close();self.assertEqual(f.wire.closes,1)
+
+    def test_goal_cleared_foreign_unresumed_and_malformed_notifications_reject(self):
+        for params in ({'threadId':OTHER},{},{'threadId':None},{'threadId':False},
+                       {'threadId':1},{'threadId':THREAD,'unexpected':'PRIVATE'},None,[]):
+            with self.subTest(kind=type(params).__name__):self.reject('thread/goal/cleared',params)
+        f=self.f;f.fresh();f.notify('thread/goal/cleared',{'threadId':THREAD})
+        error=f.assert_unknown(f.open)
+        self.assertEqual(error.code,'OFFICIAL_NOTIFICATION_BINDING_REJECTED')
+        self.assertEqual(f.client.sent,['initialize'])
+        self.assertIsNone(f.client.turn_id);self.assertEqual(f.client.events,[])
+
+    def test_goal_cleared_server_requests_and_other_goal_methods_have_no_response(self):
+        for method in ('thread/goal/updated','thread/goal/clear','thread/goal/set','goal/cleared'):
+            with self.subTest(method=method):self.reject(method,{'threadId':THREAD})
+        f=self.ready();sent=copy.deepcopy(f.wire.sent)
+        f.wire.frames.append({'id':99,'method':'thread/goal/cleared','params':{'threadId':THREAD}})
+        error=f.assert_unknown(f.client.wait)
+        self.assertEqual(error.code,'OFFICIAL_SERVER_REQUEST_REJECTED')
+        self.assertEqual(f.wire.sent,sent);self.assertEqual(f.wire.closes,1)
+
+    def test_goal_cleared_schema_pin_drift_prevents_process_factory(self):
+        f=self.f;(f.schemas/'v2/ThreadGoalClearedNotification.json').write_text('{}')
+        with self.assertRaises(ServiceError):f.client.open()
+        f.factory.assert_not_called();self.assertEqual(f.wire.sent,[])
+
+
 class StartupNotificationTests(unittest.TestCase):
     method='mcpServer/startupStatus/updated'
 
@@ -764,7 +818,7 @@ class StartupNotificationTests(unittest.TestCase):
         self.assertEqual(seen,[deadline]*expected_receives)
 
     def test_exact_eleven_allowlist_and_no_new_outbound_method(self):
-        self.assertEqual(len(module.NOTIFICATIONS),11)
+        self.assertEqual(len(module.NOTIFICATIONS),12)
         self.assertEqual(module.NOTIFICATIONS[self.method],'McpServerStatusUpdatedNotification')
         self.assertEqual(set(module.METHODS),{'initialize','thread/resume','turn/start','turn/interrupt'})
 

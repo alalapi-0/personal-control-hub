@@ -41,6 +41,7 @@ PASSIVE_NOTIFICATIONS = {
     'item/agentMessage/delta': 'AgentMessageDeltaNotification',
     'mcpServer/startupStatus/updated': 'McpServerStatusUpdatedNotification'}
 SCHEMA_PINS.update({
+    'ThreadGoalClearedNotification': 'ad6c2cf53970e45cae55d36dbddd84ecc7b34837846616493efa7b132a35a051',
     'AccountUpdatedNotification': '268dba6977cc3adcced751a97367772a1e201a199c14f454741d851fe8bbacb1',
     'AccountRateLimitsUpdatedNotification': '37326ef0364007be0c8f92bf5cd228941b513f87266edd566d694409b5aa5b8b',
     'ThreadTokenUsageUpdatedNotification': 'aba4f6c7e4a19b2b842c08ee793b57000c07dafd57b922ad0d8e7c76609108c2',
@@ -49,6 +50,7 @@ SCHEMA_PINS.update({
     'McpServerStatusUpdatedNotification': 'd6f4cb120b2363d321247592f03b9afbbf2762ad6d8af31b88c1b1bf39c4c7aa'})
 NOTIFICATIONS = {'remoteControl/status/changed': 'RemoteControlStatusChangedNotification',
                  'thread/status/changed': 'ThreadStatusChangedNotification',
+                 'thread/goal/cleared': 'ThreadGoalClearedNotification',
                  'turn/started': 'TurnStartedNotification', 'turn/completed': 'TurnCompletedNotification',
                  'item/completed': 'ItemCompletedNotification', **PASSIVE_NOTIFICATIONS}
 GLOBAL_NOTIFICATIONS = frozenset(('remoteControl/status/changed', 'account/updated',
