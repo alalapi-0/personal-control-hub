@@ -570,6 +570,89 @@ class PassiveNotificationTests(unittest.TestCase):
             with self.subTest(method=method):self.reject(method,params)
 
 
+    def test_pending_start_token_telemetry_does_not_bind_its_old_turn(self):
+        f=self.f;f.open();f.resume()
+        usage={k:1 for k in ('cachedInputTokens','inputTokens','outputTokens','reasoningOutputTokens','totalTokens')}
+        f.notify('thread/tokenUsage/updated',{'threadId':THREAD,'turnId':OTHER,
+            'tokenUsage':{'last':usage,'total':usage}})
+        f.response(3,{'turn':f.turn()})
+        original=f.wire.receive;observed=[]
+        def receive(deadline):
+            if f.client.events:
+                observed.append((f.client.turn_id,f.client.started_event,f.client.start_reply,
+                                 f.client.terminal,f.client.pending))
+            return original(deadline)
+        f.wire.receive=receive
+        result=f.client.start('SYNTHETIC PROMPT')
+        self.assertEqual(observed,[(None,False,False,None,True)])
+        self.assertEqual(result['turn_id'],TURN);self.assertNotEqual(result['turn_id'],OTHER)
+        self.assertTrue(f.client.start_reply);self.assertFalse(f.client.started_event)
+        self.assertIsNone(f.client.terminal);self.assertEqual(f.client.items,{})
+        self.assertEqual(f.client.item_ids,set());self.assertEqual(f.client.deadline,57)
+        self.assertEqual([frame['method']for frame in f.wire.sent],
+                         ['initialize','initialized','thread/resume','turn/start'])
+        self.assertEqual(len(result['events']),1)
+        self.assertEqual(result['events'][0]['method'],'thread/tokenUsage/updated')
+        self.assertEqual(set(result['events'][0]),{'method','sequence','sha256','size_bytes'})
+        self.assertNotIn(OTHER,json.dumps(result));self.assertNotIn('"tokenUsage":',json.dumps(result))
+        self.assertFalse(result['native_execution_admitted']);f.client.close()
+        self.assertEqual(f.wire.closes,1)
+
+    def test_pending_start_foreign_invalid_token_and_early_items_still_reject(self):
+        usage={k:1 for k in ('cachedInputTokens','inputTokens','outputTokens','reasoningOutputTokens','totalTokens')}
+        token={'threadId':THREAD,'turnId':OTHER,'tokenUsage':{'last':usage,'total':usage}}
+        cases=[('thread/tokenUsage/updated',{**token,'threadId':OTHER}),
+            ('thread/tokenUsage/updated',{**token,'turnId':'PRIVATE_INVALID_UUID'}),
+            ('thread/tokenUsage/updated',{**token,'unexpected':'PRIVATE'}),
+            ('thread/tokenUsage/updated',{**token,'tokenUsage':{'last':{**usage,'inputTokens':'PRIVATE'},'total':usage}}),
+            ('item/started',self.item()),('item/agentMessage/delta',self.delta()),
+            ('item/completed',{'threadId':THREAD,'turnId':TURN,'completedAtMs':2,'item':self.item()['item']})]
+        for method,params in cases:
+            with self.subTest(method=method):
+                f=self.f;f.fresh();f.open();f.resume();f.notify(method,params)
+                f.response(3,{'turn':f.turn()})
+                error=f.assert_unknown(lambda:f.client.start('SYNTHETIC PROMPT'))
+                self.assertNotEqual(error.code,'OFFICIAL_TIMEOUT')
+                self.assertIsNone(f.client.turn_id);self.assertFalse(f.client.start_reply)
+                self.assertFalse(f.client.started_event);self.assertIsNone(f.client.terminal)
+                self.assertEqual(f.client.events,[]);self.assertEqual(len(f.wire.frames),1)
+                self.assertEqual(f.client.sent.count('turn/start'),1)
+                self.assertNotIn('PRIVATE',json.dumps([error.as_dict(),f.client.snapshot()]))
+
+    def test_token_telemetry_requires_validated_resume_and_pending_start(self):
+        f=self.f
+        usage={k:1 for k in ('cachedInputTokens','inputTokens','outputTokens','reasoningOutputTokens','totalTokens')}
+        token={'method':'thread/tokenUsage/updated','params':{'threadId':THREAD,'turnId':OTHER,
+            'tokenUsage':{'last':usage,'total':usage}}}
+        f.open();f.wire.frames.append(token);f.response(2,f.resume_result())
+        error=f.assert_unknown(f.client.resume)
+        self.assertEqual(error.code,'OFFICIAL_NOTIFICATION_ORDER_REJECTED')
+        self.assertNotIn('turn/start',f.client.sent)
+        f.fresh();f.open();f.resume()
+        with self.assertRaises(ServiceError)as caught:f.client._notify(token)
+        self.assertEqual(caught.exception.code,'OFFICIAL_NOTIFICATION_ORDER_REJECTED')
+        self.assertEqual(caught.exception.outcome,'UNKNOWN');self.assertEqual(f.client.events,[])
+        self.assertIsNone(f.client.turn_id);f.client.close()
+
+    def test_bound_and_terminal_token_telemetry_preserve_exact_turn_order(self):
+        f=self.f
+        usage={k:1 for k in ('cachedInputTokens','inputTokens','outputTokens','reasoningOutputTokens','totalTokens')}
+        token={'threadId':THREAD,'turnId':OTHER,'tokenUsage':{'last':usage,'total':usage}}
+        f.open();f.resume();f.start();f.notify('thread/tokenUsage/updated',token)
+        f.notify('turn/completed',{'threadId':THREAD,'turn':f.turn(status='completed')})
+        error=f.assert_unknown(f.client.wait)
+        self.assertEqual(error.code,'OFFICIAL_NOTIFICATION_ORDER_REJECTED')
+        self.assertEqual(f.client.turn_id,TURN)
+        f.fresh();f.open();f.resume();f.start()
+        f.client._notify({'method':'turn/completed','params':{'threadId':THREAD,'turn':f.turn(status='completed')}})
+        events=copy.deepcopy(f.client.events)
+        with self.assertRaises(ServiceError)as caught:
+            f.client._notify({'method':'thread/tokenUsage/updated','params':{**token,'turnId':TURN}})
+        self.assertEqual(caught.exception.code,'OFFICIAL_NOTIFICATION_ORDER_REJECTED')
+        self.assertEqual(caught.exception.outcome,'UNKNOWN');self.assertEqual(f.client.events,events)
+        self.assertEqual(f.client.terminal,'completed');f.client.close()
+
+
 class StartupNotificationTests(unittest.TestCase):
     method='mcpServer/startupStatus/updated'
 

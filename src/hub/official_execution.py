@@ -400,8 +400,14 @@ class OfficialExecution:
                         raise _error('OFFICIAL_NOTIFICATION_ORDER_REJECTED','UNKNOWN')
                     self.turn_id=native;self.terminal=turn['status']
             elif method in ('thread/tokenUsage/updated','item/started','item/agentMessage/delta','item/completed'):
+                # Pending-start telemetry may describe an older turn; observe
+                # it without binding any identity or changing turn lifecycle.
+                pending_token = (method=='thread/tokenUsage/updated' and self.pending
+                    and self.sent[-1:]==['turn/start'] and self.turn_id is None
+                    and type(params['turnId']) is str and UUID.fullmatch(params['turnId']))
                 if (not self.resumed or self.native_thread_id != self.config.thread_id
-                        or self.turn_id is None or params['turnId']!=self.turn_id or self.terminal):
+                        or self.terminal or not pending_token and (
+                            self.turn_id is None or params['turnId']!=self.turn_id)):
                     raise _error('OFFICIAL_NOTIFICATION_ORDER_REJECTED','UNKNOWN')
                 if method.startswith('item/'):
                     item=params.get('item')

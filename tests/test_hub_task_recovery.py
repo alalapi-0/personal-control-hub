@@ -47,6 +47,23 @@ def owned_event_crash(control, phase):
     TaskStore(control,fault=fault).event('fixture-task','process-crash-event',{'method':'owned/mock-crash'})
 
 
+def owned_thread_binding_failure(control, root, ready, release=None, stdio_pid=None):
+    class BoundAdapter(fixture.FakeAdapter):
+        def __init__(self, directory):
+            super().__init__(directory)
+            if stdio_pid is not None:
+                self.proc=SimpleNamespace(pid=stdio_pid);self.schema_hashes={}
+        def start(self,*args):
+            (Path(control)/'unexpected-start').write_text('MOCK start called')
+            return super().start(*args)
+    def fault(phase):
+        if phase=='after_thread_binding':raise ServiceError('OWNED_AFTER_THREAD_BINDING',outcome='UNKNOWN')
+    TaskWorker(TaskStore(control),adapter_factory=BoundAdapter,
+        writer_check=lambda grant:grant['root']==root,fault=fault).run_one()
+    ready.set()
+    if release is not None:release.wait(10)
+
+
 def owned_fresh_storage_probe(control,output):
     store=TaskStore(control);fixture.FakeAdapter.opened=fixture.FakeAdapter.effects=0
     payload={'request_id':'same-id','project_id':'fixture-project','parent_task_id':None,'changed':'replacement'}
@@ -365,6 +382,89 @@ class OwnedProcessRecoveryTests(unittest.TestCase):
             if child.is_alive():self.fail('Owned fixture child did not close')
     def child(self,target,args):
         process=self.ctx.Process(target=target,args=args);process.start();self.children.append(process);return process
+
+    def test_known_thread_no_turn_recovery_preserves_thread_and_starts_once(self):
+        f=self.f;f.service.submit(f.payload)
+        ready,release=self.ctx.Event(),self.ctx.Event()
+        stdio=self.child(time.sleep,(30,))
+        worker=self.child(owned_thread_binding_failure,(str(f.control),str(f.workspace),ready,release,stdio.pid))
+        self.assertTrue(ready.wait(3))
+        original=f.store.task('fixture-task')
+        self.assertEqual(original['status'],'requires_reconcile')
+        self.assertEqual(original['thread_id'],'fixture-thread');self.assertIsNone(original['turn_id'])
+        self.assertFalse((f.control/'unexpected-start').exists())
+        self.assertEqual((f.workspace/'index.html').read_text(),fixture.BEFORE)
+        proof={'source':'app_server_stdio.thread/read','root':str(f.workspace),'thread_id':'fixture-thread',
+            'thread_status':'idle','turns_complete':True,'turns':[],'observed_at':time.time()}
+        with self.assertRaisesRegex(ServiceError,'TASK_OWNER_STILL_ACTIVE'):
+            f.store.reconcile_owned('fixture-task',proof)
+        release.set();worker.join(3);self.assertEqual(worker.exitcode,0)
+        # The recorded stdio identity must close independently of its worker.
+        with self.assertRaisesRegex(ServiceError,'TASK_OWNER_STILL_ACTIVE'):
+            f.store.reconcile_owned('fixture-task',proof)
+        stdio.terminate();stdio.join(3);self.assertFalse(stdio.is_alive())
+        history=f.store.events('fixture-task')
+        f.store.reconcile_owned('fixture-task',proof)
+        current=f.store.task('fixture-task');events=f.store.events('fixture-task')
+        self.assertEqual(current['id'],original['id']);self.assertEqual(current['thread_id'],original['thread_id'])
+        self.assertEqual(current['status'],'queued');self.assertIsNone(current['turn_id'])
+        self.assertEqual(events[:-1],history)
+        self.assertEqual(events[-1]['data']['original_result'],original['result'])
+        self.assertEqual(events[-1]['data']['original_status'],original['status'])
+        self.assertEqual(events[-1]['data']['original_thread_id'],original['thread_id'])
+        self.assertEqual(events[-1]['data']['action'],'same_owned_thread_requeue_before_any_turn')
+        with self.assertRaises(ServiceError):f.store.reconcile_owned('fixture-task',proof)
+        calls=[]
+        class ResumingAdapter(fixture.FakeAdapter):
+            def thread(self,previous=None):
+                calls.append(('resume',previous));return super().thread(previous)
+            def start(self,thread,text,image):
+                calls.append(('start',thread));return super().start(thread,text,image)
+        resumed=TaskWorker(f.store,adapter_factory=ResumingAdapter,writer_check=lambda _:True)
+        self.assertTrue(resumed.run_one());self.assertFalse(resumed.run_one())
+        self.assertEqual(calls,[('resume','fixture-thread'),('start','fixture-thread')])
+        self.assertEqual(len(f.store.tasks()),1)
+        self.assertEqual(f.store.task('fixture-task')['status'],'checks_complete')
+
+    def test_known_thread_recovery_rejects_incomplete_stale_foreign_and_turn_intent(self):
+        f=self.f;f.service.submit(f.payload);ready=self.ctx.Event()
+        worker=self.child(owned_thread_binding_failure,(str(f.control),str(f.workspace),ready))
+        self.assertTrue(ready.wait(3));worker.join(3);self.assertEqual(worker.exitcode,0)
+        proof={'source':'app_server_stdio.thread/read','root':str(f.workspace),'thread_id':'fixture-thread',
+            'thread_status':'idle','turns_complete':True,'turns':[],'observed_at':time.time()}
+        original=f.store.task('fixture-task');history=f.store.events('fixture-task')
+        invalid=[{'turns':[{'id':'unattributed-turn','status':'completed'}]},{'turns_complete':False},
+            {'thread_id':'foreign-thread'},{'observed_at':time.time()-31},{'observed_at':time.time()+10},
+            {'thread_status':'active'},{'turns':None},{'turn_id':'unattributed-turn'},{'source':'caller_claim'}]
+        for changes in invalid:
+            with self.subTest(changes=changes),self.assertRaises(ServiceError):
+                f.store.reconcile_owned('fixture-task',{**proof,**changes})
+            self.assertEqual(f.store.task('fixture-task'),original)
+            self.assertEqual(f.store.events('fixture-task'),history)
+        incomplete=dict(proof);del incomplete['turns_complete']
+        with self.assertRaises(ServiceError):f.store.reconcile_owned('fixture-task',incomplete)
+        (f.workspace/'index.html').write_text(fixture.AFTER)
+        with self.assertRaises(ServiceError):f.store.reconcile_owned('fixture-task',proof)
+        (f.workspace/'index.html').write_text(fixture.BEFORE)
+        # Even empty metadata cannot erase the provider-acceptance ambiguity.
+        f.store.event('fixture-task','turn-intent-ambiguous',{'method':'turn/start','outcome':'UNKNOWN'})
+        history=f.store.events('fixture-task')
+        with self.assertRaises(ServiceError):f.store.reconcile_owned('fixture-task',proof)
+        self.assertEqual(f.store.task('fixture-task'),original)
+        self.assertEqual(f.store.events('fixture-task'),history)
+        self.assertFalse((f.control/'unexpected-start').exists())
+
+    def test_known_thread_recovery_rejects_changed_authorization(self):
+        f=self.f;f.service.submit(f.payload);ready=self.ctx.Event()
+        worker=self.child(owned_thread_binding_failure,(str(f.control),str(f.workspace),ready))
+        self.assertTrue(ready.wait(3));worker.join(3);self.assertEqual(worker.exitcode,0)
+        proof={'source':'app_server_stdio.thread/read','root':str(f.workspace),'thread_id':'fixture-thread',
+            'thread_status':'idle','turns_complete':True,'turns':[],'observed_at':time.time()}
+        original=f.store.task('fixture-task');history=f.store.events('fixture-task')
+        f.store.register_grant({**f.grant,'version':2})
+        with self.assertRaises(ServiceError):f.store.reconcile_owned('fixture-task',proof)
+        self.assertEqual(f.store.task('fixture-task'),original)
+        self.assertEqual(f.store.events('fixture-task'),history)
 
     def test_actual_http_restart_does_not_own_worker_and_same_request_effects_once(self):
         f=self.f;f.service.submit(f.payload)

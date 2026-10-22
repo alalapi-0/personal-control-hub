@@ -1451,10 +1451,15 @@ class TaskStore:
         self.check_storage()
         if type(observation)is not dict:raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
         unstarted=observation.get('source')=='app_server_stdio.thread/list'
+        empty_thread=not unstarted and 'turns_complete'in observation
         expected={'source','root','thread_ids','archived_checked','observed_at'}if unstarted else \
+            {'source','root','thread_id','thread_status','turns_complete','turns','observed_at'}if empty_thread else \
             {'source','root','thread_id','turn_id','thread_status','turn_status','observed_at'}
         if set(observation)!=expected or (unstarted and (observation['thread_ids']!=[] or observation['archived_checked']is not True)) or \
-            (not unstarted and (observation['source']!='app_server_stdio.thread/read' or observation['turn_status']not in {'interrupted','completed'} or observation['thread_status']not in {'idle','notLoaded'}))or \
+            (empty_thread and (observation['source']!='app_server_stdio.thread/read'
+                or type(observation['thread_status'])is not str or observation['thread_status']not in {'idle','notLoaded'}
+                or observation['turns_complete']is not True or type(observation['turns'])is not list or observation['turns']!=[]))or \
+            (not unstarted and not empty_thread and (observation['source']!='app_server_stdio.thread/read' or observation['turn_status']not in {'interrupted','completed'} or observation['thread_status']not in {'idle','notLoaded'}))or \
             type(observation['observed_at'])not in {int,float} or not 0<=time.time()-observation['observed_at']<30:
             raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
         with self._connection(True)as connection:
@@ -1465,25 +1470,45 @@ class TaskStore:
             if unstarted and (task['status']not in {'failed','requires_reconcile'} or task['cancel'] or \
                 task['thread_id']is not None or task['turn_id']is not None or task['provider_status']is not None):
                 raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
-            check_failure=not unstarted and observation['turn_status']=='completed'
-            if not unstarted and (task['status']not in ({'failed'}if check_failure else{'cancelled','requires_reconcile'}) or not task['thread_id']or not task['turn_id']or
+            if empty_thread and (task['status']not in {'failed','requires_reconcile'}
+                or not task['thread_id'] or task['thread_id']!=observation['thread_id']
+                or task['turn_id']is not None or task['provider_status']is not None):
+                raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
+            check_failure=not unstarted and not empty_thread and observation['turn_status']=='completed'
+            if not unstarted and not empty_thread and (task['status']not in ({'failed'}if check_failure else{'cancelled','requires_reconcile'}) or not task['thread_id']or not task['turn_id']or
                 task['thread_id']!=observation['thread_id']or task['turn_id']!=observation['turn_id']):
                 raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
             if check_failure and (task['provider_status']!='completed' or not task['result']or
                 not any(c['exit']!=0 for c in task['result'].get('checks',[])) or task['result'].get('changed_paths')!=[]):
                 raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
             events=connection.execute('SELECT * FROM events WHERE task_id=? ORDER BY sequence',(ident,)).fetchall()
-            if unstarted and any(e['event_key'].startswith('turn-intent')for e in events):
+            if (unstarted or empty_thread) and any(e['event_key'].startswith('turn-intent')for e in events):
                 raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
+            worker_seen=False
             for event in events:
                 value=self._decode(event['body'],event['hash'])
                 process=value.get('worker')if event['event_key'].startswith('dispatch-intent')else value if event['event_key'].startswith('stdio-child')else None
+                if empty_thread and event['event_key'].startswith(('dispatch-intent','stdio-child')):
+                    if type(process)is not dict:raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
+                    try:self._terminal_process_closed(process.get('pid'),process.get('start_ticks'))
+                    except ServiceError as error:
+                        raise ServiceError('TASK_OWNER_STILL_ACTIVE'if error.code=='TERMINAL_SCOPE_PROCESS_ACTIVE'
+                            else'TASK_RECONCILE_PROOF_REJECTED',status=409)from None
+                    worker_seen=worker_seen or event['event_key'].startswith('dispatch-intent')
+                    continue
                 if process:
                     try:current=Path('/proc/'+str(process['pid'])+'/stat').read_text().rsplit(')',1)[1].split()[19]
                     except FileNotFoundError:continue
                     if current==process['start_ticks']:raise ServiceError('TASK_OWNER_STILL_ACTIVE',status=409)
+            if empty_thread and not worker_seen:raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
             from .task_service import fingerprint,root_identity
             grant=task['intent']['grant']
+            if empty_thread:
+                from .task_service import validate_grant
+                current=connection.execute('SELECT body,hash FROM grants WHERE id=?',(grant['grant_id'],)).fetchone()
+                if not current or self._decode(current['body'],current['hash'])!=grant or digest(grant)!=task['intent']['grant_hash']:
+                    raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
+                validate_grant(grant,live=True)
             if grant.get('kind')=='story_exchange':
                 from .story_exchange import validate
                 from .story_promotion import source_snapshot
@@ -1495,9 +1520,12 @@ class TaskStore:
                 raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
             if observation['root']!=grant['root'] or root_identity(grant['root'])!=grant['root_identity']:
                 raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
+            if empty_thread and not 0<=time.time()-observation['observed_at']<30:
+                raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
             evidence={'observation':observation,'original_status':task['status'],'original_result':task['result'],
                 'intent_hash':digest(task['intent']),'original_thread_id':task['thread_id'],'original_turn_id':task['turn_id'],
                 'effects_rolled_back':False,'action':'same_id_requeue_before_any_turn'if unstarted else
+                'same_owned_thread_requeue_before_any_turn'if empty_thread else
                 'same_owned_thread_new_turn_after_verified_check_failure'if check_failure else'same_owned_thread_new_turn_after_verified_interruption'}
             body=canonical(evidence).decode();hashed=digest(evidence)
             if len(body.encode())>8192 or connection.execute('SELECT count(*)FROM events').fetchone()[0]>=MAX_EVENTS:
