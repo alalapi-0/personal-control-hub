@@ -100,6 +100,26 @@ def _error(code, outcome='NOT_COMMITTED'):
     return ServiceError(code, status=503, outcome=outcome)
 
 
+def _stable_resume_response(result):
+    # Passive response compatibility only: no permission or path authority.
+    if (any(name in result and result[name] is not None
+            for name in ('activePermissionProfile', 'initialTurnsPage'))
+            or 'multiAgentMode' in result and (type(result['multiAgentMode']) is not str
+                or result['multiAgentMode'] != 'explicitRequestOnly')):
+        raise _error('OFFICIAL_RESUME_METADATA_REJECTED', 'UNKNOWN')
+    if 'runtimeWorkspaceRoots' in result:
+        roots = result['runtimeWorkspaceRoots']
+        if (type(roots) is not list or len(roots) > 64
+                or any(type(value) is not str or not 1 <= len(value) <= 4096
+                    or not value.startswith('/') or '\x00' in value for value in roots)):
+            raise _error('OFFICIAL_RESUME_METADATA_REJECTED', 'UNKNOWN')
+    stable = result.copy()
+    for name in ('activePermissionProfile', 'initialTurnsPage',
+                 'multiAgentMode', 'runtimeWorkspaceRoots'):
+        stable.pop(name, None)
+    return stable
+
+
 def _ticks(pid):
     # Only the exact owned child, never a process-name search.
     text = Path(f'/proc/{pid}/stat').read_text()
@@ -463,6 +483,8 @@ class OfficialExecution:
                 # no pinned conclusive no-effect evidence is available here.
                 raise _error('OFFICIAL_RPC_REFUSED','UNKNOWN')
             result=value['result']
+            if method=='thread/resume' and type(result) is dict:
+                result=_stable_resume_response(result)
             schema=self.schemas[METHODS[method][1]]
             if type(result) is not dict or set(result)-set(schema.get('properties',{})):
                 if method=='thread/resume' and type(result) is dict:

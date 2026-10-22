@@ -999,3 +999,154 @@ class ProcessClosureTests(unittest.TestCase):
             self.assertEqual(wire.identity,{'pid':54321,'start_ticks':None,'pgid':None})
             self.assertEqual(wire.close()['status'],'UNKNOWN')
         kill.assert_not_called()
+
+
+class ResumeMetadataCompatibilityTests(unittest.TestCase):
+    def setUp(self):
+        self.f = ExecutionTests()
+        self.f.setUp()
+        self.addCleanup(self.f.doCleanups)
+        self.addCleanup(lambda: self.f.client.close())
+        self.metadata = {'activePermissionProfile': None, 'initialTurnsPage': None,
+                         'multiAgentMode': 'explicitRequestOnly',
+                         'runtimeWorkspaceRoots': ['/PRIVATE_SYNTHETIC_METADATA_ROOT']}
+
+    def reject(self, value, expected='OFFICIAL_RESUME_METADATA_REJECTED'):
+        f = self.f
+        f.fresh(); f.open(); keys = set(f.client.snapshot()); f.response(2, value)
+        with self.assertRaises(ServiceError) as caught:
+            f.client.resume()
+        self.assertEqual(caught.exception.code, expected)
+        self.assertEqual(caught.exception.outcome, 'UNKNOWN')
+        self.assertEqual(set(f.client.snapshot()), keys)
+        self.assertEqual(f.client.failure, {'code': expected, 'outcome': 'UNKNOWN'})
+        self.assertFalse(f.client.resumed)
+        self.assertIsNone(f.client.native_thread_id)
+        self.assertIsNone(f.client.session_id)
+        self.assertIsNone(f.client.turn_id)
+        self.assertEqual(f.client.deadline, 57)
+        self.assertEqual([frame['method'] for frame in f.wire.sent],
+                         ['initialize', 'initialized', 'thread/resume'])
+        sent = copy.deepcopy(f.wire.sent)
+        with self.assertRaises(ServiceError) as again:
+            f.client.resume()
+        self.assertEqual(again.exception.outcome, 'UNKNOWN')
+        self.assertEqual(f.wire.sent, sent)
+        self.assertEqual(f.wire.closes, 1)
+        public = json.dumps([caught.exception.as_dict(), f.client.snapshot()])
+        self.assertNotIn('PRIVATE', public)
+        self.assertRegex(caught.exception.code, r'^OFFICIAL_[A-Z_]+$')
+        self.assertLessEqual(len(caught.exception.code), 100)
+
+    def test_optional_fields_individually_and_together_match_legacy_snapshot(self):
+        f = self.f
+        baseline = None
+        for metadata in [{}, *({key: value} for key, value in self.metadata.items()), self.metadata]:
+            with self.subTest(fields=sorted(metadata)):
+                f.fresh(); f.open(); value = f.resume_result(); value.update(metadata)
+                f.response(2, value); result = f.client.resume()
+                if baseline is None:
+                    baseline = result
+                self.assertEqual(result, baseline)
+                self.assertIs(f.client.config, f.config)
+                self.assertEqual(f.client.deadline, 57)
+                self.assertFalse(result['exact_leaf_isolation'])
+                self.assertFalse(result['native_execution_admitted'])
+                self.assertEqual(f.wire.sent[0]['params']['capabilities'],
+                                 {'experimentalApi': False, 'explicitGatewayOauth': True})
+                self.assertEqual(f.wire.sent[-1]['params'],
+                    {'threadId': THREAD, 'cwd': str(f.cwd), 'sandbox': 'read-only',
+                     'approvalPolicy': 'never', 'approvalsReviewer': 'user', 'excludeTurns': True})
+                self.assertNotIn('PRIVATE', json.dumps([result, f.wire.sent]))
+                for field in self.metadata:
+                    self.assertNotIn(field, json.dumps(result))
+                f.client.close()
+
+    def test_projection_validates_before_discard_and_never_mutates_source(self):
+        base = self.f.resume_result(); value = {**base, **self.metadata}
+        original = copy.deepcopy(value)
+        stable = module._stable_resume_response(value)
+        self.assertEqual(value, original)
+        self.assertEqual(stable, base)
+        self.assertIsNot(stable, value)
+        for name in ('activePermissionProfile', 'initialTurnsPage'):
+            invalid = {**value, name: {'PRIVATE_BODY': 'PRIVATE VALUE'}}
+            before = copy.deepcopy(invalid)
+            with self.assertRaises(ServiceError) as caught:
+                module._stable_resume_response(invalid)
+            self.assertEqual(caught.exception.code, 'OFFICIAL_RESUME_METADATA_REJECTED')
+            self.assertEqual(invalid, before)
+
+    def test_active_permission_profile_accepts_only_null(self):
+        for value in (False, 0, '', 'PRIVATE_PROFILE', {}, [], {'type': 'PRIVATE_PROFILE'}):
+            with self.subTest(kind=type(value).__name__):
+                self.reject({**self.f.resume_result(), **self.metadata, 'activePermissionProfile': value})
+
+    def test_initial_turns_page_accepts_only_null(self):
+        for value in (False, 0, '', 'PRIVATE_PAGE', {}, [], {'turns': [], 'PRIVATE_BODY': 'PRIVATE'}):
+            with self.subTest(kind=type(value).__name__):
+                self.reject({**self.f.resume_result(), **self.metadata, 'initialTurnsPage': value})
+
+    def test_multi_agent_mode_accepts_only_exact_inactive_string(self):
+        for value in (None, False, 0, '', 'ExplicitRequestOnly', 'PRIVATE_MODE',
+                      ['explicitRequestOnly'], {'mode': 'explicitRequestOnly'}):
+            with self.subTest(kind=type(value).__name__):
+                self.reject({**self.f.resume_result(), **self.metadata, 'multiAgentMode': value})
+
+    def test_runtime_roots_reject_invalid_types_bounds_relative_and_nul(self):
+        for value in (None, False, '/PRIVATE_ROOT', {}, [None], [False], [1], [''],
+                      ['PRIVATE_RELATIVE'], ['/PRIVATE\x00ROOT'], ['/' + 'x' * 4096], ['/x'] * 65):
+            with self.subTest(kind=type(value).__name__):
+                self.reject({**self.f.resume_result(), **self.metadata, 'runtimeWorkspaceRoots': value})
+
+    def test_runtime_root_boundaries_are_opaque_and_never_observed_or_sent(self):
+        f = self.f
+        for roots in ([], ['/'], ['/' + 'x' * 4095],
+                      ['/PRIVATE_SYNTHETIC_ROOT_' + str(i) for i in range(64)],
+                      ['/PRIVATE_SYNTHETIC/../OPAQUE']):
+            f.fresh(); f.open(); f.response(2, {**f.resume_result(), **self.metadata,
+                                              'runtimeWorkspaceRoots': roots})
+            with patch.object(Path, 'resolve', side_effect=AssertionError('path observation forbidden')) as resolve, \
+                 patch.object(Path, 'stat', side_effect=AssertionError('path observation forbidden')) as stat, \
+                 patch.object(Path, 'lstat', side_effect=AssertionError('path observation forbidden')) as lstat, \
+                 patch.object(Path, 'open', side_effect=AssertionError('path observation forbidden')) as opened, \
+                 patch.object(module.os, 'open', side_effect=AssertionError('path observation forbidden')) as os_open, \
+                 patch.object(module.subprocess, 'Popen') as spawn:
+                result = f.client.resume()
+            for observed in (resolve, stat, lstat, opened, os_open, spawn):
+                observed.assert_not_called()
+            f.factory.assert_called_once()
+            self.assertEqual(result['thread_id'], THREAD)
+            self.assertEqual(result['session_id'], SESSION)
+            self.assertNotIn('PRIVATE', json.dumps([result, f.wire.sent]))
+            self.assertFalse(result['native_execution_admitted'])
+            f.client.close()
+
+    def test_stable_schema_and_identity_checks_still_reject_after_projection(self):
+        f = self.f
+        missing = {**f.resume_result(), **self.metadata}; del missing['cwd']
+        self.reject(missing, 'OFFICIAL_RESUME_SCHEMA_CWD_REQUIRED_REJECTED')
+        for change in ('thread_id', 'thread_cwd', 'root_cwd', 'turns', 'sandbox', 'network', 'approval'):
+            value = {**f.resume_result(), **self.metadata}
+            if change == 'thread_id': value['thread']['id'] = OTHER
+            elif change == 'thread_cwd': value['thread']['cwd'] = '/PRIVATE_CWD'
+            elif change == 'root_cwd': value['cwd'] = '/PRIVATE_CWD'
+            elif change == 'turns': value['thread']['turns'] = [{'id': TURN}]
+            elif change == 'sandbox': value['sandbox'] = {'type': 'workspaceWrite'}
+            elif change == 'network': value['sandbox']['networkAccess'] = True
+            else: value['approvalPolicy'] = 'always'
+            self.reject(value, 'OFFICIAL_RESUME_BINDING_REJECTED')
+
+    def test_other_root_fields_and_metadata_on_other_methods_remain_rejected(self):
+        f = self.f
+        value = {**f.resume_result(), **self.metadata, 'PRIVATE_UNKNOWN_ROOT': 'PRIVATE BODY'}
+        self.reject(value, 'OFFICIAL_RESUME_ROOT_FIELDS_REJECTED')
+        f.fresh(); f.response(1, {'userAgent': 'synthetic', **self.metadata})
+        error = f.assert_unknown(f.client.open)
+        self.assertEqual(error.code, 'OFFICIAL_PROTOCOL_REJECTED')
+        self.assertEqual(f.client.sent, ['initialize'])
+        f.fresh(); f.open(); f.resume()
+        f.response(3, {'turn': f.turn(), **self.metadata})
+        error = f.assert_unknown(lambda: f.client.start('SYNTHETIC PROMPT'))
+        self.assertEqual(error.code, 'OFFICIAL_PROTOCOL_REJECTED')
+        self.assertEqual(f.client.sent.count('turn/start'), 1)
