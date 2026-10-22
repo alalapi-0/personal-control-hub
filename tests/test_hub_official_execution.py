@@ -51,6 +51,26 @@ class ExecutionTests(unittest.TestCase):
                           ('ThreadStatusChangedNotification',['threadId','status']),('TurnStartedNotification',['threadId','turn']),
                           ('TurnCompletedNotification',['threadId','turn']),('ItemCompletedNotification',['threadId','turnId','item','completedAtMs'])]:
             schemas[name]={'type':'object','properties':{key:{} for key in keys}}
+        def obj(properties,required=()):return {'type':'object','properties':properties,'required':list(required)}
+        text={'type':'string'};integer={'type':'integer'}
+        schemas['AccountUpdatedNotification']=obj({'authMode':{'enum':[None,'apikey','chatgpt','chatgptAuthTokens']},
+                                                  'planType':{'enum':[None,'free','pro','unknown']}})
+        schemas['AccountRateLimitsUpdatedNotification']=obj({'rateLimits':obj({
+            'limitId':text,'planType':text,'credits':obj({'balance':text,'hasCredits':{'type':'boolean'},
+                'unlimited':{'type':'boolean'}},('hasCredits','unlimited')),
+            'primary':obj({'usedPercent':integer},('usedPercent',))})},('rateLimits',))
+        usage=obj({k:integer for k in ('cachedInputTokens','inputTokens','outputTokens',
+            'reasoningOutputTokens','totalTokens')},('cachedInputTokens','inputTokens','outputTokens','reasoningOutputTokens','totalTokens'))
+        schemas['ThreadTokenUsageUpdatedNotification']=obj({'threadId':text,'turnId':text,
+            'tokenUsage':obj({'last':usage,'total':usage},('last','total'))},('threadId','turnId','tokenUsage'))
+        variants=[]
+        for kind,extra in [('agentMessage',{'text':text}),('commandExecution',{'command':text}),
+                           ('mcpToolCall',{'arguments':{}}),('collabAgentToolCall',{'prompt':text})]:
+            variants.append(obj({'id':text,'type':{'enum':[kind]},**extra},('id','type',*extra)))
+        schemas['ItemStartedNotification']=obj({'threadId':text,'turnId':text,'startedAtMs':integer,
+            'item':{'oneOf':variants}},('threadId','turnId','startedAtMs','item'))
+        schemas['AgentMessageDeltaNotification']=obj({'threadId':text,'turnId':text,'itemId':text,
+            'delta':text},('threadId','turnId','itemId','delta'))
         self.pins={}
         for name,schema in schemas.items():
             path=self.schemas/('v1'if name.startswith('Initialize')else'v2')/(name+'.json')
@@ -336,6 +356,196 @@ class ExecutionTests(unittest.TestCase):
         with patch.object(module,'_official_binary_hash',return_value='b'*64):
             with self.assertRaises(ServiceError):self.client.open()
         self.factory.assert_not_called()
+
+
+class PassiveNotificationTests(unittest.TestCase):
+    def setUp(self):
+        self.f=ExecutionTests();self.f.setUp();self.addCleanup(self.f.doCleanups)
+
+    def ready(self):
+        f=self.f;f.fresh();f.open();f.resume();f.start()
+        f.notify('turn/started',{'threadId':THREAD,'turn':f.turn()})
+        return f
+
+    def item(self,kind='agentMessage',ident='item-one'):
+        extra={'agentMessage':{'text':'PRIVATE ITEM BODY'},'commandExecution':{'command':'PRIVATE COMMAND'},
+               'mcpToolCall':{'arguments':{'private':'PRIVATE ARGS'}},
+               'collabAgentToolCall':{'prompt':'PRIVATE COLLAB'}}[kind]
+        return {'threadId':THREAD,'turnId':TURN,'startedAtMs':1,'item':{'id':ident,'type':kind,**extra}}
+
+    def delta(self,**changes):
+        return {'threadId':THREAD,'turnId':TURN,'itemId':'item-one','delta':'PRIVATE DELTA',**changes}
+
+    def finish(self):
+        f=self.f;f.notify('turn/completed',{'threadId':THREAD,'turn':f.turn(status='completed')})
+        return f.client.wait()
+
+    def reject(self,method,params,prefix=()):
+        f=self.ready()
+        for m,p in prefix:f.notify(m,p)
+        f.notify(method,params)
+        # A valid terminal sentinel ensures silently accepting the bad event
+        # cannot satisfy this test merely by reaching EOF/timeout afterwards.
+        f.notify('turn/completed',{'threadId':THREAD,'turn':f.turn(status='completed')})
+        error=f.assert_unknown(f.client.wait)
+        self.assertNotEqual(error.code,'OFFICIAL_TIMEOUT')
+        self.assertNotIn('PRIVATE',json.dumps(error.as_dict()))
+        self.assertNotIn('PRIVATE',json.dumps(f.client.snapshot()))
+        sent=copy.deepcopy(f.wire.sent)
+        with self.assertRaises(ServiceError)as again:f.client.start('PRIVATE RETRY')
+        self.assertEqual(again.exception.outcome,'UNKNOWN');self.assertEqual(f.wire.sent,sent)
+
+    def test_exact_ten_notifications_no_extra_rpc(self):
+        self.assertEqual(set(module.NOTIFICATIONS),{'remoteControl/status/changed','thread/status/changed',
+            'turn/started','turn/completed','item/completed','account/updated','account/rateLimits/updated',
+            'thread/tokenUsage/updated','item/started','item/agentMessage/delta'})
+        self.assertEqual(set(module.METHODS),{'initialize','thread/resume','turn/start','turn/interrupt'})
+
+    def test_baseline_account_notification_interleaved_with_rpc_is_passive(self):
+        f=self.f
+        f.notify('account/updated',{'authMode':None,'planType':None});f.open()
+        f.notify('account/updated',{'authMode':None,'planType':None});f.resume()
+        f.notify('account/rateLimits/updated',{'rateLimits':{'limitId':'PRIVATE QUOTA',
+            'credits':{'balance':'PRIVATE BALANCE','hasCredits':True,'unlimited':False}}});f.start()
+        result=self.finish()
+        self.assertEqual([x['method']for x in f.wire.sent],['initialize','initialized','thread/resume','turn/start'])
+        self.assertEqual(result['thread_id'],THREAD);self.assertEqual(result['session_id'],SESSION)
+        self.assertFalse(result['native_execution_admitted']);self.assertFalse(result['exact_leaf_isolation'])
+        self.assertNotIn('PRIVATE',json.dumps(result))
+        self.assertEqual([e['sequence']for e in result['events']],[1,2,3,4])
+        for event in result['events']:
+            self.assertEqual(set(event),{'sequence','method','sha256','size_bytes'})
+            self.assertEqual(len(event['sha256']),64);self.assertGreater(event['size_bytes'],0)
+
+    def test_auth_enum_vocabulary_never_selects_authentication(self):
+        f=self.ready()
+        for mode in ('apikey','chatgpt','chatgptAuthTokens',None):
+            f.notify('account/updated',{'authMode':mode,'planType':'pro'})
+        result=self.finish()
+        for frame in f.wire.sent:self.assertNotIn('authMode',json.dumps(frame))
+        self.assertNotIn('chatgptAuthTokens',json.dumps(result))
+        self.assertNotIn('planType',json.dumps(result))
+
+    def test_bound_token_item_delta_complete_lifecycle_discards_bodies(self):
+        f=self.ready();usage={k:1 for k in ('cachedInputTokens','inputTokens','outputTokens','reasoningOutputTokens','totalTokens')}
+        f.notify('thread/tokenUsage/updated',{'threadId':THREAD,'turnId':TURN,'tokenUsage':{'last':usage,'total':usage}})
+        f.notify('item/started',self.item());f.notify('item/agentMessage/delta',self.delta())
+        f.notify('item/agentMessage/delta',self.delta(delta='PRIVATE NEXT'))
+        f.notify('item/completed',{'threadId':THREAD,'turnId':TURN,'completedAtMs':2,'item':self.item()['item']})
+        result=self.finish();self.assertEqual(f.client.items,{'item-one':('agentMessage',True)})
+        self.assertEqual(len(result['events']),7);self.assertNotIn('PRIVATE',json.dumps(result))
+        self.assertNotIn('"tokenUsage":',json.dumps(result));self.assertEqual(len(f.wire.sent),4)
+
+    def test_cross_missing_and_out_of_order_bindings_fail_closed(self):
+        start=self.item()
+        for method,params,prefix in [
+            ('item/started',{**start,'threadId':OTHER},()),('item/started',{**start,'turnId':OTHER},()),
+            ('item/agentMessage/delta',self.delta(),()),
+            ('item/agentMessage/delta',self.delta(threadId=OTHER),(('item/started',start),)),
+            ('item/agentMessage/delta',self.delta(turnId=OTHER),(('item/started',start),)),
+            ('item/agentMessage/delta',self.delta(itemId='other-item'),(('item/started',start),)),
+            ('item/started',start,(('item/started',start),))]:
+            with self.subTest(method=method,params=params):self.reject(method,params,prefix)
+
+    def test_completion_only_and_explicit_stream_items_can_coexist(self):
+        f=self.ready();legacy=self.item(ident='legacy-completed')['item']
+        f.notify('item/completed',{'threadId':THREAD,'turnId':TURN,'completedAtMs':2,'item':legacy})
+        f.notify('item/started',self.item());f.notify('item/agentMessage/delta',self.delta())
+        f.notify('item/completed',{'threadId':THREAD,'turnId':TURN,'completedAtMs':3,'item':self.item()['item']})
+        result=self.finish()
+        self.assertEqual(f.client.items,{'legacy-completed':('agentMessage',True),'item-one':('agentMessage',True)})
+        self.assertEqual(f.client.item_ids,{'legacy-completed','item-one'})
+        self.assertEqual([event['sequence']for event in result['events']],[1,2,3,4,5,6])
+        self.assertEqual(len(f.wire.sent),4);self.assertNotIn('PRIVATE',json.dumps(result))
+
+    def test_completion_only_item_cannot_be_reopened_streamed_or_completed_twice(self):
+        start=self.item();done={'threadId':THREAD,'turnId':TURN,'completedAtMs':2,'item':start['item']}
+        for method,params in [('item/started',start),('item/agentMessage/delta',self.delta()),
+            ('item/completed',done),('item/completed',{**done,'item':self.item('commandExecution')['item']})]:
+            with self.subTest(method=method):self.reject(method,params,(('item/completed',done),))
+
+    def test_stale_or_type_changed_item_cannot_receive_delta_or_complete_twice(self):
+        start=self.item();done={'threadId':THREAD,'turnId':TURN,'completedAtMs':2,'item':start['item']}
+        for method,params in [('item/agentMessage/delta',self.delta()),('item/completed',done)]:
+            self.reject(method,params,(('item/started',start),('item/completed',done)))
+        self.reject('item/completed',{**done,'item':self.item('commandExecution')['item']},(('item/started',start),))
+        self.reject('item/agentMessage/delta',self.delta(),(('item/started',self.item('commandExecution')),))
+
+    def test_tool_collaboration_items_are_data_and_never_trigger_response(self):
+        for kind in ('commandExecution','mcpToolCall','collabAgentToolCall'):
+            f=self.ready();start=self.item(kind);f.notify('item/started',start)
+            f.notify('item/completed',{'threadId':THREAD,'turnId':TURN,'completedAtMs':2,'item':start['item']})
+            result=self.finish();self.assertEqual(len(f.wire.sent),4)
+            self.assertNotIn('PRIVATE',json.dumps(result))
+
+    def test_extra_fields_rejected_at_top_and_nested_structure(self):
+        usage={k:1 for k in ('cachedInputTokens','inputTokens','outputTokens','reasoningOutputTokens','totalTokens')}
+        cases=[('account/updated',{'authMode':None,'planType':None,'unexpected':True}),
+            ('account/rateLimits/updated',{'rateLimits':{'primary':{'usedPercent':1,'unexpected':True}}}),
+            ('account/rateLimits/updated',{'rateLimits':{'credits':{'hasCredits':True,'unlimited':False,'unexpected':True}}}),
+            ('thread/tokenUsage/updated',{'threadId':THREAD,'turnId':TURN,
+                'tokenUsage':{'last':{**usage,'unexpected':True},'total':usage}}),
+            ('item/started',{**self.item(),'item':{**self.item()['item'],'unexpected':True}}),
+            ('item/agentMessage/delta',{**self.delta(),'unexpected':True})]
+        for method,params in cases:
+            prefix=(('item/started',self.item()),) if method=='item/agentMessage/delta' else ()
+            with self.subTest(method=method):self.reject(method,params,prefix)
+
+    def test_bound_notifications_before_native_resume_or_turn_are_rejected(self):
+        for method,params in [('item/started',self.item()),('item/agentMessage/delta',self.delta())]:
+            f=self.f;f.fresh();f.open();f.notify(method,params);f.assert_unknown(f.resume)
+            self.assertNotIn('turn/start',[x['method']for x in f.wire.sent])
+        f=self.f;f.fresh();f.open();f.resume();f.notify('item/started',self.item())
+        # start is in flight, but no provider turn identity has been observed.
+        f.assert_unknown(f.start)
+
+    def test_id_bearing_notifications_and_unknown_methods_never_get_responses(self):
+        for method in module.PASSIVE_NOTIFICATIONS:
+            f=self.ready();before=len(f.wire.sent);f.wire.frames.append({'id':99,'method':method,'params':{}})
+            f.notify('turn/completed',{'threadId':THREAD,'turn':f.turn(status='completed')})
+            f.assert_unknown(f.client.wait);self.assertEqual(len(f.wire.sent),before)
+        self.reject('account/login/updated',{})
+
+    def test_extra_envelope_fields_are_rejected_before_processing(self):
+        usage={k:1 for k in ('cachedInputTokens','inputTokens','outputTokens','reasoningOutputTokens','totalTokens')}
+        cases=[('account/updated',{'authMode':None}),('account/rateLimits/updated',{'rateLimits':{}}),
+            ('thread/tokenUsage/updated',{'threadId':THREAD,'turnId':TURN,'tokenUsage':{'last':usage,'total':usage}}),
+            ('item/started',self.item()),('item/agentMessage/delta',self.delta())]
+        for method,params in cases:
+            f=self.ready()
+            if method=='item/agentMessage/delta':f.notify('item/started',self.item())
+            f.wire.frames.append({'method':method,'params':params,'unexpected':'PRIVATE EXTRA'})
+            f.notify('turn/completed',{'threadId':THREAD,'turn':f.turn(status='completed')})
+            before=len(f.wire.sent);error=f.assert_unknown(f.client.wait)
+            self.assertEqual(error.code,'OFFICIAL_SERVER_REQUEST_REJECTED')
+            self.assertNotIn('PRIVATE',json.dumps(error.as_dict()))
+            self.assertEqual(len(f.wire.sent),before)
+
+    def test_new_schema_pin_drift_blocks_native_factory(self):
+        f=self.f
+        for name in module.PASSIVE_NOTIFICATIONS.values():
+            path=f.schemas/'v2'/(name+'.json');before=path.read_bytes();path.write_text('{}')
+            f.fresh()
+            with self.assertRaises(ServiceError):f.client.open()
+            f.factory.assert_not_called();path.write_bytes(before)
+
+    def test_new_notifications_share_count_size_deadline_bounds(self):
+        f=self.ready()
+        for _ in range(module.MAX_NOTIFICATIONS+1):f.notify('account/updated',{'authMode':None,'planType':None})
+        f.assert_unknown(f.client.wait);self.assertEqual(len(f.client.events),module.MAX_NOTIFICATIONS)
+        f=self.ready();f.wire.frames.append(json.dumps({'method':'account/updated','params':{'extra':'x'*module.MAX_FRAME}}).encode())
+        f.assert_unknown(f.client.wait)
+        f=self.ready();original=f.wire.receive
+        def receive(deadline):
+            result=original(deadline);f.now[0]+=60;return result
+        f.wire.receive=receive;f.notify('account/updated',{'authMode':None})
+        f.assert_unknown(f.client.wait)
+
+    def test_malformed_types_required_fields_and_enums_reject(self):
+        for method,params in [('account/updated',{'authMode':'made-up'}),('account/updated',{'planType':False}),
+            ('account/rateLimits/updated',{'rateLimits':False}),('item/started',{'threadId':THREAD}),
+            ('item/agentMessage/delta',{**self.delta(),'delta':42})]:
+            with self.subTest(method=method):self.reject(method,params)
 
 
 class ProcessClosureTests(unittest.TestCase):

@@ -33,10 +33,24 @@ METHODS = {'initialize': ('InitializeParams', 'InitializeResponse'),
            'thread/resume': ('ThreadResumeParams', 'ThreadResumeResponse'),
            'turn/start': ('TurnStartParams', 'TurnStartResponse'),
            'turn/interrupt': ('TurnInterruptParams', 'TurnInterruptResponse')}
+PASSIVE_NOTIFICATIONS = {
+    'account/updated': 'AccountUpdatedNotification',
+    'account/rateLimits/updated': 'AccountRateLimitsUpdatedNotification',
+    'thread/tokenUsage/updated': 'ThreadTokenUsageUpdatedNotification',
+    'item/started': 'ItemStartedNotification',
+    'item/agentMessage/delta': 'AgentMessageDeltaNotification'}
+SCHEMA_PINS.update({
+    'AccountUpdatedNotification': '268dba6977cc3adcced751a97367772a1e201a199c14f454741d851fe8bbacb1',
+    'AccountRateLimitsUpdatedNotification': '37326ef0364007be0c8f92bf5cd228941b513f87266edd566d694409b5aa5b8b',
+    'ThreadTokenUsageUpdatedNotification': 'aba4f6c7e4a19b2b842c08ee793b57000c07dafd57b922ad0d8e7c76609108c2',
+    'ItemStartedNotification': '692c5876f44a4c12a9b9211912860ceddb65d34497ab4fe9aa46cbebe1a63166',
+    'AgentMessageDeltaNotification': '996e6c0ea65e57bed5a00f410b94381fe5ebf804333e5d00c2b6e6d47e5c55f6'})
 NOTIFICATIONS = {'remoteControl/status/changed': 'RemoteControlStatusChangedNotification',
                  'thread/status/changed': 'ThreadStatusChangedNotification',
                  'turn/started': 'TurnStartedNotification', 'turn/completed': 'TurnCompletedNotification',
-                 'item/completed': 'ItemCompletedNotification'}
+                 'item/completed': 'ItemCompletedNotification', **PASSIVE_NOTIFICATIONS}
+GLOBAL_NOTIFICATIONS = frozenset(('remoteControl/status/changed', 'account/updated',
+                                  'account/rateLimits/updated'))
 UUID = re.compile(r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}')
 
 
@@ -81,9 +95,24 @@ def load_schemas(directory):
                 raise ValueError('pin')
             schema = json.loads(raw)
             jsonschema.validators.validator_for(schema).check_schema(schema)
-            result[name] = schema
+            result[name] = _closed_notification_schema(schema) if name in PASSIVE_NOTIFICATIONS.values() else schema
     except (OSError, ValueError, jsonschema.SchemaError):
         raise _error('OFFICIAL_SCHEMA_REJECTED') from None
+    return result
+
+
+def _closed_notification_schema(schema):
+    # Generated IDL omits additionalProperties:false. Close declared structures,
+    # including nested variants; preserve explicit maps and opaque JSON values.
+    result = copy.deepcopy(schema)
+    def close(node):
+        if type(node) is dict:
+            if node.get('type') == 'object' or 'properties' in node:
+                node.setdefault('additionalProperties', False)
+            for value in node.values():close(value)
+        elif type(node) is list:
+            for value in node:close(value)
+    close(result)
     return result
 
 
@@ -209,6 +238,7 @@ class OfficialExecution:
         self.pending = False
         self.sent, self.events = [], []
         self.item_ids = set()
+        self.items = {}  # Bounded independent ID -> (type, completed); no bodies.
         self.native_thread_id = self.session_id = self.turn_id = None
         self.session_reason = 'NOT_OBSERVED'
         self.initialized = self.resumed = self.started_event = self.start_reply = False
@@ -281,7 +311,7 @@ class OfficialExecution:
         if type(params) is not dict or set(params)-set(self.schemas[NOTIFICATIONS[method]].get('properties',{})):
             raise _error('OFFICIAL_PROTOCOL_REJECTED','UNKNOWN')
         if len(self.events) >= MAX_NOTIFICATIONS: raise _error('OFFICIAL_NOTIFICATION_CAPACITY','UNKNOWN')
-        if method != 'remoteControl/status/changed':
+        if method not in GLOBAL_NOTIFICATIONS:
             if params['threadId'] != self.config.thread_id or 'thread/resume' not in self.sent:
                 raise _error('OFFICIAL_NOTIFICATION_BINDING_REJECTED','UNKNOWN')
             if method in ('turn/started','turn/completed'):
@@ -298,16 +328,38 @@ class OfficialExecution:
                     if not (self.started_event or self.start_reply) or self.terminal or turn['status'] not in ('completed','interrupted','failed'):
                         raise _error('OFFICIAL_NOTIFICATION_ORDER_REJECTED','UNKNOWN')
                     self.turn_id=native;self.terminal=turn['status']
-            elif method=='item/completed':
-                if self.turn_id is None or params['turnId']!=self.turn_id or self.terminal:
+            elif method in ('thread/tokenUsage/updated','item/started','item/agentMessage/delta','item/completed'):
+                if (not self.resumed or self.native_thread_id != self.config.thread_id
+                        or self.turn_id is None or params['turnId']!=self.turn_id or self.terminal):
                     raise _error('OFFICIAL_NOTIFICATION_ORDER_REJECTED','UNKNOWN')
-                ident=params['item'].get('id')
-                if type(ident) is not str or not ident or ident in self.item_ids:
-                    raise _error('OFFICIAL_NOTIFICATION_ORDER_REJECTED','UNKNOWN')
-                self.item_ids.add(ident)
+                if method.startswith('item/'):
+                    item=params.get('item')
+                    ident=params.get('itemId') if method=='item/agentMessage/delta' else item.get('id')
+                    if type(ident) is not str or not 0<len(ident)<=256:
+                        raise _error('OFFICIAL_NOTIFICATION_ORDER_REJECTED','UNKNOWN')
+                    prior=self.items.get(ident)
+                    if method=='item/started':
+                        kind=item.get('type')
+                        if prior is not None or type(kind) is not str or not 0<len(kind)<=128:
+                            raise _error('OFFICIAL_NOTIFICATION_ORDER_REJECTED','UNKNOWN')
+                        self.items[ident]=(kind,False)
+                    elif method=='item/agentMessage/delta':
+                        if prior != ('agentMessage',False):
+                            raise _error('OFFICIAL_NOTIFICATION_ORDER_REJECTED','UNKNOWN')
+                    else:
+                        kind=item.get('type')
+                        # The original completion-only stream may introduce a
+                        # finished item, never a live delta target. Explicitly
+                        # started items must still match and complete once.
+                        if (type(kind) is not str or not 0<len(kind)<=128
+                                or prior is not None and (prior[1] or kind!=prior[0])):
+                            raise _error('OFFICIAL_NOTIFICATION_ORDER_REJECTED','UNKNOWN')
+                        self.items[ident]=(kind,True)
+                        self.item_ids.add(ident)
         # Hash and order only; never retain provider bodies or remote identities.
+        encoded=canonical(value)
         self.events.append({'sequence':len(self.events)+1,'method':method,
-                            'sha256':hashlib.sha256(canonical(value)).hexdigest()})
+                            'size_bytes':len(encoded),'sha256':hashlib.sha256(encoded).hexdigest()})
 
     def _rpc(self, method, params):
         if method not in METHODS or method in self.sent or self.pending:
