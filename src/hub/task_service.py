@@ -127,17 +127,21 @@ class TaskService:
 
     @runtime_status.setter
     def runtime_status(self,value):
+        # Default/deferred legacy startup does not inspect or instantiate a
+        # Runtime. An attached budget-backed service still cannot be detached.
+        if value is None:
+            if self.__normal_budgets and getattr(self,'_runtime_status',None)is not None:
+                raise ServiceError('ORDINARY_RUNTIME_BINDING_REJECTED',status=403)
+            self._runtime_status=None
+            return
         from .ordinary_runtime import OrdinaryRuntime
         runtime=getattr(value,'__self__',None)
-        configured=(OrdinaryRuntime.normal_budget_bindings.fget(runtime)
-                    if isinstance(runtime,OrdinaryRuntime)else {})
+        runtime_type=isinstance(OrdinaryRuntime,type)
+        protocol=getattr(OrdinaryRuntime,'normal_budget_bindings',None)if runtime_type else None
+        budget_protocol=isinstance(protocol,property)and callable(protocol.fget)
+        configured=(protocol.fget(runtime)if budget_protocol and isinstance(runtime,OrdinaryRuntime)else {})
         if self.__normal_budgets or configured:
-            # None is valid at construction/deferred attachment, never a way
-            # to detach an existing budget-backed runtime or downgrade it.
-            if value is None and getattr(self,'_runtime_status',None)is None:
-                self._runtime_status=None
-                return
-            if type(runtime)is not OrdinaryRuntime or runtime.store is not self.store:
+            if not budget_protocol or type(runtime)is not OrdinaryRuntime or runtime.store is not self.store:
                 raise ServiceError('ORDINARY_RUNTIME_BINDING_REJECTED',status=403)
             if self.__normal_budgets and configured and (
                     self.__normal_budgets.keys()!=configured.keys()or

@@ -488,3 +488,25 @@ class NormalBudgetAttachTests(unittest.TestCase):
   service.runtime_status=None;self.assertIsNone(service.runtime_status)
   runtime=self.runtime();service.runtime_status=runtime.status
   self.assertEqual(dict(runtime.normal_budget_bindings),{})
+
+ def test_legacy_default_and_opaque_callback_with_non_type_runtime_symbol(self):
+  replacement=mock.Mock(side_effect=AssertionError('No implicit runtime work'))
+  with mock.patch('hub.ordinary_runtime.OrdinaryRuntime',replacement):
+   service=TaskService(None,None,self.store)
+   self.assertIsNone(service.runtime_status)
+   status=lambda:{'legacy':'opaque'}
+   service.runtime_status=status;self.assertIs(service.runtime_status,status)
+   service.runtime_status=None;self.assertIsNone(service.runtime_status)
+  replacement.assert_not_called()
+ def test_legacy_runtime_without_budget_protocol_remains_opaque(self):
+  class LegacyRuntime:
+   def __init__(self,store):self.store=store
+   def status(self):return {'legacy':True}
+  runtime=LegacyRuntime(self.store)
+  with mock.patch('hub.ordinary_runtime.OrdinaryRuntime',LegacyRuntime):
+   service=TaskService(None,None,self.store,runtime_status=runtime.status)
+   self.assertEqual(service.runtime_status,runtime.status)
+   selected=TaskService(None,None,self.store,normal_budget_bindings=self.bindings)
+   with self.assertRaises(ServiceError):selected.runtime_status=runtime.status
+   self.assertIsNone(selected.runtime_status)
+   self.assertIs(selected._TaskService__normal_budgets[self.f.spec['request_id']],self.binding)
