@@ -38,13 +38,15 @@ PASSIVE_NOTIFICATIONS = {
     'account/rateLimits/updated': 'AccountRateLimitsUpdatedNotification',
     'thread/tokenUsage/updated': 'ThreadTokenUsageUpdatedNotification',
     'item/started': 'ItemStartedNotification',
-    'item/agentMessage/delta': 'AgentMessageDeltaNotification'}
+    'item/agentMessage/delta': 'AgentMessageDeltaNotification',
+    'mcpServer/startupStatus/updated': 'McpServerStatusUpdatedNotification'}
 SCHEMA_PINS.update({
     'AccountUpdatedNotification': '268dba6977cc3adcced751a97367772a1e201a199c14f454741d851fe8bbacb1',
     'AccountRateLimitsUpdatedNotification': '37326ef0364007be0c8f92bf5cd228941b513f87266edd566d694409b5aa5b8b',
     'ThreadTokenUsageUpdatedNotification': 'aba4f6c7e4a19b2b842c08ee793b57000c07dafd57b922ad0d8e7c76609108c2',
     'ItemStartedNotification': '692c5876f44a4c12a9b9211912860ceddb65d34497ab4fe9aa46cbebe1a63166',
-    'AgentMessageDeltaNotification': '996e6c0ea65e57bed5a00f410b94381fe5ebf804333e5d00c2b6e6d47e5c55f6'})
+    'AgentMessageDeltaNotification': '996e6c0ea65e57bed5a00f410b94381fe5ebf804333e5d00c2b6e6d47e5c55f6',
+    'McpServerStatusUpdatedNotification': 'd6f4cb120b2363d321247592f03b9afbbf2762ad6d8af31b88c1b1bf39c4c7aa'})
 NOTIFICATIONS = {'remoteControl/status/changed': 'RemoteControlStatusChangedNotification',
                  'thread/status/changed': 'ThreadStatusChangedNotification',
                  'turn/started': 'TurnStartedNotification', 'turn/completed': 'TurnCompletedNotification',
@@ -311,7 +313,13 @@ class OfficialExecution:
         if type(params) is not dict or set(params)-set(self.schemas[NOTIFICATIONS[method]].get('properties',{})):
             raise _error('OFFICIAL_PROTOCOL_REJECTED','UNKNOWN')
         if len(self.events) >= MAX_NOTIFICATIONS: raise _error('OFFICIAL_NOTIFICATION_CAPACITY','UNKNOWN')
-        if method not in GLOBAL_NOTIFICATIONS:
+        if method == 'mcpServer/startupStatus/updated':
+            # Nullable/global startup metadata cannot establish native identity
+            # or trigger authentication. Scoped observations need a sent resume.
+            thread=params.get('threadId')
+            if thread is not None and (thread!=self.config.thread_id or 'thread/resume' not in self.sent):
+                raise _error('OFFICIAL_NOTIFICATION_BINDING_REJECTED','UNKNOWN')
+        elif method not in GLOBAL_NOTIFICATIONS:
             if params['threadId'] != self.config.thread_id or 'thread/resume' not in self.sent:
                 raise _error('OFFICIAL_NOTIFICATION_BINDING_REJECTED','UNKNOWN')
             if method in ('turn/started','turn/completed'):

@@ -71,6 +71,10 @@ class ExecutionTests(unittest.TestCase):
             'item':{'oneOf':variants}},('threadId','turnId','startedAtMs','item'))
         schemas['AgentMessageDeltaNotification']=obj({'threadId':text,'turnId':text,'itemId':text,
             'delta':text},('threadId','turnId','itemId','delta'))
+        schemas['McpServerStatusUpdatedNotification']=obj({'name':text,
+            'status':{'enum':['starting','ready','failed','cancelled']},
+            'threadId':{'type':['string','null']},'error':{'type':['string','null']},
+            'failureReason':{'enum':[None,'reauthenticationRequired']}},('name','status'))
         self.pins={}
         for name,schema in schemas.items():
             path=self.schemas/('v1'if name.startswith('Initialize')else'v2')/(name+'.json')
@@ -395,10 +399,10 @@ class PassiveNotificationTests(unittest.TestCase):
         with self.assertRaises(ServiceError)as again:f.client.start('PRIVATE RETRY')
         self.assertEqual(again.exception.outcome,'UNKNOWN');self.assertEqual(f.wire.sent,sent)
 
-    def test_exact_ten_notifications_no_extra_rpc(self):
+    def test_exact_eleven_notifications_no_extra_rpc(self):
         self.assertEqual(set(module.NOTIFICATIONS),{'remoteControl/status/changed','thread/status/changed',
             'turn/started','turn/completed','item/completed','account/updated','account/rateLimits/updated',
-            'thread/tokenUsage/updated','item/started','item/agentMessage/delta'})
+            'thread/tokenUsage/updated','item/started','item/agentMessage/delta','mcpServer/startupStatus/updated'})
         self.assertEqual(set(module.METHODS),{'initialize','thread/resume','turn/start','turn/interrupt'})
 
     def test_baseline_account_notification_interleaved_with_rpc_is_passive(self):
@@ -546,6 +550,105 @@ class PassiveNotificationTests(unittest.TestCase):
             ('account/rateLimits/updated',{'rateLimits':False}),('item/started',{'threadId':THREAD}),
             ('item/agentMessage/delta',{**self.delta(),'delta':42})]:
             with self.subTest(method=method):self.reject(method,params)
+
+
+class StartupNotificationTests(unittest.TestCase):
+    method='mcpServer/startupStatus/updated'
+
+    def setUp(self):
+        self.f=ExecutionTests();self.f.setUp();self.addCleanup(self.f.doCleanups)
+
+    def message(self,status='starting',**changes):
+        return {'name':'PRIVATE SYNTHETIC SERVER','status':status,**changes}
+
+    def ready(self):
+        f=self.f;f.fresh();f.open();f.resume();f.start();return f
+
+    def terminal(self):
+        f=self.f;f.notify('turn/completed',{'threadId':THREAD,'turn':f.turn(status='completed')})
+
+    def reject(self,params,**envelope):
+        f=self.ready();before=copy.deepcopy(f.wire.sent)
+        f.wire.frames.append({'method':self.method,'params':params,**envelope});self.terminal()
+        error=f.assert_unknown(f.client.wait)
+        self.assertNotEqual(error.code,'OFFICIAL_TIMEOUT');self.assertEqual(f.wire.sent,before)
+        self.assertNotIn('PRIVATE',json.dumps(error.as_dict()));self.assertNotIn('PRIVATE',json.dumps(f.client.snapshot()))
+        with self.assertRaises(ServiceError)as again:f.client.resume()
+        self.assertEqual(again.exception.outcome,'UNKNOWN');self.assertEqual(f.wire.sent,before)
+
+    def test_all_four_states_nullable_binding_and_failure_reasons_are_passive(self):
+        f=self.f
+        for status in ('starting','ready','failed','cancelled'):
+            f.notify(self.method,self.message(status,error='PRIVATE ERROR',failureReason=None))
+        f.open()
+        self.assertIsNone(f.client.native_thread_id);self.assertIsNone(f.client.turn_id)
+        f.notify(self.method,self.message('failed',threadId=THREAD,failureReason='reauthenticationRequired'))
+        f.resume();f.start()
+        f.notify(self.method,self.message('cancelled',threadId=None,error=None))
+        self.terminal();result=f.client.wait()
+        self.assertEqual([frame['method']for frame in f.wire.sent],['initialize','initialized','thread/resume','turn/start'])
+        self.assertEqual(result['terminal'],'completed');self.assertEqual(result['session_id'],SESSION)
+        self.assertEqual(result['thread_id'],THREAD);self.assertFalse(result['native_execution_admitted'])
+        self.assertNotIn('PRIVATE',json.dumps(result));self.assertNotIn('reauthenticationRequired',json.dumps(result))
+        for event in result['events']:
+            self.assertEqual(set(event),{'method','sequence','size_bytes','sha256'})
+            self.assertEqual(len(event['sha256']),64)
+
+    def test_scoped_startup_cannot_establish_native_identity_before_resume_reply(self):
+        f=self.f;f.open();f.notify(self.method,self.message(threadId=THREAD))
+        original=f.wire.receive;observed=[]
+        def receive(deadline):
+            observed.append((f.client.native_thread_id,f.client.resumed,f.client.turn_id))
+            return original(deadline)
+        f.wire.receive=receive;f.resume()
+        self.assertEqual(observed,[(None,False,None),(None,False,None)])
+        self.assertEqual(f.client.native_thread_id,THREAD);f.client.close()
+
+    def test_foreign_malformed_and_premature_scoped_thread_rejected(self):
+        for thread in (OTHER,'not-a-thread','',False,7,[],{}):
+            with self.subTest(thread=thread):self.reject(self.message(threadId=thread))
+        f=self.f;f.fresh();f.notify(self.method,self.message(threadId=THREAD))
+        error=f.assert_unknown(f.open)
+        self.assertEqual(error.code,'OFFICIAL_NOTIFICATION_BINDING_REJECTED')
+        self.assertEqual([x['method']for x in f.wire.sent],['initialize'])
+
+    def test_closed_fields_types_required_keys_and_enums(self):
+        cases=[{},None,[],self.message(status='unknown'),self.message(status=None),
+            self.message(name=None),self.message(name=3),self.message(error=False),
+            self.message(failureReason='retry'),self.message(failureReason={}),
+            self.message(unexpected=True)]
+        for params in cases:
+            with self.subTest(params=params):self.reject(params)
+
+    def test_id_bearing_and_extra_envelope_requests_get_no_response(self):
+        for extra in ({'id':99},{'id':None},{'unexpected':'PRIVATE EXTRA'}):
+            with self.subTest(extra=extra):self.reject(self.message(),**extra)
+
+    def test_startup_schema_pin_drift_refuses_before_factory(self):
+        f=self.f;(f.schemas/'v2/McpServerStatusUpdatedNotification.json').write_text('{}')
+        with self.assertRaises(ServiceError):f.client.open()
+        f.factory.assert_not_called()
+
+    def test_repeated_startup_shares_count_and_size_bounds(self):
+        f=self.ready()
+        for _ in range(module.MAX_NOTIFICATIONS+1):f.notify(self.method,self.message())
+        f.assert_unknown(f.client.wait);self.assertEqual(len(f.client.events),module.MAX_NOTIFICATIONS)
+        f=self.ready();f.notify(self.method,self.message(name='x'*(module.MAX_FRAME+1)))
+        f.assert_unknown(f.client.wait)
+
+    def test_repeated_startup_never_extends_pending_or_total_deadline(self):
+        f=self.ready();original=f.wire.receive;seen=[]
+        def receive(deadline):
+            seen.append(deadline);value=original(deadline);f.now[0]+=2;return value
+        f.wire.receive=receive
+        for _ in range(12):f.notify(self.method,self.message('failed',failureReason='reauthenticationRequired'))
+        f.assert_unknown(f.client.wait);self.assertEqual(len(set(seen)),1)
+        self.assertLessEqual(len(seen),8);self.assertEqual(f.client.deadline,57)
+
+    def test_exact_eleven_allowlist_and_no_new_outbound_method(self):
+        self.assertEqual(len(module.NOTIFICATIONS),11)
+        self.assertEqual(module.NOTIFICATIONS[self.method],'McpServerStatusUpdatedNotification')
+        self.assertEqual(set(module.METHODS),{'initialize','thread/resume','turn/start','turn/interrupt'})
 
 
 class ProcessClosureTests(unittest.TestCase):
