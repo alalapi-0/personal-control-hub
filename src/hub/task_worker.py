@@ -66,7 +66,30 @@ class TaskWorker:
         heart=threading.Thread(target=heartbeat,name='hub-task-heartbeat',daemon=False);heart.start()
         thread_id=turn_id=None;interrupted=False;deadline=None
         stream={'count':0,'methods':{}};stream_hash=hashlib.sha256()
-        ordinary=False;ordinary_response={};ordinary_delta_seen=set()
+        ordinary=False;ordinary_response={};ordinary_delta_seen=set();goal_stop=None
+        def observe_goal():
+            nonlocal interrupted,goal_stop
+            if not ordinary or not(task['intent'].get('normal_dispatch_budget')or ident in self._normal_budgets):return
+            observed=self.store.normal_dispatch_control(ident,binding=self._normal_budgets.get(ident),
+                owner=self.owner,worker=self.identity,thread_id=thread_id or task['thread_id'],turn_id=turn_id)
+            if observed['progress_allowed']:return
+            marker=task['intent'].get('normal_dispatch_budget');key='normal-control-stop-'+digest(marker)
+            goal_stop={'observation':observed,'thread_id':thread_id,'turn_id':turn_id,
+                       'interrupt_status':'not_sent_no_bound_turn'}
+            self.store.event(ident,key,goal_stop)
+            if observed['control']['state']=='cancelled':self.store.cancel(ident,worker_owner=self.owner)
+            if adapter is not None and thread_id and turn_id and not interrupted:
+                interrupted=True # Unknown/refused interrupt is never blindly repeated.
+                goal_stop['interrupt_started_at']=time.time();goal_stop['interrupt_status']='unknown'
+                self.store.event(ident,key+'-interrupt-intent',dict(goal_stop))
+                try:
+                    adapter.interrupt(thread_id,turn_id)
+                    goal_stop['interrupt_status']='returned_not_stop_proof'
+                except Exception:
+                    goal_stop['interrupt_status']='unknown'
+                goal_stop['interrupt_returned_at']=time.time()
+                self.store.event(ident,key+'-interrupt-result',dict(goal_stop))
+            raise ServiceError('NORMAL_GOAL_CONTROL_STOPPED',outcome='UNKNOWN')
         def collect_ordinary_text(params, completed=False):
             item=params.get('item',{})
             key=item.get('id')or params.get('itemId')
@@ -90,6 +113,7 @@ class TaskWorker:
             row['truncated']=len(candidate)>ORDINARY_RESPONSE_BYTES or (row['truncated'] and not completed)
             row['completed']=completed
         def provider_request(request):
+            observe_goal()
             params=request.get('params',{});method=request['method']
             if thread_id is None or turn_id is None or params.get('threadId')!=thread_id or params.get('turnId')!=turn_id:
                 raise ServiceError('CODEX_REQUEST_BINDING_REJECTED',outcome='UNKNOWN')
@@ -99,6 +123,7 @@ class TaskWorker:
             control_id=self.store.open_control(ident,self.owner,request_hash=request_hash,method=method,thread_id=thread_id,turn_id=turn_id,
                 expires_at=time.time()+min(self.request_timeout,remaining),provider_request=request)
             while True:
+                observe_goal()
                 if lease_lost.is_set():raise ServiceError('TASK_LEASE_LOST',outcome='UNKNOWN')
                 control=next(c for c in self.store.controls(ident) if c['id']==control_id)
                 if control['version']==2:break
@@ -112,6 +137,7 @@ class TaskWorker:
                     self.store.close_control(ident,self.owner,control_id,reason)
                     control=next(c for c in self.store.controls(ident) if c['id']==control_id);break
                 stop.wait(.1)
+            observe_goal()
             # The native callback is resolved only against the durable, exact
             # request. Recheck revocation/cancellation at the response boundary.
             current=self.store.task(ident)
@@ -127,6 +153,7 @@ class TaskWorker:
             current=self.store.task(ident)
             if current['cancel'] or self.store.grant(grant['grant_id'])!=grant:
                 raise ServiceError('TASK_CONTROL_VERSION_STALE',outcome='UNKNOWN')
+            observe_goal()
             return {'control_id':control_id,'status':control['status'],'decision':control.get('decision','decline'),
                     'request_digest':request_hash,'operation_sha256':control.get('operation_sha256'),
                     **({'answers':control['answers']}if control.get('decision')=='answer'else{})}
@@ -165,6 +192,7 @@ class TaskWorker:
                 if ident in self._normal_budgets and self._normal_budgets[ident]is None:
                     raise ServiceError('NORMAL_DISPATCH_BINDING_REQUIRED',status=403)
                 self.store.reserve_normal_dispatch(ident,self.owner,task,grant,self.identity,self._normal_budgets.get(ident))
+                observe_goal()
             css='css_trial'in grant
             if ordinary and self.adapter_factory is AppServerAdapter:
                 adapter=AppServerAdapter(Path(grant['root']),read_only=True,readable_paths=[row['path']for row in grant['input_files']]).open()
@@ -235,6 +263,7 @@ class TaskWorker:
             if ordinary:ordinary_tasks.check_registration(grant,self.store.root)
             if not self.writer_check(grant):raise ServiceError('EXTERNAL_WRITER_UNKNOWN',status=409)
             if lease_lost.is_set():raise ServiceError('TASK_LEASE_LOST',outcome='UNKNOWN')
+            observe_goal()
             self.store.assert_turn_start(ident,self.owner,task,grant,thread_id,
                 normal_budget_binding=self._normal_budgets.get(ident),worker_identity=self.identity)
             turn_id=adapter.start(thread_id,text,image)
@@ -242,6 +271,7 @@ class TaskWorker:
             self.store.update(ident,self.owner,turn_id=turn_id,provider_status='inProgress')
             deadline=time.monotonic()+grant['max_turn_seconds'];completed=None;usage=None;message='';events=0;saw_started=False
             while completed is None:
+                observe_goal()
                 if lease_lost.is_set():raise ServiceError('TASK_LEASE_LOST',outcome='UNKNOWN')
                 if time.monotonic()>deadline:raise ServiceError('TASK_RUNTIME_TIMEOUT',outcome='UNKNOWN')
                 if ordinary:
@@ -251,6 +281,7 @@ class TaskWorker:
                 if self.store.task(ident)['cancel'] and not interrupted:
                     adapter.interrupt(thread_id,turn_id);interrupted=True
                 notification=adapter.poll(.2)
+                observe_goal()
                 if adapter.denials:raise ServiceError('CODEX_PERMISSION_DENIED',outcome='UNKNOWN')
                 if notification is None:continue
                 method=notification.get('method');params=notification.get('params',{})
@@ -348,6 +379,7 @@ class TaskWorker:
                     result['response_truncated']=True
                     result['response_saved_bytes']=len(result['provider_reply'].encode('utf-8'))
                 if len(canonical(result))>131072:raise ServiceError('TASK_RESULT_CAPACITY',outcome='UNKNOWN')
+                observe_goal()
                 if self.store.task(ident)['cancel']:raise ServiceError('TASK_CANCEL_AFTER_EFFECT')
                 self.store.update(ident,self.owner,status='checks_complete'if all(check['exit']==0 for check in checks)else'failed',result=result)
                 return True
@@ -392,6 +424,7 @@ class TaskWorker:
                 except ServiceError:pass
             try:self.store.update(ident,self.owner,**({'thread_id':thread_id}if pre_turn_binding else{}),status=state,result={'error_class':code,'details':error.details if isinstance(error,ServiceError)else{},'effects_rolled_back':False,'request_denials':adapter.denials if adapter is not None else [],
                 **({'pre_turn_binding':pre_turn_binding}if pre_turn_binding else{}),
+                **({'goal_control':goal_stop}if goal_stop else{}),
                 'stream_observation':{**stream,'sha256_chain':stream_hash.hexdigest()}})
             except ServiceError:pass  # Lost fence/unknown commit is read/reconcile only.
         finally:

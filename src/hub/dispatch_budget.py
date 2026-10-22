@@ -96,12 +96,30 @@ class BudgetAuthority:
   need(type(binding)is dict and set(binding)<= {'policy_sha256','requests','resource_authority_sha256'}and hash_value(binding.get('policy_sha256'))and type(binding.get('requests'))is dict,'DISPATCH_AUTHORITY_REQUIRED')
   return cls(canonical(binding),plan_authority,authorize,controls,resource_check)
  def snapshot(self):return json.loads(self._data)
+ def observe_controls(self,plan,p,operation,body):
+  """Trusted callback observation, not a native Goal API or execution grant.
+
+  revision is host-provided identity only, never invented native revision.
+  Provider errors/missing controls are unknown; no fallback or background poller.
+  """
+  self._authorize();self._plan.check(plan);b=self.snapshot()
+  need(b['policy_sha256']==digest(p)and b['requests'].get(operation)==digest(body),'DISPATCH_AUTHORITY_MISMATCH')
+  try:
+   value=self._controls()
+   if (type(value)is not dict or len(canonical(value))>4096 or type(value.get('revision'))is not int
+       or value['revision']<0 or value.get('state')not in {'active','paused','cancelled'}):raise ValueError()
+   identity={k:v for k,v in value.items()if k not in {'state','observed_at'}}
+   return {'state':value['state'],'revision':value['revision'],'binding_sha256':digest(identity),
+           'source':'trusted_budget_authority_callback'}
+  except Exception:
+   return {'state':'unknown','revision':None,'binding_sha256':None,'source':'trusted_budget_authority_callback'}
  def check(self,plan,p,operation,body):
-  self._authorize();self._plan.check(plan);b=self.snapshot();need(b['policy_sha256']==digest(p)and b['requests'].get(operation)==digest(body),'DISPATCH_AUTHORITY_MISMATCH')
-  controls=self._controls();need(type(controls)is dict and controls.get('state')=='active'and type(controls.get('revision'))is int,'DISPATCH_CONTROL_BLOCKED')
+  controls=self.observe_controls(plan,p,operation,body);b=self.snapshot()
+  need(controls['state']=='active','DISPATCH_CONTROL_BLOCKED')
   if operation=='reserve'and body['gpu']:need(hash_value(b.get('resource_authority_sha256'))and self._resource(copy.deepcopy(body))is True,'DISPATCH_GPU_AUTHORITY_REQUIRED')
   if operation=='close'and body['resources_closed']:need(self._resource(copy.deepcopy(body))is True,'DISPATCH_CLOSURE_UNVERIFIED')
-  return copy.deepcopy(controls)
+  return controls
+
 def authority(value):
  need(type(value)is BudgetAuthority,'DISPATCH_AUTHORITY_REQUIRED');return value
 

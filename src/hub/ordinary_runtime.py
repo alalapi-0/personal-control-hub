@@ -183,6 +183,13 @@ class OrdinaryRuntime:
                         continue
                     if not self.writer_check(grant):
                         continue
+                    if task['intent'].get('normal_dispatch_budget')or task['id']in self._normal_budgets:
+                        try:
+                            observed=self.store.normal_dispatch_control(task['id'],binding=self._normal_budgets.get(task['id']))
+                            if not observed['progress_allowed']:continue
+                        except ServiceError:
+                            continue # Only this selected task is blocked; no whole-runtime stop.
+
                     parent = self.store.task(task['parent'], selected_grant_ids=self._grant_ids) if task['parent'] else None
                     if task['parent'] or task['payload']['mode'] == 'busy_feedback':
                         if (not parent_binding_matches(task['intent'], parent)

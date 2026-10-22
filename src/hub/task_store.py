@@ -768,6 +768,46 @@ class TaskStore:
         row=db.execute('SELECT body,hash FROM events WHERE task_id=? AND event_key=?',(ident,base)).fetchone()
         return base if row is None or self._decode(*row).get('marker')==marker else base+'-'+digest(marker)
 
+    def normal_dispatch_control(self,ident,*,binding,owner=None,worker=None,thread_id=None,turn_id=None):
+        """Internal read-only observation; never reserves or grants a second RPC."""
+        from .dispatch_budget import NormalDispatchBinding,need,split,validate
+        need(type(binding)is NormalDispatchBinding,'NORMAL_DISPATCH_BINDING_REQUIRED')
+        with self._connection()as db:
+            row=db.execute('SELECT *FROM tasks WHERE id=?',(stable_id(ident),)).fetchone()
+            need(row is not None,'TASK_NOT_FOUND');task=self._task(row);grant=task['intent']['grant']
+            marker=binding.marker(ident,grant);b=binding.snapshot();cap=binding._authority
+            need(task['payload'].get('kind')=='ordinary_project'and task['intent'].get('normal_dispatch_budget')==marker,
+                 'NORMAL_DISPATCH_BINDING_REQUIRED')
+            live=db.execute('SELECT body,hash FROM grants WHERE id=?',(grant['grant_id'],)).fetchone()
+            need(live is not None and self._decode(*live)==grant and grant['expires_at']>time.time(),'GRANT_VERSION_STALE')
+            plan=self._plan_input(db,b['lineage_id'],cap._plan)
+            raw=db.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(b['lineage_id'],)).fetchone()
+            _,budget=split(self._decode(*raw));need(budget is not None,'DISPATCH_POLICY_REQUIRED');validate(budget,b['lineage_id'])
+            baseline=None
+            if owner is None:
+                need(task['status']=='queued'and not task['cancel'],'NORMAL_DISPATCH_CLAIM_STALE')
+            else:
+                need(task['owner']==owner and task['status']in {'running','waiting_approval','waiting_input','validating'}
+                     and task['lease_until']and task['lease_until']>time.time()
+                     and task['thread_id']==thread_id and task['turn_id']==turn_id,'NORMAL_DISPATCH_CLAIM_STALE')
+                link=self._normal_dispatch_event(db,ident,'reserved',marker)
+                need(link is not None and link['worker']==worker and worker.get('owner')==owner,'NORMAL_DISPATCH_WORKER_REJECTED')
+                if turn_id is not None:
+                    started=self._normal_dispatch_event(db,ident,'start',marker)
+                    need(started is not None and started['worker']==worker and started['thread_id']==thread_id,'NORMAL_DISPATCH_WORKER_REJECTED')
+                rows=[r for r in budget['reservations']if r['request']['dispatch_id']==marker['dispatch_id']]
+                need(len(rows)==1 and rows[0]['request']==b['request']and rows[0]['sha256']==marker['request_sha256']
+                     and not rows[0]['closures'],'DISPATCH_RESERVATION_MISMATCH')
+                need(time.time()<min(b['request']['deadline'],rows[0]['reserved_at']+b['request']['seconds']), 'DISPATCH_DEADLINE')
+                stored=self._normal_dispatch_event(db,ident,'control',marker)
+                need(stored is not None and stored['worker']==worker,'NORMAL_CONTROL_BASELINE_REQUIRED')
+                baseline=stored['control']
+            observed=cap.observe_controls(plan,budget['policy'],'reserve',b['request'])
+            if owner is not None:
+                need(task['lease_until']>time.time()and time.time()<min(b['request']['deadline'],rows[0]['reserved_at']+b['request']['seconds']), 'NORMAL_DISPATCH_CLAIM_STALE')
+            return {'control':observed,'baseline':baseline,'observed_at':time.time(),
+                    'progress_allowed':observed['state']=='active'and(baseline is None or observed==baseline)and not task['cancel']}
+
     def _normal_dispatch_check(self,db,ident,owner,expected,grant,worker,binding,*,starting=False):
         from .dispatch_budget import NormalDispatchBinding,need,split,validate
         need(type(binding)is NormalDispatchBinding,'NORMAL_DISPATCH_BINDING_REQUIRED')
@@ -796,6 +836,9 @@ class TaskStore:
         need(now<min(request['deadline'],r['reserved_at']+request['seconds'])
              and request['seconds']>=grant['max_turn_seconds'] and now+grant['max_turn_seconds']<=request['deadline'],
              'DISPATCH_DEADLINE')
+        if starting:
+            baseline=self._normal_dispatch_event(db,ident,'control',marker)
+            need(baseline is not None and baseline['control']==controls,'DISPATCH_CONTROL_CHANGED')
         if starting and request['executor'].get('thread_id')is not None:
             need(request['executor']['thread_id']==task['thread_id'],'DISPATCH_RESERVATION_MISMATCH')
         link={'marker':marker,'worker':worker,'intent_sha256':digest(task['intent']),
@@ -819,6 +862,8 @@ class TaskStore:
             link,controls=self._normal_dispatch_check(db,ident,owner,expected,grant,worker,binding);observed.append(controls)
             need(self._normal_dispatch_event(db,ident,'reserved',marker)is None,'NORMAL_DISPATCH_REQUIRES_RECONCILE')
             self._append_event(db,ident,self._normal_dispatch_key(db,ident,'reserved',marker),link)
+            self._append_event(db,ident,self._normal_dispatch_key(db,ident,'control',marker),
+                {'marker':marker,'worker':worker,'control':controls,'observed_at':time.time()})
         return link
 
     def _rebuild_bootstrap_dependency(self,connection,package,dep,authority):
