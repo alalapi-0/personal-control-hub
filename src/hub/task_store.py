@@ -752,6 +752,60 @@ class TaskStore:
     def dispatch_budget_status(self,plan_id,*,authority):
         return self._dispatch_budget_operation(plan_id,'status',{},authority)
 
+    def _normal_dispatch_check(self,db,ident,owner,expected,grant,worker,binding,*,starting=False):
+        from .dispatch_budget import NormalDispatchBinding,need,split,validate
+        need(type(binding)is NormalDispatchBinding,'NORMAL_DISPATCH_BINDING_REQUIRED')
+        row=db.execute('SELECT * FROM tasks WHERE id=?',(ident,)).fetchone()
+        need(row is not None,'NORMAL_DISPATCH_TASK_REQUIRED');task=self._task(row)
+        need(task['payload'].get('kind')=='ordinary_project' and not task['cancel']
+             and task['owner']==owner and task['status']=='running' and task['lease_until']>time.time()
+             and task['intent']==expected['intent'] and task['payload']==expected['payload'], 'NORMAL_DISPATCH_CLAIM_STALE')
+        marker=binding.marker(ident,grant)
+        need(task['intent'].get('normal_dispatch_budget')==marker,'NORMAL_DISPATCH_BINDING_REQUIRED')
+        need(type(worker)is dict and worker.get('owner')==owner and type(worker.get('pid'))is int
+             and worker['pid']>0 and type(worker.get('start_ticks'))is str and worker['start_ticks'].isdecimal(),
+             'NORMAL_DISPATCH_WORKER_REJECTED')
+        live=db.execute('SELECT body,hash FROM grants WHERE id=?',(grant['grant_id'],)).fetchone()
+        need(live is not None and self._decode(*live)==grant and grant['expires_at']>time.time(),'GRANT_VERSION_STALE')
+        b=binding.snapshot();cap=binding._authority
+        plan=self._plan_input(db,b['lineage_id'],cap._plan)
+        raw=db.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(b['lineage_id'],)).fetchone()
+        _,budget=split(self._decode(*raw));need(budget is not None,'DISPATCH_POLICY_REQUIRED');validate(budget,b['lineage_id'])
+        controls=cap.check(plan,budget['policy'],'reserve',b['request'])
+        rows=[r for r in budget['reservations']if r['request']['dispatch_id']==marker['dispatch_id']]
+        need(len(rows)==1,'DISPATCH_RESERVATION_REQUIRED');r=rows[0];request=b['request']
+        need(r['request']==request and r['sha256']==marker['request_sha256'] and not r['closures'],
+             'DISPATCH_RESERVATION_MISMATCH')
+        now=time.time()
+        need(now<min(request['deadline'],r['reserved_at']+request['seconds'])
+             and request['seconds']>=grant['max_turn_seconds'] and now+grant['max_turn_seconds']<=request['deadline'],
+             'DISPATCH_DEADLINE')
+        if starting and request['executor'].get('thread_id')is not None:
+            need(request['executor']['thread_id']==task['thread_id'],'DISPATCH_RESERVATION_MISMATCH')
+        link={'marker':marker,'worker':worker,'intent_sha256':digest(task['intent']),
+              'payload_sha256':digest(task['payload']),'executor':request['executor']}
+        return link,controls
+
+    def reserve_normal_dispatch(self,ident,owner,expected,grant,worker,binding):
+        """Reserve before open; a durable open intent cannot authorize a replay."""
+        from .dispatch_budget import NormalDispatchBinding,need
+        marker=expected['intent'].get('normal_dispatch_budget')
+        if marker is None and binding is None:return None
+        need(type(binding)is NormalDispatchBinding,'NORMAL_DISPATCH_BINDING_REQUIRED')
+        need(marker==binding.marker(ident,grant),'NORMAL_DISPATCH_BINDING_REQUIRED')
+        b=binding.snapshot()
+        self.reserve_dispatch(b['lineage_id'],b['request'],authority=binding._authority)
+        observed=[]
+        def guard():
+            _,controls=self._normal_dispatch_check(db,ident,owner,expected,grant,worker,binding)
+            need(controls==observed[0],'DISPATCH_CONTROL_CHANGED')
+        with self._connection(True,guard=guard)as db:
+            link,controls=self._normal_dispatch_check(db,ident,owner,expected,grant,worker,binding);observed.append(controls)
+            need(not db.execute("SELECT 1 FROM events WHERE task_id=? AND event_key='normal-dispatch-reserved'",(ident,)).fetchone(),
+                 'NORMAL_DISPATCH_REQUIRES_RECONCILE')
+            self._append_event(db,ident,'normal-dispatch-reserved',link)
+        return link
+
     def _rebuild_bootstrap_dependency(self,connection,package,dep,authority):
         """Absent contract rows only; use current, verified plan witnesses in-place.
 
@@ -1327,15 +1381,37 @@ class TaskStore:
             success_guard=' AND cancel=0'if values.get('status')=='checks_complete'else''
             cursor = connection.execute('UPDATE tasks SET '+columns+',lease_until=? WHERE id=? AND owner=?'+success_guard, (*values.values(),renewed_at+15,ident,owner))
             if cursor.rowcount != 1: raise ServiceError('TASK_OWNER_CONFLICT', status=409)
+            task=self._task(row);marker=task['intent'].get('normal_dispatch_budget')
+            if marker and ('thread_id'in values or 'turn_id'in values):
+                from .dispatch_budget import need
+                opened=connection.execute("SELECT body,hash FROM events WHERE task_id=? AND event_key='normal-dispatch-reserved'",(ident,)).fetchone()
+                need(opened is not None,'DISPATCH_RESERVATION_REQUIRED');link=self._decode(*opened)
+                need(link['worker']['owner']==owner,'NORMAL_DISPATCH_WORKER_REJECTED')
+                if 'turn_id'in values:
+                    need(connection.execute("SELECT 1 FROM events WHERE task_id=? AND event_key='normal-dispatch-start'",(ident,)).fetchone(),
+                         'NORMAL_DISPATCH_ALREADY_CONSUMED')
+                thread=values.get('thread_id',row['thread_id'])
+                if link['executor'].get('thread_id')is not None:
+                    need(link['executor']['thread_id']==thread,'DISPATCH_RESERVATION_MISMATCH')
+                native={'marker':marker,'worker':link['worker'],'thread_id':thread,
+                        'turn_id':values.get('turn_id',row['turn_id']),'session_id':None}
+                self._append_event(connection,ident,'normal-dispatch-native-'+digest(native),native)
 
-    def assert_turn_start(self,ident,owner,expected_task,grant,thread_id):
+    def assert_turn_start(self,ident,owner,expected_task,grant,thread_id,*,normal_budget_binding=None,worker_identity=None):
         """Final persisted pre-RPC check, not a lock across provider acceptance.
 
         The random claim owner, live lease, immutable intent/payload and native
         thread bind the existing worker fence. One joined observation includes
         grant revocation; no new execution authority or RPC is introduced.
         """
-        with self._connection()as connection:
+        bound=expected_task['intent'].get('normal_dispatch_budget')is not None or normal_budget_binding is not None
+        observed=[]
+        def guard():
+            if bound:
+                from .dispatch_budget import need
+                _,controls=self._normal_dispatch_check(connection,ident,owner,expected_task,grant,worker_identity,normal_budget_binding,starting=True)
+                need(controls==observed[0],'DISPATCH_CONTROL_CHANGED')
+        with self._connection(bound,guard=guard if bound else None)as connection:
             row=connection.execute('SELECT t.*,g.body AS live_grant_body,g.hash AS live_grant_hash '
                 'FROM tasks t LEFT JOIN grants g ON g.id=? WHERE t.id=?',
                 (grant['grant_id'],stable_id(ident))).fetchone()
@@ -1349,6 +1425,16 @@ class TaskStore:
             if (row['live_grant_body']is None or row['live_grant_hash']!=digest(grant)
                     or self._decode(row['live_grant_body'],row['live_grant_hash'])!=grant or grant['expires_at']<=time.time()):
                 raise ServiceError('GRANT_VERSION_STALE',status=409)
+
+            if bound:
+                from .dispatch_budget import need
+                link,controls=self._normal_dispatch_check(connection,ident,owner,expected_task,grant,worker_identity,normal_budget_binding,starting=True)
+                observed.append(controls)
+                opened=connection.execute("SELECT body,hash FROM events WHERE task_id=? AND event_key='normal-dispatch-reserved'",(ident,)).fetchone()
+                need(opened is not None and self._decode(*opened)==link,'NORMAL_DISPATCH_WORKER_REJECTED')
+                need(not connection.execute("SELECT 1 FROM events WHERE task_id=? AND event_key='normal-dispatch-start'",(ident,)).fetchone(),
+                     'NORMAL_DISPATCH_ALREADY_CONSUMED')
+                self._append_event(connection,ident,'normal-dispatch-start',{**link,'thread_id':thread_id})
 
     def heartbeat(self, ident, owner):
         with self._connection(True) as connection:

@@ -41,7 +41,9 @@ def fixture_prompt(annotation, control_root):
 
 
 class TaskWorker:
-    def __init__(self,store, *, adapter_factory=AppServerAdapter, writer_check=None, fault=None, request_timeout=30, only_task_id=None, selected_grant_ids=None):
+    def __init__(self,store, *, adapter_factory=AppServerAdapter, writer_check=None, fault=None, request_timeout=30, only_task_id=None, selected_grant_ids=None, normal_budget_bindings=None):
+        from .dispatch_budget import normal_bindings
+        self._normal_budgets=normal_bindings(normal_budget_bindings)
         self.store,self.adapter_factory=store,adapter_factory
         self.only_task_id=only_task_id
         self.selected_grant_ids=selected_grant_ids
@@ -159,6 +161,10 @@ class TaskWorker:
             self.store.event(ident,'dispatch-intent-'+self.owner,{'worker':self.identity,'grant_hash':digest(grant),'transport':'app_server_stdio','at':time.time()})
             self.fault('before_dispatch')
             self.store.check_storage()
+            if ordinary:
+                if ident in self._normal_budgets and self._normal_budgets[ident]is None:
+                    raise ServiceError('NORMAL_DISPATCH_BINDING_REQUIRED',status=403)
+                self.store.reserve_normal_dispatch(ident,self.owner,task,grant,self.identity,self._normal_budgets.get(ident))
             css='css_trial'in grant
             if ordinary and self.adapter_factory is AppServerAdapter:
                 adapter=AppServerAdapter(Path(grant['root']),read_only=True,readable_paths=[row['path']for row in grant['input_files']]).open()
@@ -229,7 +235,8 @@ class TaskWorker:
             if ordinary:ordinary_tasks.check_registration(grant,self.store.root)
             if not self.writer_check(grant):raise ServiceError('EXTERNAL_WRITER_UNKNOWN',status=409)
             if lease_lost.is_set():raise ServiceError('TASK_LEASE_LOST',outcome='UNKNOWN')
-            self.store.assert_turn_start(ident,self.owner,task,grant,thread_id)
+            self.store.assert_turn_start(ident,self.owner,task,grant,thread_id,
+                normal_budget_binding=self._normal_budgets.get(ident),worker_identity=self.identity)
             turn_id=adapter.start(thread_id,text,image)
             self.fault('after_turn_before_binding')
             self.store.update(ident,self.owner,turn_id=turn_id,provider_status='inProgress')

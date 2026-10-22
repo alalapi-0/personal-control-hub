@@ -18,7 +18,7 @@ from .task_worker import TaskWorker
 
 class OrdinaryRuntime:
     def __init__(self, store, *, grants, provider_status, adapter_factory=AppServerAdapter,
-                 poll_interval=.1, request_timeout=30, grant_classification='synthetic_fixture'):
+                 poll_interval=.1, request_timeout=30, grant_classification='synthetic_fixture', normal_budget_bindings=None):
         if (type(grants) is not list or not grants or any(type(g) is not dict for g in grants)
                 or type(provider_status) is not dict
                 or type(provider_status.get('available')) is not bool
@@ -29,6 +29,8 @@ class OrdinaryRuntime:
                 or type(poll_interval) not in (int, float) or not 0 < poll_interval <= 10
                 or type(request_timeout) is not int or not 1 <= request_timeout <= 30):
             raise ServiceError('ORDINARY_RUNTIME_CONFIG_REJECTED')
+        from .dispatch_budget import normal_bindings
+        self._normal_budgets = normal_bindings(normal_budget_bindings)
         self.store = store
         self._grants = copy.deepcopy(grants)
         if (len({g.get('grant_id') for g in grants}) != len(grants)
@@ -50,6 +52,14 @@ class OrdinaryRuntime:
         self._handles = {}
         self._state = 'stopped'
         self._error = None
+
+    def bind_dispatch_budgets(self,bindings):
+        from .dispatch_budget import normal_bindings
+        value=normal_bindings(bindings)
+        with self._lock:
+            if self._thread is not None or self._handles or self._normal_budgets and self._normal_budgets!=value:
+                raise ServiceError('NORMAL_DISPATCH_BINDING_REJECTED',status=409)
+            self._normal_budgets=value
 
     @property
     def grant_ids(self):
@@ -184,7 +194,7 @@ class OrdinaryRuntime:
                             break
                         worker = TaskWorker(self.store, adapter_factory=self._adapter_factory,
                             writer_check=self.writer_check, request_timeout=self._request_timeout, only_task_id=task['id'],
-                            selected_grant_ids=self._grant_ids)
+                            selected_grant_ids=self._grant_ids, normal_budget_bindings=self._normal_budgets)
                         handle = {'worker': worker}
                         handle['thread'] = threading.Thread(target=self._execute, args=(handle,),
                             name='hub-ordinary-task-' + worker.owner, daemon=False)

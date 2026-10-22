@@ -105,7 +105,7 @@ def validate_grant(grant, *, live=False):
 
 class TaskService:
     def __init__(self,projects,annotations,store, *, test_gate=False, writer_check=None, runtime_status=None, ordinary_enabled=False,
-                 ordinary_grant_ids=None, rebuild_binding=None, rebuild_authority=None, plan_authority=None):
+                 ordinary_grant_ids=None, rebuild_binding=None, rebuild_authority=None, plan_authority=None, normal_budget_bindings=None):
         from .plan_admission import authority as plan_capability
         self.__plan_authority=plan_capability(plan_authority) if plan_authority is not None else None
         self.projects,self.annotations,self.store=projects,annotations,store
@@ -113,12 +113,27 @@ class TaskService:
         # An internal lease cannot certify an unrelated writer's absence.
         self.writer_check=writer_check or (lambda _:False)
         self.writer_check_configured=writer_check is not None
+        from .dispatch_budget import normal_bindings
+        self.__normal_budgets=normal_bindings(normal_budget_bindings)
         self.runtime_status=runtime_status
         self.ordinary_enabled=ordinary_enabled is True
         self.ordinary_grant_ids=ordinary_grant_ids
         from .rebuild_contracts import require_authority
         if rebuild_binding is not None:raise ServiceError('REBUILD_AUTHORITY_REQUIRED',status=403)
         self.__rebuild_authority=require_authority(rebuild_authority) if rebuild_authority is not None else None
+
+    @property
+    def runtime_status(self):return self._runtime_status
+
+    @runtime_status.setter
+    def runtime_status(self,value):
+        runtime=getattr(value,'__self__',None)
+        if self.__normal_budgets and runtime is not None:
+            from .ordinary_runtime import OrdinaryRuntime
+            if type(runtime)is not OrdinaryRuntime or runtime.store is not self.store:
+                raise ServiceError('ORDINARY_RUNTIME_BINDING_REJECTED',status=403)
+            runtime.bind_dispatch_budgets(self.__normal_budgets)
+        self._runtime_status=value
 
     @property
     def rebuild_binding(self):
@@ -378,6 +393,10 @@ class TaskService:
         if old:
             if old['payload']!=spec:raise ServiceError('TASK_REQUEST_CONFLICT',status=409)
             if old['intent'].get('owner_context')!=owner_context:raise ServiceError('TASK_OWNER_REJECTED',status=403)
+            if old['intent'].get('normal_dispatch_budget') or spec['request_id']in self.__normal_budgets:
+                binding=self.__normal_budgets.get(spec['request_id'])
+                if binding is None or old['intent'].get('normal_dispatch_budget')!=binding.marker(spec['request_id'],old['intent']['grant']):
+                    raise ServiceError('NORMAL_DISPATCH_BINDING_REQUIRED',status=403)
             authorize();return {'task':self.public(old),'replayed':True}
         caps=self.capabilities()
         if not caps['ordinary_execution']['available']:
@@ -393,6 +412,10 @@ class TaskService:
         intent={'grant':grant,'grant_hash':digest(grant),'task_spec':copy.deepcopy(spec),
                 'registry_hash':resolver.authority['registry_hash'],'previous_thread':parent['thread_id']if parent else None,
                 'owner_context':owner_context,'writer_status':'verified','prompt_sha256':hashlib.sha256(prompt(spec,input_files=grant['input_files']).encode()).hexdigest()}
+        if spec['request_id']in self.__normal_budgets:
+            binding=self.__normal_budgets[spec['request_id']]
+            if binding is None:raise ServiceError('NORMAL_DISPATCH_BINDING_REQUIRED',status=403)
+            intent['normal_dispatch_budget']=binding.marker(spec['request_id'],grant)
         if parent:intent['parent_binding']={'thread_id':parent['thread_id'],'turn_id':parent['turn_id']}
         def check():
             authorize();resolver._check_registry()

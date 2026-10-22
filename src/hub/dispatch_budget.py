@@ -104,3 +104,33 @@ class BudgetAuthority:
   return copy.deepcopy(controls)
 def authority(value):
  need(type(value)is BudgetAuthority,'DISPATCH_AUTHORITY_REQUIRED');return value
+
+@dataclass(frozen=True,slots=True)
+class NormalDispatchBinding:
+ """Internal ordinary-task selection, never a grant or HTTP capability."""
+ _data:bytes
+ _authority:BudgetAuthority
+ @classmethod
+ def configured(cls,*,lineage_id,request_value,grant,authority_value):
+  from .plan_admission import plan_id
+  plan_id(lineage_id);r=request(request_value);cap=authority(authority_value)
+  need(grant.get('kind')=='ordinary_project'and r['package_sha256']is None
+       and r['executor']['kind']=='model'and r['executor']['turn_id']is None
+       and r['executor']['session_id']is None and r['purpose']=='normal'
+       and r['effect']==grant.get('effect')=='read_only','NORMAL_DISPATCH_BINDING_REJECTED')
+  need(cap.snapshot()['requests'].get('reserve')==digest(r),'NORMAL_DISPATCH_BINDING_REJECTED')
+  return cls(canonical({'lineage_id':lineage_id,'request':r,'grant_sha256':digest(grant)}),cap)
+ def snapshot(self):return json.loads(self._data)
+ def marker(self,task_id,grant):
+  b=self.snapshot();r=b['request']
+  need(r['task_id']==task_id and b['grant_sha256']==digest(grant),'NORMAL_DISPATCH_BINDING_REJECTED')
+  return {'schema_version':'normal-dispatch/1','lineage_id':b['lineage_id'],'task_id':task_id,
+          'dispatch_id':r['dispatch_id'],'request_sha256':digest(r),'grant_sha256':digest(grant)}
+
+def normal_bindings(value):
+ if value is None:return {}
+ need(type(value)is dict,'NORMAL_DISPATCH_BINDING_REJECTED')
+ for key,binding in value.items():
+  ident(key);need(binding is None or type(binding)is NormalDispatchBinding,'NORMAL_DISPATCH_BINDING_REJECTED')
+  if binding is not None:need(binding.snapshot()['request']['task_id']==key,'NORMAL_DISPATCH_BINDING_REJECTED')
+ return dict(value)
