@@ -126,3 +126,124 @@ class NormalDispatchBudgetTests(unittest.TestCase):
  def test_unconfigured_legacy_path_unchanged(self):
   self.admit(False);TaskWorker(self.store,adapter_factory=self.f.Adapter,writer_check=lambda _:True).run_one()
   self.assertEqual(self.store.task(self.f.spec['request_id'])['status'],'checks_complete');self.assertEqual(self.status()['charged_total'],0)
+
+
+class NormalBudgetRecoveryTests(unittest.TestCase):
+ setUp=NormalDispatchBudgetTests.setUp
+ cap=NormalDispatchBudgetTests.cap
+ status=NormalDispatchBudgetTests.status
+ admit=NormalDispatchBudgetTests.admit
+ worker=NormalDispatchBudgetTests.worker
+ close=NormalDispatchBudgetTests.close
+ def failure(self,phase='after_thread_binding'):
+  import multiprocessing
+  self.admit();ctx=multiprocessing.get_context('fork');out=ctx.Queue()
+  def run():
+   test=self
+   class Failing(self.Adapter):
+    def open(self):
+     if phase=='before_open':raise ServiceError('SYNTHETIC_OPEN_FAILED',outcome='UNKNOWN')
+     return super().open()
+   def fault(at):
+    if at==phase:raise ServiceError('SYNTHETIC_BEFORE_START',outcome='UNKNOWN')
+   TaskWorker(self.store,adapter_factory=Failing,writer_check=lambda _:True,
+       normal_budget_bindings=self.bindings,fault=fault).run_one()
+   out.put(self.calls)
+  proc=ctx.Process(target=run);proc.start();proc.join(4)
+  if proc.is_alive():proc.terminate();proc.join(2);self.fail('Owned fixture worker timeout')
+  self.assertEqual(proc.exitcode,0);calls=out.get(timeout=1);out.close();out.join_thread()
+  self.assertNotIn('start',calls)
+  return self.store.task(self.f.spec['request_id'])
+ def next_binding(self,**changes):
+  r={**self.req,'dispatch_id':'normal-call-2','attempt_id':'normal-attempt-2',
+     'deadline':time.time()+self.req['seconds']+3,**changes}
+  return NormalDispatchBinding.configured(lineage_id=self.plan['plan_id'],request_value=r,
+      grant=self.f.grant,authority_value=self.cap('reserve',r))
+ def proof(self,task):
+  if task['thread_id']is None:return {'source':'app_server_stdio.thread/list','root':self.f.grant['root'],
+      'thread_ids':[],'archived_checked':True,'observed_at':time.time()}
+  return {'source':'app_server_stdio.thread/read','root':self.f.grant['root'],'thread_id':task['thread_id'],
+      'thread_status':'notLoaded','turns_complete':True,'turns':[],'observed_at':time.time()}
+ def cas(self,task):
+  events=self.store.events(task['id'])
+  return {'expected_task_sha256':digest(task),'expected_marker':task['intent']['normal_dispatch_budget'],
+      'expected_events_sha256':digest([{k:e[k]for k in ('sequence','key','data')}for e in events])}
+ def recover(self,task,binding,**extra):
+  return self.store.reconcile_owned(task['id'],self.proof(task),normal_budget_binding=binding,**{**self.cas(task),**extra})
+ def test_budget_recovery_before_open_and_bound_thread_charges_new_attempt(self):
+  for phase in ('before_open','after_thread_binding','before_turn'):
+   with self.subTest(phase=phase):
+    f=NormalBudgetRecoveryTests();f.setUp()
+    try:
+     task=f.failure(phase);history=f.store.events(task['id']);f.close();binding=f.next_binding()
+     with mock.patch('hub.task_service.fingerprint',side_effect=AssertionError('No ordinary root traversal')):
+      service=TaskService(None,None,f.store,normal_budget_bindings={task['id']:binding})
+      service.reconcile_ordinary_budget(task['id'],f.proof(task),**f.cas(task))
+     current=f.store.task(task['id']);self.assertEqual(current['thread_id'],task['thread_id'])
+     self.assertEqual(current['status'],'queued');self.assertEqual(f.store.events(task['id'])[:-1],history)
+     audit=f.store.events(task['id'])[-1]['data'];self.assertEqual(audit['original_task'],task)
+     f.req=binding.snapshot()['request'];f.binding=binding;f.bindings={task['id']:binding}
+     resumes=[]
+     class Resuming(f.Adapter):
+      def thread(self,previous=None):resumes.append(previous);return super().thread(previous)
+     w=TaskWorker(f.store,adapter_factory=Resuming,writer_check=lambda _:True,normal_budget_bindings=f.bindings)
+     self.assertTrue(w.run_one());self.assertFalse(w.run_one());self.assertEqual(f.calls,['open','start'])
+     self.assertEqual(resumes,[task['thread_id']]);self.assertEqual(f.status()['charged_total'],2)
+     self.assertEqual(f.status()['held_dispatch_ids'],['normal-call-2'])
+     self.assertEqual(f.store.task(task['id'])['status'],'checks_complete')
+     marker=binding.marker(task['id'],f.f.grant)
+     current_events=[e for e in f.store.events(task['id'])if e['data'].get('marker')==marker]
+     self.assertEqual(sum(e['key'].startswith('normal-dispatch-reserved')for e in current_events),1)
+     self.assertEqual(sum(e['key'].startswith('normal-dispatch-start')for e in current_events),1)
+     self.assertEqual([(e['data']['thread_id'],e['data']['turn_id'])for e in current_events
+         if e['key'].startswith('normal-dispatch-native')],[('ordinary-thread',None),('ordinary-thread','ordinary-turn')])
+     with f.store._connection()as db:
+      self.assertIsNone(f.store._normal_dispatch_event(db,task['id'],'start',task['intent']['normal_dispatch_budget']))
+     self.assertEqual(f.store.events(task['id'])[:len(history)],history)
+     with self.assertRaises(ServiceError):f.recover(task,binding)
+    finally:f.doCleanups()
+ def test_recovery_cas_closure_and_new_dispatch_attempt_required(self):
+  task=self.failure();binding=self.next_binding();history=self.store.events(task['id'])
+  with self.assertRaises(ServiceError):self.recover(task,binding)
+  self.close()
+  for extra in ({'expected_task_sha256':'0'*64},{'expected_marker':{}},{'expected_events_sha256':'0'*64}):
+   with self.subTest(extra=extra),self.assertRaises(ServiceError):self.recover(task,binding,**extra)
+  for changes in ({'dispatch_id':self.req['dispatch_id']},{'attempt_id':self.req['attempt_id']}):
+   with self.subTest(changes=changes),self.assertRaises(ServiceError):self.recover(task,self.next_binding(**changes))
+  self.assertEqual(self.store.task(task['id']),task);self.assertEqual(self.store.events(task['id']),history)
+ def test_recovery_rejects_bad_metadata_registration_inputs_grant_and_control(self):
+  task=self.failure();self.close();binding=self.next_binding();proof=self.proof(task);history=self.store.events(task['id'])
+  for changes in ({'turns_complete':False},{'turns':[{'id':'ambiguous'}]},{'thread_id':'foreign'},
+                  {'observed_at':time.time()-31},{'source':'caller_claim'}):
+   with self.subTest(changes=changes),self.assertRaises(ServiceError):
+    self.store.reconcile_owned(task['id'],{**proof,**changes},normal_budget_binding=binding,**self.cas(task))
+  missing=dict(proof);missing.pop('turns_complete')
+  with self.assertRaises(ServiceError):self.store.reconcile_owned(task['id'],missing,normal_budget_binding=binding,**self.cas(task))
+  self.control['state']='paused'
+  with self.assertRaises(ServiceError):self.recover(task,binding)
+  self.control['state']='active'
+  source=self.f.source.read_bytes();self.f.source.write_text('changed declared input')
+  with self.assertRaises(ServiceError):self.recover(task,binding)
+  self.f.source.write_bytes(source)
+  original=self.f.registry_path.read_bytes();self.f.registry_path.write_text('projects: []')
+  with mock.patch('hub.ordinary_tasks.snapshot_inputs',side_effect=AssertionError('Registration must precede source reads')):
+   with self.assertRaises(ServiceError):self.recover(task,binding)
+  self.f.registry_path.write_bytes(original)
+  self.store.register_grant({**self.f.grant,'version':2})
+  with self.assertRaises(ServiceError):self.recover(task,binding)
+  self.assertEqual(self.store.task(task['id']),task);self.assertEqual(self.store.events(task['id']),history)
+ def test_recovery_rejects_live_worker_and_consumed_unknown_start(self):
+  task=self.failure();self.close();binding=self.next_binding()
+  import os
+  from pathlib import Path
+  ticks=Path('/proc',str(os.getpid()),'stat').read_text().rsplit(')',1)[1].split()[19]
+  self.store.event(task['id'],'dispatch-intent-live-test',{'worker':{'pid':os.getpid(),'start_ticks':ticks}})
+  with self.assertRaisesRegex(ServiceError,'TASK_OWNER_STILL_ACTIVE'):self.recover(task,binding)
+  f=NormalBudgetRecoveryTests();f.setUp()
+  try:
+   task=f.failure('before_turn');f.close();binding=f.next_binding()
+   marker=task['intent']['normal_dispatch_budget']
+   f.store.event(task['id'],'normal-dispatch-start',{'marker':marker,'outcome':'unknown'})
+   with self.assertRaisesRegex(ServiceError,'NORMAL_DISPATCH_START_UNCERTAIN'):f.recover(task,binding)
+   self.assertIsNone(f.store.task(task['id'])['turn_id']);self.assertEqual(f.status()['charged_total'],1)
+  finally:f.doCleanups()

@@ -752,6 +752,22 @@ class TaskStore:
     def dispatch_budget_status(self,plan_id,*,authority):
         return self._dispatch_budget_operation(plan_id,'status',{},authority)
 
+    def _normal_dispatch_event(self,db,ident,stage,marker):
+        # The first generation used singleton keys. They apply only to their
+        # exact marker; subsequent dispatches never inherit their start permit.
+        base='normal-dispatch-'+stage
+        rows=db.execute('SELECT body,hash FROM events WHERE task_id=? AND event_key IN (?,?)',
+            (ident,base,base+'-'+digest(marker))).fetchall()
+        values=[self._decode(*r)for r in rows]
+        matched=[v for v in values if v.get('marker')==marker]
+        if len(matched)>1:raise ServiceError('NORMAL_DISPATCH_HISTORY_CONFLICT',status=409)
+        return matched[0]if matched else None
+
+    def _normal_dispatch_key(self,db,ident,stage,marker):
+        base='normal-dispatch-'+stage
+        row=db.execute('SELECT body,hash FROM events WHERE task_id=? AND event_key=?',(ident,base)).fetchone()
+        return base if row is None or self._decode(*row).get('marker')==marker else base+'-'+digest(marker)
+
     def _normal_dispatch_check(self,db,ident,owner,expected,grant,worker,binding,*,starting=False):
         from .dispatch_budget import NormalDispatchBinding,need,split,validate
         need(type(binding)is NormalDispatchBinding,'NORMAL_DISPATCH_BINDING_REQUIRED')
@@ -801,9 +817,8 @@ class TaskStore:
             need(controls==observed[0],'DISPATCH_CONTROL_CHANGED')
         with self._connection(True,guard=guard)as db:
             link,controls=self._normal_dispatch_check(db,ident,owner,expected,grant,worker,binding);observed.append(controls)
-            need(not db.execute("SELECT 1 FROM events WHERE task_id=? AND event_key='normal-dispatch-reserved'",(ident,)).fetchone(),
-                 'NORMAL_DISPATCH_REQUIRES_RECONCILE')
-            self._append_event(db,ident,'normal-dispatch-reserved',link)
+            need(self._normal_dispatch_event(db,ident,'reserved',marker)is None,'NORMAL_DISPATCH_REQUIRES_RECONCILE')
+            self._append_event(db,ident,self._normal_dispatch_key(db,ident,'reserved',marker),link)
         return link
 
     def _rebuild_bootstrap_dependency(self,connection,package,dep,authority):
@@ -1384,12 +1399,11 @@ class TaskStore:
             task=self._task(row);marker=task['intent'].get('normal_dispatch_budget')
             if marker and ('thread_id'in values or 'turn_id'in values):
                 from .dispatch_budget import need
-                opened=connection.execute("SELECT body,hash FROM events WHERE task_id=? AND event_key='normal-dispatch-reserved'",(ident,)).fetchone()
-                need(opened is not None,'DISPATCH_RESERVATION_REQUIRED');link=self._decode(*opened)
+                link=self._normal_dispatch_event(connection,ident,'reserved',marker)
+                need(link is not None,'DISPATCH_RESERVATION_REQUIRED')
                 need(link['worker']['owner']==owner,'NORMAL_DISPATCH_WORKER_REJECTED')
                 if 'turn_id'in values:
-                    need(connection.execute("SELECT 1 FROM events WHERE task_id=? AND event_key='normal-dispatch-start'",(ident,)).fetchone(),
-                         'NORMAL_DISPATCH_ALREADY_CONSUMED')
+                    need(self._normal_dispatch_event(connection,ident,'start',marker)is not None,'NORMAL_DISPATCH_ALREADY_CONSUMED')
                 thread=values.get('thread_id',row['thread_id'])
                 if link['executor'].get('thread_id')is not None:
                     need(link['executor']['thread_id']==thread,'DISPATCH_RESERVATION_MISMATCH')
@@ -1430,11 +1444,10 @@ class TaskStore:
                 from .dispatch_budget import need
                 link,controls=self._normal_dispatch_check(connection,ident,owner,expected_task,grant,worker_identity,normal_budget_binding,starting=True)
                 observed.append(controls)
-                opened=connection.execute("SELECT body,hash FROM events WHERE task_id=? AND event_key='normal-dispatch-reserved'",(ident,)).fetchone()
-                need(opened is not None and self._decode(*opened)==link,'NORMAL_DISPATCH_WORKER_REJECTED')
-                need(not connection.execute("SELECT 1 FROM events WHERE task_id=? AND event_key='normal-dispatch-start'",(ident,)).fetchone(),
-                     'NORMAL_DISPATCH_ALREADY_CONSUMED')
-                self._append_event(connection,ident,'normal-dispatch-start',{**link,'thread_id':thread_id})
+                marker=link['marker']
+                need(self._normal_dispatch_event(connection,ident,'reserved',marker)==link,'NORMAL_DISPATCH_WORKER_REJECTED')
+                need(self._normal_dispatch_event(connection,ident,'start',marker)is None,'NORMAL_DISPATCH_ALREADY_CONSUMED')
+                self._append_event(connection,ident,self._normal_dispatch_key(connection,ident,'start',marker),{**link,'thread_id':thread_id})
 
     def heartbeat(self, ident, owner):
         with self._connection(True) as connection:
@@ -1527,7 +1540,8 @@ class TaskStore:
             if row['status'] not in TERMINAL:
                 connection.execute("UPDATE tasks SET cancel=1,status=CASE WHEN status='queued' THEN 'cancelled' ELSE status END WHERE id=?",(ident,))
 
-    def reconcile_owned(self, ident, observation):
+    def reconcile_owned(self, ident, observation, *, normal_budget_binding=None,
+                        expected_task_sha256=None, expected_marker=None, expected_events_sha256=None):
         """Root-only reconciliation; no HTTP route and no post-turn replay.
 
         Native proof must establish no dispatched turn, or a stopped owned turn
@@ -1548,10 +1562,19 @@ class TaskStore:
             (not unstarted and not empty_thread and (observation['source']!='app_server_stdio.thread/read' or observation['turn_status']not in {'interrupted','completed'} or observation['thread_status']not in {'idle','notLoaded'}))or \
             type(observation['observed_at'])not in {int,float} or not 0<=time.time()-observation['observed_at']<30:
             raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
-        with self._connection(True)as connection:
+        recovery=[]
+        def guard():
+            if recovery:
+                verify,controls=recovery[0]
+                if verify()!=controls:raise ServiceError('DISPATCH_CONTROL_CHANGED',status=409)
+        with self._connection(True,guard=guard)as connection:
             row=connection.execute('SELECT * FROM tasks WHERE id=?',(stable_id(ident),)).fetchone()
             if not row:raise ServiceError('TASK_NOT_FOUND',status=404)
             task=self._task(row)
+            ordinary=task['intent']['grant'].get('kind')=='ordinary_project'
+            budget_bound=ordinary and task['intent'].get('normal_dispatch_budget')is not None
+            if normal_budget_binding is not None and not budget_bound:
+                raise ServiceError('NORMAL_DISPATCH_BINDING_REQUIRED',status=409)
             if task['cancel']:raise ServiceError('TASK_CANCELLED',status=409)
             if unstarted and (task['status']not in {'failed','requires_reconcile'} or task['cancel'] or \
                 task['thread_id']is not None or task['turn_id']is not None or task['provider_status']is not None):
@@ -1568,13 +1591,13 @@ class TaskStore:
                 not any(c['exit']!=0 for c in task['result'].get('checks',[])) or task['result'].get('changed_paths')!=[]):
                 raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
             events=connection.execute('SELECT * FROM events WHERE task_id=? ORDER BY sequence',(ident,)).fetchall()
-            if (unstarted or empty_thread) and any(e['event_key'].startswith('turn-intent')for e in events):
+            if (unstarted or empty_thread) and not budget_bound and any(e['event_key'].startswith('turn-intent')for e in events):
                 raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
             worker_seen=False
             for event in events:
                 value=self._decode(event['body'],event['hash'])
                 process=value.get('worker')if event['event_key'].startswith('dispatch-intent')else value if event['event_key'].startswith('stdio-child')else None
-                if empty_thread and event['event_key'].startswith(('dispatch-intent','stdio-child')):
+                if (empty_thread or budget_bound) and event['event_key'].startswith(('dispatch-intent','stdio-child')):
                     if type(process)is not dict:raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
                     try:self._terminal_process_closed(process.get('pid'),process.get('start_ticks'))
                     except ServiceError as error:
@@ -1586,16 +1609,25 @@ class TaskStore:
                     try:current=Path('/proc/'+str(process['pid'])+'/stat').read_text().rsplit(')',1)[1].split()[19]
                     except FileNotFoundError:continue
                     if current==process['start_ticks']:raise ServiceError('TASK_OWNER_STILL_ACTIVE',status=409)
-            if empty_thread and not worker_seen:raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
+            if (empty_thread or budget_bound) and not worker_seen:raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
             from .task_service import fingerprint,root_identity
             grant=task['intent']['grant']
-            if empty_thread:
+            if empty_thread and not ordinary:
                 from .task_service import validate_grant
                 current=connection.execute('SELECT body,hash FROM grants WHERE id=?',(grant['grant_id'],)).fetchone()
                 if not current or self._decode(current['body'],current['hash'])!=grant or digest(grant)!=task['intent']['grant_hash']:
                     raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
                 validate_grant(grant,live=True)
-            if grant.get('kind')=='story_exchange':
+            if ordinary:
+                from . import ordinary_tasks
+                # Registration and live grant identity precede every declared
+                # source read. Never traverse a real ordinary project root.
+                ordinary_tasks.check_registration(grant,self.root)
+                current=connection.execute('SELECT body,hash FROM grants WHERE id=?',(grant['grant_id'],)).fetchone()
+                if not current or self._decode(*current)!=grant or digest(grant)!=task['intent']['grant_hash']:
+                    raise ServiceError('GRANT_VERSION_STALE',status=409)
+                ordinary_tasks.validate_grant(grant,live=True)
+            elif grant.get('kind')=='story_exchange':
                 from .story_exchange import validate
                 from .story_promotion import source_snapshot
                 validate(grant,live=True);source_snapshot(grant,expected=True)
@@ -1608,8 +1640,49 @@ class TaskStore:
                 raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
             if empty_thread and not 0<=time.time()-observation['observed_at']<30:
                 raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
+            new_intent=task['intent']
+            if budget_bound:
+                from .dispatch_budget import NormalDispatchBinding,need,split,validate
+                need(type(normal_budget_binding)is NormalDispatchBinding,'NORMAL_DISPATCH_BINDING_REQUIRED')
+                old_marker=task['intent']['normal_dispatch_budget'];b=normal_budget_binding.snapshot()
+                need(digest(task)==expected_task_sha256 and old_marker==expected_marker
+                     and digest([{'sequence':e['sequence'],'key':e['event_key'],'data':self._decode(e['body'],e['hash'])}for e in events])==expected_events_sha256,
+                     'TASK_RECONCILE_CAS_STALE')
+                # A consumed permit is ambiguous even with no returned turn ID.
+                need((unstarted or empty_thread) and not any(e['event_key'].startswith('normal-dispatch-start')for e in events),
+                     'NORMAL_DISPATCH_START_UNCERTAIN')
+                marker=normal_budget_binding.marker(ident,grant);cap=normal_budget_binding._authority
+                need(marker['lineage_id']==old_marker['lineage_id'] and marker['dispatch_id']!=old_marker['dispatch_id'],
+                     'NORMAL_DISPATCH_RECOVERY_REJECTED')
+                plan=self._plan_input(connection,b['lineage_id'],cap._plan)
+                raw=connection.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(b['lineage_id'],)).fetchone()
+                _,budget=split(self._decode(*raw));need(budget is not None,'DISPATCH_POLICY_REQUIRED');validate(budget,b['lineage_id'])
+                old=next((r for r in budget['reservations']if r['request']['dispatch_id']==old_marker['dispatch_id']),None)
+                need(old is not None and old['sha256']==old_marker['request_sha256']
+                     and old['request']['task_id']==ident and old['request']['package_sha256']is None
+                     and old['request']['attempt_id']!=b['request']['attempt_id']
+                     and any(c['resources_closed']is True for c in old['closures']), 'DISPATCH_CLOSURE_UNVERIFIED')
+                need(not any(r['request']['dispatch_id']==marker['dispatch_id']or r['request']['attempt_id']==b['request']['attempt_id']for r in budget['reservations']),
+                     'NORMAL_DISPATCH_RECOVERY_REJECTED')
+                need(b['request']['executor']['thread_id']in (None,task['thread_id'])
+                     and b['request']['seconds']>=grant['max_turn_seconds']
+                     and time.time()+b['request']['seconds']<=b['request']['deadline']<=time.time()+900,
+                     'DISPATCH_DEADLINE')
+                def verify():
+                    ordinary_tasks.check_registration(grant,self.root);ordinary_tasks.validate_grant(grant,live=True)
+                    need(0<=time.time()-observation['observed_at']<30,'TASK_RECONCILE_PROOF_REJECTED')
+                    need(time.time()+b['request']['seconds']<=b['request']['deadline']<=time.time()+900,'DISPATCH_DEADLINE')
+                    for event in events:
+                        value=self._decode(event['body'],event['hash'])
+                        proc=value.get('worker')if event['event_key'].startswith('dispatch-intent')else value if event['event_key'].startswith('stdio-child')else None
+                        if proc:self._terminal_process_closed(proc.get('pid'),proc.get('start_ticks'))
+                    return cap.check(plan,budget['policy'],'reserve',b['request'])
+                recovery.append((verify,verify()))
+                new_intent={**task['intent'],'normal_dispatch_budget':marker}
             evidence={'observation':observation,'original_status':task['status'],'original_result':task['result'],
                 'intent_hash':digest(task['intent']),'original_thread_id':task['thread_id'],'original_turn_id':task['turn_id'],
+                **({'original_task':task,'original_intent':task['intent'],'new_marker':new_intent['normal_dispatch_budget'],
+                    'closed_reservation_sha256':digest(old),'closure_hashes':[digest(c)for c in old['closures']]}if budget_bound else {}),
                 'effects_rolled_back':False,'action':'same_id_requeue_before_any_turn'if unstarted else
                 'same_owned_thread_requeue_before_any_turn'if empty_thread else
                 'same_owned_thread_new_turn_after_verified_check_failure'if check_failure else'same_owned_thread_new_turn_after_verified_interruption'}
@@ -1618,7 +1691,8 @@ class TaskStore:
                 raise ServiceError('TASK_EVENT_CAPACITY',status=507)
             connection.execute('INSERT INTO events(task_id,event_key,body,hash,received)VALUES(?,?,?,?,?)',
                 (ident,'reconcile-'+hashed,body,hashed,time.time()))
-            connection.execute("UPDATE tasks SET status='queued',owner=NULL,lease_until=NULL,result=NULL,turn_id=NULL,provider_status=NULL WHERE id=?",(ident,))
+            connection.execute("UPDATE tasks SET intent=?,intent_hash=?,status='queued',owner=NULL,lease_until=NULL,result=NULL,turn_id=NULL,provider_status=NULL WHERE id=?",
+                (canonical(new_intent).decode(),digest(new_intent),ident))
 
     def authorize_business_runtime_amendment(self, ident, *, authority, observation, grant):
         """One explicit owner amendment; retain the same interrupted task/thread.

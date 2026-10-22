@@ -135,6 +135,17 @@ class TaskService:
             runtime.bind_dispatch_budgets(self.__normal_budgets)
         self._runtime_status=value
 
+    def reconcile_ordinary_budget(self,ident,observation,*,expected_task_sha256,expected_marker,expected_events_sha256):
+        """Internal stopped-runtime recovery; no HTTP-selected authority."""
+        binding=self.__normal_budgets.get(ident)
+        if binding is None:raise ServiceError('NORMAL_DISPATCH_BINDING_REQUIRED',status=403)
+        runtime=getattr(self.runtime_status,'__self__',None)
+        if runtime is not None and (runtime._thread is not None or runtime._handles):
+            raise ServiceError('ORDINARY_RUNTIME_BINDING_REJECTED',status=409)
+        return self.store.reconcile_owned(ident,observation,normal_budget_binding=binding,
+            expected_task_sha256=expected_task_sha256,expected_marker=expected_marker,
+            expected_events_sha256=expected_events_sha256)
+
     @property
     def rebuild_binding(self):
         return self.__rebuild_authority.snapshot() if self.__rebuild_authority else None
