@@ -330,14 +330,32 @@ class ExecutionTests(unittest.TestCase):
         self.assert_unknown(self.client.wait)
 
     def test_whole_deadline_not_extended_by_notifications(self):
+        from math import ceil
         self.open();self.resume();self.start()
-        original=self.wire.receive
+        original=self.wire.receive;seen=[]
+        deadline=self.client.deadline;started=self.now[0];frame_seconds=10
+        expected_receives=ceil((deadline-started)/frame_seconds)
         def receive(deadline):
-            result=original(deadline);self.now[0]+=10;return result
+            seen.append(deadline);result=original(deadline)
+            self.now[0]+=frame_seconds;return result
         self.wire.receive=receive
-        for _ in range(3):self.notify('thread/status/changed',{'threadId':THREAD,'status':{'type':'idle'}})
-        self.assert_unknown(self.client.wait)
-        self.assertLessEqual(len(self.client.events),1)
+        for _ in range(expected_receives+1):
+            self.notify('thread/status/changed',{'threadId':THREAD,'status':{'type':'idle'}})
+        sent=copy.deepcopy(self.wire.sent)
+        error=self.assert_unknown(self.client.wait)
+        self.assertEqual(error.code,'OFFICIAL_TIMEOUT')
+        self.assertEqual(deadline,57);self.assertEqual(self.client.deadline,deadline)
+        self.assertEqual(seen,[deadline]*expected_receives)
+        self.assertEqual(self.now[0],started+expected_receives*frame_seconds)
+        self.assertLess(started+(expected_receives-1)*frame_seconds,deadline)
+        self.assertGreaterEqual(self.now[0],deadline)
+        # The expiry frame was received but not processed; a later frame remains.
+        self.assertEqual(len(self.client.events),expected_receives-1)
+        self.assertEqual(len(self.wire.frames),1)
+        with self.assertRaises(ServiceError)as replay:self.client.wait()
+        self.assertEqual(replay.exception.outcome,'UNKNOWN')
+        self.assertEqual(self.wire.sent,sent);self.assertEqual(self.wire.closes,1)
+        self.assertEqual(seen,[deadline]*expected_receives)
 
     def test_partial_send_and_close_exception_keep_unknown(self):
         self.open()
@@ -637,13 +655,30 @@ class StartupNotificationTests(unittest.TestCase):
         f.assert_unknown(f.client.wait)
 
     def test_repeated_startup_never_extends_pending_or_total_deadline(self):
+        from math import ceil
         f=self.ready();original=f.wire.receive;seen=[]
+        deadline=f.client.deadline;started=f.now[0];frame_seconds=2
+        expected_receives=ceil((deadline-started)/frame_seconds)
         def receive(deadline):
-            seen.append(deadline);value=original(deadline);f.now[0]+=2;return value
+            seen.append(deadline);value=original(deadline)
+            f.now[0]+=frame_seconds;return value
         f.wire.receive=receive
-        for _ in range(12):f.notify(self.method,self.message('failed',failureReason='reauthenticationRequired'))
-        f.assert_unknown(f.client.wait);self.assertEqual(len(set(seen)),1)
-        self.assertLessEqual(len(seen),8);self.assertEqual(f.client.deadline,57)
+        for _ in range(expected_receives+1):
+            f.notify(self.method,self.message('failed',failureReason='reauthenticationRequired'))
+        sent=copy.deepcopy(f.wire.sent)
+        error=f.assert_unknown(f.client.wait)
+        self.assertEqual(error.code,'OFFICIAL_TIMEOUT')
+        self.assertEqual(deadline,57);self.assertEqual(f.client.deadline,deadline)
+        self.assertEqual(seen,[deadline]*expected_receives)
+        self.assertEqual(f.now[0],started+expected_receives*frame_seconds)
+        self.assertLess(started+(expected_receives-1)*frame_seconds,deadline)
+        self.assertGreaterEqual(f.now[0],deadline)
+        self.assertEqual(len(f.client.events),expected_receives-1)
+        self.assertEqual(len(f.wire.frames),1)
+        with self.assertRaises(ServiceError)as replay:f.client.wait()
+        self.assertEqual(replay.exception.outcome,'UNKNOWN')
+        self.assertEqual(f.wire.sent,sent);self.assertEqual(f.wire.closes,1)
+        self.assertEqual(seen,[deadline]*expected_receives)
 
     def test_exact_eleven_allowlist_and_no_new_outbound_method(self):
         self.assertEqual(len(module.NOTIFICATIONS),11)
@@ -782,6 +817,108 @@ class ResumeDiagnosticTests(unittest.TestCase):
         with self.assertRaises(ServiceError)as caught:f.client.start('PRIVATE PROMPT')
         self.assertEqual(caught.exception.code,'OFFICIAL_PROTOCOL_REJECTED')
         self.assertEqual(caught.exception.outcome,'UNKNOWN');self.assertEqual(f.wire.closes,1)
+
+
+class OperationDeadlineTests(unittest.TestCase):
+    """Elapsed transport/gate time shares one absolute window; no real sleeps."""
+
+    def setUp(self):
+        self.f = ExecutionTests()
+        self.f.setUp()
+        self.addCleanup(self.f.doCleanups)
+        self.addCleanup(self.f.client.close)
+
+    def timed_receives(self, costs):
+        f = self.f
+        original = f.wire.receive
+        costs = iter(costs)
+        deadlines = []
+
+        def receive(deadline):
+            deadlines.append(deadline)
+            value = original(deadline)
+            # Includes elapsed wall time in any mandatory surrounding checks.
+            f.now[0] += next(costs)
+            return value
+
+        f.wire.receive = receive
+        return deadlines
+
+    def test_initialize_reply_after_sixteen_seconds_keeps_cleanup_reserve(self):
+        f = self.f
+        deadlines = self.timed_receives([16])
+        f.open()
+        self.assertTrue(f.client.initialized)
+        self.assertEqual(deadlines, [57])
+        self.assertEqual(f.client.deadline, 57)
+        self.assertEqual(f.config.max_seconds, 60)
+        self.assertEqual(f.now[0], 16)
+
+    def test_resume_reply_after_sixteen_seconds_uses_operation_deadline(self):
+        f = self.f
+        f.open()
+        deadlines = self.timed_receives([16])
+        result = f.resume()
+        self.assertEqual(result['session_id'], SESSION)
+        self.assertEqual(deadlines, [57])
+        self.assertEqual(f.client.deadline, 57)
+        self.assertEqual(f.now[0], 16)
+        self.assertEqual(f.client.sent.count('thread/resume'), 1)
+
+    def test_multiple_rpcs_and_notifications_never_renew_absolute_window(self):
+        f = self.f
+        deadlines = self.timed_receives([4, 7, 7, 7, 16, 10])
+        f.open()
+        for _ in range(2):
+            f.notify('thread/status/changed', {'threadId': THREAD, 'status': {'type': 'idle'}})
+        f.resume()
+        f.start()
+        f.notify('turn/completed', {'threadId': THREAD, 'turn': f.turn(status='completed')})
+        result = f.client.wait()
+        self.assertEqual(deadlines, [57] * 6)
+        self.assertEqual(f.now[0], 51)
+        self.assertEqual(f.client.deadline, 57)
+        self.assertEqual(result['terminal'], 'completed')
+        self.assertEqual(f.wire.closes, 1)
+
+    def test_exact_operation_deadline_is_unknown_closed_once_and_not_replayed(self):
+        f = self.f
+        f.open()
+        deadlines = self.timed_receives([57])
+        error = f.assert_unknown(f.resume)
+        self.assertEqual(error.code, 'OFFICIAL_TIMEOUT')
+        self.assertEqual(deadlines, [57])
+        sent = copy.deepcopy(f.wire.sent)
+        with self.assertRaises(ServiceError):
+            f.client.resume()
+        self.assertEqual(f.wire.sent, sent)
+        self.assertEqual(f.wire.closes, 1)
+        self.assertEqual(f.client.failure['outcome'], 'UNKNOWN')
+
+    def test_elapsed_gate_time_is_not_subtracted_or_frozen(self):
+        f = self.f
+        f.open()
+        # Time spent in required checks between RPCs still consumes the window.
+        f.now[0] += 40
+        deadlines = self.timed_receives([16, 1])
+        f.resume()
+        self.assertEqual(f.now[0], 56)
+        error = f.assert_unknown(f.start)
+        self.assertEqual(error.code, 'OFFICIAL_TIMEOUT')
+        self.assertEqual(deadlines, [57, 57])
+        self.assertEqual(f.now[0], 57)
+        self.assertEqual(f.client.deadline, 57)
+        self.assertEqual(f.client.sent.count('turn/start'), 1)
+
+    def test_expired_window_before_next_send_does_not_create_new_window(self):
+        f = self.f
+        f.open()
+        f.now[0] = 57
+        sent = copy.deepcopy(f.wire.sent)
+        error = f.assert_unknown(f.client.resume)
+        self.assertEqual(error.code, 'OFFICIAL_TIMEOUT')
+        self.assertEqual(f.wire.sent, sent)
+        self.assertEqual(f.client.deadline, 57)
 
 
 class ProcessClosureTests(unittest.TestCase):

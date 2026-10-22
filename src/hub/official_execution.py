@@ -325,7 +325,7 @@ class OfficialExecution:
     def _deadline(self):
         if self.deadline is None or self.clock() >= self.deadline:
             raise _error('OFFICIAL_TIMEOUT', 'UNKNOWN' if self.sent else 'NOT_COMMITTED')
-        return min(self.deadline, self.clock()+15)
+        return self.deadline
 
     def _frame(self, deadline):
         raw = self.wire.receive(deadline)
