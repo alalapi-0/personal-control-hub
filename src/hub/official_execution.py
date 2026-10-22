@@ -54,6 +54,46 @@ NOTIFICATIONS = {'remoteControl/status/changed': 'RemoteControlStatusChangedNoti
 GLOBAL_NOTIFICATIONS = frozenset(('remoteControl/status/changed', 'account/updated',
                                   'account/rateLimits/updated'))
 UUID = re.compile(r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}')
+_RESUME_ERROR_FIELDS = {
+    (): 'ROOT', ('thread',): 'THREAD', ('cwd',): 'CWD',
+    ('model',): 'MODEL', ('modelProvider',): 'MODEL_PROVIDER',
+    ('approvalPolicy',): 'APPROVAL_POLICY', ('approvalsReviewer',): 'APPROVALS_REVIEWER',
+    ('sandbox',): 'SANDBOX', ('sandbox','type'): 'SANDBOX_TYPE',
+    ('sandbox','networkAccess'): 'SANDBOX_NETWORK_ACCESS',
+    ('collaborationMode',): 'COLLABORATION_MODE',
+    ('reasoningEffort',): 'REASONING_EFFORT', ('serviceTier',): 'SERVICE_TIER',
+    ('thread','id'): 'THREAD_ID', ('thread','sessionId'): 'THREAD_SESSION_ID',
+    ('thread','cwd'): 'THREAD_CWD', ('thread','turns'): 'THREAD_TURNS',
+    ('thread','status'): 'THREAD_STATUS', ('thread','status','type'): 'THREAD_STATUS_TYPE',
+    ('thread','source'): 'THREAD_SOURCE', ('thread','cliVersion'): 'THREAD_CLI_VERSION',
+    ('thread','createdAt'): 'THREAD_CREATED_AT', ('thread','updatedAt'): 'THREAD_UPDATED_AT',
+    ('thread','ephemeral'): 'THREAD_EPHEMERAL', ('thread','preview'): 'THREAD_PREVIEW',
+    ('thread','projectId'): 'THREAD_PROJECT_ID', ('thread','modelProvider'): 'THREAD_MODEL_PROVIDER'}
+_RESUME_ERROR_VALIDATORS = {
+    'required': 'REQUIRED', 'type': 'TYPE', 'enum': 'ENUM',
+    'oneOf': 'ONE_OF', 'anyOf': 'ANY_OF', 'allOf': 'ALL_OF',
+    'additionalProperties': 'ADDITIONAL_PROPERTIES', 'pattern': 'PATTERN',
+    'minItems': 'MIN_ITEMS', 'maxItems': 'MAX_ITEMS', 'format': 'FORMAT'}
+
+
+def _resume_schema_error_code(error):
+    # Diagnostic classification only, not protocol success, permission evidence
+    # or exact-leaf isolation. Never render messages, values or unknown key names.
+    path=tuple(error.absolute_path)
+    if len(path)>3 or any(type(key) is not str for key in path):path=None
+    validator=error.validator
+    kind=_RESUME_ERROR_VALIDATORS.get(validator,'OTHER') if type(validator) is str else 'OTHER'
+    field=_RESUME_ERROR_FIELDS.get(path,'OTHER')
+    if type(validator) is str and validator=='required':
+        field='OTHER'
+        required=error.validator_value;instance=error.instance
+        if type(required) is list and len(required)<=32 and type(instance) is dict:
+            for key in required:
+                if type(key) is not str:break
+                if key not in instance:
+                    field=_RESUME_ERROR_FIELDS.get(path+(key,),'OTHER') if path is not None else 'OTHER'
+                    break
+    return 'OFFICIAL_RESUME_SCHEMA_'+field+'_'+kind+'_REJECTED'
 
 
 def _error(code, outcome='NOT_COMMITTED'):
@@ -252,7 +292,10 @@ class OfficialExecution:
 
     def _validate(self, name, value):
         try: jsonschema.validate(value, self.schemas[name])
-        except (jsonschema.ValidationError, jsonschema.SchemaError, KeyError):
+        except jsonschema.ValidationError as error:
+            code=_resume_schema_error_code(error) if name=='ThreadResumeResponse' else 'OFFICIAL_PROTOCOL_REJECTED'
+            raise _error(code, 'UNKNOWN' if self.sent else 'NOT_COMMITTED') from None
+        except (jsonschema.SchemaError, KeyError):
             raise _error('OFFICIAL_PROTOCOL_REJECTED', 'UNKNOWN' if self.sent else 'NOT_COMMITTED') from None
 
     @_managed
@@ -422,6 +465,8 @@ class OfficialExecution:
             result=value['result']
             schema=self.schemas[METHODS[method][1]]
             if type(result) is not dict or set(result)-set(schema.get('properties',{})):
+                if method=='thread/resume' and type(result) is dict:
+                    raise _error('OFFICIAL_RESUME_ROOT_FIELDS_REJECTED','UNKNOWN')
                 raise _error('OFFICIAL_PROTOCOL_REJECTED','UNKNOWN')
             if method=='thread/resume' and type(result) is dict and type(result.get('thread')) is dict:
                 # Session identity may be unavailable, never borrowed from thread ID.
@@ -431,7 +476,8 @@ class OfficialExecution:
                     thread['required']=[v for v in thread['required'] if v!='sessionId']
                     thread['properties']['sessionId']['type']=['string','null']
                 try: jsonschema.validate(result,schema)
-                except jsonschema.ValidationError: raise _error('OFFICIAL_PROTOCOL_REJECTED','UNKNOWN') from None
+                except jsonschema.ValidationError as error:
+                    raise _error(_resume_schema_error_code(error),'UNKNOWN') from None
             else:self._validate(METHODS[method][1],result)
             self.pending=False
             return result

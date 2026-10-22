@@ -651,6 +651,139 @@ class StartupNotificationTests(unittest.TestCase):
         self.assertEqual(set(module.METHODS),{'initialize','thread/resume','turn/start','turn/interrupt'})
 
 
+class ResumeDiagnosticTests(unittest.TestCase):
+    def setUp(self):
+        self.f=ExecutionTests();self.f.setUp();self.addCleanup(self.f.doCleanups)
+        text={'type':'string'}
+        thread={'type':'object','properties':{'id':text,'sessionId':text,'cwd':text,
+            'turns':{'type':'array'},'preview':text,
+            'status':{'type':'object','properties':{'type':{'enum':['idle']}},'required':['type']},
+            'source':{'anyOf':[{'enum':['exec']},{'enum':['cli']}]}}
+            ,'required':['id','sessionId','cwd','turns','status']}
+        self.schema={'title':'SyntheticResumeDiagnostics','type':'object','definitions':{'Thread':thread},
+            'properties':{'thread':{'$ref':'#/definitions/Thread'},'cwd':text,'model':text,
+                'approvalPolicy':{'enum':['never']},'approvalsReviewer':{'enum':['user']},
+                'sandbox':{'oneOf':[{'type':'object','properties':{'type':{'enum':['readOnly']},
+                    'networkAccess':{'type':'boolean'}},'required':['type']}]}}
+            ,'required':['thread','cwd','approvalPolicy','approvalsReviewer','sandbox']}
+        path=self.f.schemas/'v2/ThreadResumeResponse.json';path.write_text(json.dumps(self.schema))
+        self.f.pins['ThreadResumeResponse']=hashlib.sha256(path.read_bytes()).hexdigest()
+
+    def reject(self,result,expected):
+        f=self.f;f.fresh();f.open();keys=set(f.client.snapshot());f.response(2,result)
+        with self.assertRaises(ServiceError)as caught:f.client.resume()
+        error=caught.exception
+        self.assertEqual(error.code,expected);self.assertEqual(error.outcome,'UNKNOWN')
+        self.assertEqual(set(f.client.snapshot()),keys);self.assertEqual(set(f.client.failure),{'code','outcome'})
+        self.assertEqual(f.client.failure,{'code':expected,'outcome':'UNKNOWN'})
+        self.assertEqual(f.wire.closes,1);self.assertFalse(f.client.resumed)
+        self.assertIsNone(f.client.native_thread_id);self.assertIsNone(f.client.session_id);self.assertIsNone(f.client.turn_id)
+        self.assertEqual([frame['method']for frame in f.wire.sent],['initialize','initialized','thread/resume'])
+        sent=copy.deepcopy(f.wire.sent)
+        with self.assertRaises(ServiceError)as again:f.client.resume()
+        self.assertEqual(again.exception.outcome,'UNKNOWN');self.assertEqual(f.wire.sent,sent);self.assertEqual(f.wire.closes,1)
+        self.assertEqual(f.client.failure['code'],expected)
+        self.assertNotIn('PRIVATE',json.dumps(error.as_dict()));self.assertNotIn('PRIVATE',json.dumps(f.client.snapshot()))
+        self.assertRegex(expected,r'^OFFICIAL_[A-Z_]+$');self.assertLessEqual(len(expected),100)
+
+    def test_resume_root_extra_fields_are_separate_without_unknown_key_leak(self):
+        for key in ('PRIVATE_UNKNOWN_ROOT','PRIVATE_PATH_SECRET','OFFICIAL_PRIVATE_FAKE_CODE'):
+            with self.subTest(key=key):
+                value=self.f.resume_result();value[key]={'PRIVATE_BODY':'PRIVATE VALUE'}
+                self.reject(value,'OFFICIAL_RESUME_ROOT_FIELDS_REJECTED')
+
+    def test_missing_root_and_nested_required_fields_use_static_names(self):
+        for path,expected in [(('cwd',),'CWD'),(('thread',),'THREAD'),(('thread','id'),'THREAD_ID'),
+                              (('thread','status','type'),'THREAD_STATUS_TYPE')]:
+            with self.subTest(path=path):
+                value=self.f.resume_result();parent=value
+                for key in path[:-1]:parent=parent[key]
+                del parent[path[-1]]
+                self.reject(value,'OFFICIAL_RESUME_SCHEMA_'+expected+'_REQUIRED_REJECTED')
+
+    def test_known_schema_type_enum_and_union_failures_are_distinct(self):
+        cases=[(('thread',),None,'THREAD_TYPE'),(('thread','id'),7,'THREAD_ID_TYPE'),
+            (('thread','status','type'),'PRIVATE STATUS','THREAD_STATUS_TYPE_ENUM'),
+            (('thread','source'),{'PRIVATE_KEY':'PRIVATE BODY'},'THREAD_SOURCE_ANY_OF'),
+            (('sandbox',),{'type':'PRIVATE POLICY'},'SANDBOX_TYPE_ENUM'),
+            (('approvalPolicy',),'PRIVATE APPROVAL','APPROVAL_POLICY_ENUM'),
+            (('model',),{'PRIVATE_KEY':'PRIVATE MODEL'},'MODEL_TYPE')]
+        for path,replacement,token in cases:
+            with self.subTest(path=path):
+                value=self.f.resume_result();parent=value
+                for key in path[:-1]:parent=parent[key]
+                parent[path[-1]]=replacement
+                self.reject(value,'OFFICIAL_RESUME_SCHEMA_'+token+'_REJECTED')
+
+    def test_one_of_multiple_matches_is_classified_without_schema_text(self):
+        self.schema['properties']['sandbox']['oneOf']=[{'type':'object'},{'type':'object'}]
+        path=self.f.schemas/'v2/ThreadResumeResponse.json';path.write_text(json.dumps(self.schema))
+        self.f.pins['ThreadResumeResponse']=hashlib.sha256(path.read_bytes()).hexdigest()
+        self.reject(self.f.resume_result(),'OFFICIAL_RESUME_SCHEMA_SANDBOX_ONE_OF_REJECTED')
+
+    def test_unknown_paths_missing_names_and_validator_kinds_are_other(self):
+        Error=module.jsonschema.ValidationError
+        cases=[(Error('PRIVATE MESSAGE',validator='type',path=['thread','PRIVATE_KEY'],instance='PRIVATE VALUE'),
+                'OFFICIAL_RESUME_SCHEMA_OTHER_TYPE_REJECTED'),
+               (Error('PRIVATE MESSAGE',validator='PRIVATE_VALIDATOR',path=['thread','id'],instance='PRIVATE VALUE'),
+                'OFFICIAL_RESUME_SCHEMA_THREAD_ID_OTHER_REJECTED'),
+               (Error('PRIVATE MESSAGE',validator='required',validator_value=['PRIVATE_MISSING_KEY'],path=[],
+                      instance={'thread':'PRIVATE PRESENT VALUE'}),'OFFICIAL_RESUME_SCHEMA_OTHER_REQUIRED_REJECTED'),
+               (Error('PRIVATE MESSAGE',validator='type',path=['thread','turns',0,'PRIVATE_KEY'],instance='PRIVATE'),
+                'OFFICIAL_RESUME_SCHEMA_OTHER_TYPE_REJECTED')]
+        for error,expected in cases:
+            code=module._resume_schema_error_code(error);self.assertEqual(code,expected)
+            self.assertNotIn('PRIVATE',code)
+
+    def test_validation_error_message_repr_and_nonrequired_instance_are_never_read(self):
+        class ToxicError(module.jsonschema.ValidationError):
+            def __str__(self):raise AssertionError('message rendering forbidden')
+            def __repr__(self):raise AssertionError('repr forbidden')
+            def __getattribute__(self,name):
+                if name in ('message','instance'):raise AssertionError('private error field read forbidden')
+                return super().__getattribute__(name)
+        error=ToxicError('PRIVATE MESSAGE',validator='type',path=['thread','id'],instance='PRIVATE VALUE')
+        self.assertEqual(module._resume_schema_error_code(error),'OFFICIAL_RESUME_SCHEMA_THREAD_ID_TYPE_REJECTED')
+        f=self.f;f.open();f.response(2,f.resume_result());validate=module.jsonschema.validate
+        def injected(value,schema,*args,**kwargs):
+            if schema.get('title')=='SyntheticResumeDiagnostics':raise error
+            return validate(value,schema,*args,**kwargs)
+        with patch.object(module.jsonschema,'validate',side_effect=injected):
+            with self.assertRaises(ServiceError)as caught:f.client.resume()
+        self.assertEqual(caught.exception.code,'OFFICIAL_RESUME_SCHEMA_THREAD_ID_TYPE_REJECTED')
+        self.assertEqual(caught.exception.outcome,'UNKNOWN');self.assertEqual(f.wire.closes,1)
+        self.assertNotIn('PRIVATE',json.dumps(caught.exception.as_dict()))
+        self.assertNotIn('PRIVATE',json.dumps(f.client.snapshot()))
+        self.assertNotIn('turn/start',f.client.sent)
+
+    def test_code_space_is_finite_uppercase_and_bounded(self):
+        for path,field in module._RESUME_ERROR_FIELDS.items():
+            for validator,kind in module._RESUME_ERROR_VALIDATORS.items():
+                error=module.jsonschema.ValidationError('PRIVATE',validator=validator,path=path,
+                    validator_value=[],instance='PRIVATE VALUE')
+                code=module._resume_schema_error_code(error)
+                expected_field='OTHER'if validator=='required'else field
+                self.assertEqual(code,'OFFICIAL_RESUME_SCHEMA_'+expected_field+'_'+kind+'_REJECTED')
+                self.assertRegex(code,r'^OFFICIAL_[A-Z_]+$');self.assertLessEqual(len(code),100)
+
+    def test_success_and_nullable_session_behavior_remains_unchanged(self):
+        f=self.f
+        for mode in ('present','missing','null'):
+            f.fresh();f.open();value=f.resume_result()
+            if mode=='missing':del value['thread']['sessionId']
+            elif mode=='null':value['thread']['sessionId']=None
+            f.response(2,value);result=f.client.resume()
+            self.assertEqual(result['session_id'],SESSION if mode=='present'else None)
+            self.assertIsNone(result['failure']);self.assertTrue(f.client.resumed);f.client.close()
+
+    def test_other_generic_protocol_rejections_keep_their_code(self):
+        self.reject(['PRIVATE BODY'],'OFFICIAL_PROTOCOL_REJECTED')
+        f=self.f;f.fresh();f.open();f.resume();f.response(3,{'PRIVATE_UNKNOWN_KEY':'PRIVATE BODY'})
+        with self.assertRaises(ServiceError)as caught:f.client.start('PRIVATE PROMPT')
+        self.assertEqual(caught.exception.code,'OFFICIAL_PROTOCOL_REJECTED')
+        self.assertEqual(caught.exception.outcome,'UNKNOWN');self.assertEqual(f.wire.closes,1)
+
+
 class ProcessClosureTests(unittest.TestCase):
     def wire(self):
         wire=module._ProcessWire.__new__(module._ProcessWire)
