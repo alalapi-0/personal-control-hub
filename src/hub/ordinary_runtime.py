@@ -53,11 +53,19 @@ class OrdinaryRuntime:
         self._state = 'stopped'
         self._error = None
 
+    @property
+    def normal_budget_bindings(self):
+        """Detached read-only map; retain exact internal typed capabilities."""
+        from types import MappingProxyType
+        with self._lock:
+            return MappingProxyType(dict(self._normal_budgets))
+
     def bind_dispatch_budgets(self,bindings):
         from .dispatch_budget import normal_bindings
         value=normal_bindings(bindings)
         with self._lock:
-            if self._thread is not None or self._handles or self._normal_budgets and self._normal_budgets!=value:
+            if (self._thread is not None or self._handles or self._normal_budgets and
+                    (self._normal_budgets.keys()!=value.keys()or any(self._normal_budgets[k]is not value[k]for k in value))):
                 raise ServiceError('NORMAL_DISPATCH_BINDING_REJECTED',status=409)
             self._normal_budgets=value
 

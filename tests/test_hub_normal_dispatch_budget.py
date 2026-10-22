@@ -409,3 +409,82 @@ class TerminalReadonlyRecoveryTests(unittest.TestCase):
      if field=='thread':changed['thread_id']=value
      else:changed['turns'][0]['id']=value
      self.store._normal_known_history(changed)
+
+
+class NormalBudgetAttachTests(unittest.TestCase):
+ setUp=NormalDispatchBudgetTests.setUp
+ cap=NormalDispatchBudgetTests.cap
+ status=NormalDispatchBudgetTests.status
+ def runtime(self,bindings=None,store=None):
+  return OrdinaryRuntime(store if store is not None else self.store,grants=[self.f.grant],
+      provider_status={'available':True,'classification':'synthetic_fixture'},adapter_factory=self.Adapter,
+      poll_interval=.01,normal_budget_bindings=bindings)
+ def service(self,**kwargs):
+  service=TaskService(None,None,self.store,writer_check=lambda _:True,**kwargs)
+  resolver=SimpleNamespace(authority={'registry_hash':self.f.registry_hash},_check_registry=lambda:None)
+  service._ordinary_project=lambda _:(resolver,self.f.registry['projects'][0])
+  service._ordinary_grant=lambda *args,**kw:self.f.grant
+  service.capabilities=lambda:{'ordinary_execution':{'available':True}}
+  return service
+ def alternate(self):
+  request={**self.req,'dispatch_id':'conflicting-dispatch'}
+  return NormalDispatchBinding.configured(lineage_id=self.plan['plan_id'],request_value=request,
+      grant=self.f.grant,authority_value=self.cap('reserve',request))
+ def test_runtime_first_setter_and_constructor_attach_submit_and_start_once(self):
+  for constructor in (False,True):
+   with self.subTest(constructor=constructor):
+    f=NormalBudgetAttachTests();f.setUp()
+    try:
+     runtime=f.runtime(f.bindings);f.addCleanup(runtime.stop)
+     service=f.service(**({'runtime_status':runtime.status}if constructor else{}))
+     if not constructor:service.runtime_status=runtime.status
+     response=service.submit_ordinary(f.f.spec,owner_context='synthetic-owner',authorize=lambda:None)
+     task=f.store.task(f.f.spec['request_id'])
+     self.assertEqual(task['intent']['normal_dispatch_budget'],f.binding.marker(task['id'],f.f.grant))
+     self.assertIs(runtime.normal_budget_bindings[task['id']],f.binding)
+     self.assertTrue(service.submit_ordinary(f.f.spec,owner_context='synthetic-owner',authorize=lambda:None)['replayed'])
+     runtime.start();end=time.monotonic()+3
+     while time.monotonic()<end and f.store.task(task['id'])['status']not in {'checks_complete','failed','requires_reconcile'}:time.sleep(.01)
+     runtime.stop()
+     self.assertEqual(f.store.task(task['id'])['status'],'checks_complete')
+     self.assertEqual(f.calls,['open','start']);self.assertEqual(f.status()['charged_total'],1)
+     self.assertTrue(service.submit_ordinary(f.f.spec,owner_context='synthetic-owner',authorize=lambda:None)['replayed'])
+     self.assertEqual(f.calls,['open','start']);self.assertEqual(f.status()['charged_total'],1)
+    finally:f.doCleanups()
+ def test_conflicting_attach_is_atomic_and_never_opens_or_merges(self):
+  first=self.runtime(self.bindings);service=self.service(normal_budget_bindings=self.bindings,runtime_status=first.status)
+  before=service.runtime_status;different=self.alternate();other=self.runtime({self.f.spec['request_id']:different})
+  for constructor in (False,True):
+   with self.subTest(constructor=constructor),self.assertRaises(ServiceError):
+    if constructor:self.service(normal_budget_bindings=self.bindings,runtime_status=other.status)
+    else:service.runtime_status=other.status
+  self.assertEqual(service.runtime_status,before)
+  self.assertIs(service._TaskService__normal_budgets[self.f.spec['request_id']],self.binding)
+  self.assertIs(first.normal_budget_bindings[self.f.spec['request_id']],self.binding)
+  self.assertIs(other.normal_budget_bindings[self.f.spec['request_id']],different)
+  self.assertEqual(self.store.tasks(),[]);self.assertEqual(self.calls,[]);self.assertEqual(self.status()['charged_total'],0)
+  with self.assertRaises(ServiceError):service.runtime_status=None
+  self.assertEqual(service.runtime_status,before)
+ def test_runtime_binding_snapshot_is_detached_readonly_and_preserves_typed_identity(self):
+  configured=dict(self.bindings);runtime=self.runtime(configured);snapshot=runtime.normal_budget_bindings
+  configured.clear()
+  self.assertIs(snapshot[self.f.spec['request_id']],self.binding)
+  with self.assertRaises(TypeError):snapshot[self.f.spec['request_id']]=None
+  self.assertIs(runtime.normal_budget_bindings[self.f.spec['request_id']],self.binding)
+ def test_wrong_store_subtype_or_used_runtime_rejected_without_service_pollution(self):
+  service=self.service();original=service.runtime_status
+  wrong=self.runtime(self.bindings,store=object())
+  class Subtype(OrdinaryRuntime):pass
+  subtype=Subtype(self.store,grants=[self.f.grant],provider_status={'available':True,'classification':'synthetic_fixture'},normal_budget_bindings=self.bindings)
+  used=self.runtime(self.bindings);used._thread=object() # Closed/used lifecycle is intentionally not restartable.
+  for runtime in (wrong,subtype,used):
+   with self.subTest(runtime=type(runtime).__name__),self.assertRaises(ServiceError):service.runtime_status=runtime.status
+   self.assertIs(service.runtime_status,original);self.assertEqual(service._TaskService__normal_budgets,{})
+  self.assertEqual(self.calls,[])
+ def test_both_unconfigured_legacy_callbacks_are_unchanged(self):
+  first=lambda:{'legacy':1};second=lambda:{'legacy':2}
+  service=self.service(runtime_status=first);self.assertIs(service.runtime_status,first)
+  service.runtime_status=second;self.assertIs(service.runtime_status,second)
+  service.runtime_status=None;self.assertIsNone(service.runtime_status)
+  runtime=self.runtime();service.runtime_status=runtime.status
+  self.assertEqual(dict(runtime.normal_budget_bindings),{})

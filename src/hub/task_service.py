@@ -127,12 +127,27 @@ class TaskService:
 
     @runtime_status.setter
     def runtime_status(self,value):
+        from .ordinary_runtime import OrdinaryRuntime
         runtime=getattr(value,'__self__',None)
-        if self.__normal_budgets and runtime is not None:
-            from .ordinary_runtime import OrdinaryRuntime
+        configured=(OrdinaryRuntime.normal_budget_bindings.fget(runtime)
+                    if isinstance(runtime,OrdinaryRuntime)else {})
+        if self.__normal_budgets or configured:
+            # None is valid at construction/deferred attachment, never a way
+            # to detach an existing budget-backed runtime or downgrade it.
+            if value is None and getattr(self,'_runtime_status',None)is None:
+                self._runtime_status=None
+                return
             if type(runtime)is not OrdinaryRuntime or runtime.store is not self.store:
                 raise ServiceError('ORDINARY_RUNTIME_BINDING_REJECTED',status=403)
-            runtime.bind_dispatch_budgets(self.__normal_budgets)
+            if self.__normal_budgets and configured and (
+                    self.__normal_budgets.keys()!=configured.keys()or
+                    any(self.__normal_budgets[k]is not configured[k]for k in configured)):
+                raise ServiceError('NORMAL_DISPATCH_BINDING_REJECTED',status=409)
+            chosen=self.__normal_budgets or dict(configured)
+            # Runtime lock rechecks immutable agreement and never-started state
+            # before either service field changes. No merge/JSON reconstruction.
+            runtime.bind_dispatch_budgets(chosen)
+            self.__normal_budgets=dict(chosen)
         self._runtime_status=value
 
     def reconcile_ordinary_budget(self,ident,observation,*,expected_task_sha256,expected_marker,expected_events_sha256):
