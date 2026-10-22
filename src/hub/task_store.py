@@ -1585,6 +1585,102 @@ class TaskStore:
             if row['status'] not in TERMINAL:
                 connection.execute("UPDATE tasks SET cancel=1,status=CASE WHEN status='queued' THEN 'cancelled' ELSE status END WHERE id=?",(ident,))
 
+    def _normal_known_history(self,observation,*,fresh=True):
+        """Bounded host projection of existing official metadata, not authority."""
+        from .dispatch_budget import need,hash_value,finite
+        fields={'schema_version','source','root','thread_id','thread_status','turns_complete',
+                'next_cursor','sort_direction','turns','resume_evidence_sha256','observed_at'}
+        need(set(observation)==fields and observation['schema_version']=='normal-terminal-history/1'
+             and observation['source']=='app_server_stdio.thread/read+thread/turns/list'
+             and observation['thread_status']=='idle'and observation['turns_complete']is True
+             and observation['next_cursor']is None and observation['sort_direction']=='desc'
+             and hash_value(observation['resume_evidence_sha256']), 'NORMAL_HISTORY_REJECTED')
+        def native_id(value):
+            # Native opaque IDs include digit-leading UUIDs; task IDs do not.
+            # Keep this local: no paths, controls, aliases or unbounded strings.
+            need(type(value)is str and re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,127}',value)is not None,
+                 'NORMAL_HISTORY_REJECTED')
+        native_id(observation['thread_id']);rows=observation['turns']
+        need(type(rows)is list and 1<=len(rows)<=32 and len(canonical(observation))<=6144,'NORMAL_HISTORY_REJECTED')
+        seen=set();previous=None
+        for row in rows:
+            need(type(row)is dict and set(row)=={'id','status','startedAt','completedAt','itemsView'},'NORMAL_HISTORY_REJECTED')
+            native_id(row['id']);need(row['id']not in seen and row['status']in {'completed','failed','interrupted'}
+                and row['itemsView']=='notLoaded'and finite(row['startedAt'])and finite(row['completedAt'])
+                and 0<=row['startedAt']<=row['completedAt']and(previous is None or row['startedAt']<previous), 'NORMAL_HISTORY_REJECTED')
+            seen.add(row['id']);previous=row['startedAt']
+        need(finite(observation['observed_at'])and(not fresh or 0<=time.time()-observation['observed_at']<30),'NORMAL_HISTORY_REJECTED')
+        return rows
+
+    def _normal_terminal_witness(self,db,task,observation,marker,events):
+        """Verify this generation and require separately pinned Root authority.
+
+        Existing legacy permission-table evidence and broad readOnly snapshots
+        cannot satisfy this scope/capability chain. No native API is invoked.
+        """
+        from .dispatch_budget import need,hash_value
+        archived=[];prior=[]
+        for e in events:
+            value=self._decode(e['body'],e['hash'])
+            if e['event_key'].startswith('reconcile-')and value.get('new_marker')==marker:
+                prior.append(value)
+        need(len(prior)<=1,'NORMAL_HISTORY_REJECTED')
+        if prior:
+            value=prior[0]
+            if value.get('verified_history_sha256')is not None:
+                archived=self._normal_known_history(value['observation'],fresh=False)
+                need(digest(archived)==value['verified_history_sha256'],'NORMAL_HISTORY_REJECTED')
+            else:need(value.get('original_turn_id')is None,'NORMAL_HISTORY_REJECTED')
+        reserved=self._normal_dispatch_event(db,task['id'],'reserved',marker)
+        need(reserved is not None and task['owner']==reserved['worker']['owner']
+             and reserved['intent_sha256']==digest(task['intent'])and reserved['payload_sha256']==digest(task['payload']), 'NORMAL_GENERATION_REJECTED')
+        started=self._normal_dispatch_event(db,task['id'],'start',marker)
+        need(started is None or task['turn_id']is not None,'NORMAL_DISPATCH_START_UNCERTAIN')
+        rows=self._normal_known_history(observation)
+        need(task['thread_id']==observation['thread_id']and task['status']in {'failed','requires_reconcile'},'NORMAL_HISTORY_REJECTED')
+        if started is None:
+            need(task['turn_id']is None and rows==archived,'NORMAL_HISTORY_REJECTED')
+            return {'operation':'normal_known_history_recovery','marker':marker,'task_sha256':digest(task),
+                'observation_sha256':digest(observation),'prior_archive_sha256':digest(prior),
+                'capability_sha256':None},None
+        reserved=self._normal_dispatch_event(db,task['id'],'reserved',marker)
+        need(reserved is not None and task['owner']==reserved['worker']['owner']and started=={**reserved,'thread_id':task['thread_id']}
+             and reserved['intent_sha256']==digest(task['intent'])and reserved['payload_sha256']==digest(task['payload']), 'NORMAL_GENERATION_REJECTED')
+        need(rows[0]['id']==task['turn_id']and rows[1:]==archived,'NORMAL_HISTORY_REJECTED')
+        native=[];capability=[];stdio=[]
+        for event in events:
+            v=self._decode(event['body'],event['hash'])
+            if event['event_key'].startswith('normal-dispatch-native-')and v.get('marker')==marker and v.get('turn_id')is not None:native.append((event,v))
+            if event['event_key']=='capability-proof-'+task['owner']:capability.append((event,v))
+            if event['event_key']=='stdio-child-'+task['owner']:stdio.append((event,v))
+        need(len(native)==len(capability)==len(stdio)==1,'NORMAL_CAPABILITY_UNVERIFIED')
+        ne,native=native[0];ce,proof=capability[0];se,child=stdio[0]
+        start=next(e for e in events if e['event_key'].startswith('normal-dispatch-start')and self._decode(e['body'],e['hash']).get('marker')==marker)
+        need(se['sequence']<ce['sequence']<start['sequence']<ne['sequence']and native['worker']==reserved['worker']
+             and native['thread_id']==task['thread_id']and native['turn_id']==task['turn_id'],'NORMAL_GENERATION_REJECTED')
+        grant=task['intent']['grant']
+        keys={'schema_version','thread_id','root_identity','input_version','input_files_sha256','native_profile',
+              'binary_sha256','schema_sha256','process'}
+        need(type(proof)is dict and set(proof)==keys and proof['schema_version']=='ordinary-readonly-capability/1'
+             and proof['thread_id']==task['thread_id']and proof['root_identity']==grant['root_identity']
+             and proof['input_version']==grant['input_version']and proof['input_files_sha256']==digest(grant['input_files'])
+             and proof['native_profile']=={'sandbox':'readOnly','approval_policy':'never','network_access':False,
+                'exact_input_leaves_verified':True,'enabled_capabilities':[]}
+             and hash_value(proof['binary_sha256'])and proof['schema_sha256']==child.get('schema_hash'), 'NORMAL_CAPABILITY_UNVERIFIED')
+        process=proof['process']
+        need(type(process)is dict and set(process)=={'pid','start_ticks','pgid'}and type(process['pid'])is int
+             and type(process['pgid'])is int and process['pgid']==process['pid']and process['pid']>0
+             and process['pid']==child.get('pid')and process['start_ticks']==child.get('start_ticks'), 'NORMAL_CAPABILITY_UNVERIFIED')
+        self._terminal_process_closed(process['pid'],process['start_ticks'])
+        try:os.killpg(process['pgid'],0)
+        except ProcessLookupError:pass
+        except OSError:raise ServiceError('TASK_RECONCILE_PROCESS_UNKNOWN',status=409)from None
+        else:raise ServiceError('TASK_OWNER_STILL_ACTIVE',status=409)
+        witness={'operation':'normal_terminal_readonly_recovery','marker':marker,'task_sha256':digest(task),
+                 'observation_sha256':digest(observation),'prior_archive_sha256':digest(prior),
+                 'capability_sha256':digest(proof),'native_sha256':digest(native),'process':process}
+        return witness,process
+
     def reconcile_owned(self, ident, observation, *, normal_budget_binding=None,
                         expected_task_sha256=None, expected_marker=None, expected_events_sha256=None):
         """Root-only reconciliation; no HTTP route and no post-turn replay.
@@ -1596,16 +1692,18 @@ class TaskStore:
         self.check_storage()
         if type(observation)is not dict:raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
         unstarted=observation.get('source')=='app_server_stdio.thread/list'
-        empty_thread=not unstarted and 'turns_complete'in observation
+        known_history=observation.get('schema_version')=='normal-terminal-history/1'
+        if known_history:self._normal_known_history(observation)
+        empty_thread=not unstarted and not known_history and 'turns_complete'in observation
         expected={'source','root','thread_ids','archived_checked','observed_at'}if unstarted else \
             {'source','root','thread_id','thread_status','turns_complete','turns','observed_at'}if empty_thread else \
             {'source','root','thread_id','turn_id','thread_status','turn_status','observed_at'}
-        if set(observation)!=expected or (unstarted and (observation['thread_ids']!=[] or observation['archived_checked']is not True)) or \
+        if not known_history and (set(observation)!=expected or (unstarted and (observation['thread_ids']!=[] or observation['archived_checked']is not True)) or \
             (empty_thread and (observation['source']!='app_server_stdio.thread/read'
                 or type(observation['thread_status'])is not str or observation['thread_status']not in {'idle','notLoaded'}
                 or observation['turns_complete']is not True or type(observation['turns'])is not list or observation['turns']!=[]))or \
             (not unstarted and not empty_thread and (observation['source']!='app_server_stdio.thread/read' or observation['turn_status']not in {'interrupted','completed'} or observation['thread_status']not in {'idle','notLoaded'}))or \
-            type(observation['observed_at'])not in {int,float} or not 0<=time.time()-observation['observed_at']<30:
+            type(observation['observed_at'])not in {int,float} or not 0<=time.time()-observation['observed_at']<30):
             raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
         recovery=[]
         def guard():
@@ -1618,6 +1716,7 @@ class TaskStore:
             task=self._task(row)
             ordinary=task['intent']['grant'].get('kind')=='ordinary_project'
             budget_bound=ordinary and task['intent'].get('normal_dispatch_budget')is not None
+            if known_history and not budget_bound:raise ServiceError('NORMAL_HISTORY_REJECTED',status=409)
             if normal_budget_binding is not None and not budget_bound:
                 raise ServiceError('NORMAL_DISPATCH_BINDING_REQUIRED',status=409)
             if task['cancel']:raise ServiceError('TASK_CANCELLED',status=409)
@@ -1628,8 +1727,8 @@ class TaskStore:
                 or not task['thread_id'] or task['thread_id']!=observation['thread_id']
                 or task['turn_id']is not None or task['provider_status']is not None):
                 raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
-            check_failure=not unstarted and not empty_thread and observation['turn_status']=='completed'
-            if not unstarted and not empty_thread and (task['status']not in ({'failed'}if check_failure else{'cancelled','requires_reconcile'}) or not task['thread_id']or not task['turn_id']or
+            check_failure=not known_history and not unstarted and not empty_thread and observation['turn_status']=='completed'
+            if not known_history and not unstarted and not empty_thread and (task['status']not in ({'failed'}if check_failure else{'cancelled','requires_reconcile'}) or not task['thread_id']or not task['turn_id']or
                 task['thread_id']!=observation['thread_id']or task['turn_id']!=observation['turn_id']):
                 raise ServiceError('TASK_RECONCILE_PROOF_REJECTED',status=409)
             if check_failure and (task['provider_status']!='completed' or not task['result']or
@@ -1693,9 +1792,14 @@ class TaskStore:
                 need(digest(task)==expected_task_sha256 and old_marker==expected_marker
                      and digest([{'sequence':e['sequence'],'key':e['event_key'],'data':self._decode(e['body'],e['hash'])}for e in events])==expected_events_sha256,
                      'TASK_RECONCILE_CAS_STALE')
-                # A consumed permit is ambiguous even with no returned turn ID.
-                need((unstarted or empty_thread) and not any(e['event_key'].startswith('normal-dispatch-start')for e in events),
-                     'NORMAL_DISPATCH_START_UNCERTAIN')
+                # Only this generation's start matters; unknown ID remains refused.
+                started=self._normal_dispatch_event(connection,ident,'start',old_marker)
+                need(known_history or (unstarted or empty_thread)and started is None,'NORMAL_DISPATCH_START_UNCERTAIN')
+                witness=process=None
+                if known_history:
+                    witness,process=self._normal_terminal_witness(connection,task,observation,old_marker,events)
+                elif any(e['event_key'].startswith('reconcile-')and self._decode(e['body'],e['hash']).get('verified_history_sha256')for e in events):
+                    need(False,'NORMAL_HISTORY_REJECTED')
                 marker=normal_budget_binding.marker(ident,grant);cap=normal_budget_binding._authority
                 need(marker['lineage_id']==old_marker['lineage_id'] and marker['dispatch_id']!=old_marker['dispatch_id'],
                      'NORMAL_DISPATCH_RECOVERY_REJECTED')
@@ -1713,7 +1817,18 @@ class TaskStore:
                      and b['request']['seconds']>=grant['max_turn_seconds']
                      and time.time()+b['request']['seconds']<=b['request']['deadline']<=time.time()+900,
                      'DISPATCH_DEADLINE')
+                if witness is not None:
+                    witness={**witness,'closed_reservation_sha256':digest(old)}
                 def verify():
+                    if witness is not None:
+                        need(cap.snapshot().get('resource_authority_sha256')==digest(witness)
+                             and cap._resource(json.loads(canonical(witness)))is True,'NORMAL_CAPABILITY_UNVERIFIED')
+                        if process is not None:
+                            self._terminal_process_closed(process['pid'],process['start_ticks'])
+                            try:os.killpg(process['pgid'],0)
+                            except ProcessLookupError:pass
+                            except OSError:need(False,'TASK_RECONCILE_PROCESS_UNKNOWN')
+                            else:need(False,'TASK_OWNER_STILL_ACTIVE')
                     ordinary_tasks.check_registration(grant,self.root);ordinary_tasks.validate_grant(grant,live=True)
                     need(0<=time.time()-observation['observed_at']<30,'TASK_RECONCILE_PROOF_REJECTED')
                     need(time.time()+b['request']['seconds']<=b['request']['deadline']<=time.time()+900,'DISPATCH_DEADLINE')
@@ -1727,8 +1842,10 @@ class TaskStore:
             evidence={'observation':observation,'original_status':task['status'],'original_result':task['result'],
                 'intent_hash':digest(task['intent']),'original_thread_id':task['thread_id'],'original_turn_id':task['turn_id'],
                 **({'original_task':task,'original_intent':task['intent'],'new_marker':new_intent['normal_dispatch_budget'],
-                    'closed_reservation_sha256':digest(old),'closure_hashes':[digest(c)for c in old['closures']]}if budget_bound else {}),
-                'effects_rolled_back':False,'action':'same_id_requeue_before_any_turn'if unstarted else
+                    'closed_reservation_sha256':digest(old),'closure_hashes':[digest(c)for c in old['closures']],
+                    **({'verified_history_sha256':digest(observation['turns']),'recovery_witness_sha256':digest(witness)}if known_history else{})}if budget_bound else {}),
+                'effects_rolled_back':False,'action':'same_owned_thread_new_budget_after_verified_terminal_history'if known_history else
+                'same_id_requeue_before_any_turn'if unstarted else
                 'same_owned_thread_requeue_before_any_turn'if empty_thread else
                 'same_owned_thread_new_turn_after_verified_check_failure'if check_failure else'same_owned_thread_new_turn_after_verified_interruption'}
             body=canonical(evidence).decode();hashed=digest(evidence)

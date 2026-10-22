@@ -247,3 +247,165 @@ class NormalBudgetRecoveryTests(unittest.TestCase):
    with self.assertRaisesRegex(ServiceError,'NORMAL_DISPATCH_START_UNCERTAIN'):f.recover(task,binding)
    self.assertIsNone(f.store.task(task['id'])['turn_id']);self.assertEqual(f.status()['charged_total'],1)
   finally:f.doCleanups()
+
+
+class TerminalReadonlyRecoveryTests(unittest.TestCase):
+ """Fake capability/process observations; no real native permission assertion."""
+ setUp=NormalDispatchBudgetTests.setUp
+ cap=NormalDispatchBudgetTests.cap
+ status=NormalDispatchBudgetTests.status
+ admit=NormalDispatchBudgetTests.admit
+ cas=NormalBudgetRecoveryTests.cas
+ def attempt(self,turn='turn-1',failure='terminal'):
+  import multiprocessing,os
+  from pathlib import Path
+  if self.store.task(self.f.spec['request_id'])is None:self.admit()
+  ctx=multiprocessing.get_context('fork');out=ctx.Queue();test=self
+  def run():
+   os.setsid() # Only this owned disposable fixture child/group.
+   calls=[]
+   class Adapter(test.f.Adapter):
+    def __init__(self,root):
+     super().__init__(root);self.proc=SimpleNamespace(pid=os.getpid());self.schema_hashes={}
+    def open(self):
+     if failure=='before_open':raise ServiceError('SYNTHETIC_NO_OPEN',outcome='UNKNOWN')
+     calls.append('open');return super().open()
+    def verify_capabilities(self,thread):
+     ticks=Path('/proc/self/stat').read_text().rsplit(')',1)[1].split()[19]
+     return {'schema_version':'ordinary-readonly-capability/1','thread_id':thread,
+       'root_identity':test.f.grant['root_identity'],'input_version':test.f.grant['input_version'],
+       'input_files_sha256':digest(test.f.grant['input_files']),
+       'native_profile':{'sandbox':'readOnly','approval_policy':'never','network_access':False,
+         'exact_input_leaves_verified':True,'enabled_capabilities':[]},
+       'binary_sha256':'a'*64,'schema_sha256':digest({}),
+       'process':{'pid':os.getpid(),'start_ticks':ticks,'pgid':os.getpgrp()}}
+    def start(self,*args):
+     calls.append('start');super().start(*args)
+     for event in self.events:
+      event['params']['turnId']=turn
+      if 'turn'in event['params']:event['params']['turn']['id']=turn
+     return turn
+    def poll(self,timeout):
+     event=super().poll(timeout)
+     if failure=='terminal'and event['method']=='turn/completed':
+      raise ServiceError('SYNTHETIC_LOST_TERMINAL_RECEIPT',outcome='UNKNOWN')
+     return event
+   def fault(phase):
+    if phase==failure:raise ServiceError('SYNTHETIC_PRETURN',outcome='UNKNOWN')
+   worker=TaskWorker(test.store,adapter_factory=Adapter,writer_check=lambda _:True,
+       normal_budget_bindings=test.bindings,fault=fault)
+   worker.run_one();out.put(calls)
+  child=ctx.Process(target=run);child.start();child.join(4)
+  if child.is_alive():child.terminate();child.join(2);self.fail('Owned fixture timeout')
+  self.assertEqual(child.exitcode,0);calls=out.get(timeout=1);out.close();out.join_thread()
+  return self.store.task(self.f.spec['request_id']),calls
+ def close_current(self):
+  proof={'closure_id':'closed-'+self.req['dispatch_id'],'dispatch_id':self.req['dispatch_id'],
+   'reservation_sha256':digest(self.req),'outcome':'unknown','resources_closed':True,
+   'evidence_ref':'synthetic/closed.json','evidence_sha256':'b'*64,'token_usage':None,'cost':None,'native_usage':None}
+  self.store.close_dispatch_resources(self.plan['plan_id'],proof,authority=self.cap('close',proof,True))
+ def observation(self,turns):
+  return {'schema_version':'normal-terminal-history/1','source':'app_server_stdio.thread/read+thread/turns/list',
+   'root':self.f.grant['root'],'thread_id':'ordinary-thread','thread_status':'idle','turns_complete':True,
+   'next_cursor':None,'sort_direction':'desc','turns':copy.deepcopy(turns),'resume_evidence_sha256':'c'*64,'observed_at':time.time()}
+ def row(self,ident,at):return {'id':ident,'status':'completed','startedAt':at,'completedAt':at+1,'itemsView':'notLoaded'}
+ def new_binding(self,task,obs,number=2):
+  from hub.dispatch_budget import split
+  with self.store._connection()as db:
+   events=db.execute('SELECT *FROM events WHERE task_id=? ORDER BY sequence',(task['id'],)).fetchall()
+   witness,_=self.store._normal_terminal_witness(db,task,obs,task['intent']['normal_dispatch_budget'],events)
+   raw=db.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(self.plan['plan_id'],)).fetchone()
+   _,budget=split(self.store._decode(*raw));old=next(r for r in budget['reservations']if r['request']['dispatch_id']==self.req['dispatch_id'])
+  witness={**witness,'closed_reservation_sha256':digest(old)}
+  req={**self.req,'dispatch_id':'terminal-dispatch-'+str(number),'attempt_id':'terminal-attempt-'+str(number),
+       'deadline':time.time()+self.req['seconds']+3}
+  cap=BudgetAuthority.configured({'policy_sha256':digest(self.policy),'requests':{'reserve':digest(req)},
+       'resource_authority_sha256':digest(witness)},plan_authority=self.pc,authorize=lambda:None,
+       controls=lambda:copy.deepcopy(self.control),resource_check=lambda value:value==witness)
+  return NormalDispatchBinding.configured(lineage_id=self.plan['plan_id'],request_value=req,grant=self.f.grant,authority_value=cap)
+ def reconcile(self,task,obs,binding):
+  with mock.patch('hub.task_service.fingerprint',side_effect=AssertionError('No ordinary root scan')):
+   self.store.reconcile_owned(task['id'],obs,normal_budget_binding=binding,**self.cas(task))
+  self.binding=binding;self.req=binding.snapshot()['request'];self.bindings={task['id']:binding}
+ def test_terminal_unknown_and_later_generation_preturn_recovery_preserve_history(self):
+  task,calls=self.attempt();self.assertEqual(calls,['open','start'])
+  self.assertEqual(task['status'],'requires_reconcile');self.assertEqual(task['turn_id'],'turn-1')
+  turns=[self.row('turn-1',10)];original=task;original_events=self.store.events(task['id'])
+  for number,failure,turn in ((2,'terminal','turn-2'),(3,'before_turn','unused-3'),(4,'before_open','unused-4'),(5,'success','turn-5')):
+   self.close_current();obs=self.observation(turns);binding=self.new_binding(task,obs,number)
+   history=self.store.events(task['id']);self.reconcile(task,obs,binding)
+   self.assertEqual(self.store.events(task['id'])[:-1],history)
+   audit=self.store.events(task['id'])[-1]['data'];self.assertEqual(audit['original_task'],task)
+   task,calls=self.attempt(turn,failure)
+   self.assertEqual(calls.count('start'),int(failure in {'terminal','success'}))
+   if failure=='terminal':turns=[self.row(turn,20),*turns]
+  self.assertEqual(task['status'],'checks_complete');self.assertEqual(self.status()['charged_total'],5)
+  self.assertEqual(self.store.events(task['id'])[:len(original_events)],original_events)
+  old_audit=[e for e in self.store.events(task['id'])if e['data'].get('original_turn_id')=='turn-1'][0]['data']
+  self.assertEqual(old_audit['original_result'],original['result'])
+  self.assertEqual(self.status()['held_dispatch_ids'],['terminal-dispatch-5'])
+ def test_history_negative_cases_and_untrusted_resource_witness_are_rejected(self):
+  task,_=self.attempt();self.close_current();obs=self.observation([self.row('turn-1',10)]);binding=self.new_binding(task,obs)
+  changes=[{'next_cursor':'opaque-more'},{'turns_complete':False},{'thread_status':'notLoaded'},
+   {'turns':[self.row('turn-1',10),self.row('turn-1',10)]},
+   {'turns':[self.row('older',1),self.row('turn-1',10)]},
+   {'turns':[self.row('new-unattributed',20),self.row('turn-1',10)]},
+   {'turns':[{**self.row('turn-1',10),'status':'inProgress'}]},
+   {'turns':[{**self.row('turn-1',10),'completedAt':None}]},
+   {'observed_at':time.time()-31},{'thread_id':'foreign-thread'}]
+  history=self.store.events(task['id'])
+  for change in changes:
+   with self.subTest(change=change),self.assertRaises(ServiceError):self.reconcile(task,{**obs,**change},binding)
+  # Valid JSON facts alone cannot authorize a new attempt: exact typed witness required.
+  req=binding.snapshot()['request'];untrusted=NormalDispatchBinding.configured(lineage_id=self.plan['plan_id'],request_value=req,
+      grant=self.f.grant,authority_value=self.cap('reserve',req))
+  with self.assertRaisesRegex(ServiceError,'NORMAL_CAPABILITY_UNVERIFIED'):self.reconcile(task,obs,untrusted)
+  self.assertEqual(self.store.task(task['id']),task);self.assertEqual(self.store.events(task['id']),history)
+ def test_missing_capability_native_or_wrong_worker_cannot_recover(self):
+  for mode in ('capability','native','worker','legacy_profile'):
+   with self.subTest(mode=mode):
+    f=TerminalReadonlyRecoveryTests();f.setUp()
+    try:
+     task,_=f.attempt();f.close_current();obs=f.observation([f.row('turn-1',10)])
+     # Corruption is confined to this disposable adversarial fixture.
+     with f.store._connection(True)as db:
+      if mode=='capability':db.execute("DELETE FROM events WHERE event_key LIKE 'capability-proof-%'")
+      elif mode=='native':db.execute("DELETE FROM events WHERE event_key LIKE 'normal-dispatch-native-%' AND body LIKE '%turn-1%'")
+      elif mode=='worker':db.execute("UPDATE tasks SET owner='foreign-worker' WHERE id=?",(task['id'],))
+      else:
+       value={'permission_profile':'old-private-profile','source':'native loaded-thread feature and MCP status APIs'}
+       db.execute("UPDATE events SET body=?,hash=? WHERE event_key LIKE 'capability-proof-%'",(__import__('hub.workbench_store',fromlist=['canonical']).canonical(value).decode(),digest(value)))
+     task=f.store.task(task['id'])
+     with self.assertRaises(ServiceError):f.new_binding(task,obs)
+    finally:f.doCleanups()
+ def test_consumed_unknown_id_success_cancel_and_stale_cas_still_refuse(self):
+  task,_=self.attempt();self.close_current();obs=self.observation([self.row('turn-1',10)]);binding=self.new_binding(task,obs)
+  with self.assertRaises(ServiceError):
+   self.store.reconcile_owned(task['id'],obs,normal_budget_binding=binding,**{**self.cas(task),'expected_task_sha256':'0'*64})
+  self.control['state']='paused'
+  with self.assertRaises(ServiceError):self.reconcile(task,obs,binding)
+  self.control['state']='active'
+  with self.store._connection(True)as db:db.execute('UPDATE tasks SET turn_id=NULL WHERE id=?',(task['id'],))
+  null=self.store.task(task['id'])
+  with self.assertRaisesRegex(ServiceError,'NORMAL_DISPATCH_START_UNCERTAIN'):self.reconcile(null,obs,binding)
+  with self.store._connection(True)as db:db.execute("UPDATE tasks SET turn_id='turn-1',status='checks_complete' WHERE id=?",(task['id'],))
+  with self.assertRaises(ServiceError):self.reconcile(self.store.task(task['id']),obs,binding)
+  with self.store._connection(True)as db:db.execute("UPDATE tasks SET status='requires_reconcile',cancel=1 WHERE id=?",(task['id'],))
+  with self.assertRaises(ServiceError):self.reconcile(self.store.task(task['id']),obs,binding)
+
+ def test_native_uuid_history_ids_and_malformed_ids(self):
+  # Valid UUID-shaped synthetic native identities, deliberately digit-leading.
+  thread='01234567-89ab-4cde-8fab-0123456789ab'
+  turn='12345678-abcd-4ef0-9123-123456789abc'
+  observation={**self.observation([self.row(turn,10)]),'thread_id':thread}
+  self.assertEqual(self.store._normal_known_history(observation),observation['turns'])
+  ordinary=self.observation([self.row('turn-1',10)])
+  self.assertEqual(self.store._normal_known_history(ordinary),ordinary['turns'])
+  for value in (None,False,123,'','x'*129,'/native/id','../native','native/path',
+                'native\\path','native.id','native:id','native id','native\nsecret','native\x00','native\x7f'):
+   for field in ('thread','turn'):
+    with self.subTest(value=value,field=field),self.assertRaises(ServiceError):
+     changed=copy.deepcopy(observation)
+     if field=='thread':changed['thread_id']=value
+     else:changed['turns'][0]['id']=value
+     self.store._normal_known_history(changed)
