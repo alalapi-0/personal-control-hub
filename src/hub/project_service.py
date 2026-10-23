@@ -1109,6 +1109,10 @@ class ProjectService:
                 return row
         raise _error("PROJECT_NOT_FOUND", status=404, details={"project_id": project_id})
 
+    def get_graph(self, project_id: str, design_snapshot: dict | None = None) -> dict:
+        from .graph_service import GraphService
+        return GraphService(self).get_project(project_id, design_snapshot=design_snapshot)
+
     def sync_status(self) -> dict:
         """Full finite-scope counts, without probing roots or refreshing sources."""
         from hub.connection_sync import recovery_summary, scope_plan

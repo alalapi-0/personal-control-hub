@@ -588,6 +588,11 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                           if len(parts) == 2 else read_capture_image(self.server.projects, parts[0], parts[2]))
             except RecordError:
                 raise ServiceError('CAPTURE_STORE_REJECTED', status=503) from None
+        elif re.fullmatch(r'/api/projects/[^/]+/graph', path):
+            project_id = path[len('/api/projects/'):-len('/graph')]
+            if query or not ID.fullmatch(project_id):
+                raise ServiceError('INVALID_QUERY')
+            result = self.server.projects.get_graph(project_id, design_snapshot=self._design_snapshot())
         elif path.startswith("/api/projects/"):
             project_id = path[len("/api/projects/"):]
             if query or not ID.fullmatch(project_id):
