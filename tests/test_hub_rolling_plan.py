@@ -98,5 +98,20 @@ class RollingPlanTests(unittest.TestCase):
             ('null acceptance', lambda v: v.update(acceptance_windows=None)),
         ])
 
+    def test_human_history_and_automatic_forecast_associations_remain_literal_and_validated(self):
+        value=rolling_plan()
+        value['acceptance_windows'][0]['depends_on']=['human']
+        value['acceptance_windows'][1]['depends_on']=['next']
+        before=copy.deepcopy(value);checked=validate_rolling_plan(value)
+        self.assertEqual(checked,before);self.assertEqual(value,before)
+        self.assertEqual(checked['acceptance_windows'][0]['depends_on'],['human'])
+        self.assertEqual(checked['acceptance_windows'][1]['kind'],'human')
+        self.assertEqual(checked['acceptance_windows'][1]['window'],None)
+        self.assertEqual((checked['as_of'],checked['basis'],checked['acceptance_windows'][1]['scope']),
+                         (before['as_of'],before['basis'],before['acceptance_windows'][1]['scope']))
+        for target in ('missing','auto'):
+            bad=copy.deepcopy(value);bad['acceptance_windows'][1]['depends_on']=[target]
+            with self.subTest(target=target),self.assertRaises(RecordError):validate_rolling_plan(bad)
+
 
 if __name__ == '__main__': unittest.main()

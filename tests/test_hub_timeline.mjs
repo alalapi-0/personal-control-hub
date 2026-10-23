@@ -1,3 +1,4 @@
+import './test_hub_semantic_ui.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -62,7 +63,7 @@ for(const item of [
    assert.ok(lane.textContent.includes('里程碑 '+milestone.label+'（'+milestone.id+'）：'+milestone.date));
    assert.ok(titles.some(value=>value.includes(milestone.label+'：'+milestone.date)&&value.includes(item.zone)));
   }
-  if(!item.points){assert.match(status(n),/没有已知日期；未推断当前日期/);assert.equal(all(n).filter(node=>node.tagName==='svg').length,0);}
+  if(!item.points){assert.match(status(n),/没有当前已知日期；未推断当前日期/);assert.equal(all(n).filter(node=>node.tagName==='svg').length,0);}
  }
  assert.deepEqual(p,before);
 });
@@ -86,7 +87,7 @@ test('actual requires fresh read allowed current proof latest success identity s
 test('planned actual distinct, unknown null/end-only/milestones retain exact labels and date markers',()=>{
  const p=update(fixture(),v=>{v.actual_start=null;v.actual_end=d('2026-11-01');v.milestones=[{id:'m1',label:'来源点',at:ts('2026-10-14T23:00:00-04:00','America/New_York')},{id:'m2',label:'未知点',at:null}];});const r=timelineRows([p])[0];
  assert.equal(r.planned.start.value,'2026-10-01');assert.equal(r.actual.start,null);assert.equal(r.actual.continuous,false);assert.equal(r.actual.milestones[0].at.axis,'2026-10-15');assert.equal(r.actual.milestones[0].at.value,'2026-10-14T23:00:00-04:00');assert.equal(r.actual.milestones[1].at,null);
- const n=mount([p]);assert.match(n.textContent,/未知点.*未知 · 未排期/);assert.match(n.textContent,/来源实际/);assert.match(n.textContent,/Hub 管理计划/);assert.match(n.textContent,/America\/New_York/);assert.ok(all(n).some(x=>x.tagName==='a'&&x.attributes.href==='#projects/a'&&x.textContent.includes('2026-11-01')));
+ const n=mount([p]);assert.match(n.textContent,/未知点.*未知 · 未排期/);assert.match(n.textContent,/来源实际/);assert.match(n.textContent,/Hub 管理建议日期/);assert.match(n.textContent,/America\/New_York/);assert.ok(all(n).some(x=>x.tagName==='a'&&x.attributes.href==='#projects/a'&&x.textContent.includes('2026-11-01')));
 });
 test('continuous bars only comparable endpoints; local dates preserve basis, mixed zones/granularity stay markers',()=>{
  for(const [a,b,continuous]of [[d('2026-10-14','Asia/Tokyo'),d('2026-10-15','America/New_York'),false],[d('2026-10-14'),ts('2026-10-15T00:00:00Z'),false],[d('2026-10-14','Asia/Tokyo'),d('2026-10-15','Asia/Tokyo'),true],[ts('2026-10-14T23:00:00-04:00','America/New_York'),ts('2026-10-15T05:00:00Z','Asia/Tokyo'),true]]){
@@ -111,7 +112,7 @@ test('native filters and keyboard/touch-equivalent navigation/edit controls keep
  const region=all(n).find(x=>x.attributes.role==='region');assert.equal(region.attributes.tabIndex,'0');let prevented=false;const old=status(n);region.fire('keydown',{key:'ArrowRight',preventDefault:()=>prevented=true});assert.equal(prevented,true);assert.notEqual(status(n),old);button(n,'编辑管理计划').fire('click');assert.equal(edited,a);
 });
 test('no dates never use wall-clock fallback; no inline style/canvas/grid explosion or markup injection',()=>{
- const p=fixture();p.management.overlay=null;p.business.timeline.available=false;p.name='<script>unsafe</script>';const n=mount([p]);assert.match(status(n),/没有已知日期/);assert.equal(all(n).filter(x=>x.tagName==='svg').length,0);assert.equal(all(n).filter(x=>x.tagName==='script').length,0);assert.ok(all(n).every(x=>!Object.hasOwn(x.attributes,'style')));
+ const p=fixture();p.management.overlay=null;p.business.timeline.available=false;p.name='<script>unsafe</script>';const n=mount([p]);assert.match(status(n),/没有当前已知日期/);assert.equal(all(n).filter(x=>x.tagName==='svg').length,0);assert.equal(all(n).filter(x=>x.tagName==='script').length,0);assert.ok(all(n).every(x=>!Object.hasOwn(x.attributes,'style')));
  const source=readFileSync(new URL('../src/hub/web/timeline.mjs',import.meta.url),'utf8');assert.doesNotMatch(source,/innerHTML|\.style\b|<canvas|Date\.now\(|new Date\(\)/);
 });
 
@@ -140,7 +141,7 @@ test('redraw restores matching region and date button focus for repeated keyboar
 
 test('latest failed source gets precise failure reason even when freshness is failed; never uses history',()=>{const p=fixture();p.operational.latest_attempt.success=false;p.freshness.state='failed';const r=timelineRows([p])[0];assert.equal(r.actual.reason,'最新来源读取未成功');assert.equal(r.actual.points.length,0);assert.equal(r.planned.points.length,3);});
 
-test('daily stage status labels and bounded datewindow input match visible axis after navigation',()=>{const n=mount([plan(fixture())]);assert.match(n.textContent,/来源阶段 s1 · 进行中/);assert.match(n.textContent,/来源阶段 s2 · 未知/);assert.doesNotMatch(n.textContent,/· unknown|· active/);const jump=label(n,'跳转到日历日期');assert.equal(jump.value,'2026-10-01');button(n,'下一个日期窗口').fire('click');assert.equal(jump.value,'2026-12-24');const locate=all(n).find(x=>x.attributes['aria-label']==='定位 a Hub 管理计划 开始 2026-10-01');locate.fire('click');assert.equal(jump.value,'2026-10-01');});
+test('daily stage status labels and bounded datewindow input match visible axis after navigation',()=>{const n=mount([plan(fixture())]);assert.match(n.textContent,/来源阶段 s1 · 进行中/);assert.match(n.textContent,/来源阶段 s2 · 未知/);assert.doesNotMatch(n.textContent,/· unknown|· active/);const jump=label(n,'跳转到日历日期');assert.equal(jump.value,'2026-10-01');button(n,'下一个日期窗口').fire('click');assert.equal(jump.value,'2026-12-24');const locate=all(n).find(x=>x.attributes['aria-label']==='定位 a Hub 管理建议日期 建议开始 2026-10-01');locate.fire('click');assert.equal(jump.value,'2026-10-01');});
 
 function rolling(p=fixture('forecast')){
  p.management.overlay={start_date:null,end_date:null,timezone:'Asia/Tokyo',milestones:null,rolling_plan:{schema_version:'1.0',kind:'rolling_estimate',as_of:'2026-10-15',next_review:'2026-10-22',completion_window:{earliest:'2026-12-01',latest:'2027-01-15'},confidence:'low',basis:[{kind:'source',reference:'canonical-task',sha256:sha,summary:'仍有原编号任务未验收'},{kind:'assumption',reference:'review-policy',sha256:null,summary:'按逐步完成推进，不要求固定截止日期'}],conditions:['先补齐来源事实，不自动推进业务'],next_milestone:{id:'milestone-next',label:'下一阶段核对',window:{earliest:'2026-10-20',latest:'2026-10-22'},condition:'依赖所有者提供事实'},acceptance_windows:[{id:'auto',kind:'automatic',label:'本地自动检查',window:{earliest:'2026-10-23',latest:'2026-10-24'},depends_on:['milestone-next'],scope:'自动测试通过'},{id:'human',kind:'human',label:'本人查看结果',window:null,depends_on:['auto'],scope:'由本人实际操作并确认'}]}};
@@ -170,14 +171,14 @@ test('timeline keeps proven current counts separate from an older estimate and l
  }
 });
 test('rolling forecasts retain independent completion milestone automatic human lanes and explicit accessible uncertainty',()=>{
- const p=rolling(),before=structuredClone(p),r=timelineRows([p])[0];assert.equal(r.forecasts.length,4);assert.deepEqual(r.forecasts.map(l=>l.subkind),['completion','milestone','automatic','human']);assert.equal(r.planned.points.length,0);assert.equal(r.actual.points.length,0);assert.equal(r.forecasts[0].start.value,'2026-12-01');assert.equal(r.forecasts[3].points.length,0);assert.equal(r.dated,true);assert.equal(r.unscheduled,true);assert.deepEqual(p,before);
- const n=mount([p]);for(const expected of ['滚动估计（非截止日期）','估计基准 2026-10-15','下次复核 2026-10-22','信心 低','Asia/Tokyo','先补齐来源事实','仍有原编号任务未验收','按逐步完成推进','窗口最早','窗口最晚','前置条件：依赖所有者提供事实','验收范围：由本人实际操作并确认','依赖：自动验收：本地自动检查','尚非验收回执','实际验收日期未知'])assert.ok(n.textContent.includes(expected),expected);
- assert.ok(all(n).some(x=>x.attributes.class?.includes('timeline-forecast-completion')));assert.ok(all(n).some(x=>x.attributes.className?.includes('timeline-forecast-human')));assert.ok(all(n).every(x=>!Object.hasOwn(x.attributes,'style')));assert.doesNotMatch(n.textContent,/实际工期为|本人验收已通过/);
+ const p=rolling(),before=structuredClone(p),r=timelineRows([p])[0];assert.equal(r.forecasts.length,3);assert.deepEqual(r.forecasts.map(l=>l.subkind),['completion','milestone','automatic']);assert.equal(r.historicalWindows.length,1);assert.equal(r.historicalWindows[0].subkind,'human');assert.equal(r.planned.points.length,0);assert.equal(r.actual.points.length,0);assert.equal(r.forecasts[0].start.value,'2026-12-01');assert.equal(r.historicalWindows[0].points.length,0);assert.equal(r.dated,true);assert.equal(r.unscheduled,true);assert.deepEqual(p,before);
+ const n=mount([p]);for(const expected of ['滚动估计（非截止日期）','估计基准 2026-10-15','下次复核 2026-10-22','信心 低','Asia/Tokyo','先补齐来源事实','仍有原编号任务未验收','按逐步完成推进','窗口最早','窗口最晚','前置条件：依赖所有者提供事实','原估计适用范围：由本人实际操作并确认','历史预测关联（非执行依赖）：自动核验建议窗口：本地自动检查','尚非工程结果或代理决定记录','流程外本人回看不参与状态、依赖或阶段退出'])assert.ok(n.textContent.includes(expected),expected);
+ assert.ok(all(n).some(x=>x.attributes.class?.includes('timeline-forecast-completion')));assert.ok(all(n).some(x=>x.attributes['aria-label']==='forecast 历史审核窗口（非当前待办）'));assert.ok(!r.forecasts.some(x=>x.subkind==='human'));assert.ok(all(n).every(x=>!Object.hasOwn(x.attributes,'style')));assert.doesNotMatch(n.textContent,/实际工期为|本人验收已通过/);
 });
 test('forecast-only rows enter date filter while unknown completion and conditional human windows remain unscheduled without invented dates',()=>{
  const a=rolling(),b=rolling(fixture('unknown'));b.management.overlay.rolling_plan.completion_window=null;b.management.overlay.rolling_plan.next_milestone.window=null;b.management.overlay.rolling_plan.acceptance_windows.forEach(w=>w.window=null);
  const rows=timelineRows([a,b]);assert.equal(rows[1].points.length,0);assert.equal(rows[1].dated,false);assert.equal(rows[1].unscheduled,true);
- const unknown=mount([b]);assert.match(status(unknown),/没有已知日期；未推断当前日期/);assert.match(unknown.textContent,/尚无法估计日期窗口/);assert.match(unknown.textContent,/拟议本人验收：本人查看结果/);assert.equal(all(unknown).filter(n=>n.tagName==='svg').length,0);
+ const unknown=mount([b]);assert.match(status(unknown),/没有当前已知日期；未推断当前日期/);assert.match(unknown.textContent,/尚无法估计日期窗口/);assert.match(unknown.textContent,/历史审核窗口：本人查看结果/);assert.equal(all(unknown).filter(n=>n.tagName==='svg').length,0);
  const n=mount([a,b],{total:243}),f=label(n,'时间线日期筛选');f.value='dated';f.fire('change');assert.deepEqual(articles(n).map(n=>n.attributes['data-project-id']),['forecast']);assert.match(status(n),/1.*2.*243/);f.value='unscheduled';f.fire('change');assert.equal(articles(n).length,2);f.value='all';f.fire('change');assert.equal(articles(n).length,2);
 });
 test('forecast windows keep source stages unscheduled and restore keyboard and date-locate focus',()=>{
@@ -187,7 +188,7 @@ test('forecast windows keep source stages unscheduled and restore keyboard and d
 });
 test('engineering verification requires current proof and never turns generic accepted or forecast dates into personal acceptance receipts',()=>{
  const p=rolling(),r=p.operational.latest_attempt;p.business.fields.current_work.accepted=true;p.business.fields.verification={status:'checks_passed'};r.business={verification:{status:'checks_passed'}};r.field_provenance={'verification.status':{source_ref:'state',sha256:sha,selector:{path:['verification','status']}}};
- assert.equal(timelineRows([p])[0].verification,'checks_passed');let n=mount([p]);assert.match(n.textContent,/来源自动／工程核验状态：checks_passed/);assert.match(n.textContent,/实际自动验收日期：未知/);assert.match(n.textContent,/本人实际验收状态及日期：未知/);assert.doesNotMatch(n.textContent,/本人已通过。?$/);
+ assert.equal(timelineRows([p])[0].verification,'checks_passed');let n=mount([p]);assert.match(n.textContent,/来源工程核验状态：checks_passed/);assert.match(n.textContent,/工程核验日期：未知/);assert.match(n.textContent,/代理决定：未知／未提供独立记录/);assert.doesNotMatch(n.textContent,/本人已通过。?$/);
  for(const mutate of [p=>p.freshness.state='stale',p=>p.declared.connection_read_allowed=false,p=>p.operational.latest_attempt.success=false,p=>p.operational.latest_attempt.field_provenance['verification.status'].sha256='b'.repeat(64),p=>p.operational.latest_attempt.business.verification.status='failed']){const q=structuredClone(p);mutate(q);assert.equal(timelineRows([q])[0].verification,null);}
 });
 
