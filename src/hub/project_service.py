@@ -1183,6 +1183,22 @@ class ProjectService:
         from .graph_service import GraphService
         return GraphService(self).get_project(project_id, design_snapshot=design_snapshot)
 
+    def assert_action_project(self, project_id):
+        identifier(project_id, 'action project')
+        resolver = self._resolver()
+        if project_id not in self._management_context(resolver)[0]:
+            raise _error('ACTION_PROJECT_DENIED', status=403)
+
+    def action_project(self, project_id, *, design_snapshot):
+        self.assert_action_project(project_id)
+        dto = self.get_project(project_id, design_snapshot=design_snapshot)
+        if (dto['declared'].get('connection_read_allowed') is not True
+                or dto['declared'].get('access_profile') == 'no_current_goal_access'
+                or dto['freshness'].get('local_presence') == 'removed_local'
+                or dto['freshness'].get('state') != 'fresh' or dto['freshness'].get('authority_drift')):
+            raise _error('ACTION_PROJECT_DENIED', status=403)
+        return dto
+
     def sync_status(self) -> dict:
         """Full finite-scope counts, without probing roots or refreshing sources."""
         from hub.connection_sync import recovery_summary, scope_plan

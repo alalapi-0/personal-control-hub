@@ -272,3 +272,11 @@ details[open]>summary {margin-bottom:16px}
 .focus-graph button:focus-visible,.focus-graph select:focus-visible,.focus-graph-canvas:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
 @media(max-width:600px){.focus-graph-canvas{height:360px}.focus-graph-controls{gap:6px}.focus-graph-controls button{flex:1 1 100px}.focus-graph-controls select{width:100%}.focus-graph-list li{display:block}.focus-graph-list .caption{display:block}.focus-graph-detail{padding:8px}}
 @media(prefers-reduced-motion:reduce){.focus-graph *{scroll-behavior:auto;transition:none;animation:none}}
+
+/* Registered artifact controls share the existing project/graph view. */
+.action-panel,.action-artifact {min-width:0;overflow-wrap:anywhere}
+.action-controls {display:flex;flex-wrap:wrap;gap:.65rem;align-items:center}
+.action-controls button,.action-controls .button,.action-panel>button {min-height:44px;max-width:100%;white-space:normal}
+.action-panel pre {white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%}
+.action-artifact {border:1px solid var(--border);border-radius:12px;padding:16px}
+@media(max-width:600px){.action-controls{align-items:stretch}.action-controls button,.action-controls .button{width:100%}}

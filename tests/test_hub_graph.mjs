@@ -1,3 +1,4 @@
+import './test_hub_actions.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {graphObjects,createGraphReader} from '../src/hub/web/directory.mjs';
@@ -125,4 +126,10 @@ test('exact object focus restoration is project/revision bound and supports list
   const s=snapshot(),view=createFocusGraph(s);view.select(s.entries[2].key,true);const identity=view.focusIdentity(document.activeElement);assert.equal(identity.key,s.entries[2].key);assert.equal(identity.surface,'svg');
   assert.equal(view.restoreFocus({...identity,projectId:'other'}),false);assert.equal(view.restoreFocus({...identity,projectionVersion:'c'.repeat(64)}),false);assert.equal(view.restoreFocus({...identity,key:'missing'}),false);
   assert.equal(view.restoreFocus({...identity,surface:'list'}),true);assert.equal(document.activeElement.tag,'button');assert.equal(view.focusIdentity(document.activeElement).surface,'list');assert.equal(view.focusIdentity(new Node('input')),null);view.dispose();
+}));
+
+test('graph and list selected detail share one exact action entry with disposal',()=>dom(()=>{
+ const s=snapshot();let shown=[],closed=0;const view=createFocusGraph(s,{renderActions:(entry,snap)=>{shown.push([entry,snap]);return {element:document.createElement('aside'),dispose:()=>closed++};}});
+ view.select(s.entries[1].key);assert.equal(shown[0][0],s.entries[1]);assert.equal(shown[0][1],s);
+ const list=walk(view.element).find(n=>n.tag==='button'&&n.attrs['data-object-key']===s.entries[2].key);list.fire('click');assert.equal(shown[1][0],s.entries[2]);assert.equal(closed,1);view.dispose();assert.equal(closed,2);
 }));

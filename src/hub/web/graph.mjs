@@ -65,7 +65,8 @@ function wrapLabel(value){
   if(line&&lines.length<4)lines.push(line);if(truncated)lines[3]+='…';return lines.length?lines:['未命名'];
 }
 const svgNode=(tag,attrs={},content=null)=>{const n=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v]of Object.entries(attrs))n.setAttribute(k,String(v));if(content!==null)n.textContent=content;return n;};
-export function createFocusGraph(snapshot,{saved,onChange=()=>{},onProject=()=>{}}={}){
+export function createFocusGraph(snapshot,{saved,onChange=()=>{},onProject=()=>{},renderActions=null}={}){
+  let actionPanel=null;
   let view=graphViewState(snapshot,saved),model=null,disposed=false,drag=null;
   const lifetime=new AbortController();let drawing=new AbortController(),observer=null;
   let size={width:900,height:460};
@@ -95,6 +96,7 @@ export function createFocusGraph(snapshot,{saved,onChange=()=>{},onProject=()=>{
     if(previous.x!==view.viewport.x||previous.y!==view.viewport.y)emit();
   }
   function draw(focus=false,bringIntoView=focus){
+    actionPanel?.dispose();actionPanel=null;
     if(disposed)return;model=focusModel(snapshot,view);drawing.abort();drawing=new AbortController();scene.replaceChildren();list.replaceChildren();detail.replaceChildren();
     const positions=new Map(model.nodes.map(n=>[n.key,n]));
     for(const edge of model.edges){const a=positions.get(objectKey(edge.from)),b=positions.get(objectKey(edge.to));
@@ -128,6 +130,7 @@ export function createFocusGraph(snapshot,{saved,onChange=()=>{},onProject=()=>{
       const links=(snapshot.relations||[]).filter(e=>objectKey(e.from)===selected.key||objectKey(e.to)===selected.key);
       detail.append(el('ul',{},...links.map(edge=>{const target=objectKey(edge.from)===selected.key?edge.to:edge.from,entry=snapshot.entries.find(e=>e.key===objectKey(target));return el('li',{},`${objectKey(edge.from)===selected.key?'向外':'来自'} · ${relationText(edge)} → `,control(text(entry?.row.label),()=>select(entry.key)),el('span',{className:'caption'},' · '+text(edge.evidence?.join('；'))));})));
       const ref=selected.object.data?.reference_project_id;if(typeof ref==='string')detail.append(el('p',{},'此对象仅为登记引用；未读取该项目业务。'),control('切换到登记项目',()=>onProject(ref)));
+      if(renderActions){actionPanel=renderActions(selected,snapshot);if(actionPanel?.element)detail.append(actionPanel.element);}
     }else detail.append(el('p',{},'选择图节点或同源列表对象，查看关系与版本。'));
     status.textContent=`${model.nodes.length} / ${snapshot.entries.length} 个对象可见 · ${model.edges.length} 条可见关系 · ${model.crossGroup} 条跨组关系 · ${model.hiddenEdges} 条因折叠或聚焦隐藏。仅视图变化，不保存业务数据。`;
     drawingButtons=false;
@@ -175,5 +178,5 @@ export function createFocusGraph(snapshot,{saved,onChange=()=>{},onProject=()=>{
     restoreFocus(identity){if(disposed||identity?.projectId!==snapshot.projectId||identity?.projectionVersion!==snapshot.projectionVersion||!snapshot.entries.some(e=>e.key===identity.key)||!['list','svg'].includes(identity.surface))return false;
       select(identity.key);if(identity.surface==='list')alternatives.open=true;const container=identity.surface==='list'?list:scene;
       const target=[...container.querySelectorAll('[data-object-key]')].find(n=>n.getAttribute('data-object-key')===identity.key);target?.focus({preventScroll:true});return !!target;},
-    state:()=>graphViewState(snapshot,view),select,dispose(){releaseDrag();disposed=true;observer?.disconnect();observer=null;lifetime.abort();drawing.abort();drag=null;model=null;view=null;root.replaceChildren();snapshot=null;}};
+    state:()=>graphViewState(snapshot,view),select,dispose(){actionPanel?.dispose();actionPanel=null;releaseDrag();disposed=true;observer?.disconnect();observer=null;lifetime.abort();drawing.abort();drag=null;model=null;view=null;root.replaceChildren();snapshot=null;}};
 }

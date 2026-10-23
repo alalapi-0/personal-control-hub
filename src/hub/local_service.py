@@ -36,6 +36,7 @@ WEB_ASSETS = {
     "/assets/connection_view.mjs": ("connection_view.mjs", "text/javascript; charset=utf-8"),
     "/assets/directory.mjs": ("directory.mjs", "text/javascript; charset=utf-8"),
     "/assets/graph.mjs": ("graph.mjs", "text/javascript; charset=utf-8"),
+    "/assets/actions.mjs": ("actions.mjs", "text/javascript; charset=utf-8"),
     "/assets/ledger_watch.mjs": ("ledger_watch.mjs", "text/javascript; charset=utf-8"),
     "/assets/captures.mjs": ("captures.mjs", "text/javascript; charset=utf-8"),
     "/assets/page_inventory.mjs": ("page_inventory.mjs", "text/javascript; charset=utf-8"),
@@ -207,6 +208,8 @@ class HubHTTPServer(ThreadingHTTPServer):
         self.host_header = f"127.0.0.1:{self.server_address[1]}"
         self.origin = "http://" + self.host_header
         self.sessions = _Sessions(owner_store=owner_session_store, scope=self.origin)
+        from .action_registry import ActionRegistry
+        self.actions = ActionRegistry(projects, designs, host=self.origin, backend_instance=self.backend_instance)
 
     def get_request(self):
         request, address = super().get_request()
@@ -361,6 +364,16 @@ class HubRequestHandler(BaseHTTPRequestHandler):
             self.close_connection = True
 
     def _success(self, value):
+        from .action_registry import ControlledArtifactRead
+        read_headers = {}
+        if isinstance(value, ControlledArtifactRead):
+            receipt = value.receipt
+            read_headers = {'X-Hub-Read-'+name: str(receipt[key]) for name,key in (
+                ('Schema','schema_version'),('Run-Id','run_id'),('Request-Id','request_id'),
+                ('Input-SHA256','input_sha256'),('Parameter-SHA256','parameter_sha256'),
+                ('Binding-SHA256','binding_sha256'),('Bytes','bytes_read'))}
+            read_headers['X-Hub-Read-Durable-Receipt'] = 'false'
+            value = value.response
         if isinstance(value, MaterialResponse):
             self._send(value.data, status=value.status, content_type=value.content_type, headers=value.headers)
         elif isinstance(value, ArtifactResponse):
@@ -370,7 +383,7 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                                           "image/jpeg", "image/webp", "image/gif", "text/plain; charset=utf-8"}:
                 raise ServiceError("INVALID_ARTIFACT_RESPONSE", status=500)
             self._send(value.data, content_type=value.content_type,
-                       headers={"Content-Disposition": f'{value.disposition}; filename="{value.filename}"'})
+                       headers={"Content-Disposition": f'{value.disposition}; filename="{value.filename}"', **read_headers})
         else:
             self._json({"api_version": API_VERSION, "ok": True, "data": value})
 
@@ -589,6 +602,22 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                           if len(parts) == 2 else read_capture_image(self.server.projects, parts[0], parts[2]))
             except RecordError:
                 raise ServiceError('CAPTURE_STORE_REJECTED', status=503) from None
+        elif re.fullmatch(r'/api/projects/[^/]+/actions(?:/artifact)?', path):
+            parts=path[len('/api/projects/'):].split('/')
+            if not ID.fullmatch(parts[0]):raise ServiceError('INVALID_QUERY')
+            def authorize_action_read():
+                self.server.sessions.validate(self._one_header('Cookie'), credential_version=self.server.owner_auth.version)
+            authorize_action_read()
+            if len(parts)==2:
+                if query:raise ServiceError('INVALID_QUERY')
+                result=self.server.actions.catalog(parts[0])
+            else:
+                if set(query)!={'binding'}:raise ServiceError('INVALID_QUERY')
+                try:binding=json.loads(query['binding'],object_pairs_hook=_object_pairs,parse_constant=_reject_constant)
+                except (ValueError,TypeError):raise ServiceError('ACTION_BINDING_INVALID') from None
+                if type(binding)is not dict or binding.get('project_id')!=parts[0]:raise ServiceError('ACTION_BINDING_INVALID')
+                result=self.server.actions.read_with_receipt(binding,authorize=authorize_action_read)
+            authorize_action_read()
         elif re.fullmatch(r'/api/projects/[^/]+/graph', path):
             project_id = path[len('/api/projects/'):-len('/graph')]
             if query or not ID.fullmatch(project_id):
@@ -670,13 +699,21 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                 self._json({'api_version': API_VERSION, 'ok': True, 'data': {'owner_authenticated': False}},
                            headers={'Set-Cookie': self.server.sessions.cookie_header('', clear=True)})
                 return
-            if path not in {"/api/refresh", "/api/designs/decisions", "/api/designs/exports", '/api/annotations', '/api/task-drafts', '/api/ordinary-drafts', '/api/tasks', '/api/management/project'} and not (path.startswith('/api/tasks/')and path.endswith(('/cancel','/respond','/review'))):
+            if path not in {"/api/refresh", "/api/designs/decisions", "/api/designs/exports", '/api/annotations', '/api/task-drafts', '/api/ordinary-drafts', '/api/tasks', '/api/management/project', '/api/actions/verify'} and not (path.startswith('/api/tasks/')and path.endswith(('/cancel','/respond','/review'))):
                 raise ServiceError("NOT_FOUND", status=404)
             if not self.server.owner_auth.configured:
                 raise ServiceError('OWNER_AUTH_UNAVAILABLE', status=503)
             self.server.sessions.validate(self._one_header('Cookie'), token, require_owner=True, credential_version=self.server.owner_auth.version)
             operation_started = True
-            if path == '/api/tasks' or path.startswith('/api/tasks/') or path=='/api/ordinary-drafts':
+            if path == '/api/actions/verify':
+                version=self.server.owner_auth.version
+                def authorize_action():
+                    self._boundary(mutation=True)
+                    if self.server.owner_auth.version!=version:raise ServiceError('OWNER_AUTH_REQUIRED',status=401)
+                    self.server.sessions.validate(self._one_header('Cookie'),token,require_owner=True,credential_version=version)
+                result=self.server.actions.verify(command,authorize=authorize_action)
+                authorize_action()
+            elif path == '/api/tasks' or path.startswith('/api/tasks/') or path=='/api/ordinary-drafts':
                 if self.server.tasks is None:raise ServiceError('TASK_RUNTIME_UNAVAILABLE',status=503)
                 version=self.server.owner_auth.version
                 # Stable across Hub restarts, rotated with the owner credential.

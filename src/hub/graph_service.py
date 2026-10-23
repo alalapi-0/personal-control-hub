@@ -154,6 +154,17 @@ def project_graph(dto):
                                     for k in ('input_version', 'code_version', 'sha256', 'purpose', 'host', 'file_ref')}
                 if item.get('sha256') is not None:
                     data['artifact']['sha256'] = {'value': item['sha256'], 'unknown_reason': None}
+                # Only explicit same-scope registered candidate bindings. A
+                # filename, evidence presence or layout never creates an action.
+                data['action_candidates'] = [
+                    {k: candidate[k] for k in ('id', 'revision', 'content_hash', 'classification')}
+                    for candidate in design.get('references', [])
+                    if candidate.get('kind') == 'candidate' and candidate.get('scope') == item.get('scope')
+                    and candidate.get('classification') == item.get('classification')
+                    and item.get('delivery', {}).get('kind') == 'registered_artifact'
+                    and item.get('sha256') is not None
+                    and any(binding.get('artifact_id') == ident and binding.get('sha256') == item['sha256']
+                            for binding in candidate.get('artifact_bindings', []))]
             obj(kind, ident, ident, revision, data, src, identity='candidate')
     _management_relations(dto, root, objects, relations)
     return graph(project, version, objects, relations, projected_at=fresh.get('projected_at'))

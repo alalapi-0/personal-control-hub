@@ -6,6 +6,7 @@ import {renderRelations} from './relations.mjs';
 import {renderTimeline} from './timeline.mjs';
 import {projectDirectory, renderDirectoryTree, renderOverviewCard, renderOverviewFocus, overviewActivity, overviewProject, createGraphReader, renderGraphObjects} from './directory.mjs';
 import {createFocusGraph,pendingGraphView} from './graph.mjs';
+import {createActionPanel,createArtifactDirectory} from './actions.mjs';
 import {watchLedger,replaceProjection} from './ledger_watch.mjs';
 import {renderPageInventory} from './page_inventory.mjs';
 import {renderCaptures} from './captures.mjs';
@@ -87,6 +88,7 @@ const types = {internal_control_plane:'管理',governance_program:'治理',code:
 let generation=0, lastProjects=[], pendingRefresh=null, projectDirectoryLoaded=false, syncStatus=null, syncStatusError=null, routeAuthRequired=false;
 const projectNames=new Map();
 let lastDirectoryHash='#projects', stopDirectoryObservation=()=>{};
+let disposeArtifacts=()=>{};
 let ledgerWatcher,reconcileVisible=null;
 const sourceUpdate=el('p',{className:'caption',role:'status',hidden:true});
 connection.after(sourceUpdate);
@@ -342,6 +344,8 @@ async function projectsPage(token){
     savedGraph=pendingGraphView(graphView?.state()||savedGraph,selectedProject);clearGraph();
     if(state.kind==='ready'){
       graphView=createFocusGraph(state.snapshot,{saved:savedGraph,onChange:()=>remember(),
+        renderActions:(entry,snapshot)=>createActionPanel({projectId:snapshot.projectId,selected:entry.object,
+          projectionVersion:snapshot.projectionVersion,isCurrent:()=>token===generation}),
         onProject:id=>{if(directoryProjects.some(p=>p.project_id===id))chooseProject(id);}});
       graphBody.replaceChildren(graphView.element);savedGraph=graphView.state();
       const active=document.activeElement;
@@ -513,8 +517,13 @@ async function projectDetail(id,token,section='overview',reconcile=false){
   if(section==='overview')body=[el('details',{className:'project-definition-disclosure'},el('summary',{},'项目定义与依据'),definitionView(p)),el('section',{className:'panel stack'},el('h2',{},'当前工作与下一步'),summaryView(p)),el('details',{},el('summary',{},'日期与排期'),timeView),relations];
   else if(section==='tasks')body=[taskPanel];
   else if(section==='schedule')body=[timeView,relations,managementPanel,renderBusinessPlan(p)];
-  else body=[sources,el('section',{className:'panel stack'},el('h2',{},'全部来源字段'),fields),renderPageInventory(p),renderCaptures(p,captures),design,
+  else {
+    disposeArtifacts();
+    const artifacts=createArtifactDirectory({projectId:id,readAllowed:overviewProject(p).readAllowed,isCurrent:()=>token===generation});
+    disposeArtifacts=artifacts.dispose;
+    body=[sources,artifacts.element,el('section',{className:'panel stack'},el('h2',{},'全部来源字段'),fields),renderPageInventory(p),renderCaptures(p,captures),design,
     diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields,quality:p.business.quality})];
+  }
   const next=el('section',{className:'stack'},el('a',{href:lastDirectoryHash},'← 所有项目'),el('h1',{},p.name),
     section==='overview'?projectIntro(p):el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},el('a',{className:'button primary',href:base+'/tasks'},'编写与查看任务'),refreshButton([p])),
     navigation,identityNotice,exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,...body);
@@ -526,6 +535,7 @@ async function route(focus=true){
   const routeInvoker=document.activeElement;
   const focusStillOwned=()=>{const active=document.activeElement;return !active||active===document.body||active===routeInvoker||active.isConnected===false;};
   disposeHost();disposeHost=()=>{};
+  disposeArtifacts();disposeArtifacts=()=>{};
   stopDirectoryObservation();stopDirectoryObservation=()=>{};reconcileVisible=null;routeAuthRequired=false;
   const token=++generation,{parts,kind,query}=parseHubRoute(location.hash);
   for(const name of ['projects','designs','workbench','materials','host']){const nav=document.querySelector(`#nav-${name}`);if(name===(['tasks','sessions'].includes(kind)?'workbench':kind))nav.setAttribute('aria-current','page');else nav.removeAttribute('aria-current');}
