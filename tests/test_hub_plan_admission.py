@@ -455,3 +455,69 @@ class PlanPrecommitStorageGuardTests(unittest.TestCase):
      if backup.exists():backup.rename(registration)
      f.store.storage_guard.mount=mount;f.store.storage_guard.space=space;f.store.fault=lambda _:None
     self.assertEqual(f.store.path.read_bytes(),before);self.assertEqual(f.store.storage_status()['state'],'ready')
+
+class PlanInputOverflowReplacementTests(unittest.TestCase):
+ def fixture(self):
+  import sqlite3
+  from hub.workbench_store import canonical
+  temp=tempfile.TemporaryDirectory(prefix='pch-overflow-');self.addCleanup(temp.cleanup)
+  path=Path(temp.name)/'fixture.sqlite3';db=sqlite3.connect(path);self.addCleanup(db.close)
+  db.execute('PRAGMA page_size=4096');db.execute('PRAGMA max_page_count=4096')
+  db.execute('CREATE TABLE plan_inputs(id TEXT PRIMARY KEY,body TEXT NOT NULL,hash TEXT NOT NULL)')
+  value={'payload':'x'*8291584};encoded=canonical(value).decode()
+  db.execute('INSERT INTO plan_inputs VALUES(?,?,?)',('target',encoded,digest(value)))
+  db.execute('INSERT INTO plan_inputs VALUES(?,?,?)',('anchor','a'*550000,'synthetic-anchor'))
+  db.execute('INSERT INTO plan_inputs VALUES(?,?,?)',('padding','p'*7350000,'synthetic-padding'));db.commit()
+  db.execute("DELETE FROM plan_inputs WHERE id='padding'");db.commit()
+  return db,path,value
+ def test_near_capacity_regular_update_fails_but_replacement_reuses_pages_and_preserves_rowid(self):
+  import sqlite3
+  from hub.workbench_store import canonical
+  db,path,old=self.fixture();new={'payload':'y'*8292000};rowid=db.execute("SELECT rowid FROM plan_inputs WHERE id='target'").fetchone()[0];inode=path.stat().st_ino
+  db.execute('BEGIN IMMEDIATE')
+  with self.assertRaises(sqlite3.OperationalError)as error:db.execute('UPDATE plan_inputs SET body=?,hash=? WHERE id=?',(canonical(new).decode(),digest(new),'target'))
+  self.assertEqual(error.exception.sqlite_errorcode,sqlite3.SQLITE_FULL);db.rollback()
+  db.execute('BEGIN IMMEDIATE');TaskStore._replace_plan_input(db,'target',new);db.commit()
+  body,hashed,rid=db.execute("SELECT body,hash,rowid FROM plan_inputs WHERE id='target'").fetchone();self.assertEqual(TaskStore._decode(body,hashed),new);self.assertEqual(rowid,rid);self.assertEqual(inode,path.stat().st_ino);self.assertLessEqual(path.stat().st_size,16*1024*1024)
+ def test_second_write_guard_and_genuine_oversize_roll_back_exact_bytes(self):
+  import sqlite3
+  db,path,old=self.fixture();before=path.read_bytes()
+  class FailWrite:
+   @property
+   def in_transaction(self):return db.in_transaction
+   def execute(self,sql,args=()):
+    if sql.startswith('UPDATE plan_inputs SET body=?'):raise OSError('synthetic second write failure')
+    return db.execute(sql,args)
+  for phase in ('second','guard','oversize'):
+   with self.subTest(phase=phase):
+    with self.assertRaises((OSError,sqlite3.OperationalError)):
+     with db:
+      db.execute('BEGIN IMMEDIATE');TaskStore._replace_plan_input(FailWrite()if phase=='second'else db,'target',{'payload':'y'*(17*1024*1024 if phase=='oversize'else 8292000)})
+      if phase=='guard':raise OSError('synthetic commit guard refusal')
+    if phase!='oversize':self.assertEqual(path.read_bytes(),before)
+    else:
+     # SQLite may reuse unjournaled FREE pages before SQLITE_FULL. The live
+     # rows/hash and database identity must roll back; free-page bytes are not content.
+     self.assertEqual(TaskStore._decode(*db.execute("SELECT body,hash FROM plan_inputs WHERE id='target'").fetchone()),old)
+     self.assertEqual(db.execute("SELECT body,hash FROM plan_inputs WHERE id='anchor'").fetchone(),('a'*550000,'synthetic-anchor'))
+ def test_reader_sees_old_or_busy_never_placeholder_and_commit_full_final_value(self):
+  import sqlite3
+  db,path,old=self.fixture();observed=[]
+  def trace(sql):
+   if sql.startswith('UPDATE plan_inputs SET body=')and "body=''"not in sql:
+    reader=sqlite3.connect(path,timeout=0)
+    try:
+     try:
+      body,hashed=reader.execute("SELECT body,hash FROM plan_inputs WHERE id='target'").fetchone();self.assertNotEqual(body,'');observed.append(TaskStore._decode(body,hashed)==old)
+     except sqlite3.OperationalError as error:self.assertIn(error.sqlite_errorcode,(sqlite3.SQLITE_BUSY,sqlite3.SQLITE_LOCKED));observed.append('busy')
+    finally:reader.close()
+  db.set_trace_callback(trace);db.execute('BEGIN IMMEDIATE');new={'payload':'z'*8292000};TaskStore._replace_plan_input(db,'target',new);db.commit();db.set_trace_callback(None)
+  self.assertTrue(observed);self.assertNotIn(False,observed);self.assertEqual(TaskStore._decode(*db.execute("SELECT body,hash FROM plan_inputs WHERE id='target'").fetchone()),new)
+ def test_requires_transaction_existing_row_and_encoding_before_any_write(self):
+  db,path,old=self.fixture();before=path.read_bytes()
+  with self.assertRaises(ServiceError):TaskStore._replace_plan_input(db,'target',old)
+  for ident,value in [('missing',old),('target',{'bad':float('nan')})]:
+   with self.subTest(ident=ident):
+    with self.assertRaises((ServiceError,ValueError)):
+     with db:db.execute('BEGIN IMMEDIATE');TaskStore._replace_plan_input(db,ident,value)
+    self.assertEqual(path.read_bytes(),before)

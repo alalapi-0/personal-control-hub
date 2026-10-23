@@ -321,6 +321,22 @@ class TaskStore:
             if connection is not None: connection.close()
 
     @staticmethod
+    def _replace_plan_input(db, plan_id, value):
+        """Reuse overflow pages in the caller's transaction, never publish a placeholder.
+
+        Encode and hash before either write. No callbacks or reads are allowed
+        between the two statements; the existing outer guard owns commit/rollback.
+        """
+        encoded = canonical(value).decode()
+        hashed = digest(value)
+        if not db.in_transaction:
+            raise ServiceError('TASK_TRANSACTION_REQUIRED', status=503)
+        if db.execute('SELECT COUNT(*) FROM plan_inputs WHERE id=?', (plan_id,)).fetchone()[0] != 1:
+            raise ServiceError('TASK_STORE_CORRUPT', status=503)
+        db.execute("UPDATE plan_inputs SET body='',hash='' WHERE id=?", (plan_id,))
+        db.execute('UPDATE plan_inputs SET body=?,hash=? WHERE id=?', (encoded, hashed, plan_id))
+
+    @staticmethod
     def _decode(raw, expected):
         try:
             value = json.loads(raw)
@@ -757,7 +773,7 @@ class TaskStore:
             validate(budget,plan_id);guard()
             if operation!='status'and not replayed:
                 value=wrap(history,budget)
-                db.execute('UPDATE plan_inputs SET body=?,hash=? WHERE id=?',(canonical(value).decode(),digest(value),plan_id))
+                self._replace_plan_input(db,plan_id,value)
                 self.fault('before_dispatch_budget_commit');guard()
             result=status(budget)
         return {'replayed':replayed,**result,'invoked':False}
@@ -2391,7 +2407,7 @@ class TaskStore:
             _,retained_source=split_source(original_history)
             body=wrap_budget(wrap_source(body,retained_source),retained_budget)
             plan_history(body)
-            db.execute('UPDATE plan_inputs SET body=?,hash=? WHERE id=?',(canonical(body).decode(),digest(body),target['plan_id']))
+            self._replace_plan_input(db,target['plan_id'],body)
             def guard():
                 cap.check(target)
                 if cap._controls()!=controls:reject('PLAN_CONTROL_CHANGED')
@@ -2539,7 +2555,7 @@ class TaskStore:
             context['predecessors']=json.loads(canonical(records))
             records.append(command)
             body=wrap_budget(wrap(history,records),budget);plan_history(body)
-            db.execute('UPDATE plan_inputs SET body=?,hash=? WHERE id=?',(canonical(body).decode(),digest(body),plan_id))
+            self._replace_plan_input(db,plan_id,body)
             self.fault('before_plan_source_commit');guard()
             return {'replayed':False,'source_sha256':digest(records),'execution_rows_created':0}
 
