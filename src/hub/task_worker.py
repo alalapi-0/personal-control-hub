@@ -55,6 +55,10 @@ class TaskWorker:
         self.owner='worker-'+secrets.token_hex(16)
         self.identity={'owner':self.owner,'pid':os.getpid(),'start_ticks':Path('/proc/self/stat').read_text().rsplit(')',1)[1].split()[19]}
 
+    def runtime_manifest(self):
+        from .systemd_refresh import runtime_manifest
+        return runtime_manifest('worker', process_identity=self.identity)
+
     def run_one(self):
         task=self.store.claim(self.owner,only_task_id=self.only_task_id,selected_grant_ids=self.selected_grant_ids)
         if task is None:return False
@@ -185,7 +189,7 @@ class TaskWorker:
                 ordinary_text = ordinary_tasks.prompt(task['intent']['task_spec'],input_files=grant['input_files'])
                 if hashlib.sha256(ordinary_text.encode()).hexdigest()!=task['intent']['prompt_sha256']:
                     raise ServiceError('ORDINARY_PROMPT_VERSION_STALE',status=409)
-            self.store.event(ident,'dispatch-intent-'+self.owner,{'worker':self.identity,'grant_hash':digest(grant),'transport':'app_server_stdio','at':time.time()})
+            self.store.event(ident,'dispatch-intent-'+self.owner,{'worker':self.identity,'grant_hash':digest(grant),'transport':'app_server_stdio','at':time.time(),'runtime_manifest':self.runtime_manifest()})
             self.fault('before_dispatch')
             self.store.check_storage()
             if ordinary:

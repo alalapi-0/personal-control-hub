@@ -203,10 +203,12 @@ class ProjectService:
     """Compatibility facade over the Hub 2 registry, resolver and ledger."""
 
     def __init__(self, root: Path | str, *, ledger_path: Path | str | None = None,
-                 relations_path: Path | str | None = None) -> None:
+                 relations_path: Path | str | None = None, runtime_observer=None) -> None:
         self.root = Path(root).absolute()
         self.ledger_path = ledger_path
         self.relations_path = relations_path
+        if runtime_observer is not None and not callable(runtime_observer): raise ValueError("Invalid runtime observer")
+        self.runtime_observer = runtime_observer
 
     def _resolver(self, *, observe_sources=False) -> SourceResolver:
         try:
@@ -1106,6 +1108,16 @@ class ProjectService:
         rows, _ = self._all(design_snapshot)
         for row in rows:
             if row["project_id"] == project_id:
+                # Host diagnostics are not project/source facts and never enter
+                # source/projection version hashes or authorize a project read.
+                if self.runtime_observer is not None and row['declared'].get('connection_read_allowed') is True and row['declared'].get('access_profile') != 'no_current_goal_access' and row['freshness'].get('local_presence') != 'removed_local':
+                    row = copy.deepcopy(row)
+                    try:
+                        from .systemd_refresh import public_runtime_manifest
+                        value = public_runtime_manifest(self.runtime_observer())
+                    except (OSError, ValueError, TypeError, ServiceError):
+                        value = {'schema_version': 'pch-runtime-manifest/1', 'state': 'unknown', 'unknown_reason': 'Runtime observation unavailable.'}
+                    row['operational']['runtime_manifest'] = value
                 return row
         raise _error("PROJECT_NOT_FOUND", status=404, details={"project_id": project_id})
 

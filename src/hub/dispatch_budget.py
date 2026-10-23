@@ -14,13 +14,20 @@ def ident(v):
  stable_id(v);need(len(v)<=128);return v
 def hash_value(v):return type(v)is str and len(v)==64 and all(c in '0123456789abcdef'for c in v)
 def finite(v):return type(v)in(int,float)and math.isfinite(v)
-def policy(value):
+def policy(value,*,amended=False):
  keys={'schema_version','lineage_id','source_state_sha256','cutoff_id','covered_dispatch_ids','observed_model_dispatches','historical_unknown_allowance','closure_reserve','conservative_deterministic_dispatches','limit','provenance_ref'}
  from .plan_admission import plan_id
- need(type(value)is dict and set(value)==keys);need(value['schema_version']=='1.0'and value['limit']==480 and value['historical_unknown_allowance']==8 and value['closure_reserve']==12);plan_id(value['lineage_id']);ident(value['cutoff_id']);need(hash_value(value['source_state_sha256'])and type(value['provenance_ref'])is str and 0<len(value['provenance_ref'])<=512)
- ids=value['covered_dispatch_ids'];need(type(ids)is list and len(ids)<=480 and len(set(ids))==len(ids));[ident(x)for x in ids]
- for k in ('observed_model_dispatches','conservative_deterministic_dispatches'):need(type(value[k])is int and 0<=value[k]<=480)
- need(len(ids)<=value['observed_model_dispatches']+value['conservative_deterministic_dispatches']);need(value['observed_model_dispatches']+value['conservative_deterministic_dispatches']+20<=480)
+ need(type(value)is dict and set(value)==keys);need(value['schema_version']=='1.0'and type(value['limit'])is int and value['limit']in({480,960}if amended else{480})and value['historical_unknown_allowance']==8 and value['closure_reserve']==12);plan_id(value['lineage_id']);ident(value['cutoff_id']);need(hash_value(value['source_state_sha256'])and type(value['provenance_ref'])is str and 0<len(value['provenance_ref'])<=512)
+ ids=value['covered_dispatch_ids'];need(type(ids)is list and len(ids)<=value['limit'] and len(set(ids))==len(ids));[ident(x)for x in ids]
+ for k in ('observed_model_dispatches','conservative_deterministic_dispatches'):need(type(value[k])is int and 0<=value[k]<=value['limit'])
+ need(len(ids)<=value['observed_model_dispatches']+value['conservative_deterministic_dispatches']);need(value['observed_model_dispatches']+value['conservative_deterministic_dispatches']+20<=value['limit'])
+ return copy.deepcopy(value)
+def amendment(value):
+ need(type(value)is dict and set(value)=={'amendment_id','expected_policy_sha256','previous_limit','new_limit','owner_decision'})
+ ident(value['amendment_id']);need(hash_value(value['expected_policy_sha256']))
+ need(type(value['previous_limit'])is int and value['previous_limit']==480 and type(value['new_limit'])is int and value['new_limit']==960)
+ proof=value['owner_decision'];need(type(proof)is dict and set(proof)=={'ref','sha256'}and hash_value(proof['sha256']))
+ need(type(proof['ref'])is str and 0<len(proof['ref'])<=512 and not any(ord(c)<32 for c in proof['ref']))
  return copy.deepcopy(value)
 def request(value):
  keys={'dispatch_id','task_id','attempt_id','package_sha256','executor','purpose','effect','gpu','seconds','deadline'}
@@ -55,8 +62,17 @@ def closure(value):
  need(all(value[k]is None for k in ('token_usage','cost','native_usage')))
  return copy.deepcopy(value)
 def validate(value,lineage):
- need(type(value)is dict and set(value)=={'schema_version','policy','reservations'}and value['schema_version']=='dispatch-budget/1','DISPATCH_BUDGET_CORRUPT')
- p=policy(value['policy']);need(p['lineage_id']==lineage);rows=value['reservations'];need(type(rows)is list and len(rows)<=480 and len(canonical(value))<=1024*1024)
+ need(type(value)is dict and set(value)in({'schema_version','policy','reservations'},{'schema_version','policy','reservations','amendments'})and value['schema_version']=='dispatch-budget/1','DISPATCH_BUDGET_CORRUPT')
+ p=policy(value['policy'],amended=True);need(p['lineage_id']==lineage)
+ if p['limit']==960:
+  receipts=value.get('amendments');need(type(receipts)is list and len(receipts)==1,'DISPATCH_BUDGET_CORRUPT');receipt=receipts[0]
+  need(type(receipt)is dict and set(receipt)=={'request','sha256','previous_policy','new_policy_sha256','authorized_binding_sha256','applied_at'},'DISPATCH_BUDGET_CORRUPT')
+  change=amendment(receipt['request']);old=policy(receipt['previous_policy'])
+  need(receipt['sha256']==digest(change)and change['expected_policy_sha256']==digest(old)
+       and p=={**old,'limit':960}and receipt['new_policy_sha256']==digest(p)
+       and hash_value(receipt['authorized_binding_sha256'])and finite(receipt['applied_at']),'DISPATCH_BUDGET_CORRUPT')
+ else:need('amendments'not in value,'DISPATCH_BUDGET_CORRUPT')
+ rows=value['reservations'];need(type(rows)is list and len(rows)<=p['limit']and len(canonical(value))<=1024*1024)
  ids=set();closed_ids=set()
  for row in rows:
   need(type(row)is dict and set(row)=={'request','sha256','reserved_at','closures'});r=request(row['request']);need(row['sha256']==digest(r)and r['dispatch_id']not in ids and r['dispatch_id']not in p['covered_dispatch_ids']);ids.add(r['dispatch_id']);need(finite(row['reserved_at'])and row['reserved_at']+r['seconds']<=r['deadline']<=row['reserved_at']+900)
@@ -65,8 +81,8 @@ def validate(value,lineage):
    closure(c);need(c['dispatch_id']==r['dispatch_id']and c['reservation_sha256']==row['sha256']and c['closure_id']not in closed_ids);closed_ids.add(c['closure_id'])
   need(not any(c['resources_closed']for c in row['closures'][:-1]),'DISPATCH_CLOSURE_CONFLICT')
  total=p['observed_model_dispatches']+p['conservative_deterministic_dispatches']+len(rows)
- need(total+p['historical_unknown_allowance']<=480);need(sum(r['request']['purpose']=='closure'for r in rows)<=p['closure_reserve'])
- need(p['observed_model_dispatches']+p['conservative_deterministic_dispatches']+sum(r['request']['purpose']=='normal'for r in rows)+20<=480)
+ need(total+p['historical_unknown_allowance']<=p['limit']);need(sum(r['request']['purpose']=='closure'for r in rows)<=p['closure_reserve'])
+ need(p['observed_model_dispatches']+p['conservative_deterministic_dispatches']+sum(r['request']['purpose']=='normal'for r in rows)+20<=p['limit'])
  held=[r['request']for r in rows if not any(c['resources_closed']for c in r['closures'])]
  need(sum(r['effect']=='scoped_write'for r in held)<=1 and sum(r['executor']['kind']=='model'and r['effect']=='read_only'for r in held)<=2 and sum(r['gpu']for r in held)<=1,'DISPATCH_RESOURCE_CAPACITY')
  return copy.deepcopy(value)
@@ -79,7 +95,7 @@ def wrap(history,budget):return {'schema_version':FORMAT,'plan_history':history,
 
 def status(value):
  p=value['policy'];rows=value['reservations'];held=[r['request']['dispatch_id']for r in rows if not any(c['resources_closed']for c in r['closures'])]
- return {'lineage_id':p['lineage_id'],'policy_sha256':digest(p),'observed_model_dispatches':p['observed_model_dispatches'],'historical_unknown_allowance':p['historical_unknown_allowance'],'closure_reserve':p['closure_reserve'],'conservative_deterministic_dispatches':p['conservative_deterministic_dispatches'],'reserved_model_dispatches':sum(r['request']['executor']['kind']=='model'for r in rows),'reserved_deterministic_dispatches':sum(r['request']['executor']['kind']=='deterministic_host'for r in rows),'charged_total':p['observed_model_dispatches']+p['conservative_deterministic_dispatches']+len(rows),'held_dispatch_ids':held,'token_usage':None,'cost':None,'native_usage':None,'invocation_integration':'not established by accounting APIs'}
+ return {'lineage_id':p['lineage_id'],'limit':p['limit'],'policy_sha256':digest(p),'observed_model_dispatches':p['observed_model_dispatches'],'historical_unknown_allowance':p['historical_unknown_allowance'],'closure_reserve':p['closure_reserve'],'conservative_deterministic_dispatches':p['conservative_deterministic_dispatches'],'reserved_model_dispatches':sum(r['request']['executor']['kind']=='model'for r in rows),'reserved_deterministic_dispatches':sum(r['request']['executor']['kind']=='deterministic_host'for r in rows),'charged_total':p['observed_model_dispatches']+p['conservative_deterministic_dispatches']+len(rows),'held_dispatch_ids':held,'token_usage':None,'cost':None,'native_usage':None,'invocation_integration':'not established by accounting APIs'}
 
 @dataclass(frozen=True,slots=True)
 class BudgetAuthority:

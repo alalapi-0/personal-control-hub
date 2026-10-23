@@ -91,7 +91,8 @@ def assemble_server(root, *, host='127.0.0.1', port=8766, services=None, ordinar
         return services[name] if name in services else factory()
     designs = dependency('designs', lambda: DesignService(DesignStore(root, 'data/design_governance/design-store.json')))
     observer = dependency('host_observer', lambda: HostObserver({'hub': root, 'temp': root.parents[1] / 'Temp'}))
-    projects = dependency('projects', lambda: ProjectService(root))
+    from hub.systemd_refresh import runtime_manifest
+    projects = dependency('projects', lambda: ProjectService(root, runtime_observer=lambda: runtime_manifest('web')))
     previews = dependency('previews', lambda: PreviewService(projects, designs, WorkbenchStore(root)))
     preview = None
     if (root / MANIFEST).exists() and 'previews' not in services:

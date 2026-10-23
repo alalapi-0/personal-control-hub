@@ -696,7 +696,8 @@ class TaskStore:
                 or not replayed and row['closures']):reject('DISPATCH_RESERVATION_MISMATCH')
 
     def _dispatch_budget_operation(self,plan_id,operation,body,cap):
-        from .dispatch_budget import authority,policy,request,closure,split,wrap,validate,status,reject
+        import copy
+        from .dispatch_budget import authority,policy,request,closure,amendment,split,wrap,validate,status,reject
         cap=authority(cap);observed=[];context={}
         def guard():
             cap._authorize()
@@ -708,6 +709,15 @@ class TaskStore:
             raw=db.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(plan_id,)).fetchone();history,budget=split(self._decode(*raw))
             p=policy(body)if operation=='baseline'else budget['policy']if budget else None
             if p is None:reject('DISPATCH_POLICY_REQUIRED')
+            change=None;prior_amendment=None
+            if operation=='amend':
+                change=amendment(body)
+                prior_amendment=next((r for r in budget.get('amendments',[])if r['request']['amendment_id']==change['amendment_id']),None)
+                if prior_amendment is not None:
+                    if prior_amendment['request']!=change:reject('DISPATCH_AMENDMENT_CONFLICT')
+                    # Exact replay still checks the original trusted policy and
+                    # request authority, never silently adopts a new binding.
+                    p=prior_amendment['previous_policy']
             context.update(plan=plan,policy=p);observed.append(cap.check(plan,p,operation,body));replayed=False
             if operation=='baseline':
                 if p['lineage_id']!=plan_id:reject('DISPATCH_LINEAGE_MISMATCH')
@@ -724,8 +734,17 @@ class TaskStore:
                     if r['dispatch_id']in p['covered_dispatch_ids']:reject('DISPATCH_ALREADY_COVERED')
                     now=time.time()
                     if not now+r['seconds']<=r['deadline']<=now+900:reject('DISPATCH_DEADLINE')
-                    if len(budget['reservations'])>=480:reject('DISPATCH_CAPACITY')
+                    if len(budget['reservations'])>=p['limit']:reject('DISPATCH_CAPACITY')
                     budget['reservations'].append({'request':r,'sha256':digest(r),'reserved_at':now,'closures':[]})
+            elif operation=='amend':
+                if prior_amendment is not None:replayed=True
+                else:
+                    if digest(p)!=change['expected_policy_sha256']:reject('DISPATCH_AMENDMENT_STALE')
+                    if p['limit']!=480 or budget.get('amendments'):reject('DISPATCH_AMENDMENT_CONFLICT')
+                    new_policy={**copy.deepcopy(p),'limit':960}
+                    receipt={'request':change,'sha256':digest(change),'previous_policy':copy.deepcopy(p),
+                        'new_policy_sha256':digest(new_policy),'authorized_binding_sha256':digest(cap.snapshot()),'applied_at':time.time()}
+                    budget={**budget,'policy':new_policy,'amendments':[receipt]}
             elif operation=='close':
                 proof=closure(body);row=next((x for x in budget['reservations']if x['request']['dispatch_id']==proof['dispatch_id']),None)
                 if row is None or row['sha256']!=proof['reservation_sha256']:reject('DISPATCH_CLOSURE_MISMATCH')
@@ -751,6 +770,10 @@ class TaskStore:
         return self._dispatch_budget_operation(plan_id,'close',proof,authority)
     def dispatch_budget_status(self,plan_id,*,authority):
         return self._dispatch_budget_operation(plan_id,'status',{},authority)
+
+    def amend_dispatch_budget(self,plan_id,amendment,*,authority):
+        """Internal owner-authorized 480→960 CAS; no execution/HTTP capability."""
+        return self._dispatch_budget_operation(plan_id,'amend',amendment,authority)
 
     def _normal_dispatch_event(self,db,ident,stage,marker):
         # The first generation used singleton keys. They apply only to their
