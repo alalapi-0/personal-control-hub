@@ -2503,9 +2503,24 @@ class TaskStore:
         states,accepted,controls=self._plan_state(connection,plan,authority)
         row=connection.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(plan_id,)).fetchone()
         raw=self._decode(*row);history,budget=split_budget(raw);inner,records=split(history)
+        blocked_sources=set()
         for definition in plan['tasks']:
-            if 'source_admission'in definition and definition['source_admission']['workspace']['canonical_root']!=str(self.root):
-                reject('PLAN_SOURCE_WORKSPACE_MISMATCH')
+            if 'source_admission'not in definition:continue
+            root=definition['source_admission']['workspace']['canonical_root']
+            if definition['id']=='P5-personal-style-hub-01':
+                if (root==str(self.root) or not authority.registered_source_workspace(definition)
+                        or not authority.development(definition)):
+                    blocked_sources.add(definition['id'])
+            elif root!=str(self.root):reject('PLAN_SOURCE_WORKSPACE_MISMATCH')
+        # A revoked selected workspace is local unavailability, not a corrupt
+        # PCH ledger. Preserve persisted statuses and freeze its actual dependents.
+        while True:
+            descendants={t['id']for t in plan['tasks']
+                if set(t['depends_on'])&blocked_sources or
+                {d['task_id']for d in t.get('source_admission',{}).get('dependencies',[])}&blocked_sources}
+            if descendants<=blocked_sources:break
+            blocked_sources|=descendants
+        for ident in blocked_sources:states.setdefault(ident,'source_workspace_blocked')
         return plan,states,accepted,controls,inner,budget,records,plan_history(raw)[1]
 
     def plan_source_ready(self,plan_id,*,authority):

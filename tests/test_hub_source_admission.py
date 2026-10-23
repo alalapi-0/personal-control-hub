@@ -433,7 +433,6 @@ class PersonalStyleSourceAdmissionTests(unittest.TestCase):
     dag = 'P2-R2-PCH-DAG'
     definition = SourceAdmissionTests.definition
     policy = SourceAdmissionTests.policy
-    configure = SourceAdmissionTests.configure
     candidate = SourceAdmissionTests.candidate
     view = SourceAdmissionTests.view
     record = SourceAdmissionTests.record
@@ -442,6 +441,11 @@ class PersonalStyleSourceAdmissionTests(unittest.TestCase):
         f = fixtures.PlanStoreTests(); f.setUp(); self.addCleanup(f.doCleanups)
         self.f = f; self.store = f.store; self.control = f.control
         self.records = {}; self.verified = set(); self.develop = True
+        foreign = self.store.root.parent / 'synthetic-personal-style-hub'
+        delivery = self.store.root.parent / 'synthetic-style-delivery'
+        foreign.mkdir(); delivery.mkdir()
+        self.workspace = {'canonical_root': str(foreign), 'delivery_root': str(delivery),
+                          'native_thread_id': 'synthetic-psh-native-thread'}
         dag = fixtures.task(self.dag); dag['dispatch_priority'] = 20
         self.p = fixtures.plan([fixtures.task(BASE), dag, fixtures.task(ROUTES),
                                fixtures.task(self.onboard, [BASE]),
@@ -449,7 +453,35 @@ class PersonalStyleSourceAdmissionTests(unittest.TestCase):
         self.p['revision'] = '1.2.0-synthetic-psh'
         self.definition(self.ident)['source_admission'] = self.policy([
             {'task_id': BASE, 'kind': 'accepted'}, {'task_id': self.dag, 'kind': 'accepted'}])
+        selected = self.definition(self.ident)
+        selected['project_id'] = 'personal-style-hub'
+        selected['owner_route'] = 'route:personal-style-hub'
+        selected['source_admission']['workspace'] = copy.deepcopy(self.workspace)
+        self.registrations = {self.ident: {'project_id': 'personal-style-hub',
+                                        'workspace': copy.deepcopy(self.workspace)}}
+        if getattr(self, 'include_pch', False):
+            self.p['tasks'].extend([fixtures.task(GRAPH, [ROUTES]), fixtures.task(RELATIONS, [self.ident])])
+            self.definition(GRAPH)['source_admission'] = self.policy([])
+            self.definition(RELATIONS)['source_admission'] = self.policy([])
         self.configure(); self.store.import_plan(self.p, authority=self.cap)
+
+    def configure(self, *, prior=None):
+        binding = {'plan_sha256': digest(self.p), 'owner_context': 'synthetic-owner',
+                   'verified_evidence': {k: digest(v) for k, v in self.records.items()},
+                   'verified_evidence_versions': {k: {v['plan_sha256']: digest(v)} for k, v in self.records.items()},
+                   'source_workspaces': self.registrations}
+        if prior: binding['reconcile_from_sha256'] = digest(prior)
+        self.cap = PlanAuthority.configured(binding, authorize=lambda: None,
+            controls=lambda: copy.deepcopy(self.control), routes=lambda _: False, package_for=lambda _: None,
+            development=lambda t: self.develop if t['id'] == self.ident else True,
+            source_evidence_verification=lambda r: digest(r) in self.verified)
+
+    def shared(self):
+        f = PersonalStyleSourceAdmissionTests(); f.include_pch = True
+        f.setUp(); self.addCleanup(f.doCleanups); f.accept_dependencies()
+        f.record(f.candidate(GRAPH, request='pch-existing'))
+        f.record(f.candidate(f.ident, request='psh-existing'))
+        return f
 
     def accept_dependencies(self):
         for ident in (BASE, self.dag):
@@ -550,3 +582,94 @@ class PersonalStyleSourceAdmissionTests(unittest.TestCase):
         with self.assertRaises(ServiceError): self.record(r)
         self.assertEqual(self.view()['source_records'][0]['record'], cancel)
         self.assert_execution_still_closed()
+
+    def test_foreign_workspace_registration_is_exact_and_missing_binding_is_local(self):
+        f = self.shared(); before = f.store.path.read_bytes(); original = copy.deepcopy(f.registrations)
+        self.assertNotEqual(f.workspace['canonical_root'], str(f.store.root))
+        self.assertEqual(f.definition(f.ident)['project_id'], 'personal-style-hub')
+        self.assertTrue(f.cap.registered_source_workspace(f.definition(f.ident)))
+        kept = f.view()['source_records']
+        mutations = [lambda m: m.clear(),
+                     lambda m: m[f.ident].update(project_id='synthetic'),
+                     lambda m: m[f.ident]['workspace'].update(canonical_root='/synthetic/wrong-root'),
+                     lambda m: m[f.ident]['workspace'].update(delivery_root='/synthetic/wrong-delivery'),
+                     lambda m: m[f.ident]['workspace'].update(native_thread_id='wrong-native-thread'),
+                     lambda m: m[f.ident]['workspace'].update(canonical_root='/tmp/../alias'),
+                     lambda m: m[f.ident].update(extra=True)]
+        for n, mutate in enumerate(mutations):
+            f.registrations = copy.deepcopy(original); mutate(f.registrations); f.configure()
+            with self.subTest(n=n):
+                self.assertFalse(f.cap.registered_source_workspace(f.definition(f.ident)))
+                self.assertEqual(f.view()['ready'], [GRAPH])
+                with self.assertRaises(ServiceError): f.record(f.candidate(f.ident, request='psh-unbound-' + str(n)))
+                self.assertEqual(f.store.path.read_bytes(), before)
+                self.assertEqual(f.view()['source_records'], kept)
+                f.assert_execution_still_closed()
+        f.registrations = original; f.configure(); snapshot = f.cap.snapshot()
+        snapshot['source_workspaces'][f.ident]['workspace']['canonical_root'] = '/synthetic/changed-copy'
+        self.assertTrue(f.cap.registered_source_workspace(f.definition(f.ident)))
+        for ident in (f.ident, GRAPH, RELATIONS): self.assertIn(ident, f.view()['ready'])
+
+    def test_scoped_development_or_evidence_revocation_does_not_poison_pch(self):
+        f = self.shared(); kept = f.view()['source_records']
+        f.develop = False
+        self.assertTrue(f.cap.registered_source_workspace(f.definition(f.ident)))
+        self.assertEqual(f.view()['ready'], [GRAPH])
+        f.record(f.candidate(GRAPH, request='pch-while-psh-disabled', candidate='e'))
+        f.develop = True
+        record = next(e['record'] for e in kept if e['record']['task_id'] == f.ident)
+        f.verified.remove(digest(record))
+        self.assertEqual(f.view()['ready'], [GRAPH])
+        self.assertEqual(f.view()['source_records'][:2], kept)
+        f.assert_execution_still_closed()
+        f.verified.add(digest(record))
+        self.assertIn(f.ident, f.view()['ready'])
+        f.registrations = {}; f.configure()
+        f.record(f.candidate(GRAPH, request='pch-while-psh-unregistered', candidate='f'))
+        self.assertEqual(f.view()['ready'], [GRAPH])
+
+    def test_wrong_project_or_same_root_guess_cannot_register_foreign_policy(self):
+        for mutation in ('project', 'same_root'):
+            f = self.shared(); old = copy.deepcopy(f.p)
+            f.p = copy.deepcopy(old); f.p['revision'] += '-' + mutation
+            selected = f.definition(f.ident)
+            if mutation == 'project': selected['project_id'] = 'synthetic'
+            else:
+                selected['source_admission']['workspace']['canonical_root'] = str(f.store.root)
+                f.registrations[f.ident]['workspace']['canonical_root'] = str(f.store.root)
+            f.configure(prior=old)
+            f.store.reconcile_plan(f.p, expected_sha256=digest(old), request_id='synthetic-' + mutation, authority=f.cap)
+            with self.subTest(mutation=mutation):
+                self.assertEqual(f.view()['ready'], [GRAPH])
+                before = f.store.path.read_bytes()
+                with self.assertRaises(ServiceError): f.record(f.candidate(f.ident, request='psh-refused'))
+                self.assertEqual(f.store.path.read_bytes(), before)
+                f.assert_execution_still_closed()
+        f = self.shared(); old = copy.deepcopy(f.p); f.p = copy.deepcopy(old); f.p['revision'] += '-foreign-pch'
+        f.definition(GRAPH)['source_admission']['workspace'] = copy.deepcopy(f.workspace)
+        f.registrations[GRAPH] = {'project_id': 'synthetic', 'workspace': copy.deepcopy(f.workspace)}
+        f.configure(prior=old)
+        f.store.reconcile_plan(f.p, expected_sha256=digest(old), request_id='synthetic-foreign-pch', authority=f.cap)
+        self.assertFalse(f.cap.registered_source_workspace(f.definition(GRAPH)))
+        with self.assertRaises(ServiceError) as error: f.view()
+        self.assertEqual(error.exception.code, 'PLAN_SOURCE_WORKSPACE_MISMATCH')
+
+    def test_foreign_unknown_cancel_and_commit_revocation_keep_pch_and_history(self):
+        for status in ('unknown', 'cancelled'):
+            f = self.shared(); before = f.view()['source_records']
+            observed = f.candidate(f.ident, request='psh-' + status, status=status); f.record(observed)
+            with self.subTest(status=status):
+                self.assertEqual(f.view()['ready'], [GRAPH])
+                self.assertEqual(f.view()['source_records'][:2], before)
+                self.assertEqual(f.view()['source_records'][-1]['record'], observed)
+                f.record(f.candidate(GRAPH, request='pch-after-' + status, candidate='e'))
+                f.assert_execution_still_closed()
+        f = self.shared(); proposed = f.candidate(f.ident, request='psh-commit-revoked')
+        before = f.store.path.read_bytes()
+        def revoke(phase):
+            if phase == 'before_plan_source_commit': f.develop = False
+        f.store.fault = revoke
+        with self.assertRaises(ServiceError): f.record(proposed)
+        self.assertEqual(f.store.path.read_bytes(), before)
+        self.assertEqual(f.view()['ready'], [GRAPH])
+        f.assert_execution_still_closed()
