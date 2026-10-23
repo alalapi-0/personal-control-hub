@@ -144,3 +144,65 @@ class RuntimeManifestTests(unittest.TestCase):
   event=next(e for e in f.store.events(f.f.spec['request_id'])if e['key'].startswith('dispatch-intent-'))
   v=event['data']['runtime_manifest'];self.assertEqual(v['roles']['worker']['pid'],worker.identity['pid'])
   self.assertEqual(v['roles']['worker']['start_ticks'],worker.identity['start_ticks']);self.assertIsNone(v['roles']['web']['pid']);self.assertEqual(f.calls,['open','start'])
+
+ def test_list_detail_repeat_share_one_full_dto_snapshot_after_projection(self):
+  value=dto();value['operational']={};before=copy.deepcopy(value)
+  callback=mock.Mock(side_effect=lambda:self.observe(metadata=self.metadata))
+  service=ProjectService('/synthetic/hub',runtime_observer=callback)
+  with mock.patch.object(service,'_all',return_value=([value],{'ledger_head':{'sequence':1,'hash':'c'*64}})):
+   listed=service.list_projects()['projects'][0];detail=service.get_project('business')
+   self.assertEqual(listed,detail);observed=copy.deepcopy(detail['operational']['runtime_manifest'])
+   for _ in range(3):
+    self.assertEqual(service.list_projects()['projects'][0],detail)
+    self.assertEqual(service.get_project('business')['operational']['runtime_manifest'],observed)
+   callback.assert_called_once_with()
+   self.assertEqual(project_graph(detail)['source_version'],project_graph(before)['source_version'])
+   self.assertEqual(project_graph(detail)['projection_version'],project_graph(before)['projection_version'])
+   self.assertEqual(detail['source'],before['source']);self.assertEqual(detail['provenance'],before['provenance'])
+   listed['operational']['runtime_manifest']['source']['commit']='f'*40
+   self.assertEqual(service.get_project('business')['operational']['runtime_manifest'],observed)
+   self.assertEqual(value,before)
+
+ def test_denied_detail_or_filtered_list_does_not_observe_other_eligible_rows(self):
+  allowed=dto();allowed['operational']={};allowed['project_id']='allowed';allowed['name']='Allowed'
+  for mode in ('denied','no_current_goal_access','removed','declared_removed'):
+   denied=dto();denied['operational']={}
+   if mode=='denied':denied['declared']['connection_read_allowed']=False
+   elif mode=='no_current_goal_access':denied['declared']['access_profile']=mode
+   elif mode=='declared_removed':denied['declared']['current_state_status']='removed_local'
+   else:denied['freshness']['local_presence']='removed_local'
+   callback=mock.Mock(side_effect=AssertionError('denied row must not observe'))
+   service=ProjectService('/synthetic/hub',runtime_observer=callback)
+   with self.subTest(mode=mode),mock.patch.object(service,'_all',return_value=([denied,allowed],{'ledger_head':None})):
+    self.assertNotIn('runtime_manifest',service.get_project('business')['operational'])
+    listed=service.list_projects({'q':'business'})['projects']
+    self.assertEqual(len(listed),1);self.assertNotIn('runtime_manifest',listed[0]['operational']);callback.assert_not_called()
+
+ def test_callback_replacement_and_cached_failure_do_not_inherit_old_observation(self):
+  value=dto();value['operational']={};bad=mock.Mock(return_value={'body':'SYNTHETIC_PRIVATE_ERROR'})
+  service=ProjectService('/synthetic/hub',runtime_observer=bad)
+  with mock.patch.object(service,'_all',return_value=([value],{'ledger_head':None})):
+   failed=service.get_project('business');self.assertEqual(failed,service.list_projects()['projects'][0]);bad.assert_called_once_with()
+   self.assertNotIn('SYNTHETIC_PRIVATE',json.dumps(failed))
+   good=mock.Mock(return_value=self.observe(metadata=self.metadata));service.runtime_observer=good
+   fresh=service.list_projects()['projects'][0];self.assertEqual(fresh,service.get_project('business'));good.assert_called_once_with()
+   self.assertNotEqual(fresh['operational']['runtime_manifest'],failed['operational']['runtime_manifest'])
+   service.runtime_observer=None;self.assertNotIn('runtime_manifest',service.get_project('business')['operational'])
+   legacy_rows=[{'project_id':'legacy'}];self.assertIs(service._runtime_rows(legacy_rows),legacy_rows)
+   service.runtime_observer=good;service.get_project('business');self.assertEqual(good.call_count,2)
+   service.runtime_observer=mock.Mock(side_effect=RuntimeError('SYNTHETIC_PRIVATE_ERROR'))
+   self.assertEqual(service.get_project('business')['operational']['runtime_manifest']['state'],'unknown')
+   self.assertNotIn('SYNTHETIC_PRIVATE',json.dumps(service.get_project('business')))
+
+ def test_concurrent_eligible_reads_capture_exactly_one_snapshot(self):
+  import threading
+  value=dto();value['operational']={};callback=mock.Mock(side_effect=lambda:self.observe(metadata=self.metadata))
+  service=ProjectService('/synthetic/hub',runtime_observer=callback);barrier=threading.Barrier(4);results=[];errors=[]
+  def read():
+   try:barrier.wait(timeout=5);results.append(service.get_project('business'))
+   except Exception as error:errors.append(type(error).__name__)
+  with mock.patch.object(service,'_all',return_value=([value],{'ledger_head':None})):
+   threads=[threading.Thread(target=read)for _ in range(4)]
+   for thread in threads:thread.start()
+   for thread in threads:thread.join(5);self.assertFalse(thread.is_alive())
+  self.assertEqual(errors,[]);self.assertEqual(len(results),4);self.assertTrue(all(row==results[0]for row in results));callback.assert_called_once_with()

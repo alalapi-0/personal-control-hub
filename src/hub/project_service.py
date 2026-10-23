@@ -207,8 +207,57 @@ class ProjectService:
         self.root = Path(root).absolute()
         self.ledger_path = ledger_path
         self.relations_path = relations_path
-        if runtime_observer is not None and not callable(runtime_observer): raise ValueError("Invalid runtime observer")
+        import threading
+        self._runtime_observer_lock = threading.RLock()
+        self._runtime_observation = None
         self.runtime_observer = runtime_observer
+
+    @property
+    def runtime_observer(self):
+        with self._runtime_observer_lock:
+            return self._runtime_observer
+
+    @runtime_observer.setter
+    def runtime_observer(self, callback):
+        if callback is not None and not callable(callback): raise ValueError("Invalid runtime observer")
+        with self._runtime_observer_lock:
+            self._runtime_observer = callback
+            self._runtime_observation = None
+
+    def _runtime_rows(self, rows):
+        """One lazy dated self-observation shared by list/detail, not health.
+
+        This post-projection decoration never changes source/fact/version inputs.
+        Callback replacement invalidates the instance cache; no background work.
+        """
+        with self._runtime_observer_lock:
+            if self._runtime_observer is None: return rows
+        eligible = [i for i, row in enumerate(rows)
+                    if row['declared'].get('connection_read_allowed') is True
+                    and row['declared'].get('access_profile') != 'no_current_goal_access'
+                    and row['declared'].get('current_state_status') != 'removed_local'
+                    and row['freshness'].get('local_presence') != 'removed_local']
+        if not eligible: return rows
+        with self._runtime_observer_lock:
+            callback = self._runtime_observer
+            if callback is None: return rows
+            if self._runtime_observation is None:
+                try:
+                    from .systemd_refresh import public_runtime_manifest
+                    value = public_runtime_manifest(callback())
+                except (OSError, ValueError, TypeError, RuntimeError, ServiceError):
+                    value = {'schema_version': 'pch-runtime-manifest/1', 'state': 'unknown', 'unknown_reason': 'Runtime observation unavailable.'}
+                if self._runtime_observer is not callback:
+                    # Do not associate an in-flight old callback's result with
+                    # its explicitly configured replacement.
+                    return rows
+                self._runtime_observation = value
+            value = copy.deepcopy(self._runtime_observation)
+        result = list(rows)
+        for i in eligible:
+            result[i] = copy.deepcopy(rows[i])
+            result[i]['operational']['runtime_manifest'] = copy.deepcopy(value)
+        return result
 
     def _resolver(self, *, observe_sources=False) -> SourceResolver:
         try:
@@ -1098,6 +1147,7 @@ class ProjectService:
         rows.sort(key=key, reverse=parsed["descending"])
         total = len(rows)
         rows = rows[parsed["offset"]:parsed["offset"] + parsed["limit"]]
+        rows = self._runtime_rows(rows)
         return {"schema_version": "1.0", "head": copy.deepcopy(snapshot["ledger_head"]),
                 "total": total, "offset": parsed["offset"], "limit": parsed["limit"],
                 "projects": rows}
@@ -1108,17 +1158,7 @@ class ProjectService:
         rows, _ = self._all(design_snapshot)
         for row in rows:
             if row["project_id"] == project_id:
-                # Host diagnostics are not project/source facts and never enter
-                # source/projection version hashes or authorize a project read.
-                if self.runtime_observer is not None and row['declared'].get('connection_read_allowed') is True and row['declared'].get('access_profile') != 'no_current_goal_access' and row['freshness'].get('local_presence') != 'removed_local':
-                    row = copy.deepcopy(row)
-                    try:
-                        from .systemd_refresh import public_runtime_manifest
-                        value = public_runtime_manifest(self.runtime_observer())
-                    except (OSError, ValueError, TypeError, ServiceError):
-                        value = {'schema_version': 'pch-runtime-manifest/1', 'state': 'unknown', 'unknown_reason': 'Runtime observation unavailable.'}
-                    row['operational']['runtime_manifest'] = value
-                return row
+                return self._runtime_rows([row])[0]
         raise _error("PROJECT_NOT_FOUND", status=404, details={"project_id": project_id})
 
     def get_graph(self, project_id: str, design_snapshot: dict | None = None) -> dict:
