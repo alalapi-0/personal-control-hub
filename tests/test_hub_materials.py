@@ -46,7 +46,7 @@ class MaterialsTests(unittest.TestCase):
         self.fixture.candidate = candidate
 
     def row(self, aid='fixture-video'):
-        return next(r for r in self.service.catalog(lambda: True)['materials'] if r['artifact_id'] == aid)
+        return max((r for r in self.service.catalog(lambda: True)['materials'] if r['artifact_id'] == aid), key=lambda r: r['candidate_revision'])
 
     def read(self, row=None, **kwargs):
         row = row or self.row()
@@ -180,9 +180,13 @@ class MaterialsTests(unittest.TestCase):
     def test_descriptor_drift_and_revocation_never_resurrect_pins(self):
         old = self.row()
         self.add_artifacts([(self.text_path, 'fixture-new-report')])
-        with self.assertRaises(ServiceError) as error: self.read(old)
-        self.assertEqual(error.exception.code, 'MATERIAL_STALE')
+        historical = next(r for r in self.service.catalog(lambda: True)['materials']
+                          if (r['id'], r['version']) == (old['id'], old['version']))
+        self.assertTrue(historical['historical'])
+        self.assertNotEqual(old['observation_version'], historical['observation_version'])
+        self.assertEqual(self.read(old).data, self.video_data)
         current = self.row()
+        self.assertNotEqual(current['version'], old['version'])
         self.assertFalse(current['available'])
         with self.assertRaises(ServiceError): self.read(current)
         self.registry.projects['fixture-project']['root_path'] = '/fixture/changed-root'
