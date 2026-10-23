@@ -368,3 +368,30 @@ export function coreGapSummary(status){
   labels.set('declared.connection_read_allowed','来源读取资格');
   return Object.entries(status.core_field_gaps).map(([field,count])=>`${labels.get(field)||'其他核心字段'} ${count} 项`).join(' · ');
 }
+
+// Overview reuses the existing proof/permission gates. A DTO's known flag or
+// collection health alone never promotes a field to current business truth.
+export function overviewPermitted(project) {
+  return project?.declared?.connection_read_allowed===true&&!removed(project)
+    &&project?.declared?.current_state_status!=='removed_local'
+    &&project?.declared?.access_profile!=='no_current_goal_access';
+}
+
+export function overviewExplanations(project) {
+  const labels={purpose:'目标与用途',outputs:'主要产出',current_work:'当前工作',next_action:'下一步',actor:'行动人'};
+  const fields={current_work:'current_work.objective',next_action:'current_work.next_action',actor:'current_work.owner_role'};
+  const definitions=Object.fromEntries(projectDefinition(project).map(v=>[v.key,v]));
+  const facts=Object.fromEntries(projectFacts(project).flatMap(g=>g.fields).map(v=>[v.key,v]));
+  const permitted=overviewPermitted(project);
+  return Object.entries(labels).map(([key,label])=>{
+    const semantic=project?.semantics?.explanations?.[key], definition=definitions[key],fact=facts[fields[key]];
+    const known=permitted&&(definition?definition.known:fact?.known)===true;
+    const source=known?(definition?.source||fact?.provenance):null;
+    const safeSource=source?Object.fromEntries(Object.entries(source).filter(([k])=>['kind','field','source_ref','sha256','observed_at','selector'].includes(k))):null;
+    // The fact proof was matched to its source ID/hash; retain its logical reference, not its file path.
+    if(safeSource&&fact?.known&&!definition)safeSource.source_ref=project.business.source_record.field_provenance[fields[key]].source_ref;
+    return {key,label,known,state:known?'known':'unknown',text:known?(definition?.text||fact.text):'未知',source:safeSource,
+      reason:known?null:(!permitted?'本项目当前不允许读取业务来源。':semantic?.unknown_reason||definition?.reasonText||fact?.reason||'来源尚未提供可核对的'+label+'。'),
+      interpretation:known&&fact?.explanation?fact.explanation.text:null};
+  });
+}

@@ -4,7 +4,7 @@ import {renderBusinessPlan} from './business_tasks.mjs';
 import {renderManagement} from './management.mjs';
 import {renderRelations} from './relations.mjs';
 import {renderTimeline} from './timeline.mjs';
-import {projectDirectory, renderDirectoryTree} from './directory.mjs';
+import {projectDirectory, renderDirectoryTree, renderOverviewCard, renderOverviewFocus, overviewActivity, overviewProject, createGraphReader, renderGraphObjects} from './directory.mjs';
 import {watchLedger,replaceProjection} from './ledger_watch.mjs';
 import {renderPageInventory} from './page_inventory.mjs';
 import {renderCaptures} from './captures.mjs';
@@ -323,6 +323,31 @@ async function projectsPage(token){
   const group=el('select',{id:'group-projects'},...Object.entries({none:'不分组',status:'按项目状态',freshness:'按来源状态',type:'按项目类型'}).map(([value,label])=>el('option',{value},label)));
   const view=el('select',{id:'view-projects'},...Object.entries({list:'项目列表',tree:'业务任务树',timeline:'甘特与未排期',all:'列表与甘特'}).map(([value,label])=>el('option',{value},label)));
   const query=parseHubRoute(location.hash).query, saved=history.state?.directory;
+  let selectedProject=saved?.selectedProject||data.projects[0]?.project_id||null,graphOwnerAllowed=true;
+  const focusBody=el('div'),graphBody=el('div'),selection=el('select',{id:'overview-selection','aria-label':'聚焦项目'});
+  const overview=el('section',{className:'overview-section stack'},el('label',{className:'field overview-select',htmlFor:'overview-selection'},'聚焦项目',selection),focusBody);
+  const activity=el('details',{className:'overview-activity'});
+  const reader=createGraphReader(api,state=>{
+    if(token===generation&&state.projectId===selectedProject)graphBody.replaceChildren(renderGraphObjects(state,{retry:()=>reader.retry()}));
+  });
+  function drawFocus(){
+    selection.replaceChildren(...directoryProjects.map(p=>el('option',{value:p.project_id},p.name)));
+    const selected=directoryProjects.find(p=>p.project_id===selectedProject);
+    if(!selected){focusBody.replaceChildren(el('p',{},'所选项目当前不可用，目录内容保留。'));reader.clear();graphBody.replaceChildren();return;}
+    selection.value=selectedProject;focusBody.replaceChildren(renderOverviewFocus(selected));
+    const allowed=graphOwnerAllowed&&overviewProject(selected).readAllowed;
+    if(reader.state.projectId!==selectedProject||reader.state.kind==='disabled'&&allowed)reader.select(selectedProject,allowed);
+    const changes=overviewActivity(directoryProjects);
+    activity.replaceChildren(el('summary',{},`来源异常 ${changes.attention.length} 项 · 查看事实更新时间`),
+      el('p',{className:'caption'},'读取失败和过期属于采集状态，不等同于业务失败。没有来源变化记录时，不用最近读取时间代替业务变化。'),
+      changes.recent.length?el('ul',{},...changes.recent.slice(0,6).map(p=>el('li',{},p.name+' · 来源事实更新时间 '+dataTime(p.factAt)))):el('p',{},'近期业务变化时间未知。'),
+      changes.attention.length?el('ul',{},...changes.attention.slice(0,8).map(p=>el('li',{},p.name+' · '+p.collection))):el('p',{},'当前目录未标出来源异常。'));
+  }
+  function chooseProject(id){selectedProject=id;drawFocus();scheduleRemember();selection.focus({preventScroll:true});}
+  selection.addEventListener('change',()=>chooseProject(selection.value));
+  const identityChange=event=>{graphOwnerAllowed=event.detail?.owner_authenticated===true;if(!graphOwnerAllowed){reader.clear();graphBody.replaceChildren(renderGraphObjects({kind:'disabled'}));}else drawFocus();};
+  window.addEventListener('hub:identity',identityChange);
+
   for(const [key,control] of Object.entries({q:search,status,freshness:fresh,group,view})){
     const value=query.get(key);if(value!==null&&(control===search||[...control.options].some(o=>o.value===value)))control.value=value;
   }
@@ -332,7 +357,7 @@ async function projectsPage(token){
     if(parseHubRoute(location.hash).kind!=='projects'||parseHubRoute(location.hash).parts[1])return;
     const active=document.activeElement;
     const focus=active?.id&&active.id!=='main'?{id:active.id}:active?.closest?.('[data-project-id]')?{project:active.closest('[data-project-id]').dataset.projectId}:history.state?.directory?.focus;
-    const directory={key:lastDirectoryHash,x:scrollX,y:scrollY,focus,
+    const directory={key:lastDirectoryHash,x:scrollX,y:scrollY,focus,selectedProject,
       open:[...content.querySelectorAll('details[data-project-id][open]')].map(n=>n.dataset.projectId)};
     if(location.hash===lastDirectoryHash&&JSON.stringify(history.state?.directory)===JSON.stringify(directory))return;
     history.replaceState({...history.state,directory},'',lastDirectoryHash);
@@ -348,6 +373,7 @@ async function projectsPage(token){
       scheduleRemember();
     }else lastDirectoryHash=location.hash||'#projects';
     const projection=projectDirectory(directoryProjects,{query:search.value,status:status.value,freshness:fresh.value,groupBy:group.value});
+    drawFocus();
     count.textContent=`${projection.matched} / ${projection.total} 个项目 · ${projection.rows.filter(attention).length} 项来源需关注`;
     if(!projection.total){content.replaceChildren(el('section',{className:'empty'},el('h2',{},'尚未登记项目'),el('p',{className:'muted'},'当前目录为空。可重新读取；登记入口和读取资格仍需按项目接入规则核对。'),button('重新读取目录',()=>route(false))));return;}
     if(!projection.matched){content.replaceChildren(el('section',{className:'empty'},el('h2',{},'没有匹配的项目'),el('p',{className:'muted'},'试试其他名称或清除筛选。'),button('清除筛选',clear)));return;}
@@ -356,7 +382,7 @@ async function projectsPage(token){
       const section=el('section',{className:'stack directory-group','data-group':g.key});
       if(group.value!=='none')section.append(el('h2',{},`${g.label} · ${g.rows.length} 个项目`));
       if(view.value==='all'||view.value==='timeline')section.append(el('div',{className:'project-timeline'},renderTimeline(g.rows,{total:projection.total})));
-      if(view.value==='all'||view.value==='list')section.append(el('div',{className:'project-list'},...g.rows.map(p=>projectRow(p,projection.matches.get(p.project_id)||[]))));
+      if(view.value==='all'||view.value==='list')section.append(el('div',{className:'project-list'},...g.rows.map(p=>renderOverviewCard(p,{reasons:projection.matches.get(p.project_id)||[],onSelect:chooseProject}))));
       if(view.value==='tree')section.append(renderDirectoryTree(g.rows));
       return section;
     }));
@@ -367,13 +393,13 @@ async function projectsPage(token){
   search.addEventListener('input',filter);
   for(const control of [status,fresh,group,view])control.addEventListener('change',filter);
   const field=(label,control)=>el('label',{className:'field',htmlFor:control.id},el('span',{className:'caption'},label),control);
-  main.replaceChildren(el('section',{className:'stack'},el('h1',{},'项目'),count,el('div',{className:'filters'},el('label',{className:'field search',htmlFor:'search-projects'},el('span',{className:'caption'},'搜索'),search),field('项目状态',status),refreshButton(lastProjects,true)),el('div',{className:'directory-controls'},field('来源筛选',fresh),field('分组方式',group),field('显示方式',view)),el('details',{},el('summary',{},`来源同步与读取资格 · ${syncStatus?.counts.eligible??'未知'} 项可刷新`),syncOverview()),content));filter(false);
+  main.replaceChildren(el('section',{className:'stack overview-page'},el('h1',{},'总览'),overview,count,el('div',{className:'filters'},el('label',{className:'field search',htmlFor:'search-projects'},el('span',{className:'caption'},'搜索'),search),field('项目状态',status),refreshButton(lastProjects,true)),content,el('details',{className:'overview-advanced'},el('summary',{},'来源筛选、分组与显示'),el('div',{className:'directory-controls'},field('来源筛选',fresh),field('分组方式',group),field('显示方式',view))),el('details',{},el('summary',{},`来源同步与读取资格 · ${syncStatus?.counts.eligible??'未知'} 项可刷新`),syncOverview()),activity,graphBody));filter(false);
   // Persist the latest interaction once, and flush before an actual link leaves
   // the entry. Per-keystroke/focus/scroll writes can exhaust browser navigation
   // limits and silently disable otherwise valid links.
   const save=scheduleRemember, beforeClick=event=>{if(event.target.closest('a'))remember();};
   window.addEventListener('scroll',save,{passive:true});main.addEventListener('focusin',save);main.addEventListener('click',beforeClick,true);content.addEventListener('toggle',save,true);
-  stopDirectoryObservation=()=>{clearTimeout(rememberTimer);window.removeEventListener('scroll',save);main.removeEventListener('focusin',save);main.removeEventListener('click',beforeClick,true);content.removeEventListener('toggle',save,true);};
+  stopDirectoryObservation=()=>{reader.clear();window.removeEventListener('hub:identity',identityChange);clearTimeout(rememberTimer);window.removeEventListener('scroll',save);main.removeEventListener('focusin',save);main.removeEventListener('click',beforeClick,true);content.removeEventListener('toggle',save,true);};
   if(saved?.key===(location.hash||'#projects'))requestAnimationFrame(()=>{
     if(token!==generation)return;
     const focus=saved.focus?.id?document.getElementById(saved.focus.id):[...content.querySelectorAll('[data-project-id]')].find(n=>n.dataset.projectId===saved.focus?.project);
@@ -382,7 +408,7 @@ async function projectsPage(token){
   reconcileVisible=async()=>{
     const next=await loadProjectDirectory(api);if(token!==generation)return;
     await syncFeedback(next,token);if(token!==generation)return;
-    directoryProjects=next.projects;lastProjects=next.projects;
+    reader.clear();directoryProjects=next.projects;lastProjects=next.projects;
     projectNames.clear();for(const project of next.projects)projectNames.set(project.project_id,project.name);
     filter();
     const old=main.querySelector('[aria-label="刷新范围"]');

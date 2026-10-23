@@ -213,3 +213,35 @@ details[open]>summary {margin-bottom:16px}
 .directory-group,.directory-tree{min-width:0}
 .directory-tree>details{padding:16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
 @media(max-width:700px){.directory-controls{grid-template-columns:1fr}}
+
+/* Overview reuses existing typography/tokens; no new action or canvas surface. */
+.overview-page{gap:16px}.overview-page>h1{font-size:1.8rem;line-height:1.3}
+.overview-section{position:relative;gap:10px}.overview-select{max-width:320px;gap:4px}
+.overview-focus{padding:16px 20px;border-left:3px solid var(--accent);background:var(--surface);border-radius:var(--radius)}
+.overview-focus h2{font-size:1.2rem;line-height:1.5;margin-bottom:8px}
+.overview-focus-work{display:grid;grid-template-columns:1fr 1.4fr 1.4fr;gap:12px}
+.overview-focus-work dd{margin:2px 0 8px;line-height:1.55}.overview-focus>details{margin-top:8px}
+.overview-page .project-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.overview-card{gap:5px;padding:14px;min-width:0;align-self:start}.overview-card h3{font-size:1rem;line-height:1.5}
+.overview-card h3 a{color:var(--text)}.overview-card-work{gap:6px}.overview-card-work dd{margin-top:0;line-height:1.5;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.overview-card>details>summary{padding:8px 10px;min-height:36px}.overview-card>button{padding:5px 12px;min-height:40px;align-self:start}
+.overview-field{padding:8px 0;border-top:1px solid var(--border)}.overview-field p{white-space:pre-wrap}
+.overview-evidence summary{font-size:.9rem;padding:6px 10px;min-height:36px}.overview-evidence pre{max-height:180px;overflow:auto}
+.overview-activity{min-width:0}.graph-object-list{padding-left:20px;margin:0;display:grid;gap:12px}.graph-object-list li{min-width:0;overflow-wrap:anywhere}
+.graph-objects{border-top:1px solid var(--border);padding-top:16px}.graph-objects>h2{font-size:1.2rem}
+@media(max-width:999px){.overview-page .project-list{grid-template-columns:repeat(2,minmax(0,1fr))}.overview-focus-work{grid-template-columns:1fr 1fr}.overview-focus-work>div:first-child{grid-column:1/-1}}
+@media(max-width:600px){.overview-page .project-list,.overview-focus-work{grid-template-columns:1fr}.overview-focus-work>div:first-child{grid-column:auto}.overview-page{gap:12px}.overview-select{max-width:none}.overview-focus{padding:12px 14px}.overview-focus-work{gap:4px}.overview-focus-work dt{font-size:.9rem}.overview-focus-work dd{margin-bottom:4px}.overview-card{padding:14px}.overview-page .filters{grid-template-columns:1fr}.overview-page .directory-controls{grid-template-columns:1fr}.graph-objects{padding-top:12px}}
+@media(min-width:1000px){
+  .overview-page{display:grid;grid-template-columns:240px minmax(0,1fr);align-items:start;gap:12px 16px}
+  .overview-page>.overview-section{grid-column:1;grid-row:1/span 8}
+  .overview-page>:not(.overview-section){grid-column:2}
+  .overview-page>.overview-section .overview-focus{padding:12px}
+  .overview-focus-work{grid-template-columns:1fr;gap:6px}
+  .overview-card{display:grid;grid-template-columns:minmax(0,1fr) auto;padding:10px 12px;gap:3px 6px}
+  .overview-card>h3,.overview-card>p,.overview-card>.overview-card-work{grid-column:1/-1}
+  .overview-card>h3{grid-row:1}.overview-card>p:nth-of-type(1){grid-row:2}
+  .overview-card>.overview-card-work{grid-row:3}.overview-card>p:nth-of-type(2){grid-row:4}
+  .overview-card>details{grid-column:1;grid-row:5}.overview-card>button{grid-column:2;grid-row:5;padding:6px;min-height:36px}
+  .overview-card-work>div{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px}
+  .overview-card-work dd{-webkit-line-clamp:1}.overview-card>details[open]{grid-column:1/-1;grid-row:6}
+}
