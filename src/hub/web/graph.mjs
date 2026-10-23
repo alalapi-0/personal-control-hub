@@ -65,6 +65,48 @@ function wrapLabel(value){
   if(line&&lines.length<4)lines.push(line);if(truncated)lines[3]+='…';return lines.length?lines:['未命名'];
 }
 const svgNode=(tag,attrs={},content=null)=>{const n=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v]of Object.entries(attrs))n.setAttribute(k,String(v));if(content!==null)n.textContent=content;return n;};
+// Verify the supplied path certificate only; IO reachability is computed once
+// by the backend. Never infer a new path or trust DTO-supplied render evidence.
+function publishedImpact(selected,snapshot){
+ const plain=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
+ const exact=(v,keys)=>plain(v)&&Object.keys(v).length===keys.length&&keys.every(k=>Object.hasOwn(v,k));
+ const bounded=v=>typeof v==='string'&&v.length>0&&v.length<=4096&&!/[\u0000-\u001f]/.test(v);
+ const ref=v=>exact(v,['id','revision'])&&bounded(v.id)&&(v.revision===null||bounded(v.revision));
+ const sourceFields=['ref','version','sha256','fact_time','collected_at','origin','applicability','unknown_reason'];
+ const source=v=>exact(v,sourceFields)&&['ref','version','fact_time','collected_at','unknown_reason'].every(k=>v[k]===null||bounded(v[k]))&&(v.sha256===null||typeof v.sha256==='string'&&/^[a-f0-9]{64}$/.test(v.sha256))&&['source_fact','registry','hub_management','hub_interpretation'].includes(v.origin)&&['current','historical','unknown','unavailable'].includes(v.applicability);
+ const proof=v=>Array.isArray(v)&&v.length>0&&v.length<=128&&v.every(bounded);
+ const versioned=v=>bounded(v?.revision)&&source(v.source)&&bounded(v.source.version)&&typeof v.source.sha256==='string'&&['current','historical'].includes(v.source.applicability)&&['fact','candidate'].includes(v.identity);
+ const asRef=v=>({id:v.id,revision:v.revision});
+ const value=selected.object.data?.impact,entries=new Map(snapshot.entries.map(e=>[e.key,e]));
+ if(!exact(value,['schema_version','subject','state','fact_paths','candidate_paths','gaps','traversal_complete','scope','rerun'])||value.schema_version!=='graph-impact/1'||!ref(value.subject)||objectKey(value.subject)!==selected.key||value.scope!=='published_exact_version_io_only'||!['available','unknown','partial'].includes(value.state)||typeof value.traversal_complete!=='boolean'||!exact(value.rerun,['available','reason'])||value.rerun.available!==false||value.rerun.reason!=='NO_REPLAY_AUTHORITY_OR_EFFECT_RECONCILIATION'||!Array.isArray(value.gaps)||value.gaps.length>4||!value.gaps.every(v=>['NO_EXPLICIT_VERSIONED_IO','NO_PUBLISHED_SOURCE_FACT_IO','UNQUALIFIED_IO_OMITTED','TRAVERSAL_LIMIT'].includes(v)))return null;
+ const edges=new Map((snapshot.relations||[]).map(e=>[objectKey(e),e]));
+ const verified={...value,subject:asRef(selected.object),gaps:[...value.gaps],rerun:{...value.rerun},fact_paths:[],candidate_paths:[]};
+ for(const kind of ['fact_paths','candidate_paths']){
+  if(!Array.isArray(value[kind])||value[kind].length>128)return null;
+  const targets=new Set();
+  for(const item of value[kind]){
+   if(!exact(item,['target','path'])||!ref(item.target)||!entries.has(objectKey(item.target))||targets.has(objectKey(item.target))||!Array.isArray(item.path)||!item.path.length||item.path.length>32)return null;
+   let cursor=selected.key,candidate=selected.object.identity==='candidate';const path=[],seen=new Set([JSON.stringify([cursor,false]),JSON.stringify([cursor,true])]);
+   for(const step of item.path){
+    if(!exact(step,['relation','type','from','to','evidence','source'])||!ref(step.relation)||!ref(step.from)||!ref(step.to)||!proof(step.evidence)||!source(step.source))return null;
+    const edge=edges.get(objectKey(step.relation));
+    if(!edge||!['produces','consumes','derived_from'].includes(edge.type)||step.type!==edge.type||!ref(edge.from)||!ref(edge.to)||!proof(edge.evidence)||!source(edge.source)||!sourceFields.every(k=>step.source[k]===edge.source[k])||step.evidence.length!==edge.evidence.length||!step.evidence.every((v,i)=>v===edge.evidence[i]))return null;
+    const from=edge.type==='produces'?edge.from:edge.to,to=edge.type==='produces'?edge.to:edge.from;
+    const first=entries.get(objectKey(from))?.object,last=entries.get(objectKey(to))?.object;
+    if(!first||!last||cursor!==objectKey(from)||objectKey(step.from)!==objectKey(from)||objectKey(step.to)!==objectKey(to)||![first,edge,last].every(versioned))return null;
+    const edgeCandidate=[first,edge,last].some(v=>v.identity==='candidate');
+    if(!edgeCandidate&&[first,edge,last].some(v=>v.source.origin!=='source_fact'))return null;
+    candidate=candidate||edgeCandidate;cursor=objectKey(to);
+    const state=JSON.stringify([cursor,candidate]);if(seen.has(state))return null;seen.add(state);
+    path.push({relation:asRef(edge),type:edge.type,from:asRef(first),to:asRef(last),evidence:[...edge.evidence],source:{...edge.source}});
+   }
+   if(cursor!==objectKey(item.target)||candidate!==(kind==='candidate_paths'))return null;
+   targets.add(cursor);verified[kind].push({target:asRef(entries.get(cursor).object),path});
+  }
+ }
+ if(value.state==='unknown'&&(verified.fact_paths.length||verified.candidate_paths.length))return null;
+ return verified;
+}
 export function createFocusGraph(snapshot,{saved,onChange=()=>{},onProject=()=>{},renderActions=null}={}){
   let actionPanel=null;
   let view=graphViewState(snapshot,saved),model=null,disposed=false,drag=null;
@@ -129,13 +171,30 @@ export function createFocusGraph(snapshot,{saved,onChange=()=>{},onProject=()=>{
       detail.append(el('h3',{},text(selected.row.label)),el('p',{},`来源适用性：${({current:'当前',historical:'历史',unknown:'未知',unavailable:'不可用'})[selected.object.source.applicability]||'未知'}；修订 ${text(selected.row.revision??'未知')}`));
       const links=(snapshot.relations||[]).filter(e=>objectKey(e.from)===selected.key||objectKey(e.to)===selected.key);
       detail.append(el('ul',{},...links.map(edge=>{const target=objectKey(edge.from)===selected.key?edge.to:edge.from,entry=snapshot.entries.find(e=>e.key===objectKey(target));return el('li',{},`${objectKey(edge.from)===selected.key?'向外':'来自'} · ${relationText(edge)} → `,control(text(entry?.row.label),()=>select(entry.key)),el('span',{className:'caption'},' · '+text(edge.evidence?.join('；'))));})));
+      const impact=publishedImpact(selected,snapshot),impactPanel=el('section',{className:'stack','aria-label':'确切版本下游影响'});
+      impactPanel.append(el('h4',{},'下游影响 · 只读'),el('p',{className:'caption'},'只沿本快照显式、确切版本的输入输出关系；依赖、引用、名称和布局不传播，也不证明快照外没有消费者。'));
+      if(!impact)impactPanel.append(el('p',{},'影响未知：此版本没有可核对的影响投影，请重新读取项目图。'));
+      else{
+        const gapText={NO_EXPLICIT_VERSIONED_IO:'未发布此对象的确切版本输入输出边。',NO_PUBLISHED_SOURCE_FACT_IO:'缺少真实来源 IO 事实；管理确认仍是候选声明。',UNQUALIFIED_IO_OMITTED:'部分 IO 缺少版本、来源或适用依据，未参与传播。',TRAVERSAL_LIMIT:'达到有界遍历或结果容量，仅显示部分路径。'};
+        for(const code of impact.gaps)impactPanel.append(el('p',{className:'caption'},gapText[code]));
+        for(const [field,label]of [['fact_paths','来源事实路径'],['candidate_paths','候选声明路径（非真实消费者证明）']]){
+          impactPanel.append(el('h4',{},`${label} · ${impact[field].length}`));
+          if(!impact[field].length)impactPanel.append(el('p',{className:'caption'},field==='fact_paths'?'没有发布可证明的事实影响路径。':'没有发布候选影响路径。'));
+          for(const item of impact[field]){const target=snapshot.entries.find(e=>e.key===objectKey(item.target));
+            const path=el('ol',{},...item.path.map(step=>{const a=snapshot.entries.find(e=>e.key===objectKey(step.from)),b=snapshot.entries.find(e=>e.key===objectKey(step.to));return el('li',{},`${text(a?.row.label)} → ${text(b?.row.label)} · ${relations[step.type]} · 修订 ${text(step.relation.revision??'未知')}`,el('p',{className:'caption'},'依据：'+text(step.evidence?.join('；'))),el('p',{className:'caption'},'来源版本：'+text(step.source?.version??'未知')+' · SHA：'+text(step.source?.sha256??'未知')));}));
+            impactPanel.append(el('div',{className:'stack'},control('查看影响对象：'+text(target.row.label),()=>select(target.key,true)),el('span',{className:'caption'},'确切修订：'+text(target.row.revision??'未知')),el('details',{},el('summary',{},'展开版本 IO 依据路径'),path)));
+          }
+        }
+      }
+      impactPanel.append(el('button',{type:'button',disabled:true},'重跑不可用'),el('p',{className:'caption'},'缺少受支持的重跑效果核对与授权；影响查看不会创建、提交或执行任务。'));
+      detail.append(impactPanel);
       const ref=selected.object.data?.reference_project_id;if(typeof ref==='string')detail.append(el('p',{},'此对象仅为登记引用；未读取该项目业务。'),control('切换到登记项目',()=>onProject(ref)));
       if(renderActions){actionPanel=renderActions(selected,snapshot);if(actionPanel?.element)detail.append(actionPanel.element);}
     }else detail.append(el('p',{},'选择图节点或同源列表对象，查看关系与版本。'));
     status.textContent=`${model.nodes.length} / ${snapshot.entries.length} 个对象可见 · ${model.edges.length} 条可见关系 · ${model.crossGroup} 条跨组关系 · ${model.hiddenEdges} 条因折叠或聚焦隐藏。仅视图变化，不保存业务数据。`;
     drawingButtons=false;
     if(bringIntoView)recenter();
-    transform();if(focus){const n=[...scene.querySelectorAll('[data-object-key]')].find(n=>n.getAttribute('data-object-key')===view.selected);n?.focus({preventScroll:true});}
+    transform();if(focus){const n=[...scene.querySelectorAll('[data-object-key]')].find(n=>n.getAttribute('data-object-key')===view.selected)||[...list.querySelectorAll('[data-object-key]')].find(n=>n.getAttribute('data-object-key')===view.selected);if(n&&list.contains(n))alternatives.open=true;n?.focus({preventScroll:true});}
   }
   toolbar.append(control('放大',()=>zoom(1.2)),control('缩小',()=>zoom(1/1.2)),control('左移',()=>move(-60,0)),control('右移',()=>move(60,0)),control('上移',()=>move(0,-60)),control('下移',()=>move(0,60)),
     control('重置视图',()=>{view.viewport={x:0,y:0,zoom:1};view.pins=[];view.collapsed=[];draw();emit();}),control('固定 / 释放选中节点',togglePin),groupSelect,el('label',{},related,'只看直接关系'));

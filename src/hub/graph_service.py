@@ -4,6 +4,7 @@ No resolver, source collector, native task reader or parallel data store.
 """
 from __future__ import annotations
 import copy
+from collections import deque
 import re
 from .graph_records import TYPES, EXPLANATIONS, stable_id, graph, need
 from .workbench_store import digest
@@ -108,7 +109,7 @@ def project_graph(dto):
     root = obj('Project', project, dto.get('name') or project, binding.get('registration_sha256'), separated,
                origin_source, exp=semantics.get('explanations'))
     if not current:
-        return graph(project, version, objects, projected_at=fresh.get('projected_at'))
+        return _impact_graph(project, version, objects, projected_at=fresh.get('projected_at'))
     fact_source = {'ref': 'source:' + project, 'version': version, 'sha256': digest(sources) if sources else None,
         'fact_time': fresh.get('fact_updated_at'), 'collected_at': fresh.get('observed_at'),
         'origin': 'source_fact', 'applicability': 'current',
@@ -167,7 +168,78 @@ def project_graph(dto):
                             for binding in candidate.get('artifact_bindings', []))]
             obj(kind, ident, ident, revision, data, src, identity='candidate')
     _management_relations(dto, root, objects, relations)
-    return graph(project, version, objects, relations, projected_at=fresh.get('projected_at'))
+    return _impact_graph(project, version, objects, relations, projected_at=fresh.get('projected_at'))
+
+
+def _impact_graph(project, version, objects, relations=(), *, projected_at=None):
+    # Validate and detach existing records first. Only the final graph hash is
+    # published; derived data never includes that hash or the projection clock.
+    base = graph(project, version, objects, relations, projected_at=projected_at)
+    impacts = _impact_projection(base['objects'], base['relations'])
+    for item in base['objects']:
+        item['data']['impact'] = impacts[(item['id'], item['revision'])]
+    return graph(project, version, base['objects'], base['relations'], projected_at=projected_at)
+
+
+def _impact_projection(objects, relations):
+    """One bounded IO algorithm; the client renders these published paths only.
+
+    These are consequences of declarations in this snapshot, not observation of
+    changed files, real consumers outside it, or permission to replay anything.
+    """
+    key = lambda v: (v['id'], v['revision'])
+    ref = lambda v: dict(id=v['id'], revision=v['revision'])
+    by_key = {key(v): v for v in objects}
+    outgoing = {}; incident = set(); fact_incident = set(); omitted = set()
+    def versioned(v):
+        source = v['source']
+        return (v['revision'] is not None and source['version'] is not None and source['sha256'] is not None
+                and source['applicability'] in {'current', 'historical'})
+    for edge in relations:
+        if edge['type'] not in {'produces', 'consumes', 'derived_from'}: continue
+        a, b = key(edge['from']), key(edge['to'])
+        involved = (by_key[a], edge, by_key[b])
+        candidate = any(v['identity'] == 'candidate' for v in involved)
+        if not all(versioned(v) for v in involved) or not candidate and any(v['source']['origin'] != 'source_fact' for v in involved):
+            omitted.update((a,b)); continue
+        if edge['type'] in {'consumes','derived_from'}: a,b = b,a
+        incident.update((a,b))
+        if not candidate: fact_incident.update((a,b))
+        step = dict(relation=ref(edge), type=edge['type'], **{'from': ref(by_key[a]), 'to': ref(by_key[b])},
+                    evidence=copy.deepcopy(edge['evidence']), source=copy.deepcopy(edge['source']))
+        outgoing.setdefault(a, []).append((b,candidate,step))
+    result = {}; work_left = 100000; output_left = 4096
+    for subject in objects:
+        origin = key(subject); paths = {'fact': [], 'candidate': []}; limited = False; has_omitted = origin in omitted
+        pending = deque([(origin, subject['identity'] == 'candidate', [])]); seen = {(origin,False),(origin,True)}
+        steps = 0
+        while pending:
+            node, candidate, path = pending.popleft()
+            has_omitted = has_omitted or node in omitted
+            links = outgoing.get(node, ())
+            if links and (len(path) >= 32 or steps >= 2048 or work_left <= 0 or output_left <= 0 or len(paths['fact']) + len(paths['candidate']) >= 128):
+                limited = True; continue
+            for target, edge_candidate, step in links:
+                if steps >= 2048 or work_left <= 0 or output_left <= 0 or len(paths['fact']) + len(paths['candidate']) >= 128:
+                    limited = True; break
+                steps += 1; work_left -= 1
+                next_candidate = candidate or edge_candidate
+                state = (target,next_candidate)
+                if state in seen: continue
+                seen.add(state); route = path + [step]
+                paths['candidate' if next_candidate else 'fact'].append(dict(target=ref(by_key[target]), path=route))
+                output_left -= 1
+                pending.append((target,next_candidate,route))
+        gaps = []
+        if origin not in incident: gaps.append('NO_EXPLICIT_VERSIONED_IO')
+        if origin not in fact_incident: gaps.append('NO_PUBLISHED_SOURCE_FACT_IO')
+        if has_omitted: gaps.append('UNQUALIFIED_IO_OMITTED')
+        if limited: gaps.append('TRAVERSAL_LIMIT')
+        result[origin] = dict(schema_version='graph-impact/1',subject=ref(subject),
+            state='partial' if limited or has_omitted else 'available' if origin in incident else 'unknown',
+            fact_paths=paths['fact'],candidate_paths=paths['candidate'],gaps=gaps,traversal_complete=not limited and not has_omitted,
+            scope='published_exact_version_io_only',rerun=dict(available=False,reason='NO_REPLAY_AUTHORITY_OR_EFFECT_RECONCILIATION'))
+    return result
 
 
 def _management_relations(dto, root, objects, relations):

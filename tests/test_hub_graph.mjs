@@ -133,3 +133,80 @@ test('graph and list selected detail share one exact action entry with disposal'
  view.select(s.entries[1].key);assert.equal(shown[0][0],s.entries[1]);assert.equal(shown[0][1],s);
  const list=walk(view.element).find(n=>n.tag==='button'&&n.attrs['data-object-key']===s.entries[2].key);list.fire('click');assert.equal(shown[1][0],s.entries[2]);assert.equal(closed,1);view.dispose();assert.equal(closed,2);
 }));
+
+function publishedImpactFixture(){
+ const raw=fixture(6,2);raw.relations[0].type='produces';raw.relations[1].type='derived_from';
+ const source={ref:'source:p',version:'v1',sha256:'a'.repeat(64),fact_time:null,collected_at:'2026-10-24T00:00:00Z',origin:'source_fact',applicability:'current',unknown_reason:'No fact timestamp is published.'};
+ for(const object of raw.objects)object.source={...source,origin:object.identity==='candidate'?'hub_management':'source_fact'};
+ for(const edge of raw.relations)edge.source={...source,origin:'hub_management'};
+ const ref=o=>({id:o.id,revision:o.revision}),edge=raw.relations[0];
+ raw.objects[0].data.impact={schema_version:'graph-impact/1',subject:ref(raw.objects[0]),state:'available',fact_paths:[],candidate_paths:[{target:ref(raw.objects[1]),path:[{relation:ref(edge),type:edge.type,from:{...edge.from},to:{...edge.to},evidence:[...edge.evidence],source:{...edge.source}}]}],gaps:['NO_PUBLISHED_SOURCE_FACT_IO'],traversal_complete:true,scope:'published_exact_version_io_only',rerun:{available:false,reason:'NO_REPLAY_AUTHORITY_OR_EFFECT_RECONCILIATION'}};
+ return raw;
+}
+test('impact panel renders one backend projection for graph/list and only selects exact targets',()=>dom(()=>{
+ const raw=publishedImpactFixture(),before=structuredClone(raw),s=graphObjects(raw,'p');let projects=0,actionExecutions=0;
+ const view=createFocusGraph(s,{onProject:()=>projects++,renderActions:()=>{const action=document.createElement('button');action.addEventListener('click',()=>actionExecutions++);return {element:action,dispose(){}};}});
+ view.select(s.entries[0].key);const detail=walk(view.element).find(n=>n.attrs.className==='focus-graph-detail'||n.className==='focus-graph-detail');
+ const textBefore=view.element.textContent;assert.match(textBefore,/候选声明路径（非真实消费者证明） · 1/);assert.match(textBefore,/缺少真实来源 IO 事实/);assert.match(textBefore,/重跑不可用/);
+ const rerun=button(view.element,'重跑不可用');assert.equal(rerun.getAttribute('disabled'),'true');assert.equal(rerun.events.click,undefined);
+ const target=button(view.element,'查看影响对象：'+s.entries[1].row.label);target.focus();target.fire('click');assert.equal(document.activeElement.getAttribute('data-object-key'),s.entries[1].key);assert.equal(view.state().selected,s.entries[1].key);assert.equal(projects,0);assert.equal(actionExecutions,0);
+ const listed=walk(view.element).find(n=>n.tag==='button'&&n.attrs['data-object-key']===s.entries[0].key);listed.fire('click');assert.match(view.element.textContent,/候选声明路径（非真实消费者证明） · 1/);assert.deepEqual(raw,before);view.dispose();
+}));
+test('impact consumer keeps exact same-id revisions and fact/candidate categories from backend',()=>dom(()=>{
+ const raw=publishedImpactFixture();raw.objects[2]={...raw.objects[1],revision:'r2',data:{}};raw.rows[2]={...raw.rows[1],revision:'r2'};
+ raw.relations[1].to={id:raw.objects[2].id,revision:'r2'};
+ for(const object of raw.objects){object.identity='fact';object.source.origin='source_fact';}for(const row of raw.rows)row.identity='fact';raw.relations[0].identity='fact';raw.relations[0].source.origin='source_fact';
+ raw.objects[0].data.impact.candidate_paths[0].path[0].source={...raw.relations[0].source};
+ const impact=raw.objects[0].data.impact;impact.fact_paths=impact.candidate_paths;impact.candidate_paths=[];impact.gaps=[];
+ const s=graphObjects(raw,'p'),view=createFocusGraph(s);view.select(s.entries[0].key);assert.match(view.element.textContent,/来源事实路径 · 1/);
+ button(view.element,'查看影响对象：'+s.entries[1].row.label).fire('click');assert.equal(view.state().selected,s.entries[1].key);assert.notEqual(view.state().selected,s.entries[2].key);view.dispose();
+}));
+test('old or malformed impact stays unknown; changed snapshot and disposal clear all old impact controls',()=>dom(()=>{
+ const raw=publishedImpactFixture(),s=graphObjects(raw,'p'),view=createFocusGraph(s);view.select(s.entries[0].key);
+ const old=button(view.element,'查看影响对象：'+s.entries[1].row.label),saved=view.state();view.dispose();assert.doesNotThrow(()=>old.fire('click'));assert.equal(view.element.children.length,0);
+ const changed=fixture();changed.projection_version='c'.repeat(64);changed.rows.forEach(r=>r.projection_version=changed.projection_version);
+ const next=createFocusGraph(graphObjects(changed,'p'),{saved});assert.equal(next.state().selected,null);assert.equal(button(next.element,'查看影响对象：'+s.entries[1].row.label),undefined);
+ next.select(objectKey(changed.objects[0]));assert.match(next.element.textContent,/没有可核对的影响投影/);next.dispose();
+ for(const mutate of [v=>v.subject.revision='foreign',v=>v.candidate_paths[0].target.revision='missing',v=>v.candidate_paths[0].path[0].relation.id='unknown',v=>v.rerun.available=true]){const bad=publishedImpactFixture();mutate(bad.objects[0].data.impact);const v=createFocusGraph(graphObjects(bad,'p'));v.select(objectKey(bad.objects[0]));assert.match(v.element.textContent,/没有可核对的影响投影/);v.dispose();}
+}));
+
+function factImpactFixture(){const raw=publishedImpactFixture();for(const object of raw.objects){object.identity='fact';object.source.origin='source_fact';}for(const row of raw.rows)row.identity='fact';raw.relations[0].identity='fact';raw.relations[0].source.origin='source_fact';const value=raw.objects[0].data.impact;value.candidate_paths[0].path[0].source={...raw.relations[0].source};value.fact_paths=value.candidate_paths;value.candidate_paths=[];value.gaps=[];return raw;}
+const certificateStep=(edge,from=edge.from,to=edge.to)=>({relation:{id:edge.id,revision:edge.revision},type:edge.type,from:{...from},to:{...to},evidence:[...edge.evidence],source:{...edge.source}});
+test('impact verifies canonical consumes/derived reverse direction and continuous multihop without traversing new paths',()=>dom(()=>{
+ const raw=factImpactFixture(),a=raw.objects[0],b=raw.objects[1],c=raw.objects[2],first=raw.relations[0],second=raw.relations[1];
+ first.type='consumes';first.from={id:b.id,revision:b.revision};first.to={id:a.id,revision:a.revision};
+ second.type='derived_from';second.from={id:c.id,revision:c.revision};second.to={id:b.id,revision:b.revision};second.identity='fact';second.source.origin='source_fact';
+ raw.objects[0].data.impact.fact_paths=[{target:{id:c.id,revision:c.revision},path:[certificateStep(first,first.to,first.from),certificateStep(second,second.to,second.from)]}];
+ const before=structuredClone(raw),s=graphObjects(raw,'p'),view=createFocusGraph(s);view.select(s.entries[0].key);assert.match(view.element.textContent,/来源事实路径 · 1/);assert.equal(button(view.element,'查看影响对象：'+c.label)!==undefined,true);assert.deepEqual(raw,before);view.dispose();
+}));
+test('stale forged or malformed impact certificates safely become unknown rather than facts or render exceptions',()=>dom(()=>{
+ const mutations=[
+  ['wrong type',r=>r.objects[0].data.impact.fact_paths[0].path[0].type='consumes'],
+  ['canonical non IO',r=>r.relations[0].type='references'],
+  ['reverse',r=>{const p=r.objects[0].data.impact.fact_paths[0].path[0];[p.from,p.to]=[p.to,p.from];}],
+  ['canonical endpoint',r=>r.relations[0].to={id:r.objects[2].id,revision:r.objects[2].revision}],
+  ['wrong target',r=>r.objects[0].data.impact.fact_paths[0].target={id:r.objects[2].id,revision:r.objects[2].revision}],
+  ['stale revision',r=>r.objects[0].data.impact.fact_paths[0].path[0].relation.revision='stale'],
+  ['evidence string',r=>r.objects[0].data.impact.fact_paths[0].path[0].evidence='private forged body'],
+  ['evidence differs',r=>r.objects[0].data.impact.fact_paths[0].path[0].evidence=['forged']],
+  ['source malformed',r=>r.objects[0].data.impact.fact_paths[0].path[0].source='forged'],
+  ['source differs',r=>r.objects[0].data.impact.fact_paths[0].path[0].source.sha256='f'.repeat(64)],
+  ['source extra body',r=>r.objects[0].data.impact.fact_paths[0].path[0].source.body='not publishable'],
+  ['candidate edge promoted',r=>r.relations[0].identity='candidate'],
+  ['candidate object promoted',r=>{r.objects[1].identity='candidate';r.rows[1].identity='candidate';r.relations[0].identity='candidate';}],
+  ['unknown applicability',r=>{r.relations[0].source.applicability='unknown';r.objects[0].data.impact.fact_paths[0].path[0].source.applicability='unknown';}],
+  ['missing version',r=>{r.relations[0].source.version=null;r.objects[0].data.impact.fact_paths[0].path[0].source.version=null;}],
+  ['missing hash',r=>{r.objects[1].source.sha256=null;}],
+  ['registry origin facts',r=>{r.relations[0].source.origin='registry';r.objects[0].data.impact.fact_paths[0].path[0].source.origin='registry';}],
+  ['discontinuous',r=>{const e=r.relations[1];e.type='produces';e.from={id:r.objects[3].id,revision:r.objects[3].revision};e.to={id:r.objects[4].id,revision:r.objects[4].revision};e.identity='fact';e.source.origin='source_fact';const p=r.objects[0].data.impact.fact_paths[0];p.path.push(certificateStep(e));p.target={...e.to};}],
+ ];
+ for(const [name,mutate]of mutations){const raw=factImpactFixture();mutate(raw);const before=structuredClone(raw),s=graphObjects(raw,'p'),view=createFocusGraph(s);assert.doesNotThrow(()=>view.select(s.entries[0].key),name);assert.match(view.element.textContent,/没有可核对的影响投影/,name);assert.equal(walk(view.element).some(n=>n.tag==='button'&&n.textContent.startsWith('查看影响对象：')),false,name);assert.deepEqual(raw,before,name);view.dispose();}
+ const raw=publishedImpactFixture(),value=raw.objects[0].data.impact;value.fact_paths=value.candidate_paths;value.candidate_paths=[];const s=graphObjects(raw,'p'),view=createFocusGraph(s);view.select(s.entries[0].key);assert.match(view.element.textContent,/没有可核对的影响投影/);view.dispose();
+}));
+test('Enter activation restores exact target focus on SVG or same-source list when its group is collapsed',()=>dom(()=>{
+ for(const collapsed of [false,true]){const s=graphObjects(publishedImpactFixture(),'p'),view=createFocusGraph(s);view.select(s.entries[0].key);
+  if(collapsed)walk(view.element).find(n=>n.getAttribute('data-group-key')==='Artifact').fire('click');
+  const target=button(view.element,'查看影响对象：'+s.entries[1].row.label);target.focus();const event=target.fire('keydown',{key:'Enter'});if(!event.prevented)target.fire('click',{detail:0}); // Native button Enter activation, without a browser fixture.
+  assert.equal(view.state().selected,s.entries[1].key);assert.equal(document.activeElement.getAttribute('data-object-key'),s.entries[1].key);assert.equal(document.activeElement.tag,collapsed?'button':'g');assert.ok(view.element.contains(document.activeElement));view.dispose();
+ }
+}));
