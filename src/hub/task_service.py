@@ -209,6 +209,13 @@ class TaskService:
     def plan_ready(self,plan_id,*,owner_context):
         return self.store.plan_ready(plan_id,authority=self._plan_authority(owner_context))
 
+    def plan_source_ready(self,plan_id,*,owner_context):
+        return self.store.plan_source_ready(plan_id,authority=self._plan_authority(owner_context))
+
+    def record_plan_source_evidence(self,plan_id,record,*,expected_source_sha256,owner_context):
+        return self.store.record_plan_source_evidence(plan_id,record,expected_source_sha256=expected_source_sha256,
+            authority=self._plan_authority(owner_context))
+
     def admit_plan_window(self,plan_id,*,owner_context):
         return self.store.admit_plan_window(plan_id,authority=self._plan_authority(owner_context))
 

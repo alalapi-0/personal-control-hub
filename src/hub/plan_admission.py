@@ -37,7 +37,7 @@ def _validate_plan(value):
   if not isinstance(row['owner_route'],str) or not row['owner_route'].startswith('route:'):reject()
   if not isinstance(row['round_id'],str) or not re.fullmatch(r'P[0-9]+-R[0-9]+',row['round_id']):reject()
   if row['phase_id']!=ident.split('-')[0] or row['status'] not in {'planned','done'}:reject()
-  if type(row['dispatch_priority'])is not int or row['dispatch_priority']!=(0 if ident==BASE else 10 if ident==POLICY else 20 if ident=='P2-R2-PCH-DAG' and re.match(r'^1\.1\.0(?:-|$)',value['revision']) else 100):reject('PLAN_PRIORITY_REJECTED')
+  if type(row['dispatch_priority'])is not int or row['dispatch_priority']!=(0 if ident==BASE else 10 if ident==POLICY else 20 if ident=='P2-R2-PCH-DAG' and re.match(r'^1\.[12]\.0(?:-|$)',value['revision']) else 100):reject('PLAN_PRIORITY_REJECTED')
   deps=row['depends_on']
   if type(deps)is not list or len(deps)>MAX_PLAN_TASKS or len(set(deps))!=len(deps):reject()
   if ident in {BASE,POLICY} and deps:reject('PLAN_ENTRANCE_DEPENDENCY')
@@ -47,6 +47,8 @@ def _validate_plan(value):
   if row['admission_class'] not in {'bootstrap','routed','verified_project_execution','historical_planning_evidence'}:reject()
   if row['admission_class']=='historical_planning_evidence' and row['status']!='done':reject()
   by[ident]=row
+ from .source_admission import validate_policies
+ validate_policies(by)
  if BASE not in by:reject('PLAN_BASE_REQUIRED')
  incoming={key:len(row['depends_on']) for key,row in by.items()};children={key:[]for key in by}
  for ident,row in by.items():
@@ -95,6 +97,10 @@ def plan_history(value):
  inner,budget=split(value)
  if budget is not None:
   result=plan_history(inner);validate_budget(budget,result[0]['plan_id']);return result
+ from .source_admission import split as split_source,validate_records
+ history,records=split_source(value)
+ if records:
+  result=plan_history(history);validate_records(records,result[1]);return result
  if type(value)is not dict or value.get('schema_version')!='plan-revisions/1':
   p=validate_plan(value);return p,{digest(p):p},[]
  if set(value)!={'schema_version','plan_id','current_sha256','versions','requests'}:reject('PLAN_HISTORY_CORRUPT')
@@ -127,15 +133,24 @@ class PlanAuthority:
  _controls:object
  _routes:object
  _package:object
+ _development:object=None
+ _source_verifier:object=None
  @classmethod
- def configured(cls,binding,*,authorize,controls,routes,package_for):
+ def configured(cls,binding,*,authorize,controls,routes,package_for,development=None,source_evidence_verification=None):
   if not all(callable(x)for x in (authorize,controls,routes,package_for)):reject('PLAN_AUTHORITY_REQUIRED')
-  return cls(canonical(binding),authorize,controls,routes,package_for)
+  if any(x is not None and not callable(x)for x in (development,source_evidence_verification)):reject('PLAN_AUTHORITY_REQUIRED')
+  return cls(canonical(binding),authorize,controls,routes,package_for,development,source_evidence_verification)
  def snapshot(self):return json.loads(self._data)
  def check(self,plan):
   self._authorize();b=self.snapshot()
   if digest(plan)!=b.get('plan_sha256'):reject('PLAN_AUTHORITY_MISMATCH')
   return b
+ def development(self,definition):
+  self._authorize()
+  return self._development is not None and self._development(copy.deepcopy(definition)) is True
+ def verify_source(self,record):
+  self._authorize()
+  return self._source_verifier is not None and self._source_verifier(copy.deepcopy(record)) is True
  def verify(self,record,*,plan_sha256=None):
   self._authorize();b=self.snapshot()
   if len(canonical(record))>8192:reject('PLAN_EVIDENCE_CAPACITY')

@@ -2363,7 +2363,10 @@ class TaskStore:
             body={'schema_version':'plan-revisions/1','plan_id':target['plan_id'],'current_sha256':digest(target),'versions':[{'sha256':h,'plan':p}for h,p in versions.items()],'requests':requests}
             from .dispatch_budget import split as split_budget,wrap as wrap_budget
             _,retained_budget=split_budget(self._decode(*row))
-            body=wrap_budget(body,retained_budget)
+            from .source_admission import split as split_source,wrap as wrap_source
+            original_history,_=split_budget(self._decode(*row))
+            _,retained_source=split_source(original_history)
+            body=wrap_budget(wrap_source(body,retained_source),retained_budget)
             plan_history(body)
             db.execute('UPDATE plan_inputs SET body=?,hash=? WHERE id=?',(canonical(body).decode(),digest(body),target['plan_id']))
             def guard():
@@ -2452,6 +2455,70 @@ class TaskStore:
             eligible=lambda task:ROUTES in accepted and authority._routes(task) is True
             ready=ready_window(plan,states,accepted,eligible) if controls['state']=='active' else []
         return {'ready':ready,'accepted':sorted(accepted),'control_revision':controls['revision'],'execution_authority':False}
+
+    def _plan_source_context(self,connection,plan_id,authority):
+        from .plan_admission import plan_history,reject
+        from .dispatch_budget import split as split_budget
+        from .source_admission import split
+        plan=self._plan_input(connection,plan_id,authority)
+        states,accepted,controls=self._plan_state(connection,plan,authority)
+        row=connection.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(plan_id,)).fetchone()
+        raw=self._decode(*row);history,budget=split_budget(raw);inner,records=split(history)
+        for definition in plan['tasks']:
+            if 'source_admission'in definition and definition['source_admission']['workspace']['canonical_root']!=str(self.root):
+                reject('PLAN_SOURCE_WORKSPACE_MISMATCH')
+        return plan,states,accepted,controls,inner,budget,records,plan_history(raw)[1]
+
+    def plan_source_ready(self,plan_id,*,authority):
+        from .source_admission import source_ready
+        from .plan_admission import reject
+        with self._connection() as db:
+            plan,states,accepted,controls,_,_,records,_=self._plan_source_context(db,plan_id,authority)
+            ready=source_ready(plan,states,accepted,records,authority.development,authority.verify_source) if controls['state']=='active' and authority._development is not None and authority._source_verifier is not None else []
+            authority.check(plan)
+            if authority._controls()!=controls:reject('PLAN_CONTROL_CHANGED')
+            return {'ready':ready,'accepted':sorted(accepted),'source_sha256':digest(records),
+                    'source_records':json.loads(canonical(records)),'control_revision':controls['revision'],
+                    'execution_authority':False,'whole_task_acceptance':False}
+
+    def record_plan_source_evidence(self,plan_id,record,*,expected_source_sha256,authority):
+        from .source_admission import record as validate_record,source_ready,wrap,need
+        from .dispatch_budget import wrap as wrap_budget
+        from .plan_admission import reject,plan_history
+        context={}
+        def guard():
+            if context:
+                authority.check(context['plan'])
+                if authority._controls()!=context['controls']:reject('PLAN_CONTROL_CHANGED')
+                if authority.development(context['definition']) is not True or authority.verify_source(record) is not True:reject('PLAN_SOURCE_UNVERIFIED')
+                if 'predecessors' in context:
+                    states,accepted,_=self._plan_state(db,context['plan'],authority)
+                    current=source_ready(context['plan'],states,accepted,context['predecessors'],authority.development,authority.verify_source,
+                        reconciliation=record if 'reconciles' in record else None)
+                    need(record['task_id'] in current,'PLAN_SOURCE_NOT_READY')
+        with self._connection(True,guard=guard) as db:
+            plan,states,accepted,controls,history,budget,records,versions=self._plan_source_context(db,plan_id,authority)
+            record=validate_record(record,versions)
+            need(record['plan_sha256']==digest(plan),'PLAN_SOURCE_VERSION_MISMATCH')
+            definition=next(t for t in plan['tasks']if t['id']==record['task_id'])
+            context.update(plan=plan,controls=controls,definition=definition)
+            need(controls['state']=='active','PLAN_CONTROL_BLOCKED');guard()
+            previous=next((r for r in records if r['record']['request_id']==record['request_id']),None)
+            command={'expected_source_sha256':expected_source_sha256,'record':record}
+            if previous:
+                need(previous==command,'PLAN_SOURCE_REQUEST_CONFLICT')
+                return {'replayed':True,'source_sha256':digest(records),'execution_rows_created':0}
+            need(expected_source_sha256==digest(records),'PLAN_SOURCE_CAS_STALE')
+            ready=source_ready(plan,states,accepted,records,authority.development,authority.verify_source,
+                reconciliation=record if 'reconciles' in record else None)
+            need(record['task_id'] in ready,'PLAN_SOURCE_NOT_READY')
+            # Revalidate dependency evidence at commit, not just this candidate.
+            context['predecessors']=json.loads(canonical(records))
+            records.append(command)
+            body=wrap_budget(wrap(history,records),budget);plan_history(body)
+            db.execute('UPDATE plan_inputs SET body=?,hash=? WHERE id=?',(canonical(body).decode(),digest(body),plan_id))
+            self.fault('before_plan_source_commit');guard()
+            return {'replayed':False,'source_sha256':digest(records),'execution_rows_created':0}
 
     def admit_plan_window(self,plan_id,*,authority):
         from .plan_admission import ready_window,ROUTES,WINDOW,reject
