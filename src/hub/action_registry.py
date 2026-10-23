@@ -50,12 +50,46 @@ def input_schema(action_id):
     return dict(schema_version='action-input/1', type='object', additionalProperties=False,
                 required=sorted(properties), properties=properties)
 
+def port_contract(action_id, binding):
+    """Closed capabilities of these existing handlers, never model modalities."""
+    validate_binding(binding)
+    if action_id not in ACTIONS: raise ServiceError('ACTION_PORT_REJECTED')
+    handler=ACTIONS[action_id][2]
+    task=action_id=='prepare_ordinary_task'; native=action_id=='native_program'
+    input_type='task_form_navigation_context' if task else 'registered_artifact'
+    output_type='ordinary_task_form' if task else 'sha256_observation' if action_id=='verify_registered_artifact' else 'bytes'
+    version={k:binding[k] for k in ('binding_sha256','object_id','object_revision','source_version',
+                                  'artifact_sha256','candidate_id','candidate_revision','candidate_sha256')}
+    def port(direction, kind):
+        return dict(id=direction,direction=direction,type=kind,version=copy.deepcopy(version))
+    capabilities=([] if native else ['ordinary_task_form_navigation'] if task else
+                  ['registered_artifact_bounded_read','sha256_verification'] if action_id=='verify_registered_artifact'
+                  else ['registered_artifact_bounded_read'])
+    tool=dict(schema_version='action-tool/1',handler=handler,available=not native,capabilities=capabilities,
+              input_types=[] if native else [input_type],output_types=[] if native else [output_type],
+              native_execution=False,durable_completion=False)
+    ports=dict(schema_version='action-ports/1',tool=handler,
+               inputs=[] if native else [port('input',input_type)],outputs=[] if native else [port('output',output_type)])
+    return tool,ports
+
+
+def validate_port_compatibility(value, binding):
+    """Production pre-read guard: serialized wiring never expands this registry."""
+    validate_binding(binding)
+    validate_descriptor(value)
+    if value['binding']!=binding: raise ServiceError('ACTION_PORT_VERSION_CHANGED',status=409)
+    if not value['available'] or not value['tool']['available']:
+        raise ServiceError('ACTION_HANDLER_UNAVAILABLE',status=403)
+    return copy.deepcopy(value)
+
+
 def descriptor(action_id, binding):
     validate_binding(binding)
     if action_id not in ACTIONS: raise ServiceError('ACTION_DESCRIPTOR_INVALID')
     kind,label,handler=ACTIONS[action_id]
     task=action_id=='prepare_ordinary_task'; native=action_id=='native_program'
-    return dict(schema_version='1.1',id=action_id,kind=kind,label=label,handler=handler,
+    tool,ports=port_contract(action_id,binding)
+    return dict(schema_version='1.2',tool=tool,ports=ports,id=action_id,kind=kind,label=label,handler=handler,
         available=not native,reason='NATIVE_HANDLER_UNAVAILABLE' if native else None,binding=copy.deepcopy(binding),
         object_type='Artifact',host=dict(origin=binding['host'],backend_instance=binding['backend_instance']),
         input_schema=input_schema(action_id),required_capabilities=(['existing_ordinary_task_form'] if task else
@@ -73,6 +107,7 @@ def validate_descriptor(value):
     if type(value) is not dict or value.get('id') not in ACTIONS:
         raise ServiceError('ACTION_DESCRIPTOR_INVALID')
     expected=descriptor(value['id'],value.get('binding'))
+    if any(value.get(k)!=expected[k] for k in ('tool','ports')): raise ServiceError('ACTION_PORT_REJECTED')
     if digest(value)!=digest(expected): raise ServiceError('ACTION_DESCRIPTOR_INVALID')
     return value
 
@@ -81,10 +116,12 @@ class ControlledArtifactRead:
     response: object
     receipt: dict
 
-def read_receipt(command,response,handler):
+def read_receipt(command,response,handler,*,declaration):
     return dict(schema_version='local-read/1',run_id='local-read-'+secrets.token_hex(16),handler=handler,
         request_id=command['request_id'],parameter_sha256=digest(command),input_sha256=command['binding']['artifact_sha256'],
         binding_sha256=command['binding']['binding_sha256'],bytes_read=len(response.data),
+        frozen_input=copy.deepcopy(command['binding']),tool=copy.deepcopy(declaration['tool']),
+        ports=copy.deepcopy(declaration['ports']),declaration_sha256=digest(declaration),
         durable_receipt=False,external_effect=False,native_execution=False)
 
 class ActionRegistry:
@@ -118,20 +155,27 @@ class ActionRegistry:
                     projection_version=graph['projection_version'],host=self.host,backend_instance=self.instance,
                     entries=entries,read_only=True,native_execution_available=False)
 
-    def _current(self,binding):
+    def _current(self,binding,action_id='open_registered_artifact'):
         validate_binding(binding)
         if binding['host']!=self.host or binding['backend_instance']!=self.instance:
             raise ServiceError('ACTION_HOST_CHANGED',status=409)
         catalog=self.catalog(binding['project_id'])
-        if not any(action['binding']==binding for entry in catalog['entries']for action in entry['actions']):
-            raise ServiceError('ACTION_BINDING_STALE',status=409)
+        matches=[action for entry in catalog['entries']for action in entry['actions']
+                 if action.get('id')==action_id and action.get('binding')==binding]
+        if len(matches)!=1: raise ServiceError('ACTION_BINDING_STALE',status=409)
+        return validate_port_compatibility(matches[0],binding)
 
-    def read(self,binding,*,authorize):
-        authorize();self._current(binding)
+    def _read_bound(self,binding,*,authorize,action_id):
+        authorize();declaration=self._current(binding,action_id)
         response=self.designs.artifact(binding['artifact_id'],candidate_id=binding['candidate_id'],candidate_revision=binding['candidate_revision'])
         if response.sha256!=binding['artifact_sha256'] or hashlib.sha256(response.data).hexdigest()!=binding['artifact_sha256']:
             raise ServiceError('ACTION_ARTIFACT_CHANGED',status=409)
-        authorize();self._current(binding)
+        authorize();current=self._current(binding,action_id)
+        if current!=declaration: raise ServiceError('ACTION_PORT_VERSION_CHANGED',status=409)
+        return response,declaration
+
+    def read(self,binding,*,authorize):
+        response,_=self._read_bound(binding,authorize=authorize,action_id='open_registered_artifact')
         return response
 
     def verify(self,command,*,authorize):
@@ -140,12 +184,12 @@ class ActionRegistry:
         binding=validate_binding(command['binding'])
         if command['request_id']!=request_id(command['action_id'],binding):
             raise ServiceError('ACTION_REQUEST_CONFLICT',status=409)
-        response=self.read(binding,authorize=authorize)
-        return dict(read_receipt(command,response,'registered_artifact_sha256'),schema_version='1.0',status='verified_read')
+        response,declaration=self._read_bound(binding,authorize=authorize,action_id=command['action_id'])
+        return dict(read_receipt(command,response,'registered_artifact_sha256',declaration=declaration),schema_version='1.0',status='verified_read')
 
     def read_with_receipt(self,binding,*,authorize):
         # One actual read; receipt is an observation, never a durable execution claim.
-        response=self.read(binding,authorize=authorize)
+        response,declaration=self._read_bound(binding,authorize=authorize,action_id='open_registered_artifact')
         command=dict(action_id='open_registered_artifact',binding=binding,
                      request_id=request_id('open_registered_artifact',binding))
-        return ControlledArtifactRead(response,read_receipt(command,response,'controlled_artifact_read'))
+        return ControlledArtifactRead(response,read_receipt(command,response,'controlled_artifact_read',declaration=declaration))

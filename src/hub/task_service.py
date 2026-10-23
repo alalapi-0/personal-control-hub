@@ -622,6 +622,23 @@ class TaskService:
         elif task['payload'].get('kind')=='ordinary_project':
             result.update(kind='ordinary_project',task_spec=copy.deepcopy(task['intent']['task_spec']),
                 classification=task['intent']['grant']['classification'],execution_location=task['project']+' · 已注册文件只读范围')
+        if result.get('kind')=='ordinary_project':
+            from .ordinary_tasks import validate_spec
+            spec=validate_spec(task['intent']['task_spec'])
+            def native_id(value):
+                return value if (type(value)is str and 0<len(value)<=256 and
+                    all(c.isascii() and (c.isalnum() or c in '_.:-') for c in value)) else None
+            thread=native_id(task['thread_id']);turn=native_id(task['turn_id'])
+            result['run_observation']={
+                'schema_version':'task-run-observation/1','run_id':None,
+                'run_id_reason':'NO_NATIVE_RUN_ID_PUBLISHED',
+                'thread_id':thread,'turn_id':turn,'session_id':None,
+                'identity_state':'observed_thread_turn' if thread and turn else 'unknown',
+                'identity_reason':None if thread and turn else 'NATIVE_THREAD_OR_TURN_NOT_ASSIGNED',
+                'session_reason':'SESSION_ID_NOT_PUBLISHED_BY_TASK_RECORD',
+                'input_version':spec['input_version'],'parameter_sha256':digest(spec),
+                'effect_declared':spec['effect'],'native_execution_proven':False,
+                'tool_capability':None,'tool_reason':'NATIVE_CAPABILITY_NOT_PUBLISHED_BY_TASK_RECORD'}
         from .task_lifecycle import lifecycle
         facts=self.store.events(task['id'])
         result['lifecycle']=lifecycle(task,facts)

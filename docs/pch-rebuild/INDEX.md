@@ -1,6 +1,6 @@
 # PCH 全项目重构计划入口
 
-PCH-REBUILD-20261020 / 1.2.0-20261023-source10。采用 [1.2 功能路线](REPLAN_20261023.md) 与 [机器增量](PLAN_DELTA_20261023.json)；本快照仅修正本地包版本引用。当前进度与原生Goal实际状态只读STATE的pch_refactor.rebuild_planning_20261020，不把静态文档当运行账本。
+PCH-REBUILD-20261020 / 1.2.0-20261023-source11。采用 [1.2 功能路线](REPLAN_20261023.md) 与 [机器增量](PLAN_DELTA_20261023.json)；本快照仅修正本地包版本引用。当前进度与原生Goal实际状态只读STATE的pch_refactor.rebuild_planning_20261020，不把静态文档当运行账本。
 
 范围46管理身份、44份真实项目本地计划及2个已合并别名核对包，8阶段25轮259静态任务、208实施验收不变。历史验收基线12/208；本次不重做BASE或已完成调查，初始总上限480及历史费用不重置；当前所有者增额后上限为960，以原State/TaskStore已采用值为准。其他项目未变包按definition_revision/hash复用。
 
