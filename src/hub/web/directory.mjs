@@ -162,7 +162,26 @@ export function graphObjects(snapshot,projectId){
       ||row.source_version!==object.source.version||row.projection_version!==snapshot.projection_version)invalid();
     used.add(k);return {key:k,row,object};
   });
-  return {projectId,sourceVersion:snapshot.source_version,projectionVersion:snapshot.projection_version,entries,unknownTypes:snapshot.unknown_types||{}};
+  const relations=snapshot.relations??[],layouts=snapshot.layouts??[];
+  if(!Array.isArray(relations)||relations.length>20000||!Array.isArray(layouts)||layouts.length>10000)invalid();
+  const relationKeys=new Set(),relationTypes=['managed_by','part_of','depends_on','blocks','consumes','produces','derived_from','references','related_to'];
+  for(const edge of relations){
+    if(!edge||edge.project_id!==projectId||typeof edge.native_id!=='string'||edge.id!==`${projectId}/Relation/${edge.native_id}`
+      ||!(edge.revision===null||typeof edge.revision==='string')||!relationTypes.includes(edge.type)||!['fact','candidate'].includes(edge.identity)
+      ||!edge.source||!Array.isArray(edge.evidence)||!edge.evidence.length||edge.evidence.length>128||edge.evidence.some(e=>typeof e!=='string'||e.length>4096)
+      ||!edge.from||!edge.to||!byKey.has(key(edge.from))||!byKey.has(key(edge.to))||relationKeys.has(key(edge)))invalid();
+    if(edge.identity==='fact'&&[edge.from,edge.to].some(e=>byKey.get(key(e)).identity!=='fact'))invalid();
+    if(edge.management&&(!['accepted','candidate'].includes(edge.management.state)||edge.identity!=='candidate'||!hash(edge.management.item_sha256)))invalid();
+    if(edge.run_id!==null&&edge.run_id!==undefined&&![...byKey.values()].some(o=>o.id===edge.run_id&&o.type==='Run'&&o.identity==='fact'))invalid();
+    relationKeys.add(key(edge));
+  }
+  const layoutKeys=new Set();
+  for(const layout of layouts){
+    const k=JSON.stringify([layout.object_id,layout.object_revision]),lk=JSON.stringify([layout.view_id,k]);
+    if(typeof layout.view_id!=='string'||!byKey.has(k)||layoutKeys.has(lk)||!['x','y','width','height'].every(f=>typeof layout[f]==='number'&&Number.isFinite(layout[f])&&Math.abs(layout[f])<=100000)
+      ||layout.width<=0||layout.height<=0)invalid();layoutKeys.add(lk);
+  }
+  return {projectId,sourceVersion:snapshot.source_version,projectionVersion:snapshot.projection_version,entries,relations,layouts,unknownTypes:snapshot.unknown_types||{}};
 }
 
 export function createGraphReader(request,onChange=()=>{}){

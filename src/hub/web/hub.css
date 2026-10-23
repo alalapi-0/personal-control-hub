@@ -245,3 +245,30 @@ details[open]>summary {margin-bottom:16px}
   .overview-card-work>div{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px}
   .overview-card-work dd{-webkit-line-clamp:1}.overview-card>details[open]{grid-column:1/-1;grid-row:6}
 }
+
+/* Focus is a read-only local view; layout is separate from source coordinates. */
+.focus-graph,.focus-graph-detail,.focus-graph-list{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.focus-graph{border-top:1px solid var(--border);padding-top:16px}
+.focus-graph-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.focus-graph-controls button,.focus-graph-controls select,.focus-graph-controls label,.focus-graph-list button,.focus-graph-detail button{min-height:44px;max-width:100%;white-space:normal}
+.focus-graph-controls label{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;min-height:44px}
+.focus-graph-controls input[type="checkbox"]{width:20px;height:20px;min-height:20px;flex:0 0 20px;margin:0;align-self:center}
+.focus-graph-canvas{display:block;width:100%;height:460px;max-width:100%;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);touch-action:none;overflow:hidden}
+.focus-graph-canvas text{fill:var(--text);font-size:15px;pointer-events:none}
+.focus-node rect{fill:var(--surface);stroke:var(--border);stroke-width:2}
+.focus-node.candidate rect{stroke-dasharray:6 4}
+.focus-node.selected rect,.focus-node:focus-visible rect{stroke:var(--accent);stroke-width:3}
+.focus-node-meta{font-size:13px!important;fill:var(--muted)!important}
+.focus-group rect{fill:var(--surface);stroke:var(--border)}
+.focus-group:focus-visible rect{stroke:var(--accent);stroke-width:3}
+.focus-edge{fill:none;stroke:var(--muted);stroke-width:1.5;pointer-events:stroke}
+.focus-edge.candidate{stroke-dasharray:6 4}
+.focus-graph-canvas marker path{fill:var(--muted)}
+.focus-graph-list{display:grid;gap:8px;padding-inline-start:20px}
+.focus-graph-list li{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.focus-graph-list button[aria-pressed="true"]{border-color:var(--accent);font-weight:600}
+.focus-graph-detail{padding:12px;border-inline-start:3px solid var(--accent)}
+.focus-graph-detail ul{padding-inline-start:20px}.focus-graph-detail li{margin-block:8px}
+.focus-graph button:focus-visible,.focus-graph select:focus-visible,.focus-graph-canvas:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+@media(max-width:600px){.focus-graph-canvas{height:360px}.focus-graph-controls{gap:6px}.focus-graph-controls button{flex:1 1 100px}.focus-graph-controls select{width:100%}.focus-graph-list li{display:block}.focus-graph-list .caption{display:block}.focus-graph-detail{padding:8px}}
+@media(prefers-reduced-motion:reduce){.focus-graph *{scroll-behavior:auto;transition:none;animation:none}}

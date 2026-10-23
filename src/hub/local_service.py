@@ -35,6 +35,7 @@ WEB_ASSETS = {
     "/assets/common.js": ("common.js", "text/javascript; charset=utf-8"),
     "/assets/connection_view.mjs": ("connection_view.mjs", "text/javascript; charset=utf-8"),
     "/assets/directory.mjs": ("directory.mjs", "text/javascript; charset=utf-8"),
+    "/assets/graph.mjs": ("graph.mjs", "text/javascript; charset=utf-8"),
     "/assets/ledger_watch.mjs": ("ledger_watch.mjs", "text/javascript; charset=utf-8"),
     "/assets/captures.mjs": ("captures.mjs", "text/javascript; charset=utf-8"),
     "/assets/page_inventory.mjs": ("page_inventory.mjs", "text/javascript; charset=utf-8"),

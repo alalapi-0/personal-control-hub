@@ -5,6 +5,7 @@ import {renderManagement} from './management.mjs';
 import {renderRelations} from './relations.mjs';
 import {renderTimeline} from './timeline.mjs';
 import {projectDirectory, renderDirectoryTree, renderOverviewCard, renderOverviewFocus, overviewActivity, overviewProject, createGraphReader, renderGraphObjects} from './directory.mjs';
+import {createFocusGraph,pendingGraphView} from './graph.mjs';
 import {watchLedger,replaceProjection} from './ledger_watch.mjs';
 import {renderPageInventory} from './page_inventory.mjs';
 import {renderCaptures} from './captures.mjs';
@@ -327,13 +328,35 @@ async function projectsPage(token){
   const focusBody=el('div'),graphBody=el('div'),selection=el('select',{id:'overview-selection','aria-label':'聚焦项目'});
   const overview=el('section',{className:'overview-section stack'},el('label',{className:'field overview-select',htmlFor:'overview-selection'},'聚焦项目',selection),focusBody);
   const activity=el('details',{className:'overview-activity'});
+  let graphView=null,savedGraph=pendingGraphView(saved?.graph,selectedProject);
+  const qualifiedObjectFocus=(value,graph)=>graph&&value?.projectId===graph.projectId&&value.projectionVersion===graph.projectionVersion&&typeof value.key==='string'&&value.key.length<=8192&&['svg','list'].includes(value.surface)
+    ?{projectId:value.projectId,projectionVersion:value.projectionVersion,key:value.key,surface:value.surface}:null;
+  let pendingObjectFocus=saved?.key===(location.hash||'#projects')?qualifiedObjectFocus(saved?.focus?.graph,savedGraph):null;
+  const focusAtRead=document.activeElement;
+  const cancelObjectFocus=()=>{pendingObjectFocus=null;};
+  const noticeFocus=event=>{if(event.target!==main&&event.target!==document.body)cancelObjectFocus();};
+  window.addEventListener('pointerdown',cancelObjectFocus,true);window.addEventListener('keydown',cancelObjectFocus,true);main.addEventListener('focusin',noticeFocus);
+  function clearGraph(){graphView?.dispose();graphView=null;graphBody.replaceChildren();}
   const reader=createGraphReader(api,state=>{
-    if(token===generation&&state.projectId===selectedProject)graphBody.replaceChildren(renderGraphObjects(state,{retry:()=>reader.retry()}));
+    if(token!==generation||state.projectId!==selectedProject)return;
+    savedGraph=pendingGraphView(graphView?.state()||savedGraph,selectedProject);clearGraph();
+    if(state.kind==='ready'){
+      graphView=createFocusGraph(state.snapshot,{saved:savedGraph,onChange:()=>remember(),
+        onProject:id=>{if(directoryProjects.some(p=>p.project_id===id))chooseProject(id);}});
+      graphBody.replaceChildren(graphView.element);savedGraph=graphView.state();
+      const active=document.activeElement;
+      if(pendingObjectFocus&&(active===document.body||active===main||active===focusAtRead))graphView.restoreFocus(pendingObjectFocus);
+      pendingObjectFocus=null;remember();
+    }else {
+      if(state.kind!=='loading'){savedGraph=null;pendingObjectFocus=null;}
+      graphBody.replaceChildren(renderGraphObjects(state,{retry:()=>reader.retry()}));
+      if(state.kind!=='loading')remember();
+    }
   });
   function drawFocus(){
     selection.replaceChildren(...directoryProjects.map(p=>el('option',{value:p.project_id},p.name)));
     const selected=directoryProjects.find(p=>p.project_id===selectedProject);
-    if(!selected){focusBody.replaceChildren(el('p',{},'所选项目当前不可用，目录内容保留。'));reader.clear();graphBody.replaceChildren();return;}
+    if(!selected){focusBody.replaceChildren(el('p',{},'所选项目当前不可用，目录内容保留。'));reader.clear();clearGraph();savedGraph=null;pendingObjectFocus=null;return;}
     selection.value=selectedProject;focusBody.replaceChildren(renderOverviewFocus(selected));
     const allowed=graphOwnerAllowed&&overviewProject(selected).readAllowed;
     if(reader.state.projectId!==selectedProject||reader.state.kind==='disabled'&&allowed)reader.select(selectedProject,allowed);
@@ -343,9 +366,9 @@ async function projectsPage(token){
       changes.recent.length?el('ul',{},...changes.recent.slice(0,6).map(p=>el('li',{},p.name+' · 来源事实更新时间 '+dataTime(p.factAt)))):el('p',{},'近期业务变化时间未知。'),
       changes.attention.length?el('ul',{},...changes.attention.slice(0,8).map(p=>el('li',{},p.name+' · '+p.collection))):el('p',{},'当前目录未标出来源异常。'));
   }
-  function chooseProject(id){selectedProject=id;drawFocus();scheduleRemember();selection.focus({preventScroll:true});}
+  function chooseProject(id){if(id!==selectedProject){savedGraph=null;pendingObjectFocus=null;}selectedProject=id;drawFocus();scheduleRemember();selection.focus({preventScroll:true});}
   selection.addEventListener('change',()=>chooseProject(selection.value));
-  const identityChange=event=>{graphOwnerAllowed=event.detail?.owner_authenticated===true;if(!graphOwnerAllowed){reader.clear();graphBody.replaceChildren(renderGraphObjects({kind:'disabled'}));}else drawFocus();};
+  const identityChange=event=>{graphOwnerAllowed=event.detail?.owner_authenticated===true;if(!graphOwnerAllowed){reader.clear();clearGraph();savedGraph=null;pendingObjectFocus=null;graphBody.replaceChildren(renderGraphObjects({kind:'disabled'}));remember();}else drawFocus();};
   window.addEventListener('hub:identity',identityChange);
 
   for(const [key,control] of Object.entries({q:search,status,freshness:fresh,group,view})){
@@ -356,8 +379,11 @@ async function projectsPage(token){
     clearTimeout(rememberTimer);
     if(parseHubRoute(location.hash).kind!=='projects'||parseHubRoute(location.hash).parts[1])return;
     const active=document.activeElement;
-    const focus=active?.id&&active.id!=='main'?{id:active.id}:active?.closest?.('[data-project-id]')?{project:active.closest('[data-project-id]').dataset.projectId}:history.state?.directory?.focus;
-    const directory={key:lastDirectoryHash,x:scrollX,y:scrollY,focus,selectedProject,
+    const graph=graphView?.state()||(reader.state.kind==='loading'&&graphOwnerAllowed?pendingGraphView(savedGraph,selectedProject):null);
+    const objectFocus=graphView?.focusIdentity(active);
+    let focus=objectFocus?{graph:objectFocus}:active?.id&&active.id!=='main'?{id:active.id}:active?.closest?.('[data-project-id]')?{project:active.closest('[data-project-id]').dataset.projectId}:history.state?.directory?.focus;
+    if(focus?.graph){const qualified=qualifiedObjectFocus(focus.graph,graph);focus=qualified?{graph:qualified}:null;}
+    const directory={key:lastDirectoryHash,x:scrollX,y:scrollY,focus,selectedProject,graph,
       open:[...content.querySelectorAll('details[data-project-id][open]')].map(n=>n.dataset.projectId)};
     if(location.hash===lastDirectoryHash&&JSON.stringify(history.state?.directory)===JSON.stringify(directory))return;
     history.replaceState({...history.state,directory},'',lastDirectoryHash);
@@ -399,7 +425,7 @@ async function projectsPage(token){
   // limits and silently disable otherwise valid links.
   const save=scheduleRemember, beforeClick=event=>{if(event.target.closest('a'))remember();};
   window.addEventListener('scroll',save,{passive:true});main.addEventListener('focusin',save);main.addEventListener('click',beforeClick,true);content.addEventListener('toggle',save,true);
-  stopDirectoryObservation=()=>{reader.clear();window.removeEventListener('hub:identity',identityChange);clearTimeout(rememberTimer);window.removeEventListener('scroll',save);main.removeEventListener('focusin',save);main.removeEventListener('click',beforeClick,true);content.removeEventListener('toggle',save,true);};
+  stopDirectoryObservation=()=>{remember();reader.clear();clearGraph();savedGraph=null;pendingObjectFocus=null;window.removeEventListener('pointerdown',cancelObjectFocus,true);window.removeEventListener('keydown',cancelObjectFocus,true);main.removeEventListener('focusin',noticeFocus);window.removeEventListener('hub:identity',identityChange);clearTimeout(rememberTimer);window.removeEventListener('scroll',save);main.removeEventListener('focusin',save);main.removeEventListener('click',beforeClick,true);content.removeEventListener('toggle',save,true);};
   if(saved?.key===(location.hash||'#projects'))requestAnimationFrame(()=>{
     if(token!==generation)return;
     const focus=saved.focus?.id?document.getElementById(saved.focus.id):[...content.querySelectorAll('[data-project-id]')].find(n=>n.dataset.projectId===saved.focus?.project);
@@ -408,7 +434,7 @@ async function projectsPage(token){
   reconcileVisible=async()=>{
     const next=await loadProjectDirectory(api);if(token!==generation)return;
     await syncFeedback(next,token);if(token!==generation)return;
-    reader.clear();directoryProjects=next.projects;lastProjects=next.projects;
+    if(graphView)savedGraph=graphView.state();reader.clear();clearGraph();directoryProjects=next.projects;lastProjects=next.projects;
     projectNames.clear();for(const project of next.projects)projectNames.set(project.project_id,project.name);
     filter();
     const old=main.querySelector('[aria-label="刷新范围"]');

@@ -1,3 +1,4 @@
+import "./test_hub_graph.mjs";
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {projectDirectory,projectSearchMatch,renderDirectoryTree,overviewProject,overviewActivity,renderOverviewCard,renderOverviewFocus,graphObjects,createGraphReader,renderGraphObjects} from '../src/hub/web/directory.mjs';
