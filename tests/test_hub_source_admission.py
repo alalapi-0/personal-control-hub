@@ -424,3 +424,129 @@ class SourceAdmissionTests(unittest.TestCase):
         resolution = self.resolution(['unknown-producer'])
         self.assertEqual(source_ready(self.p, {}, set(), rows, lambda _: True,
                                      lambda _: True, reconciliation=resolution), [])
+
+
+class PersonalStyleSourceAdmissionTests(unittest.TestCase):
+    """Only the selected original ID; trusted callbacks are synthetic, not a grant."""
+    ident = 'P5-personal-style-hub-01'
+    onboard = 'P1-R1-PCH-ONBOARD'
+    dag = 'P2-R2-PCH-DAG'
+    definition = SourceAdmissionTests.definition
+    policy = SourceAdmissionTests.policy
+    configure = SourceAdmissionTests.configure
+    candidate = SourceAdmissionTests.candidate
+    view = SourceAdmissionTests.view
+    record = SourceAdmissionTests.record
+
+    def setUp(self):
+        f = fixtures.PlanStoreTests(); f.setUp(); self.addCleanup(f.doCleanups)
+        self.f = f; self.store = f.store; self.control = f.control
+        self.records = {}; self.verified = set(); self.develop = True
+        dag = fixtures.task(self.dag); dag['dispatch_priority'] = 20
+        self.p = fixtures.plan([fixtures.task(BASE), dag, fixtures.task(ROUTES),
+                               fixtures.task(self.onboard, [BASE]),
+                               fixtures.task(self.ident, [self.onboard])])
+        self.p['revision'] = '1.2.0-synthetic-psh'
+        self.definition(self.ident)['source_admission'] = self.policy([
+            {'task_id': BASE, 'kind': 'accepted'}, {'task_id': self.dag, 'kind': 'accepted'}])
+        self.configure(); self.store.import_plan(self.p, authority=self.cap)
+
+    def accept_dependencies(self):
+        for ident in (BASE, self.dag):
+            r = self.f.evidence(ident); r['plan_sha256'] = digest(self.p)
+            self.records[ident] = r; self.configure()
+            self.store.record_plan_evidence(self.p['plan_id'], r, authority=self.cap)
+
+    def assert_execution_still_closed(self):
+        view = self.store.plan_ready(self.p['plan_id'], authority=self.cap)
+        self.assertNotIn(self.ident, view['ready'])
+        self.assertNotIn(self.onboard, view['accepted'])
+        self.assertNotIn(ROUTES, view['accepted'])
+        self.assertEqual(self.store.admit_plan_window(self.p['plan_id'], authority=self.cap)['admitted'], [])
+        self.assertEqual(self.store.tasks(), [])
+        self.assertEqual(set(view['accepted']), {BASE, self.dag})
+
+    def test_exact_id_source_ready_requires_accepted_inputs_not_normal_onboarding(self):
+        original_ids = frozenset('''P3-R1-PCH-GRAPH P3-R1-PCH-RELATIONS P3-R2-PCH-OVERVIEW P3-R2-PCH-FOCUS P3-R3-PCH-ACTIONS P3-R3-PCH-IMPACT P3-R3-PCH-PORTS P6-R1-PCH-PRECISE-SAVE P6-R1-PCH-SEMANTIC-UI P6-R2-PCH-ARTIFACTS P6-R2-PCH-VERSION'''.split())
+        self.assertEqual(SOURCE_IDS, original_ids | {self.ident})
+        self.assertNotIn(self.ident, BOOTSTRAP_IDS)
+        for foreign in ('P5-personal-style-hub-02', 'P5-other-project-01'):
+            p = copy.deepcopy(self.p); self_task = next(t for t in p['tasks'] if t['id'] == self.ident)
+            self_task['id'] = foreign
+            with self.subTest(foreign=foreign), self.assertRaises(ServiceError): validate_plan(p)
+        self.assertEqual(self.view()['ready'], [])
+        # One accepted input is insufficient: all explicit source dependencies hold.
+        r = self.f.evidence(BASE); r['plan_sha256'] = digest(self.p)
+        self.records[BASE] = r; self.configure()
+        self.store.record_plan_evidence(self.p['plan_id'], r, authority=self.cap)
+        self.assertEqual(self.view()['ready'], [])
+        self.accept_dependencies()
+        self.assertEqual(self.view()['ready'], [self.ident])
+        r = self.candidate(self.ident, request='psh-source')
+        self.record(r)
+        self.assert_execution_still_closed()
+        with self.store._connection() as db:
+            self.assertEqual(db.execute('SELECT count(*)FROM plan_receipts').fetchone()[0], 2)
+            self.assertEqual(db.execute('SELECT count(*)FROM plan_conflicts').fetchone()[0], 0)
+        self.assertEqual(self.definition(self.ident)['depends_on'], [self.onboard])
+        self.assertEqual(self.view()['source_records'][0]['record'], r)
+
+    def test_wrong_workspace_inputs_owned_and_request_cas_refuse_without_effects(self):
+        self.accept_dependencies(); before = self.store.path.read_bytes()
+        mutations = [lambda r: r['workspace'].update(canonical_root='/synthetic/foreign'),
+                     lambda r: r['workspace'].update(delivery_root='/synthetic/foreign-delivery'),
+                     lambda r: r['workspace'].update(native_thread_id='foreign-thread'),
+                     lambda r: r['inputs'][0].update(sha256='f' * 64),
+                     lambda r: r['inputs'][0].update(path='other.json'),
+                     lambda r: r.update(owned_paths=['src/unowned.py'])]
+        for n, mutate in enumerate(mutations):
+            r = self.candidate(self.ident, request='psh-invalid-' + str(n)); mutate(r)
+            self.verified.add(digest(r)) # Serialized evidence cannot override exact policy binding.
+            with self.subTest(n=n), self.assertRaises(ServiceError): self.record(r)
+            self.assertEqual(self.store.path.read_bytes(), before)
+        r = self.candidate(self.ident, request='psh-valid'); expected = self.view()['source_sha256']
+        self.record(r, expected); committed = self.store.path.read_bytes()
+        self.assertTrue(self.record(r, expected)['replayed'])
+        with self.assertRaises(ServiceError) as error:
+            self.record(self.candidate(self.ident, request='psh-valid', candidate='e'), expected)
+        self.assertEqual(error.exception.code, 'PLAN_SOURCE_REQUEST_CONFLICT')
+        with self.assertRaises(ServiceError) as error:
+            self.record(self.candidate(self.ident, request='psh-stale'), expected)
+        self.assertEqual(error.exception.code, 'PLAN_SOURCE_CAS_STALE')
+        self.assertEqual(self.store.path.read_bytes(), committed)
+        self.assert_execution_still_closed()
+
+    def test_live_permission_revocation_and_unknown_never_open_execution_or_acceptance(self):
+        self.accept_dependencies(); self.develop = False
+        self.assertEqual(self.view()['ready'], [])
+        with self.assertRaises(ServiceError): self.record(self.candidate(self.ident))
+        self.develop = True; r = self.candidate(self.ident, request='psh-observed'); self.record(r)
+        self.verified.remove(digest(r)); self.assertEqual(self.view()['ready'], [])
+        self.assert_execution_still_closed()
+        self.verified.add(digest(r))
+        unknown = self.candidate(self.ident, request='psh-unknown', status='unknown'); self.record(unknown)
+        self.assertEqual(self.view()['ready'], [])
+        before = self.store.path.read_bytes()
+        with self.assertRaises(ServiceError): self.record(self.candidate(self.ident, request='psh-no-reconcile'))
+        self.assertEqual(self.store.path.read_bytes(), before)
+        self.assertEqual([entry['record'] for entry in self.view()['source_records']], [r, unknown])
+        self.assert_execution_still_closed()
+
+    def test_pause_control_drift_and_cancel_remain_authoritative_for_exact_id(self):
+        self.accept_dependencies(); r = self.candidate(self.ident, request='psh-control')
+        before = self.store.path.read_bytes(); self.control['state'] = 'paused'
+        self.assertEqual(self.view()['ready'], [])
+        with self.assertRaises(ServiceError): self.record(r)
+        self.control['state'] = 'active'
+        def drift(phase):
+            if phase == 'before_plan_source_commit': self.control['revision'] += 1
+        self.store.fault = drift
+        with self.assertRaises(ServiceError) as error: self.record(r)
+        self.assertEqual(error.exception.code, 'PLAN_CONTROL_CHANGED')
+        self.assertEqual(self.store.path.read_bytes(), before)
+        self.store.fault = lambda _: None
+        cancel = self.candidate(self.ident, request='psh-cancelled', status='cancelled'); self.record(cancel)
+        self.assertEqual(self.view()['ready'], [])
+        with self.assertRaises(ServiceError): self.record(r)
+        self.assertEqual(self.view()['source_records'][0]['record'], cancel)
+        self.assert_execution_still_closed()
