@@ -22,6 +22,20 @@ def _private_path(value):
     return value == '/' or _ABSOLUTE_PATH.search(public) is not None
 
 
+def _public_field_selector(value):
+    """Only an exact, bounded logical key/index selector is public provenance.
+
+    This exception belongs to selector.path, never a general filesystem path key.
+    Validation grants no source access and does not resolve any supplied value.
+    """
+    from .connection_records import validate_selector
+    if type(value) is not dict or set(value) != {'path'}: return False
+    try: validate_selector(value)
+    except (ValueError, TypeError): return False
+    return all(type(part) is int or (part not in {'.', '..'} and '/' not in part and '\\' not in part
+               and not any(ord(c) < 32 or ord(c) == 127 for c in part)) for part in value['path'])
+
+
 def safe(value):
     """Discard private path text without altering graph object identity fields."""
     if type(value) is str:
@@ -29,7 +43,7 @@ def safe(value):
     if type(value) is list:
         return [safe(v) for v in value]
     if type(value) is dict:
-        result = {k: safe(v) for k, v in value.items()
+        result = {k: (copy.deepcopy(v) if k == 'selector' and _public_field_selector(v) else safe(v)) for k, v in value.items()
                   if k not in _PRIVATE_FIELDS and not _private_path(k)}
         # A redacted fact cell is unknown, never a known null/partial value.
         if type(value.get('state')) is str and value['state'] in {'known', 'empty', 'not_applicable'} and 'value' in value and result.get('value') != value['value']:
@@ -141,7 +155,93 @@ def project_graph(dto):
                 if item.get('sha256') is not None:
                     data['artifact']['sha256'] = {'value': item['sha256'], 'unknown_reason': None}
             obj(kind, ident, ident, revision, data, src, identity='candidate')
+    _management_relations(dto, root, objects, relations)
     return graph(project, version, objects, relations, projected_at=fresh.get('projected_at'))
+
+
+def _management_relations(dto, root, objects, relations):
+    """Project only this authorized DTO's overlay, never fetch other projects.
+
+    Accepted management is still an overlay, not an observed source/run fact.
+    Cross-project Project nodes are registry references with unknown business data.
+    """
+    from .management_store import validate_overlay
+    state = dto.get('management') or {}
+    overlay = state.get('overlay')
+    if not state.get('available') or overlay is None: return
+    try: validate_overlay(overlay, dto['project_id'])
+    except (ValueError, TypeError, KeyError): need(False)
+    project = dto['project_id']; configured = overlay.get('relations') or {}
+    items = copy.deepcopy((configured.get('typed') or {}).get('items', []))
+    local_version = digest(configured)
+    # The original three project relations retain their management meaning.
+    for kind, targets in [('managed_by', [configured['belongs_to']] if configured.get('belongs_to') else []),
+                          ('related_to', configured.get('related_to', []))]:
+        for target in targets:
+            items.append({'id': 'legacy-' + digest([project, kind, target]), 'revision': local_version,
+                'type': kind, 'from': {'project_id': project, 'type': 'Project', 'native_id': project, 'revision': root['revision']},
+                'to': {'project_id': target, 'type': 'Project', 'native_id': target, 'revision': None},
+                'state': 'accepted', 'origin': 'explicit', 'created_at': None, 'run': None,
+                'evidence': [{'ref': 'management:legacy:' + kind, 'sha256': local_version}]})
+    gaps = [{'id': 'legacy-' + digest([project, 'depends_on', target]), 'reason': 'Project dependency is management only; no real Task endpoints are published.'}
+            for target in configured.get('depends_on', [])]
+    options = {v['id']: v for v in state.get('project_options', [])}
+    lookup = {(o['project_id'], o['type'], o['native_id'], o['revision']): o for o in objects}
+
+    def endpoint(ref):
+        key = tuple(ref[k] for k in ('project_id', 'type', 'native_id', 'revision'))
+        if key in lookup: return lookup[key]
+        target = ref['project_id']
+        if target == project or target not in options or ref['type'] != 'Project' or ref['native_id'] != target or ref['revision'] is not None:
+            return None
+        value = {'id': stable_id(project, 'Project', 'registered:' + target), 'project_id': project,
+                 'type': 'Project', 'native_id': 'registered:' + target, 'revision': None,
+                 'label': safe(options[target].get('name')) or target, 'identity': 'fact',
+                 'source': {'ref': 'registry:' + target, 'version': None, 'sha256': None, 'fact_time': None,
+                            'collected_at': None, 'origin': 'registry', 'applicability': 'unknown',
+                            'unknown_reason': 'Authorized registered reference only; target business and version are not read.'},
+                 'data': {'reference_project_id': target, 'scope': 'registered_reference_only', 'business_state': {'state': 'unknown'}},
+                 'explanations': explanations()}
+        lookup[key] = value; return value
+
+    for item in items:
+        evidence = [proof['ref'] for proof in item['evidence']]
+        if any(_private_path(proof) for proof in evidence):
+            gaps.append({'id': item['id'], 'reason': _PRIVACY_REASON}); continue
+        a, b = endpoint(item['from']), endpoint(item['to'])
+        run = endpoint(item['run']) if item['run'] is not None else None
+        if a is None or b is None or item['run'] is not None and (run is None or run['type'] != 'Run' or run['identity'] != 'fact'):
+            gaps.append({'id': item['id'], 'reason': 'Exact authorized endpoint/version or real published run is unavailable.'}); continue
+        if item['state'] == 'accepted' and item['type'] in {'depends_on', 'blocks'}:
+            # Source revisions may conflict with a previously accepted overlay.
+            # Preserve the overlay/audit, but never publish a cyclic task DAG.
+            links = {}
+            for existing in relations:
+                if existing['type'] not in {'depends_on', 'blocks'} or not (existing['identity'] == 'fact' or existing.get('management', {}).get('state') == 'accepted'): continue
+                x, y = ((existing[k]['id'], existing[k]['revision']) for k in ('from', 'to'))
+                if existing['type'] == 'blocks': x, y = y, x
+                links.setdefault(x, []).append(y)
+            x, y = ((value['id'], value['revision']) for value in (a, b))
+            if item['type'] == 'blocks': x, y = y, x
+            pending = [y]; visited = set()
+            while pending:
+                node = pending.pop()
+                if node in visited: continue
+                visited.add(node); pending.extend(links.get(node, []))
+            if x in visited:
+                gaps.append({'id': item['id'], 'reason': 'Accepted overlay conflicts with the published source task DAG; dependency not projected.'}); continue
+        for value in (a, b):
+            if value not in objects: objects.append(value)
+        native = 'management:' + item['id']; version = digest(item)
+        relations.append({'id': stable_id(project, 'Relation', native), 'project_id': project, 'native_id': native,
+            'revision': str(item['revision']), 'type': item['type'],
+            'from': {'id': a['id'], 'revision': a['revision']}, 'to': {'id': b['id'], 'revision': b['revision']},
+            'identity': 'candidate', 'management': {'state': item['state'], 'origin': item['origin'], 'item_sha256': version},
+            'source': {'ref': 'management:' + item['id'], 'version': version, 'sha256': version,
+                       'fact_time': item['created_at'], 'collected_at': None, 'origin': 'hub_management', 'applicability': 'current',
+                       'unknown_reason': 'Management confirmation does not establish source facts or execution authority.'},
+            'evidence': evidence, 'run_id': run['id'] if run else None})
+    root['data']['relation_gaps'] = gaps
 
 
 class GraphService:

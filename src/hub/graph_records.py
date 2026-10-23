@@ -101,7 +101,12 @@ def validate_graph(value):
     need(type(value['relations']) is list and len(value['relations']) <= 20000)
     edges = {}; dependencies = {}
     for edge in value['relations']:
-        exact(edge, {'id', 'project_id', 'native_id', 'revision', 'type', 'from', 'to', 'evidence', 'source', 'identity', 'run_id'})
+        exact(edge, {'id', 'project_id', 'native_id', 'revision', 'type', 'from', 'to', 'evidence', 'source', 'identity', 'run_id'} | ({'management'} if 'management' in edge else set()))
+        if 'management' in edge:
+            exact(edge['management'], {'state', 'origin', 'item_sha256'})
+            need(edge['management']['state'] in {'candidate', 'accepted'} and edge['management']['origin'] in {'explicit', 'inferred'})
+            need(type(edge['management']['item_sha256']) is str and SHA.fullmatch(edge['management']['item_sha256']))
+            need(edge['source']['origin'] == 'hub_management' and edge['identity'] == 'candidate')
         need(edge['project_id'] == value['project_id'] and edge['type'] in RELATIONS)
         need(edge['id'] == stable_id(value['project_id'], 'Relation', edge['native_id']))
         text(edge['revision'], nullable=True); source(edge['source'])
@@ -115,6 +120,7 @@ def validate_graph(value):
         if edge['run_id'] is not None: need(any(o['id'] == edge['run_id'] and o['type'] == 'Run' and o['identity'] == 'fact' for o in objects.values()))
         if edge['type'] in {'depends_on', 'blocks'}:
             need(all(t['type'] == 'Task' for t in targets))
+        if edge['type'] in {'depends_on', 'blocks'} and (edge['identity'] == 'fact' or edge.get('management', {}).get('state') == 'accepted'):
             a, b = ((edge['from']['id'], edge['from']['revision']), (edge['to']['id'], edge['to']['revision']))
             if edge['type'] == 'blocks': a, b = b, a
             dependencies.setdefault(a, []).append(b)

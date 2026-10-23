@@ -25,6 +25,64 @@ HISTORY_FIELDS = {'request_id', 'request_hash', 'revision', 'project_id', 'opera
 COMMAND_FIELDS = {'request_id', 'expected_revision', 'expected_hash', 'project_id', 'operation', 'value'}
 
 
+def validate_relation_ref(value):
+    exact(value, {'id', 'sha256'}, 'relation confirmation')
+    identifier(value['id'], 'relation')
+    require(type(value['sha256']) is str and re.fullmatch('[0-9a-f]{64}', value['sha256']), 'invalid relation hash')
+
+
+def validate_typed_relations(value, project_id=None):
+    """Optional management vocabulary; no source facts or execution authority."""
+    from .graph_records import RELATIONS, TYPES, ID
+    exact(value, {'schema_version', 'items'}, 'typed relations')
+    require(value['schema_version'] == '1.0', 'unsupported typed relations')
+    require(type(value['items']) is list and len(value['items']) <= 1000, 'invalid typed relations')
+    seen = set()
+    for item in value['items']:
+        exact(item, {'id', 'revision', 'type', 'from', 'to', 'state', 'origin', 'evidence', 'created_at', 'run'}, 'typed relation')
+        identifier(item['id'], 'relation'); require(item['id'] not in seen, 'duplicate typed relation'); seen.add(item['id'])
+        require(type(item['revision']) is int and item['revision'] > 0, 'invalid relation revision')
+        require(item['type'] in RELATIONS and item['state'] in ('candidate', 'accepted')
+                and item['origin'] in ('explicit', 'inferred'), 'invalid relation classification')
+        for endpoint in (item['from'], item['to'], *([item['run']] if item['run'] is not None else [])):
+            exact(endpoint, {'project_id', 'type', 'native_id', 'revision'}, 'relation endpoint')
+            identifier(endpoint['project_id'], 'project')
+            require(endpoint['type'] in TYPES and type(endpoint['native_id']) is str
+                    and ID.fullmatch(endpoint['native_id']), 'invalid relation endpoint')
+            require(endpoint['revision'] is None or type(endpoint['revision']) is str
+                    and 0 < len(endpoint['revision']) <= 4096 and not any(ord(c) < 32 for c in endpoint['revision']), 'invalid endpoint revision')
+        if project_id is not None:
+            require(item['from']['project_id'] == project_id, 'relation must originate in its project')
+        if item['run'] is not None: require(item['run']['type'] == 'Run', 'invalid relation run')
+        if item['type'] in ('depends_on', 'blocks'):
+            require(item['from']['type'] == item['to']['type'] == 'Task', 'execution dependency requires tasks')
+        require(type(item['evidence']) is list and 1 <= len(item['evidence']) <= 20, 'relation evidence required')
+        for proof in item['evidence']:
+            exact(proof, {'ref', 'sha256'}, 'relation evidence')
+            require(type(proof['ref']) is str and 0 < len(proof['ref']) <= 500
+                    and not any(ord(c) < 32 for c in proof['ref']), 'invalid evidence reference')
+            require(type(proof['sha256']) is str and re.fullmatch('[0-9a-f]{64}', proof['sha256']), 'invalid evidence hash')
+        require(type(item['created_at']) is str, 'invalid relation time')
+        require(datetime.fromisoformat(item['created_at']).tzinfo is not None, 'relation time needs timezone')
+    return copy.deepcopy(value)
+
+
+def _confirm_relation(overlay, ref):
+    validate_relation_ref(ref)
+    result = copy.deepcopy(overlay)
+    items = ((result or {}).get('relations') or {}).get('typed', {}).get('items', [])
+    item = next((item for item in items if item['id'] == ref['id']), None)
+    require(item is not None and item['state'] == 'candidate' and content_hash(item) == ref['sha256'], 'relation candidate changed')
+    item['state'] = 'accepted'; item['revision'] += 1
+    return result
+
+
+def _accepted_unchanged(before, after):
+    old = {i['id']: i for i in (((before or {}).get('relations') or {}).get('typed') or {}).get('items', [])}
+    for item in (((after or {}).get('relations') or {}).get('typed') or {}).get('items', []):
+        require(item['state'] != 'accepted' or old.get(item['id']) == item, 'accept relation individually')
+
+
 def validate_proposal_ref(value):
     exact(value,{'source_sha256','proposal_id','proposal_hash','registry_sha256'},'proposal reference')
     identifier(value['proposal_id'],'proposal')
@@ -92,7 +150,8 @@ def validate_overlay(value, project_id=None):
             require(type(number) in (int, float) and 0 <= number <= limit and math.isfinite(number), 'invalid layout')
     relations = value['relations']
     if relations is not None:
-        exact(relations, {'belongs_to', 'depends_on', 'related_to', 'independent'}, 'management relations')
+        exact(relations, {'belongs_to', 'depends_on', 'related_to', 'independent'} | ({'typed'} if 'typed' in relations else set()), 'management relations')
+        if 'typed' in relations: validate_typed_relations(relations['typed'], project_id)
         require(relations['independent'] is None or type(relations['independent']) is bool, 'invalid independence')
         if relations['belongs_to'] is not None: identifier(relations['belongs_to'], 'parent')
         for key in ('depends_on', 'related_to'):
@@ -120,11 +179,28 @@ def _validate_projects(projects, *, version="1.3"):
             relation = projects[current]['relations']
             current = relation['belongs_to'] if relation else None
         done.update(path)
+    # Only explicitly accepted task dependencies form a DAG. Legacy project
+    # dependencies remain management warnings; informational/candidate cycles are legal.
+    dependencies = {}
+    for overlay in projects.values():
+        for item in ((overlay.get('relations') or {}).get('typed') or {}).get('items', []):
+            if item['state'] != 'accepted' or item['type'] not in ('depends_on', 'blocks'): continue
+            a, b = (tuple(item[k][f] for f in ('project_id', 'type', 'native_id', 'revision')) for k in ('from', 'to'))
+            if item['type'] == 'blocks': a, b = b, a
+            dependencies.setdefault(a, []).append(b)
+    done = set()
+    def visit(node, active):
+        require(node not in active, 'typed dependency cycle')
+        if node in done: return
+        for child in dependencies.get(node, []): visit(child, active | {node})
+        done.add(node)
+    for node in dependencies: visit(node, set())
 
 
-def _request_hash(request_id, project_id, operation, value, proposal_ref=None):
+def _request_hash(request_id, project_id, operation, value, proposal_ref=None, relation_ref=None):
     payload={'request_id': request_id, 'project_id': project_id, 'operation': operation, 'value': value}
     if proposal_ref is not None:payload['proposal_ref']=proposal_ref
+    if relation_ref is not None:payload['relation_ref']=relation_ref
     return content_hash(payload)
 
 
@@ -137,25 +213,32 @@ def validate_management_state(config):
     require(type(history) is list and len(history) == config['revision'], 'invalid management history')
     projects = {}; requests = set()
     for revision, entry in enumerate(history, 1):
-        exact(entry, HISTORY_FIELDS|({'proposal_ref'} if 'proposal_ref'in entry else set()), 'management history entry')
+        exact(entry, HISTORY_FIELDS|({'proposal_ref'} if 'proposal_ref'in entry else set())|({'relation_ref'} if 'relation_ref' in entry else set()), 'management history entry')
         if 'proposal_ref'in entry:
             require(version=='1.4' and entry['operation']=='set','proposal reference requires management 1.4 set')
             validate_proposal_ref(entry['proposal_ref'])
         identifier(entry['request_id'], 'request'); identifier(entry['project_id'], 'project')
         require(entry['request_id'] not in requests, 'duplicate management request'); requests.add(entry['request_id'])
         require(type(entry['revision']) is int and entry['revision'] == revision, 'management history revision gap')
-        require(entry['operation'] in ('set', 'retract'), 'invalid management operation')
+        require(entry['operation'] in ('set', 'retract', 'accept_relation'), 'invalid management operation')
         require(type(entry['created_at']) is str, 'invalid history time')
         try: stamp = datetime.fromisoformat(entry['created_at'])
         except ValueError: require(False, 'invalid history time')
         require(stamp.tzinfo is not None, 'history time needs timezone')
         project_id = entry['project_id']
         require(entry['before'] == projects.get(project_id), 'management history preimage mismatch')
-        if entry['operation'] == 'set':
+        if entry['operation'] == 'accept_relation':
+            require('relation_ref' in entry and 'proposal_ref' not in entry, 'relation confirmation reference required')
+            require(entry['after'] == _confirm_relation(entry['before'], entry['relation_ref']), 'confirmation changed other fields')
+        else: require('relation_ref' not in entry, 'unexpected relation confirmation')
+        if entry['operation'] == 'set': _accepted_unchanged(entry['before'], entry['after'])
+        if entry['after'] and (entry['after'].get('relations') or {}).get('typed') is not None:
+            require(version == '1.4', 'typed relation envelope requires management 1.4')
+        if entry['operation'] in ('set', 'accept_relation'):
             validate_overlay(entry['after'], project_id); projects[project_id] = copy.deepcopy(entry['after'])
         else:
             require(entry['after'] is None, 'retract must clear overlay'); projects.pop(project_id, None)
-        require(entry['request_hash'] == _request_hash(entry['request_id'], project_id, entry['operation'], entry['after'],entry.get('proposal_ref')), 'management request hash mismatch')
+        require(entry['request_hash'] == _request_hash(entry['request_id'], project_id, entry['operation'], entry['after'],entry.get('proposal_ref'),entry.get('relation_ref')), 'management request hash mismatch')
         _validate_projects(projects, version=version)
     require(config['projects'] == projects, 'management history head mismatch')
     _validate_projects(config['projects'], version=version)
@@ -259,14 +342,18 @@ class ManagementStore:
             require(type(command['expected_revision']) is int and command['expected_revision'] >= 0, 'invalid revision')
             require(type(command['expected_hash']) is str and re.fullmatch('[0-9a-f]{64}', command['expected_hash']), 'invalid config hash')
             require(command['project_id'] in project_ids, 'project not permitted')
-            require(command['operation'] in ('set', 'retract'), 'invalid management operation')
+            require(command['operation'] in ('set', 'retract', 'accept_relation'), 'invalid management operation')
             if command['operation'] == 'set':
                 field_errors=_date_field_errors(command['value'])
                 if field_errors:raise ServiceError('MANAGEMENT_INVALID_COMMAND',details={'field_errors':field_errors})
                 validate_overlay(command['value'], command['project_id'])
                 relations = command['value']['relations']
                 references = ([relations['belongs_to']] if relations and relations['belongs_to'] else []) + (relations['depends_on'] + relations['related_to'] if relations else [])
+                for item in ((relations or {}).get('typed') or {}).get('items', []):
+                    references.extend(item[k]['project_id'] for k in ('from', 'to'))
+                    if item['run'] is not None: references.append(item['run']['project_id'])
                 require(all(item in project_ids for item in references), 'relation not permitted')
+            elif command['operation'] == 'accept_relation': validate_relation_ref(command['value'])
             else: require(command['value'] is None, 'retract value must be null')
             command = copy.deepcopy(command)
         except (ValueError, TypeError, KeyError):
@@ -280,7 +367,21 @@ class ManagementStore:
             try: fcntl.flock(parent, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError: raise ServiceError('MANAGEMENT_BUSY', status=409, retryable=True) from None
             config, raw, info = self._read(parent)
-            request_hash = _request_hash(command['request_id'], command['project_id'], command['operation'], command['value'],command.get('proposal_ref'))
+            relation_ref = None
+            if command['operation'] == 'accept_relation':
+                relation_ref = command['value']
+                previous = next((r for r in config.get('history', []) if r['request_id'] == command['request_id']), None)
+                if previous is not None:
+                    if previous.get('relation_ref') != relation_ref or previous['project_id'] != command['project_id']:
+                        raise ServiceError('MANAGEMENT_REQUEST_CONFLICT', status=409)
+                    command['value'] = previous['after']
+                else:
+                    try: command['value'] = _confirm_relation(config['projects'].get(command['project_id']), relation_ref)
+                    except (ValueError, TypeError, KeyError): raise ServiceError('MANAGEMENT_RELATION_CONFLICT', status=409) from None
+                references = [item[k]['project_id'] for item in command['value']['relations']['typed']['items'] for k in ('from', 'to')]
+                references += [item['run']['project_id'] for item in command['value']['relations']['typed']['items'] if item['run'] is not None]
+                require(all(item in project_ids for item in references), 'relation not permitted')
+            request_hash = _request_hash(command['request_id'], command['project_id'], command['operation'], command['value'],command.get('proposal_ref'),relation_ref)
             for row in config.get('history', []):
                 if row['request_id'] == command['request_id']:
                     if row['request_hash'] != request_hash:
@@ -292,17 +393,22 @@ class ManagementStore:
                     return self._receipt(config, row, True)
             if config.get('revision', 0) != command['expected_revision'] or content_hash(config) != command['expected_hash']:
                 raise ServiceError('MANAGEMENT_CONFLICT', status=409)
+            if command['operation'] == 'set':
+                try: _accepted_unchanged(config['projects'].get(command['project_id']), command['value'])
+                except ValueError: raise ServiceError('MANAGEMENT_RELATION_CONFLICT', status=409) from None
             requested_version = ({7: '1.1', 9: '1.2', 10: '1.3'}[len(command['value'])]
-                                 if command['operation'] == 'set' else '1.1')
+                                 if command['operation'] in ('set', 'accept_relation') else '1.1')
             version = max(config['schema_version'], requested_version)
             if 'proposal_ref'in command:version='1.4'
+            if relation_ref is not None or command['value'] and (command['value'].get('relations') or {}).get('typed') is not None: version = '1.4'
             next_config = copy.deepcopy(config); next_config.update(schema_version=version, revision=config.get('revision', 0) + 1)
             row = {'request_id': command['request_id'], 'request_hash': request_hash, 'revision': next_config['revision'],
                    'project_id': command['project_id'], 'operation': command['operation'], 'before': copy.deepcopy(config['projects'].get(command['project_id'])),
                    'after': command['value'], 'created_at': datetime.now(timezone.utc).isoformat()}
             if 'proposal_ref'in command:row['proposal_ref']=copy.deepcopy(command['proposal_ref'])
+            if relation_ref is not None: row['relation_ref'] = copy.deepcopy(relation_ref)
             next_config['history'] = copy.deepcopy(config.get('history', [])) + [row]
-            if command['operation'] == 'set': next_config['projects'][command['project_id']] = command['value']
+            if command['operation'] in ('set', 'accept_relation'): next_config['projects'][command['project_id']] = command['value']
             else: next_config['projects'].pop(command['project_id'], None)
             try:
                 _validate_projects(next_config['projects'])
