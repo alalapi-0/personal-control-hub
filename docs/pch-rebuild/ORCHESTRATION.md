@@ -1,5 +1,15 @@
 # 会话路由与无人值守执行设计
-PCH-REBUILD-20261020 / 1.1.0-20261021。本版为所有者要求的执行路线修订；原Goal已暂停，重启必须取得真实原生active结果；文件写入不代表恢复或服务切换。
+PCH-REBUILD-20261020 / 1.2.0-20261023-package1。静态执行契约；当前 Goal、采用和下一步只看受支持原生工具及原 State 回执。文件生成不恢复 Goal 或切换服务。
+
+## 1.2 源码候选阶段
+
+原任务增加严格的 source_admission：确切实现依赖、输入 hash、owned 路径及开发工作区。受信开发能力与候选证据回调缺失时默认拒绝。plan_source_ready 仅回答源码是否可实现；普通 plan_ready/admit、ROUTES、权限和整项 accepted 继续走原链。
+
+源码证据保存在既有 plan_inputs 的版本化封装中，不创建第二任务队列、普通 tasks 行或新数据库；不占用原任务唯一的真实执行 package。源码 candidate 只能满足明确的源码依赖。UNKNOWN 跨定义版本保留，必须以精确 reconciles 引用及受信核对解决；取消与控制变化继续优先。旧历史、预算及未变验收适用性保留。
+
+普通实现先完成一个功能候选，再做相称检查；旧 engineering_review 标签不自动触发三角色或逐补丁审批。真正高影响边界及平台强制控制继续保留。
+
+以下 1.1 文字的“P3 保持 ROUTES”适用于真实效果与完整验收；源码实现按本节与本版原任务策略准入，不将 P3 改标 bootstrap。当前采用、失败和下一步只存原 State。
 
 ## 已存在与尚待建立
 已实测本机Codex CLI 0.163.0；独立项目调查使用真实cwd、read-only sandbox、JSONL、output-schema，收到thread.started立即落盘。调查路由、原生ID、提示hash、尝试、起止、退出及usage在本地私有索引。session_id接口未提供时为null。各项目会话编写本地PLAN与TASKS，Root核对原稿并整合跨项目依赖/节点拆分后逐仓串行保存，原稿保留在私有回执；这不等于产品可执行。
