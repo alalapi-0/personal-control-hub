@@ -403,14 +403,17 @@ class ProjectService:
                 raise _error('MANAGEMENT_PROPOSAL_STALE',status=409)
             # An exact durable receipt resolves an UNKNOWN response without a
             # new adoption. Revalidate the proof on every authorization boundary.
-            from .management_store import _request_hash
+            from .management_store import OVERLAY_FIELDS, _proposal_scope, _request_hash
             expected_hash=_request_hash(command.get('request_id'),command.get('project_id'),
                 command.get('operation'),command.get('value'),proposal_ref)
-            history=ManagementStore(self.root).snapshot().get('history',[])
-            if any(entry['request_id']==command.get('request_id') and entry['request_hash']==expected_hash
-                   and entry.get('proposal_ref')==proposal_ref and entry['after']==command.get('value')
-                   and entry['project_id']==command.get('project_id') and entry['operation']==command.get('operation')
-                   for entry in history):return
+            state=ManagementStore(self.root).snapshot()
+            previous=next((entry for entry in state.get('history',[])
+                           if entry['request_id']==command.get('request_id')),None)
+            if previous is not None:
+                if (previous['request_hash']==expected_hash and previous.get('proposal_ref')==proposal_ref
+                        and previous['after']==command.get('value') and previous['project_id']==command.get('project_id')
+                        and previous['operation']==command.get('operation')):return
+                raise _error('MANAGEMENT_REQUEST_CONFLICT',status=409)
             projected,source_sha=self._relations(set(current.projects),with_identity=True)
             candidates=self._proposal_views(projected,source_sha,eligible,current.authority).get(command.get('project_id'),[])
             candidate=next((row for row in candidates if row['proposal_ref']==proposal_ref),None)
@@ -420,6 +423,21 @@ class ProjectService:
                     type(relations.get('related_to'))is not list or
                     any(type(item)is not str for item in relations['related_to']) or
                     not (set(candidate['project_ids'])-{command['project_id']})<=set(relations['related_to'])):
+                raise _error('MANAGEMENT_PROPOSAL_MAPPING_REJECTED',status=409)
+            # Use the raw persisted shape, not UI defaults or unrelated drafts.
+            # This callback is also run under the Store's final CAS/authorization
+            # boundary; an exact durable replay above never adopts again.
+            before=state['projects'].get(command['project_id'])
+            try:_proposal_scope(before,command['value'])
+            except (ValueError,TypeError,KeyError):
+                raise _error('MANAGEMENT_PROPOSAL_SCOPE_REJECTED',status=409) from None
+            expected=copy.deepcopy(before) if before is not None else dict.fromkeys(OVERLAY_FIELDS)
+            expected_relations=(copy.deepcopy(expected['relations']) if expected['relations'] is not None
+                                else dict(belongs_to=None,depends_on=[],related_to=[],independent=None))
+            expected_relations['related_to']=list(dict.fromkeys(expected_relations['related_to']+
+                [member for member in candidate['project_ids'] if member!=command['project_id']]))
+            expected['relations']=expected_relations
+            if command['value']!=expected:
                 raise _error('MANAGEMENT_PROPOSAL_MAPPING_REJECTED',status=409)
         check_proposal(resolver)
         def check():

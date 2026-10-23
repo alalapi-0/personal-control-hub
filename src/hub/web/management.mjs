@@ -32,7 +32,8 @@ function validOverlay(v,id,options){
   if(v.watch!==null&&typeof v.watch!=='boolean')return false;
   if(v.layout!==null&&(!object(v.layout,['x','y'])||!Number.isFinite(v.layout.x)||!Number.isFinite(v.layout.y)||v.layout.x<0||v.layout.x>320||v.layout.y<0||v.layout.y>160))return false;
   const r=v.relations;if(r===null)return true;
-  if(!object(r,['belongs_to','depends_on','related_to','independent'])||r.independent!==null&&typeof r.independent!=='boolean')return false;
+  if(r?.typed&&(!object(r.typed,['schema_version','items'])||r.typed.schema_version!=='1.0'||!Array.isArray(r.typed.items)||r.typed.items.length>1000))return false;
+  if(!object(r,['belongs_to','depends_on','related_to','independent',...(Object.hasOwn(r,'typed')?['typed']:[])])||r.independent!==null&&typeof r.independent!=='boolean')return false;
   const ref=x=>typeof x==='string'&&x!==id&&options.has(x);
   if(r.belongs_to!==null&&!ref(r.belongs_to))return false;
   return ['depends_on','related_to'].every(k=>Array.isArray(r[k])&&new Set(r[k]).size===r[k].length&&r[k].every(ref));
@@ -73,7 +74,7 @@ export function managementFieldErrors(value,projectId,options=new Set()){
   }
   const relation=value.relations;
   if(relation!==null){
-    if(!object(relation,['belongs_to','depends_on','related_to','independent']))add('relations','关系配置结构无效，请重新选择关系配置。');
+    if(!object(relation,['belongs_to','depends_on','related_to','independent',...(Object.hasOwn(relation,'typed')?['typed']:[])]))add('relations','关系配置结构无效，请重新选择关系配置。');
     else{
       if(relation.independent!==null&&typeof relation.independent!=='boolean')add('relations.independent','独立项目须选择是、否或未配置。');
       for(const [key,label] of [['belongs_to','归属项目'],['depends_on','依赖项目'],['related_to','关联项目']]){
@@ -101,6 +102,16 @@ export function buildManagementCommand(view,projectId,operation,value,requestId,
   if(proposalRef!==null&&(operation!=='set'||!validProposalRef(proposalRef)))throw new Error('MANAGEMENT_PROPOSAL_INVALID');
   return {request_id:requestId,expected_revision:view.revision,expected_hash:view.config_hash,project_id:projectId,operation,value:copy(value),
     ...(proposalRef===null?{}:{proposal_ref:copy(proposalRef)})};
+}
+export function buildProposalCommand(view,projectId,ref,id){
+  if(!validProposalRef(ref))throw new Error('MANAGEMENT_PROPOSAL_INVALID');
+  const proposal=view?.proposals?.find(p=>p.mapping==='related_to'&&p.evidence_scope==='configured_projection_only'&&validProposalRef(p.proposal_ref)&&Object.keys(ref).every(k=>p.proposal_ref[k]===ref[k]));
+  const members=proposal?.project_ids;
+  if(!Array.isArray(members)||members.length<2||!members.includes(projectId)||new Set(members).size!==members.length||members.some(k=>!view.project_options?.some(o=>o.id===k)))throw new Error('MANAGEMENT_PROPOSAL_INVALID');
+  const value=copy(view.overlay??Object.fromEntries(LEGACY_FIELDS.map(k=>[k,null])));
+  const relation=value.relations??{belongs_to:null,depends_on:[],related_to:[],independent:null};
+  value.relations={...relation,related_to:[...new Set([...relation.related_to,...members.filter(k=>k!==projectId)])]};
+  return buildManagementCommand(view,projectId,'set',value,id,ref);
 }
 function el(tag,attrs={},...children){const n=document.createElement(tag);for(const[k,v]of Object.entries(attrs)){if(k.startsWith('on'))n.addEventListener(k.slice(2).toLowerCase(),v);else if(k in n)n[k]=v;else n.setAttribute(k,String(v));}for(const c of children.flat()){if(c!==null&&c!==undefined)n.appendChild(typeof c==='string'?document.createTextNode(c):c);}return n;}
 function text(n,s){n.textContent=s;}
@@ -164,11 +175,11 @@ export function renderManagement(initial,{projectId,owner=false,save,onSaved,rel
     if(!canChange()||draft.relations===null)return;
     draft.relations=null;proposalIntent=null;sync();
     text(status,'仅撤销了当前草稿中的本项目关系；日期和其他配置保留。'+(conflict?'配置版本已变化，请先重新读取当前版本，再检查并保存。':'请点击“保存配置”提交。'));
-  }},'撤销本项目关系');
+  }},'清除本项目全部草稿关系');
   function syncActionPanels(){
     proposalControls.length=0;historyControls.length=0;
     proposalsPanel.replaceChildren(el('h4',{},'关系提议确认'),el('p',{className:'management-note'},
-      '按相关项目确认会保存当前全部草稿，并将提议中的其他项目加入关联项目。现有日期、优先级和其他关系保留。仅依据当前配置投影，不代表原始清单已完整验证，也不会执行任务或改变读取权限。'));
+      '单项确认只在已保存配置中加入这条提议的相关项目；日期、优先级和其他草稿不会提交。仅依据当前配置投影，不代表原始清单已完整验证，也不会执行任务或改变读取权限。'));
     const proposals=Array.isArray(view?.proposals)?view.proposals:[];
     if(!proposals.length)proposalsPanel.appendChild(el('p',{},'当前没有可供明确确认的配置投影提议。'));
     for(const proposal of proposals){
@@ -180,16 +191,14 @@ export function renderManagement(initial,{projectId,owner=false,save,onSaved,rel
       if(valid){
         row.appendChild(el('p',{},'相关项目：'+members.filter(id=>id!==projectId).map(id=>view.project_options.find(p=>p.id===id)?.name||id).join('、')));
         const accept=el('button',{type:'button',onClick:async()=>{
-          if(!canChange()||conflict||refreshValidation().length)return;
-          const relations=draft.relations??{belongs_to:null,depends_on:[],related_to:[],independent:null};
-          draft.relations={...relations,related_to:[...new Set([...relations.related_to,...members.filter(id=>id!==projectId)])]};
-          proposalIntent=copy(ref);sync();await submit('set');
+          if(!canChange()||conflict)return;
+          proposalIntent=copy(ref);await submit('set');
         }},'按相关项目确认 · '+ref.proposal_id);
         proposalControls.push(accept);row.appendChild(accept);
       }else row.appendChild(el('p',{className:'management-note'},'缺少有效提议引用或可用目标，不能据此确认关系。请重新读取当前版本核对。'));
       proposalsPanel.appendChild(row);
     }
-    if(proposalIntent)proposalsPanel.appendChild(el('p',{className:'management-note'},`待提交的明确确认：${proposalIntent.proposal_id}。草稿保留；重试或重新读取后保存仍会核对这份提议引用。`));
+    if(proposalIntent)proposalsPanel.appendChild(el('p',{className:'management-note'},`待提交的明确确认：${proposalIntent.proposal_id}。未保存草稿保留；重试仅确认此单项，不提交其他草稿。`));
     historyPanel.replaceChildren(el('h4',{},'管理配置历史'),el('p',{className:'management-note'},
       '恢复历史只载入草稿，不回退当前版本。请检查后点击“保存配置”，以当前版本重新提交。'));
     const history=Array.isArray(view?.history_recent)?view.history_recent.slice(0,20):[];
@@ -203,7 +212,7 @@ export function renderManagement(initial,{projectId,owner=false,save,onSaved,rel
           if(!canChange())return;
           draft=localDraft(item.after);proposalIntent=null;sync();
           text(status,`版本 ${item.revision} 的配置已载入草稿；当前版本仍为 ${view.revision}。`+(conflict?'配置版本已变化，请先重新读取当前版本，再检查并保存。':'请检查后点击“保存配置”。'));
-        }},`恢复为版本 ${item.revision} 的配置`);
+        }},`载入版本 ${item.revision} 为草稿`);
         historyControls.push(restore);row.appendChild(restore);
       }else row.appendChild(el('p',{},'该历史配置不可恢复，请核对当前版本。'));
       if(validProposalRef(item.proposal_ref))row.appendChild(el('details',{},el('summary',{},'提议确认来源：'+item.proposal_ref.proposal_id),
@@ -214,12 +223,13 @@ export function renderManagement(initial,{projectId,owner=false,save,onSaved,rel
     }
   }
   const saveButton=el('button',{type:'button',onClick:()=>submit('set')},'保存配置'),retract=el('button',{type:'button',onClick:()=>submit('retract')},'撤回全部管理配置'),reset=el('button',{type:'button',onClick:()=>{if(busy||pending||requiresReload)return;draft=localDraft(view.overlay);proposalIntent=null;conflict=false;text(status,'草稿已还原为当前读取的配置。');sync();}},'还原草稿'),read=el('button',{type:'button',onClick:async()=>{if(busy||pending||typeof reload!=='function')return;busy=true;refresh();try{const fresh=await reload();if(!fresh?.available||!Number.isSafeInteger(fresh.revision)||fresh.revision<0||typeof fresh.config_hash!=='string'||! /^[a-fA-F0-9]{64}$/.test(fresh.config_hash)||!Array.isArray(fresh.project_options))throw new Error('MANAGEMENT_VIEW_UNAVAILABLE');view=copy(fresh);conflict=false;requiresReload=false;text(status,'已重新读取当前版本；草稿保留，请检查后再保存。');sync();}catch{text(status,'当前配置读取失败，草稿保留。');}finally{busy=false;refresh();}}},'重新读取当前版本');
-  async function submit(operation){if(busy||!permitted()||conflict||requiresReload)return;if(operation==='set'&&!pending){const errors=refreshValidation();if(errors.length){text(status,'配置未保存：'+errors.map(item=>item.message).join(' '));return;}}let command;try{command=pending??buildManagementCommand(view,projectId,operation,operation==='set'?draft:null,requestId(),operation==='set'?proposalIntent:null);}catch{text(status,'配置无效，请检查计划日期、时区、里程碑、数值和关系项目。');return;}const originalView=copy(view),originalDraft=copy(draft);
+  async function submit(operation){if(busy||!permitted()||conflict||requiresReload)return;if(operation==='set'&&!pending&&!proposalIntent){const errors=refreshValidation();if(errors.length){text(status,'配置未保存：'+errors.map(item=>item.message).join(' '));return;}}let command;try{command=pending??(operation==='set'&&proposalIntent?buildProposalCommand(view,projectId,proposalIntent,requestId()):buildManagementCommand(view,projectId,operation,operation==='set'?draft:null,requestId()));}catch{text(status,'配置无效，请检查计划日期、时区、里程碑、数值和关系项目。');return;}const originalView=copy(view),originalDraft=copy(draft);
     const focusInvoker=document.activeElement,restoreFocus=section.contains?.(focusInvoker)===true;
     let focusMoved=false;
     const trackFocus=event=>{if(event.target!==focusInvoker&&event.target!==document.body)focusMoved=true;};
     if(restoreFocus)document.addEventListener?.('focusin',trackFocus);
-    let confirmedReceipt=null;busy=true;refresh();text(status,'正在保存管理配置…');try{const result=await save(copy(command));if(!result?.receipt||result.receipt.request_id!==command.request_id||!Number.isSafeInteger(result.receipt.revision)||!Number.isSafeInteger(result.receipt.committed_revision)||result.receipt.committed_revision<1||result.receipt.committed_revision>result.receipt.revision)throw Object.assign(new Error(),{outcome:'UNKNOWN'});confirmedReceipt=result.receipt;pending=null;proposalIntent=null;syncActionPanels();if(!result.view||result.view.revision!==result.receipt.revision||typeof result.view.config_hash!=='string'||! /^[a-fA-F0-9]{64}$/.test(result.view.config_hash)){requiresReload=true;text(status,`本次提交版本 ${result.receipt.committed_revision} 已保存；当前值读取失败，草稿保留。请显式重新读取当前版本后再操作。`);return;}view=copy(result.view);draft=localDraft(view.overlay);text(status,`已保存：当前版本 ${result.receipt.revision}，本次提交版本 ${result.receipt.committed_revision}${result.receipt.replayed?'（重试已确认）':''}。`);sync();try{await onSaved?.(result.view,result.receipt);}catch{text(status,`配置已保存（版本 ${result.receipt.revision}），页面刷新失败，请重新读取。`);}}catch(error){if(confirmedReceipt){pending=null;view=originalView;draft=originalDraft;requiresReload=true;sync();text(status,`本次提交版本 ${confirmedReceipt.committed_revision} 已保存；当前值读取失败，草稿保留。请显式重新读取当前版本后再操作。`);}else if(error?.code==='MANAGEMENT_RELATION_CONFLICT'){pending=null;text(status,'归属关系形成循环，配置未保存；草稿保留，请修改关系后再保存。');}else if(error?.code==='MANAGEMENT_BUSY'){pending=null;text(status,'其他配置保存正在进行；本次未保存，草稿保留，请稍后重试。');}else if(error?.status===409||error?.code==='MANAGEMENT_CONFLICT'){pending=null;conflict=true;text(status,'配置版本已变化，草稿保留。请重新读取当前版本，再检查并保存。');}else if(error?.outcome==='UNKNOWN'||error?.outcome!=='NOT_COMMITTED'&&!(error?.status>=400&&error?.status<500)){pending=copy(command);text(status,'提交结果未知，草稿保留。点击“重试确认提交”将使用同一请求确认结果。');}else{pending=null;if(error?.status===401||error?.status===403)owner=false;text(status,error?.status===401||error?.status===403?'所有者权限失效，草稿保留。请重新认证后操作。':error?.status===503?'配置服务暂不可用，草稿保留。请核对配置初始化与服务状态。':'配置未保存，草稿保留。请检查权限或稍后重试。');}}finally{
+    let confirmedReceipt=null;busy=true;refresh();text(status,'正在保存管理配置…');try{const result=await save(copy(command));if(!result?.receipt||result.receipt.request_id!==command.request_id||!Number.isSafeInteger(result.receipt.revision)||!Number.isSafeInteger(result.receipt.committed_revision)||result.receipt.committed_revision<1||result.receipt.committed_revision>result.receipt.revision)throw Object.assign(new Error(),{outcome:'UNKNOWN'});confirmedReceipt=result.receipt;pending=null;proposalIntent=null;syncActionPanels();if(!result.view||result.view.revision!==result.receipt.revision||typeof result.view.config_hash!=='string'||! /^[a-fA-F0-9]{64}$/.test(result.view.config_hash)){requiresReload=true;text(status,`本次提交版本 ${result.receipt.committed_revision} 已保存；当前值读取失败，草稿保留。请显式重新读取当前版本后再操作。`);return;}view=copy(result.view);draft=command.proposal_ref?originalDraft:localDraft(view.overlay);
+    if(command.proposal_ref&&JSON.stringify(originalDraft.relations)===JSON.stringify(originalView.overlay?.relations))draft.relations=copy(view.overlay?.relations??null);text(status,`已保存：当前版本 ${result.receipt.revision}，本次提交版本 ${result.receipt.committed_revision}${result.receipt.replayed?'（重试已确认）':''}。`);sync();try{await onSaved?.(result.view,result.receipt);}catch{text(status,`配置已保存（版本 ${result.receipt.revision}），页面刷新失败，请重新读取。`);}}catch(error){if(confirmedReceipt){pending=null;view=originalView;draft=originalDraft;requiresReload=true;sync();text(status,`本次提交版本 ${confirmedReceipt.committed_revision} 已保存；当前值读取失败，草稿保留。请显式重新读取当前版本后再操作。`);}else if(error?.code==='MANAGEMENT_RELATION_CONFLICT'){pending=null;text(status,'归属关系形成循环，配置未保存；草稿保留，请修改关系后再保存。');}else if(error?.code==='MANAGEMENT_BUSY'){pending=null;text(status,'其他配置保存正在进行；本次未保存，草稿保留，请稍后重试。');}else if(error?.status===409||error?.code==='MANAGEMENT_CONFLICT'){pending=null;conflict=true;text(status,'配置版本已变化，草稿保留。请重新读取当前版本，再检查并保存。');}else if(error?.outcome==='UNKNOWN'||error?.outcome!=='NOT_COMMITTED'&&!(error?.status>=400&&error?.status<500)){pending=copy(command);text(status,'提交结果未知，草稿保留。点击“重试确认提交”将使用同一请求确认结果。');}else{pending=null;if(error?.status===401||error?.status===403)owner=false;text(status,error?.status===401||error?.status===403?'所有者权限失效，草稿保留。请重新认证后操作。':error?.status===503?'配置服务暂不可用，草稿保留。请核对配置初始化与服务状态。':'配置未保存，草稿保留。请检查权限或稍后重试。');}}finally{
       busy=false;refresh();
       if(restoreFocus)document.removeEventListener?.('focusin',trackFocus);
       const active=document.activeElement;
@@ -231,6 +241,6 @@ export function renderManagement(initial,{projectId,owner=false,save,onSaved,rel
   function syncRolling(){rollingSummary.replaceChildren();if(!Object.hasOwn(draft,'rolling_plan'))return;const p=draft.rolling_plan;if(p===null){rollingSummary.appendChild(el('p',{},'滚动预估：未配置。'));return;}if(!rollingPlan(p)){rollingSummary.appendChild(el('p',{},'滚动预估格式需要核对；原配置保留，当前草稿不可保存。'));return;}const range=w=>w?`${w.earliest} 至 ${w.latest}`:'待评估';rollingSummary.appendChild(el('h4',{},'滚动预估（只读）'));rollingSummary.appendChild(el('p',{},`以下均为评估日期当时的预估与验收范围，不随来源刷新自动改写；不是截止日期，也不是实际完成或验收记录。计划时区：${draft.timezone??'未知'}。`));rollingSummary.appendChild(el('p',{},`评估日期：${p.as_of}；下次复核：${p.next_review}；可信度：${({unknown:'未知',low:'低',medium:'中',high:'高'})[p.confidence]}。预计完成：${range(p.completion_window)}。`));if(p.next_milestone)rollingSummary.appendChild(el('p',{},`下一里程碑：${p.next_milestone.label}；预估窗口：${range(p.next_milestone.window)}${p.next_milestone.condition?`；条件：${p.next_milestone.condition}`:''}。`));for(const a of p.acceptance_windows)rollingSummary.appendChild(el('p',{},`${a.kind==='human'?'本人验收':'自动验收'}预估：${a.label}；窗口：${range(a.window)}；范围：${a.scope}。`));if(p.conditions.length)rollingSummary.appendChild(el('ul',{},p.conditions.map(c=>el('li',{},c))));rollingSummary.appendChild(el('p',{},'修改上方日期、优先级或关系时会完整保留这份滚动预估；撤回全部管理配置会同时撤回预估。'));}
   function sync(){syncRolling();syncActionPanels();warnings.replaceChildren(...(view?.warnings??[]).map(w=>el('li',{},({PROJECT_DEPENDENCY_CYCLE:'项目依赖存在循环；已保存的配置保留，请核对依赖关系。',MANAGEMENT_ORPHAN_REFERENCE:'部分关系项目当前不在可编辑范围内；已保存的配置保留，请核对关系。'})[w]??'管理关系存在需要核对的提示。')));zone.value=draft.timezone??'';syncMilestones();for(const k of ['priority','start_date','end_date','order'])inputs[k].value=draft[k]??'';inputs.watch.value=draft.watch===null?'':String(draft.watch);mode.value=draft.relations===null?'unconfigured':'confirmed';inputs.independent.value=draft.relations?.independent==null?'':String(draft.relations.independent);for(const k of ['belongs_to','depends_on','related_to']){const n=inputs['rel-'+k];n.replaceChildren();if(k==='belongs_to')n.appendChild(el('option',{value:''},'未配置'));for(const p of view?.project_options??[]){if(p.id===projectId)continue;const selected=k==='belongs_to'?draft.relations?.[k]===p.id:draft.relations?.[k]?.includes(p.id);n.appendChild(el('option',{value:p.id,selected:Boolean(selected)},p.name||p.id));}if(k==='belongs_to')n.value=draft.relations?.belongs_to??'';}
     for(const a of ['x','y'])inputs['layout-'+a].value=draft.layout?.[a]??'';dot.setAttribute('cx',String(draft.layout?.x??160));dot.setAttribute('cy',String(draft.layout?.y??80));dot.setAttribute('data-configured',String(draft.layout!==null));text(revision,view?.available?`管理配置当前版本：${view.revision}；关系：${view.relation_state==='owner_confirmed'?'所有者已确认':'未配置'}`:view?.reason==='MANAGEMENT_NOT_INITIALIZED'?'管理配置尚未初始化，当前版本未知。':'管理配置读取失败，当前版本未知；项目来源事实仍可查看。');refresh();}
-  function refresh(){const fieldErrors=refreshValidation();let valid=false;try{buildManagementCommand(view,projectId,'set',draft,'validation');valid=fieldErrors.length===0;}catch{}for(const n of proposalControls)n.disabled=!canChange()||conflict||!valid;for(const n of historyControls)n.disabled=!canChange();clearRelations.disabled=!canChange()||draft.relations===null;for(const n of milestoneControls)n.disabled=!canChange();addMilestone.disabled=!canChange()||draft.milestones===null||draft.milestones.length>=1000;for(const n of controls)n.disabled=!permitted()||busy||Boolean(pending)||(n===zone||n===milestoneMode)&&requiresReload||n===addMilestone&&(!canChange()||draft.milestones===null||draft.milestones.length>=1000)||(n===inputs.independent||n===inputs['rel-belongs_to']||n===inputs['rel-depends_on']||n===inputs['rel-related_to'])&&draft.relations===null;saveButton.disabled=!permitted()||busy||conflict||requiresReload||!pending&&!valid;saveButton.textContent=pending?'重试确认提交':'保存配置';retract.disabled=!permitted()||busy||Boolean(pending)||conflict||requiresReload||view.overlay===null;reset.disabled=busy||Boolean(pending)||requiresReload;read.disabled=busy||Boolean(pending)||typeof reload!=='function';svg.setAttribute('aria-disabled',String(!permitted()||busy||Boolean(pending)));}
+  function refresh(){const fieldErrors=refreshValidation();let valid=false;try{buildManagementCommand(view,projectId,'set',draft,'validation');valid=fieldErrors.length===0;}catch{}for(const n of proposalControls)n.disabled=!canChange()||conflict;for(const n of historyControls)n.disabled=!canChange();clearRelations.disabled=!canChange()||draft.relations===null;for(const n of milestoneControls)n.disabled=!canChange();addMilestone.disabled=!canChange()||draft.milestones===null||draft.milestones.length>=1000;for(const n of controls)n.disabled=!permitted()||busy||Boolean(pending)||(n===zone||n===milestoneMode)&&requiresReload||n===addMilestone&&(!canChange()||draft.milestones===null||draft.milestones.length>=1000)||(n===inputs.independent||n===inputs['rel-belongs_to']||n===inputs['rel-depends_on']||n===inputs['rel-related_to'])&&draft.relations===null;saveButton.disabled=!permitted()||busy||conflict||requiresReload||!pending&&!proposalIntent&&!valid;saveButton.textContent=pending?'重试确认提交':proposalIntent?'重试单项确认':'保存配置';retract.disabled=!permitted()||busy||Boolean(pending)||conflict||requiresReload||view.overlay===null;reset.disabled=busy||Boolean(pending)||requiresReload;read.disabled=busy||Boolean(pending)||typeof reload!=='function';svg.setAttribute('aria-disabled',String(!permitted()||busy||Boolean(pending)));}
   section.appendChild(el('h3',{},'Hub 管理配置'));section.appendChild(el('p',{className:'management-note'},'这些设置独立于项目来源事实、执行任务和关系建议。保存只更新 Hub 管理配置。'));section.appendChild(revision);section.appendChild(validationSummary);section.appendChild(form);section.appendChild(rollingSummary);section.appendChild(proposalsPanel);section.appendChild(historyPanel);section.appendChild(el('div',{className:'management-actions'},saveButton,clearRelations,retract,reset,read));section.appendChild(status);section.appendChild(warnings);sync();if(!owner)text(status,'所有者未认证，管理配置只读。');else if(!view?.available||!view?.editable)text(status,'管理配置不可编辑，请先完成配置初始化或核对项目权限。');section.setOwner=value=>{const wasOwner=owner;owner=value===true;refresh();if(!owner)text(status,'所有者未认证，管理配置只读；草稿保留。');else if(!wasOwner)text(status,requiresReload?'配置已保存但当前值读取失败；草稿保留，请显式重新读取。':pending?'提交结果未知；草稿保留，请用同一请求重试确认。':permitted()?'所有者已认证，草稿保留。':'管理配置不可编辑，请先完成配置初始化或核对项目权限。');};return section;
 }

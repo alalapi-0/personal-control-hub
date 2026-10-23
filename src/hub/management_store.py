@@ -77,6 +77,22 @@ def _confirm_relation(overlay, ref):
     return result
 
 
+def _proposal_scope(before, after):
+    """A legacy proposal may only append related_to on the persisted overlay.
+
+    Proposal identity/membership remains checked by ProjectService's existing
+    trusted authorization callback. Never normalize optional stored fields here.
+    """
+    base = copy.deepcopy(before) if before is not None else dict.fromkeys(OVERLAY_FIELDS)
+    relation = copy.deepcopy(base['relations']) if base['relations'] is not None else dict(belongs_to=None, depends_on=[], related_to=[], independent=None)
+    added = after.get('relations')
+    require(type(added) is dict and type(added.get('related_to')) is list, 'proposal relations required')
+    old = relation['related_to']; new = added['related_to']
+    require(new[:len(old)] == old, 'proposal cannot remove or reorder relations')
+    relation['related_to'] = copy.deepcopy(new); base['relations'] = relation
+    require(after == base, 'proposal changed unrelated stored fields')
+
+
 def _accepted_unchanged(before, after):
     old = {i['id']: i for i in (((before or {}).get('relations') or {}).get('typed') or {}).get('items', [])}
     for item in (((after or {}).get('relations') or {}).get('typed') or {}).get('items', []):
@@ -393,6 +409,9 @@ class ManagementStore:
                     return self._receipt(config, row, True)
             if config.get('revision', 0) != command['expected_revision'] or content_hash(config) != command['expected_hash']:
                 raise ServiceError('MANAGEMENT_CONFLICT', status=409)
+            if 'proposal_ref' in command:
+                try: _proposal_scope(config['projects'].get(command['project_id']), command['value'])
+                except (ValueError, TypeError, KeyError): raise ServiceError('MANAGEMENT_PROPOSAL_SCOPE_REJECTED', status=409) from None
             if command['operation'] == 'set':
                 try: _accepted_unchanged(config['projects'].get(command['project_id']), command['value'])
                 except ValueError: raise ServiceError('MANAGEMENT_RELATION_CONFLICT', status=409) from None

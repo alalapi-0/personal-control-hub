@@ -353,5 +353,91 @@ class ManagementAPITests(unittest.TestCase):
         self.assertEqual(self.config.read_bytes(), before)
 
 
+
+    def proposal_fixture(self, members=('a', 'b')):
+        self.fixture.add('c')
+        self.projection = self.config.with_name('proposal-projection.json')
+        proposal = dict(id='selected', project_ids=list(members), kind='pipeline', status='proposed',
+            shared_tasks=['Synthetic handoff'], differences=['Separate ownership'],
+            not_shared=['Permissions'], inventory_index=0, evidence_refs=['fixture:evidence'])
+        self.projection.write_text(json.dumps({'projects': [dict(project_id=i, status='proposed',
+            reason=None, relations=[proposal], program_link_authority=False,
+            design_selection_authority=False) for i in members]}))
+        self.service.relations_path = self.projection
+
+    def proposal_command(self, request='confirm-selected'):
+        view = self.service.get_management('a')
+        value = copy.deepcopy(view['overlay'])
+        value['relations'] = copy.deepcopy(value['relations']) if value['relations'] is not None else relations()
+        members = view['proposals'][0]['project_ids']
+        value['relations']['related_to'] = list(dict.fromkeys(value['relations']['related_to'] +
+            [ident for ident in members if ident != 'a']))
+        command = self.command(request=request, value=value)
+        command['proposal_ref'] = view['proposals'][0]['proposal_ref']
+        return command
+
+    def test_proposal_exact_targets_preserve_existing_and_typed_content(self):
+        from test_hub_graph_relations import relation
+        self.proposal_fixture(); self.session(owner=True)
+        typed = relation(); typed['from']['project_id'] = typed['to']['project_id'] = 'a'
+        value = overlay(priority=7, relations={**relations(related=['c']),
+            'typed': {'schema_version': '1.0', 'items': [typed]}})
+        self.assertEqual(self.post(self.command(value=value))[0], 200)
+        command = self.proposal_command(); before = self.config.read_bytes()
+        for targets in (['c','b','unregistered'], ['b'], ['b','c']):
+            with self.subTest(targets=targets):
+                bad = copy.deepcopy(command); bad['value']['relations']['related_to'] = targets
+                self.assertIn(self.post(bad)[0], (400,409)); self.assertEqual(self.config.read_bytes(), before)
+        status, _, response = self.post(command)
+        self.assertEqual(status, 200)
+        expected = copy.deepcopy(value); expected['relations']['related_to'] = ['c','b']
+        self.assertEqual(response['data']['view']['overlay'], expected)
+
+    def test_proposal_unknown_replay_keeps_receipt_after_later_source_and_value(self):
+        self.proposal_fixture(); self.session(owner=True)
+        self.assertEqual(self.post(self.command())[0], 200)
+        command = self.proposal_command(); original_init = ManagementStore.__init__
+        def initialize(store, root, **kwargs):
+            original_init(store, root, fault=lambda stage: (_ for _ in ()).throw(OSError('lost receipt'))
+                if stage == 'after_replace' else None)
+        with mock.patch.object(ManagementStore, '__init__', initialize):
+            status, _, result = self.post(command)
+        self.assertEqual((status,result['error']['outcome']), (503,'UNKNOWN'))
+        committed = ManagementStore(self.fixture.hub).snapshot()['history'][-1]['revision']
+        self.assertEqual(self.post(self.command(request='later',value=overlay(priority=8)))[0], 200)
+        self.projection.write_text(json.dumps({'projects': []})); before = self.config.read_bytes()
+        status, _, result = self.post(command)
+        self.assertEqual(status, 200); self.assertTrue(result['data']['receipt']['replayed'])
+        self.assertEqual(result['data']['receipt']['committed_revision'], committed)
+        changed = copy.deepcopy(command); changed['value']['priority'] = 9
+        self.assertEqual(self.post(changed)[0], 409); self.assertEqual(self.config.read_bytes(), before)
+
+    def test_proposal_source_and_owner_rechecked_at_commit(self):
+        self.proposal_fixture(); self.session(owner=True)
+        self.assertEqual(self.post(self.command())[0], 200)
+        for mode in ('source','owner'):
+            with self.subTest(mode=mode):
+                self.cookie = self.csrf = None; self.session(owner=True)
+                command = self.proposal_command('boundary-'+mode); before = self.config.read_bytes()
+                original_init = ManagementStore.__init__
+                def fault(stage):
+                    if stage == 'before_replace':
+                        if mode == 'source': self.projection.write_text(json.dumps({'projects': []}))
+                        else: self.server.sessions.revoke(self.cookie)
+                def initialize(store, root, **kwargs): original_init(store, root, fault=fault)
+                with mock.patch.object(ManagementStore, '__init__', initialize):
+                    status, _, result = self.post(command)
+                self.assertEqual(status, 409 if mode == 'source' else 401)
+                self.assertEqual(result['error']['outcome'], 'NOT_COMMITTED')
+                self.assertEqual(self.config.read_bytes(), before)
+                # Restore only this disposable projection for the next boundary.
+                if mode == 'source':
+                    proposal = dict(id='selected',project_ids=['a','b'],kind='pipeline',status='proposed',
+                        shared_tasks=['Synthetic handoff'],differences=['Separate ownership'],not_shared=['Permissions'],
+                        inventory_index=0,evidence_refs=['fixture:evidence'])
+                    self.projection.write_text(json.dumps({'projects':[dict(project_id=i,status='proposed',reason=None,
+                        relations=[proposal],program_link_authority=False,design_selection_authority=False)for i in ('a','b')]}))
+
+
 if __name__ == '__main__':
     unittest.main()

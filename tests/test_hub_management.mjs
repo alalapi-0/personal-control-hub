@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {buildManagementCommand,managementFieldErrors,renderManagement} from '../src/hub/web/management.mjs';
+import {buildManagementCommand,buildProposalCommand,managementFieldErrors,renderManagement} from '../src/hub/web/management.mjs';
 const hash='a'.repeat(64);
 const overlay=()=>({priority:null,start_date:null,end_date:null,watch:null,order:null,layout:null,relations:null});
 const view=()=>({available:true,editable:true,revision:2,config_hash:hash,overlay:overlay(),relation_state:'unconfigured',warnings:[],project_options:[{id:'a',name:'A'},{id:'b',name:'B'},{id:'c',name:'C'}]});
@@ -125,16 +125,16 @@ test('proposal command carries an exact detached reference only on explicit set 
     assert.throws(()=>buildManagementCommand(view(),'a','set',overlay(),'invalid',invalid),/MANAGEMENT_PROPOSAL_INVALID/);
 });
 
-test('explicit proposal confirmation unions related targets and saves the complete current draft',async()=>{
+test('explicit proposal confirmation changes only persisted related targets and retains current draft',async()=>{
   const v=proposedView();v.overlay={...overlay(),priority:4,start_date:'2026-10-01',end_date:'2026-10-31',
     timezone:'Asia/Tokyo',milestones:[{id:'release',label:'Release',date:'2026-10-20'}],
     relations:{belongs_to:'c',depends_on:['b'],related_to:['c'],independent:true}};
   const before=structuredClone(v),sent=[],n=mount(v,{projectId:'a',owner:true,save:async command=>{sent.push(command);return receipt(command,{...v,revision:3,overlay:command.value});}});
   await change(input(n,'优先级（数值）'),'7');assert.equal(sent.length,0);
-  assert.match(n.textContent,/会保存当前全部草稿/);assert.match(n.textContent,/不代表原始清单已完整验证/);
+  assert.match(n.textContent,/其他草稿不会提交/);assert.match(n.textContent,/不代表原始清单已完整验证/);
   await button(n,'按相关项目确认 · synthetic-related').fire('click');
   assert.equal(sent.length,1);assert.deepEqual(sent[0].proposal_ref,proposalRef());
-  assert.equal(sent[0].value.priority,7);assert.equal(sent[0].value.timezone,'Asia/Tokyo');
+  assert.equal(sent[0].value.priority,4);assert.equal(input(n,'优先级（数值）').value,'7');assert.equal(sent[0].value.timezone,'Asia/Tokyo');
   assert.equal(sent[0].value.start_date,'2026-10-01');assert.deepEqual(sent[0].value.milestones,v.overlay.milestones);
   assert.deepEqual(sent[0].value.relations,{belongs_to:'c',depends_on:['b'],related_to:['c','b'],independent:true});
   assert.deepEqual(v,before,'reading and accepting never mutates the proposal DTO');
@@ -158,17 +158,17 @@ test('proposal UNKNOWN retries the exact accepted request and blocks history or 
   const v=proposedView();v.history_recent=[{revision:1,request_id:'history',before:null,after:overlay()}];
   const sent=[],n=mount(v,{projectId:'a',owner:true,save:async command=>{sent.push(command);if(sent.length===1)throw {outcome:'UNKNOWN'};return receipt(command,{...v,revision:3,overlay:command.value});}});
   await button(n,'按相关项目确认 · synthetic-related').fire('click');
-  assert.match(status(n),/结果未知/);assert.equal(button(n,'撤销本项目关系').disabled,true);
-  assert.equal(button(n,'恢复为版本 1 的配置').disabled,true);assert.equal(button(n,'按相关项目确认 · synthetic-related').disabled,true);
-  await button(n,'恢复为版本 1 的配置').fire('click');await button(n,'撤销本项目关系').fire('click');
+  assert.match(status(n),/结果未知/);assert.equal(button(n,'清除本项目全部草稿关系').disabled,true);
+  assert.equal(button(n,'载入版本 1 为草稿').disabled,true);assert.equal(button(n,'按相关项目确认 · synthetic-related').disabled,true);
+  await button(n,'载入版本 1 为草稿').fire('click');await button(n,'清除本项目全部草稿关系').fire('click');
   await button(n,'重试确认提交').fire('click');assert.deepEqual(sent[1],sent[0]);assert.deepEqual(sent[1].proposal_ref,proposalRef());
 });
 
 test('proposal CAS conflict preserves acceptance intent through explicit reload and fresh-CAS save',async()=>{
   const v=proposedView(),sent=[],n=mount(v,{projectId:'a',owner:true,save:async command=>{sent.push(command);if(sent.length===1)throw {status:409,outcome:'NOT_COMMITTED'};return receipt(command,{...v,revision:5,overlay:command.value});},reload:async()=>({...v,revision:4,config_hash:'b'.repeat(64)})});
   await button(n,'按相关项目确认 · synthetic-related').fire('click');assert.match(status(n),/配置版本已变化/);
-  assert.equal(button(n,'保存配置').disabled,true);await button(n,'重新读取当前版本').fire('click');
-  await button(n,'保存配置').fire('click');assert.equal(sent[1].expected_revision,4);assert.equal(sent[1].expected_hash,'b'.repeat(64));
+  assert.equal(button(n,'重试单项确认').disabled,true);await button(n,'重新读取当前版本').fire('click');
+  await button(n,'重试单项确认').fire('click');assert.equal(sent[1].expected_revision,4);assert.equal(sent[1].expected_hash,'b'.repeat(64));
   assert.notEqual(sent[1].request_id,sent[0].request_id);assert.deepEqual(sent[1].proposal_ref,proposalRef());
   assert.deepEqual(sent[1].value.relations.related_to,['b']);
 });
@@ -179,8 +179,8 @@ test('history restore is only a detached draft and saves a new version without r
     {revision:4,request_id:'withdrawn',before:historic,after:null}];
   const before=structuredClone(v),sent=[],n=mount(v,{projectId:'a',owner:true,save:async command=>{sent.push(command);return receipt(command,{...v,revision:8,overlay:command.value});}});
   assert.match(n.textContent,/历史未配置/);assert.match(n.textContent,/提议确认来源：synthetic-related/);
-  assert.equal(button(n,'恢复为版本 4 的配置'),undefined,'withdrawn whole overlay is displayed without silently converting null into a configured blank overlay');
-  await button(n,'恢复为版本 3 的配置').fire('click');assert.equal(sent.length,0);
+  assert.equal(button(n,'载入版本 4 为草稿'),undefined,'withdrawn whole overlay is displayed without silently converting null into a configured blank overlay');
+  await button(n,'载入版本 3 为草稿').fire('click');assert.equal(sent.length,0);
   assert.equal(input(n,'优先级（数值）').value,'8');assert.equal(input(n,'开始日期').value,'2026-10-05');assert.match(status(n),/当前版本仍为 7/);
   await button(n,'保存配置').fire('click');assert.equal(sent[0].expected_revision,7);
   assert.notEqual(sent[0].request_id,'old-request');assert.ok(!Object.hasOwn(sent[0],'proposal_ref'));
@@ -190,7 +190,7 @@ test('history restore is only a detached draft and saves a new version without r
 test('relation-only withdrawal retains all other draft fields and requires a separate save',async()=>{
   const v=proposedView();v.overlay={...rolling(),priority:5,relations:{belongs_to:'b',depends_on:['b'],related_to:['c'],independent:false}};
   const before=structuredClone(v.overlay),sent=[],n=mount(v,{projectId:'a',owner:true,save:async command=>{sent.push(command);return receipt(command,{...v,revision:3,overlay:command.value});}});
-  await button(n,'撤销本项目关系').fire('click');assert.equal(sent.length,0);assert.match(status(n),/仅撤销.*草稿.*日期和其他配置保留/);
+  await button(n,'清除本项目全部草稿关系').fire('click');assert.equal(sent.length,0);assert.match(status(n),/仅撤销.*草稿.*日期和其他配置保留/);
   assert.equal(input(n,'关系配置').value,'unconfigured');assert.equal(input(n,'优先级（数值）').value,'5');
   await button(n,'保存配置').fire('click');assert.equal(sent[0].operation,'set');assert.equal(sent[0].value.relations,null);
   assert.deepEqual({...sent[0].value,relations:before.relations},before);assert.ok(!Object.hasOwn(sent[0],'proposal_ref'));
@@ -257,3 +257,27 @@ test('ordinary edit, reset and owner revocation preserve existing rolling plan w
 test('rolling estimate survives 409 reload and same-request UNKNOWN retry',async()=>{for(const failure of ['conflict','unknown']){const o=rolling(),sent=[],n=mount({...view(),overlay:o},{projectId:'a',owner:true,save:async c=>{sent.push(c);if(sent.length===1)throw failure==='conflict'?{status:409,outcome:'NOT_COMMITTED'}:{outcome:'UNKNOWN'};return receipt(c,{...view(),revision:5,overlay:c.value});},reload:async()=>({...view(),overlay:o,revision:4,config_hash:'c'.repeat(64)})});await change(input(n,'优先级（数值）'),'4');await button(n,'保存配置').fire('click');if(failure==='conflict')await button(n,'重新读取当前版本').fire('click');await button(n,failure==='conflict'?'保存配置':'重试确认提交').fire('click');assert.equal(sent.length,2);assert.deepEqual(sent[1].value.rolling_plan,o.rolling_plan);assert.deepEqual(sent[0].value,sent[1].value);if(failure==='unknown')assert.deepEqual(sent[0],sent[1]);else{assert.equal(sent[1].expected_revision,4);assert.notEqual(sent[0].request_id,sent[1].request_id);}}});
 
 test('known rolling commit with unavailable view preserves submitted estimate until explicit reload and reset',async()=>{const o=rolling(),fresh=rolling(),sent=[];fresh.rolling_plan.next_review='2026-10-23';const n=mount({...view(),overlay:o},{projectId:'a',owner:true,save:async c=>{sent.push(c);return {receipt:{request_id:c.request_id,revision:3,committed_revision:3},view:null};},reload:async()=>({...view(),overlay:fresh,revision:4})});await change(input(n,'优先级（数值）'),'9');await button(n,'保存配置').fire('click');assert.match(n.textContent,/下次复核：2026-10-22/);assert.equal(button(n,'保存配置').disabled,true);await button(n,'重新读取当前版本').fire('click');assert.match(n.textContent,/下次复核：2026-10-22/);await button(n,'还原草稿').fire('click');assert.match(n.textContent,/下次复核：2026-10-23/);assert.deepEqual(sent[0].value.rolling_plan,o.rolling_plan);});
+
+test('single confirmation ignores three invalid unrelated drafts and keeps exact persisted field shape',async()=>{
+ for(const [label,value]of [['优先级（数值）','-1'],['开始日期','2026-02-30'],['显示顺序','-2']]){
+  const v=proposedView();v.overlay=overlay();v.overlay.priority=4;const sent=[],n=mount(v,{projectId:'a',owner:true,save:async c=>{sent.push(c);return receipt(c,{...v,revision:3,overlay:c.value});}});
+  await change(input(n,label),value);assert.equal(button(n,'保存配置').disabled,true);assert.equal(button(n,'按相关项目确认 · synthetic-related').disabled,false);await button(n,'按相关项目确认 · synthetic-related').fire('click');assert.equal(sent.length,1);assert.equal(sent[0].value.priority,4);assert.deepEqual(Object.keys(sent[0].value).sort(),Object.keys(v.overlay).sort());assert.equal(input(n,label).value,value);
+ }
+});
+test('narrow builder retains raw legacy temporal and mixed typed overlays without defaults or mutation',()=>{
+ for(const kind of ['legacy','temporal','typed']){
+  const v=proposedView();v.overlay=overlay();v.overlay.priority=8;
+  if(kind==='temporal')Object.assign(v.overlay,{timezone:'Asia/Tokyo',milestones:[]});
+  if(kind==='typed')v.overlay.relations={belongs_to:'c',depends_on:[],related_to:['c'],independent:null,typed:{schema_version:'1.0',items:[{id:'typed-item',revision:7,state:'candidate'}]}};
+  const before=structuredClone(v),c=buildProposalCommand(v,'a',proposalRef(),'narrow-'+kind);assert.deepEqual(v,before);assert.deepEqual(Object.keys(c.value).sort(),Object.keys(v.overlay).sort());assert.equal(c.value.priority,8);if(kind==='typed')assert.deepEqual(c.value.relations.typed,v.overlay.relations.typed);
+ }
+});
+test('narrow CAS reload and UNKNOWN retry never pick up changed draft or change request scope',async()=>{
+ const v=proposedView(),sent=[],n=mount(v,{projectId:'a',owner:true,reload:async()=>({...v,revision:9,config_hash:'c'.repeat(64),overlay:{...overlay(),priority:6}}),save:async c=>{sent.push(c);if(sent.length===1)throw {status:409,outcome:'NOT_COMMITTED'};if(sent.length===2)throw {outcome:'UNKNOWN'};return receipt(c,{...v,revision:10,overlay:c.value});}});
+ await change(input(n,'优先级（数值）'),'99');await button(n,'按相关项目确认 · synthetic-related').fire('click');await button(n,'重新读取当前版本').fire('click');await button(n,'重试单项确认').fire('click');assert.equal(sent[1].value.priority,6);await button(n,'重试确认提交').fire('click');assert.deepEqual(sent[1],sent[2]);assert.equal(input(n,'优先级（数值）').value,'99');assert.ok(sent.every(c=>c.proposal_ref));
+});
+test('history load and clear relations are explicitly draft-only for three persisted versions',async()=>{
+ for(const rev of [1,3,8]){
+  const v=proposedView();v.history_recent=[{revision:rev,after:{...overlay(),priority:rev,relations:{belongs_to:'b',depends_on:['c'],related_to:['b'],independent:false}}}];let calls=0;const n=mount(v,{projectId:'a',owner:true,save:async()=>calls++});await button(n,`载入版本 ${rev} 为草稿`).fire('click');assert.equal(calls,0);assert.equal(input(n,'优先级（数值）').value,String(rev));await button(n,'清除本项目全部草稿关系').fire('click');assert.equal(calls,0);assert.equal(input(n,'关系配置').value,'unconfigured');assert.equal(input(n,'优先级（数值）').value,String(rev));
+ }
+});
