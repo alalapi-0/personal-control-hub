@@ -521,3 +521,92 @@ class PlanInputOverflowReplacementTests(unittest.TestCase):
     with self.assertRaises((ServiceError,ValueError)):
      with db:db.execute('BEGIN IMMEDIATE');TaskStore._replace_plan_input(db,ident,value)
     self.assertEqual(path.read_bytes(),before)
+
+class PlanHistoryCapacityTests(unittest.TestCase):
+ def fixture(self):
+  f=PlanRevisionTests();f.setUp();self.addCleanup(f.doCleanups);return f
+ def move(self,f,target,request,rollback=False):
+  prior=digest(f.p);f.bind(target,prior)
+  return f.store.reconcile_plan(target,expected_sha256=prior,request_id=request,authority=f.cap,rollback=rollback)
+ def test_beyond_sixteen_preserves_source_budget_unknown_receipts_and_exact_rollback(self):
+  import test_hub_source_admission as sources
+  import test_hub_dispatch_budget as budgets
+  from hub.dispatch_budget import split
+  from hub.source_admission import split as split_source
+  from hub.workbench_store import canonical
+  f=sources.SourceAdmissionTests();f.setUp();self.addCleanup(f.doCleanups)
+  receipt=f.f.evidence(BASE);receipt['plan_sha256']=digest(f.p);f.records[BASE]=receipt;f.configure()
+  f.store.record_plan_evidence(f.p['plan_id'],receipt,authority=f.cap)
+  f.record(f.candidate(status='unknown'))
+  b=budgets.DispatchBudgetTests();b.store=f.store;b.p=f.p;b.plan_cap=f.cap;b.control=f.control
+  b.policy={'schema_version':'1.0','lineage_id':f.p['plan_id'],'source_state_sha256':'a'*64,'cutoff_id':'synthetic-cutoff','covered_dispatch_ids':['covered-call'],'observed_model_dispatches':1,'historical_unknown_allowance':8,'closure_reserve':12,'conservative_deterministic_dispatches':0,'limit':480,'provenance_ref':'synthetic/state-cutoff.json'}
+  b.initialize();request=b.req();b.reserve(request);b.close(request,outcome='unknown',resources_closed=False)
+  def snapshot():
+   with f.store._connection()as db:
+    raw=f.store._decode(*db.execute('SELECT body,hash FROM plan_inputs').fetchone())
+    receipts=[tuple(r)for r in db.execute('SELECT * FROM plan_receipts')]
+   history,budget=split(raw);_,source=split_source(history)
+   return canonical(budget),canonical(source),receipts
+  original=copy.deepcopy(f.p);kept=snapshot();plans=[original];requests=[]
+  for n in range(2,19):
+   prior=copy.deepcopy(f.p);f.p={**copy.deepcopy(original),'revision':str(n)};f.configure(prior=prior)
+   result=f.store.reconcile_plan(f.p,expected_sha256=digest(prior),request_id='history-'+str(n),authority=f.cap)
+   requests.append(result['request']);plans.append(copy.deepcopy(f.p))
+  self.assertEqual(snapshot(),kept);self.assertEqual(f.store.tasks(),[])
+  status=f.store.plan_revision_status(f.p['plan_id'],authority=f.cap)
+  self.assertEqual(status['version_hashes'],[digest(p)for p in plans]);self.assertEqual(status['requests'],requests)
+  prior=copy.deepcopy(f.p);f.p=original;f.configure(prior=prior)
+  f.store.reconcile_plan(f.p,expected_sha256=digest(prior),request_id='history-exact-rollback',authority=f.cap,rollback=True)
+  before=f.store.path.read_bytes()
+  self.assertTrue(f.store.reconcile_plan(f.p,expected_sha256=digest(prior),request_id='history-exact-rollback',authority=f.cap,rollback=True)['replayed'])
+  self.assertEqual(f.store.path.read_bytes(),before);self.assertEqual(snapshot(),kept)
+  self.assertEqual(f.store.plan_ready(f.p['plan_id'],authority=f.cap)['accepted'],[BASE])
+  self.assertNotIn(sources.GRAPH,f.view()['ready']) # UNKNOWN was not washed away.
+  from hub.task_storage_restore import _snapshot
+  _snapshot(f.store,before)
+ def test_exact_64_versions_128_requests_and_broken_history_fail_without_rewrite(self):
+  import sqlite3
+  from hub.workbench_store import canonical
+  from hub.task_storage_restore import _snapshot
+  f=self.fixture();plans=[copy.deepcopy(f.p)]
+  for n in range(2,65):
+   p={**copy.deepcopy(f.original),'revision':str(n)};self.move(f,p,'capacity-'+str(n));plans.append(p)
+  before=f.store.path.read_bytes()
+  with self.assertRaises(ServiceError)as error:self.move(f,{**copy.deepcopy(f.original),'revision':'65'},'capacity-over-version')
+  self.assertEqual(error.exception.code,'PLAN_HISTORY_CAPACITY');self.assertEqual(f.store.path.read_bytes(),before)
+  # Rebind to the actual current plan after the rejected candidate.
+  f.p=copy.deepcopy(plans[-1])
+  for n in range(65):self.move(f,copy.deepcopy(plans[0]if n%2==0 else plans[-1]),'capacity-rollback-'+str(n),True)
+  status=f.store.plan_revision_status(f.p['plan_id'],authority=f.cap)
+  self.assertEqual(len(status['version_hashes']),64);self.assertEqual(len(status['requests']),128)
+  self.assertEqual(status['version_hashes'],[digest(p)for p in plans]);self.assertEqual(f.store.tasks(),[])
+  before=f.store.path.read_bytes();target=copy.deepcopy(plans[-1]if f.p==plans[0]else plans[0])
+  with self.assertRaises(ServiceError)as error:self.move(f,target,'capacity-over-request',True)
+  self.assertEqual(error.exception.code,'PLAN_HISTORY_CAPACITY');self.assertEqual(f.store.path.read_bytes(),before)
+  for mutation in ('hash','chain'):
+   with self.subTest(mutation=mutation),sqlite3.connect(':memory:')as db:
+    db.deserialize(before);value=json.loads(db.execute('SELECT body FROM plan_inputs').fetchone()[0])
+    if mutation=='hash':value['versions'][17]['sha256']='f'*64
+    else:value['requests'][17]['from_sha256']='f'*64
+    db.execute('UPDATE plan_inputs SET body=?,hash=?',(canonical(value).decode(),digest(value)));db.commit()
+    with self.assertRaises(ServiceError):_snapshot(f.store,db.serialize())
+ def test_byte_limit_and_near_capacity_sqlite_failure_and_guard_remain_atomic(self):
+  from unittest import mock
+  import hub.task_store as stores
+  self.assertEqual(stores.MAX_DATABASE_BYTES,64*1024*1024)
+  f=self.fixture();original=copy.deepcopy(f.p);before=f.store.path.read_bytes();identity=(f.store.path.stat().st_dev,f.store.path.stat().st_ino)
+  with mock.patch.object(stores,'MAX_DATABASE_BYTES',len(before)-1):
+   with self.assertRaises(ServiceError)as error:f.store.plan_revision_status(f.p['plan_id'],authority=f.cap)
+   self.assertEqual(error.exception.code,'TASK_LOCATION_REJECTED')
+  self.assertEqual(f.store.path.read_bytes(),before)
+  target={**copy.deepcopy(original),'revision':'large'};target['tasks'][1]['objective']='bounded synthetic padding '*10000
+  with mock.patch.object(stores,'MAX_DATABASE_BYTES',len(before)+8192):
+   with self.assertRaises(ServiceError)as error:self.move(f,target,'capacity-full')
+   self.assertEqual(error.exception.code,'TASK_STORAGE_CAPACITY')
+  self.assertEqual(f.store.path.read_bytes(),before);self.assertEqual((f.store.path.stat().st_dev,f.store.path.stat().st_ino),identity)
+  target={**copy.deepcopy(original),'revision':'guarded'};f.p=original
+  def fault(phase):
+   if phase=='before_commit':raise OSError('synthetic precommit refusal')
+  f.store.fault=fault
+  with self.assertRaises(ServiceError)as error:self.move(f,target,'capacity-guard')
+  self.assertEqual(error.exception.code,'TASK_NOT_COMMITTED');self.assertEqual(f.store.path.read_bytes(),before)

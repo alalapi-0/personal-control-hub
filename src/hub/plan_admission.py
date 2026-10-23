@@ -105,7 +105,7 @@ def plan_history(value):
   p=validate_plan(value);return p,{digest(p):p},[]
  if set(value)!={'schema_version','plan_id','current_sha256','versions','requests'}:reject('PLAN_HISTORY_CORRUPT')
  versions=value['versions'];requests=value['requests']
- if type(versions)is not list or not 1<=len(versions)<=16 or type(requests)is not list or not 1<=len(requests)<=32:reject('PLAN_HISTORY_CAPACITY')
+ if type(versions)is not list or not 1<=len(versions)<=64 or type(requests)is not list or not 1<=len(requests)<=128:reject('PLAN_HISTORY_CAPACITY')
  known={};revisions=set()
  for row in versions:
   if type(row)is not dict or set(row)!={'sha256','plan'}:reject('PLAN_HISTORY_CORRUPT')

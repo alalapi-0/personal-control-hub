@@ -389,9 +389,14 @@ class FunctionalFixtureTests(unittest.TestCase):
             self.assertEqual(f.preview_sample()['materials'], 6)
             self.assertEqual(f.preview_sample()['materials'], 6)
             catalog = f.call(path='/api/materials')[2]['data']['materials']
-            self.assertEqual(len(catalog), 6)
-            self.assertTrue(all(row['available'] for row in catalog))
-            image = next(row for row in catalog if row['artifact_id'] == 'fixture-project-a-image')
+            current_rows = [row for row in catalog if row['registration_state'] == 'current']
+            historical_rows = [row for row in catalog if row['registration_state'] == 'historical']
+            self.assertEqual(len(current_rows), 6)
+            self.assertEqual(len(historical_rows), 2)
+            self.assertEqual(len({(row['id'], row['version']) for row in catalog}), 8)
+            self.assertTrue(all(row['available'] and row['content_readable'] for row in current_rows))
+            self.assertTrue(all(row['historical'] for row in historical_rows))
+            image = next(row for row in current_rows if row['artifact_id'] == 'fixture-project-a-image')
             self.assertEqual(f.call(path=image['read_url'])[0], 200)
             capture_url = '/api/projects/fixture-project-a/captures'
             capture = f.call(path=capture_url)[2]['data']['previews'][0]
@@ -400,15 +405,28 @@ class FunctionalFixtureTests(unittest.TestCase):
             self.assertFalse(capture['runtime_verified'])
             self.assertEqual(f.call(path=capture['image_url'])[0], 200)
             f.drift_preview_materials()
+            observed = next(row for row in f.call(path='/api/materials')[2]['data']['materials']
+                            if row['id'] == image['id'] and row['registration_state'] == 'current')
+            # An unrelated registered artifact changes observation, not bytes.
+            self.assertEqual(observed['version'], image['version'])
+            self.assertNotEqual(observed['observation_version'], image['observation_version'])
+            self.assertEqual(f.call(path=image['read_url'])[0], 200)
+            # Actual descriptor drift must still invalidate the old pin, even
+            # with identical bytes; revalidation is explicit, never fallback.
+            path = f.preview_paths['fixture-project-a-image']
+            path.write_bytes(path.read_bytes())
             self.assertEqual(f.call(path=image['read_url'])[0], 409)
-            current = next(row for row in f.call(path='/api/materials')[2]['data']['materials'] if row['id'] == image['id'])
-            self.assertNotEqual(current['version'], image['version'])
+            self.assertEqual(f.call(path=image['read_url'].replace(image['version'], '0' * 64))[0], 409)
+            f.materials.prepare_fixture(set(f.preview_paths))
+            current = next(row for row in f.call(path='/api/materials')[2]['data']['materials']
+                           if row['id'] == image['id'] and row['registration_state'] == 'current')
+            self.assertEqual(current['version'], image['version'])
             self.assertEqual(f.call(path=current['read_url'])[0], 200)
             f.invalidate_preview('fixture-project-a', 'material_image')
             self.assertEqual(f.call(path=current['read_url'])[0], 404)
             f.invalidate_preview('fixture-project-a', 'saved_capture')
             self.assertEqual(f.call(path=capture['image_url'])[0], 409)
-            b = next(row for row in f.call(path='/api/materials')[2]['data']['materials'] if row['artifact_id'] == 'fixture-project-b-image')
+            b = next(row for row in f.call(path='/api/materials')[2]['data']['materials'] if row['artifact_id'] == 'fixture-project-b-image' and row['registration_state'] == 'current')
             self.assertEqual(f.call(path=b['read_url'])[0], 200)
             for project, root in f.roots.items():
                 self.assertEqual(hashlib.sha256((root / 'STATE.yaml').read_bytes()).hexdigest(), source_hashes[project])
