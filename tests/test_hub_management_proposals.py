@@ -38,8 +38,21 @@ class ManagementProposalTests(unittest.TestCase):
         return self.service.get_management('a')['proposals'][0]['proposal_ref']
 
     def adoption(self,ident='adopt'):
-        command=self.command(request=ident,value=fixture.overlay(relations=fixture.relations(related=['b'])))
-        command['proposal_ref']=self.reference()
+        view=self.service.get_management('a')
+        if view['overlay'] is None:
+            # Dates/defaults are a separate normal save, never collateral to a
+            # proposal. Do not seed unrelated history/date-only test cases.
+            baseline=self.command(request='proposal-baseline-'+ident,value=fixture.overlay())
+            status,_,body=self.post(baseline);self.assertEqual(status,200,body)
+            view=self.service.get_management('a')
+        candidate=view['proposals'][0]
+        value=copy.deepcopy(view['overlay'])
+        value['relations']=(copy.deepcopy(value['relations']) if value['relations'] is not None
+                            else fixture.relations())
+        value['relations']['related_to']=list(dict.fromkeys(value['relations']['related_to']+
+            [member for member in candidate['project_ids'] if member!='a']))
+        command=self.command(request=ident,value=value)
+        command['proposal_ref']=candidate['proposal_ref']
         return command
 
     def assert_no_write(self,command,code):
@@ -72,7 +85,7 @@ class ManagementProposalTests(unittest.TestCase):
         import yaml
         config=yaml.safe_load(before);self.assertEqual(config['schema_version'],'1.4');validate_management_state(config)
         changed=copy.deepcopy(command);changed['proposal_ref']['proposal_hash']='0'*64
-        self.assert_no_write(changed,'MANAGEMENT_PROPOSAL_STALE')
+        self.assert_no_write(changed,'MANAGEMENT_REQUEST_CONFLICT')
         self.projection.write_text(self.projection.read_text()+'\n')
         rebound=copy.deepcopy(command);rebound['proposal_ref']=self.reference()
         self.assert_no_write(rebound,'MANAGEMENT_REQUEST_CONFLICT')
@@ -158,5 +171,21 @@ class ManagementProposalTests(unittest.TestCase):
         self.assertEqual(len(history),20);self.assertEqual(history[0]['revision'],3)
         self.assertEqual(self.service.get_management('b')['history_recent'],[])
         self.assertTrue(all(set(row)=={'before','after','revision','request_id','operation'} for row in history))
+
+    def test_initial_full_overlay_proposal_rejects_before_separate_baseline_save(self):
+        self.assertIsNone(self.service.get_management('a')['overlay'])
+        collateral=self.command(request='initial-collateral',
+            value=fixture.overlay(relations=fixture.relations(related=['b'])))
+        collateral['proposal_ref']=self.reference()
+        self.assert_no_write(collateral,'MANAGEMENT_PROPOSAL_SCOPE_REJECTED')
+        self.assertEqual(ManagementStore(self.fixture.hub).snapshot()['history'],[])
+        self.assertEqual(self.post(self.command(request='explicit-baseline',value=fixture.overlay()))[0],200)
+        before=self.config.read_bytes()
+        precise=self.adoption('after-baseline')
+        self.assertEqual(self.config.read_bytes(),before)  # Existing raw baseline is not saved again.
+        self.assertEqual(precise['expected_revision'],1)
+        status,_,body=self.post(precise);self.assertEqual(status,200,body)
+        self.assertEqual(body['data']['view']['overlay'],precise['value'])
+        self.assertEqual(len(ManagementStore(self.fixture.hub).snapshot()['history']),2)
 
 if __name__=='__main__':unittest.main()
