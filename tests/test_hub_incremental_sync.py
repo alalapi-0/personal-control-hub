@@ -16,6 +16,9 @@ from hub.service_contract import ServiceError
 from hub.refresh_schedule import latest_due_slot
 from hub.connection_sync import scope_plan, recovery_summary
 from hub.connection_records import RecordError
+from hub.graph_records import validate_graph
+from hub.pch_domain_projection import PROJECT
+from test_hub_sync_status import PchDomainFixture
 
 class IncrementalSyncTests(unittest.TestCase):
     def setUp(self):
@@ -197,5 +200,99 @@ class IncrementalSyncTests(unittest.TestCase):
             result,code=self.run_incremental('excluded')
         self.assertEqual(result['checked_count'],0)
         self.assertEqual(result['status'],'NO_ELIGIBLE_PROJECTS')
+
+class PchDomainIncrementalTests(unittest.TestCase):
+    def setUp(self):
+        self.f = PchDomainFixture(); self.addCleanup(self.f.close)
+
+    def incremental(self, request):
+        f = self.f
+        return incremental_request(f.root, f.resolver, f.ledger, request)
+
+    def test_touch_replay_and_content_changes_preserve_identity_not_old_revision(self):
+        f = self.f; first, code = self.incremental('domain-first')
+        self.assertEqual((code, first['appended_count']), (0, 1))
+        before = f.project(); history = f.ledger.history()
+        old_file = next(o for o in before['objects'] if o['type'] == 'FileRef')
+        os.utime(f.source / 'STATE.yaml', None)
+        touched, code = self.incremental('domain-touch')
+        self.assertEqual((code, touched['status']), (0, 'UNCHANGED'))
+        self.assertEqual(f.ledger.history(), history)
+        after_touch = f.project(); self.assertEqual(after_touch['source_version'], before['source_version'])
+        self.assertEqual(after_touch['projection_version'], before['projection_version'])
+        with mock.patch.object(f.resolver, 'refresh', side_effect=AssertionError('replay collected source')):
+            replay, code = self.incremental('domain-first')
+        self.assertEqual((code, replay['appended_count']), (0, 0)); self.assertEqual(f.ledger.history(), history)
+        state = yaml.safe_load((f.source / 'STATE.yaml').read_text())
+        state['current_work']['objective'] = 'Changed synthetic PCH source content'
+        (f.source / 'STATE.yaml').write_text(yaml.safe_dump(state))
+        changed, code = self.incremental('domain-changed'); self.assertEqual((code, changed['appended_count']), (0, 1))
+        projected = f.project(); validate_graph(projected)
+        current = next(o for o in projected['objects'] if o['type'] == 'FileRef' and o['source']['applicability'] == 'current')
+        self.assertEqual(current['id'], old_file['id']); self.assertNotEqual(current['revision'], old_file['revision'])
+        self.assertNotEqual(projected['source_version'], before['source_version'])
+        self.assertIn((old_file['id'], old_file['revision']), {(r['object_id'], r['revision']) for r in projected['rows']})
+        self.assertEqual(projected['rows'], f.project()['rows'])
+
+    def test_reobservation_has_new_run_but_same_content_and_rule_revision(self):
+        f = self.f; f.collect(); before = f.project()
+        file = next(o for o in before['objects'] if o['type'] == 'FileRef')
+        os.utime(f.source / 'STATE.yaml', None); f.collect('domain-reobserved')
+        after = f.project(); files = [o for o in after['objects'] if o['type'] == 'FileRef']
+        self.assertEqual(len(files), 1); self.assertEqual(files[0]['id'], file['id'])
+        self.assertEqual(files[0]['revision'], file['revision'])
+        self.assertEqual(files[0]['data']['version_inputs'], file['data']['version_inputs'])
+        self.assertNotEqual(files[0]['data']['observation'], file['data']['observation'])
+        self.assertEqual(len([o for o in after['objects'] if o['type'] == 'Run']), 2)
+        self.assertEqual(files[0]['data']['observation']['head'], f.ledger.head)
+
+    def test_failed_source_keeps_error_run_and_historical_success_without_current_edges(self):
+        f = self.f; f.publish_page(); self.incremental('domain-good')
+        good = f.project(); source = (f.source / 'STATE.yaml')
+        source.write_text('private_failure_body_not_for_graph: [')
+        failed, code = self.incremental('domain-bad'); self.assertEqual((code, failed['appended_count']), (2, 1))
+        dto = f.service.get_project(PROJECT); self.assertEqual(dto['last_success_snapshot']['state'], 'historical')
+        result = f.project(); runs = [o for o in result['objects'] if o['type'] == 'Run']
+        failure = next(o for o in runs if o['data']['request_id'] == 'domain-bad')
+        self.assertFalse(failure['data']['success']); self.assertTrue(failure['data']['error_codes'])
+        self.assertFalse(dto['freshness']['authority_drift'])
+        self.assertEqual(failure['source']['applicability'], 'current')
+        self.assertFalse(failure['data']['execution_authority'])
+        self.assertIsNone(failure['data']['native_run_id'])
+        earlier = next(o for o in runs if o['data']['request_id'] == 'domain-good')
+        self.assertEqual(earlier['source']['applicability'], 'historical')
+        self.assertEqual(len([o for o in runs if o['data']['success']]), 1)
+        for obj in result['objects']:
+            if obj['type'] in {'Artifact', 'FileRef'}: self.assertEqual(obj['source']['applicability'], 'historical')
+        self.assertFalse(any(e['from']['id'] == failure['id'] for e in result['relations']))
+        for edge in result['relations']:
+            if edge['source']['origin'] == 'source_fact': self.assertEqual(edge['source']['applicability'], 'historical')
+        self.assertNotIn('private_failure_body_not_for_graph', json.dumps(result))
+        self.assertNotIn(str(f.fixture.base), json.dumps(result))
+        self.assertTrue(any(o['id'] in {x['id'] for x in good['objects']} for o in result['objects'] if o['type'] == 'FileRef'))
+
+    def test_latest_failed_attempt_does_not_become_current_under_authority_drift(self):
+        from hub.connection_records import record_schema
+        from hub.pch_domain_projection import project_pch_domain
+        f = self.f; f.publish_page(); self.incremental('domain-good')
+        (f.source / 'STATE.yaml').write_text('broken: [')
+        self.incremental('domain-bad')
+        history, matched = f.snapshot(); before = project_pch_domain(history, matched)
+        schema = record_schema(); schema['shared_safety_revision'] = 'synthetic-domain-authority-drift'
+        with mock.patch('hub.connection_sources.record_schema', return_value=schema):
+            drifted = f.service.get_project(PROJECT)
+        self.assertTrue(drifted['freshness']['authority_drift'])
+        result = project_pch_domain(history, drifted); validate_graph(result)
+        previous = {(o['id'], o['revision']) for o in before['objects'] if o['type'] in {'Run', 'FileRef', 'Artifact'}}
+        observed = {(o['id'], o['revision']) for o in result['objects'] if o['type'] in {'Run', 'FileRef', 'Artifact'}}
+        self.assertEqual(observed, previous)
+        for obj in result['objects']:
+            if obj['type'] in {'Run', 'FileRef', 'Artifact'}:
+                self.assertEqual(obj['source']['applicability'], 'historical')
+                self.assertFalse(obj['data']['execution_authority'])
+        for edge in result['relations']:
+            if edge['source']['origin'] == 'source_fact': self.assertEqual(edge['source']['applicability'], 'historical')
+        self.assertEqual(f.ledger.history(), history)
+
 
 if __name__=='__main__':unittest.main()
