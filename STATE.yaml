@@ -2007,3 +2007,61 @@ media_apps_storage_goal:
     closure_record: Final package deadline repair and its frozen bundle metadata are the current
       following owned unit; exact remote verified after normal push.
     prior_closure_commit: 17d2e5d3c6680d5b1fdfa1c97bf4fa0b944e7f3d
+pch_refactor:
+  status: BLOCKED
+  progress:
+    verified_total: 107
+    current_total: 111
+  rebuild_planning_20261020:
+    task_id: PCH-REBUILD-20261020
+    publication_scope: Versioned bounded source candidate only; coordinator resumes solely from original canonical State.
+    hub_source_view:
+      schema_version: pch-self-source-view/1
+      scope:
+        goal_id: PCH-REBUILD-20261020
+        task_id: P5-personal-control-hub-01
+        publication: source implementation candidate; ordinary execution and full acceptance remain gated
+      definition:
+        purpose:
+          value: 汇总和解释本地项目的状态、计划、产物及其来源，并通过项目原有入口组织已授权的工作。
+          state: known
+          reason: null
+        outputs:
+          value:
+          - 项目详情与五项说明
+          - 带来源版本的图和列表投影
+          - 刷新、同步及已授权操作的结果回执
+          state: known
+          reason: null
+        roles:
+          value: null
+          state: unknown
+          reason: 项目长期负责角色尚未发布；不从当前Agent或技术栈推断。
+        aliases:
+          value: null
+          state: unknown
+          reason: 尚未发布已确认的项目别名。
+        primary_project_id:
+          value: personal-control-hub
+          state: known
+          reason: null
+        working_copies:
+          value: null
+          state: unknown
+          reason: 本声明不发布本地工作副本清单。
+      current_work:
+        objective: 接入PCH自身五项说明及有范围的当前工作引用。
+        phase: P5
+        round: P5-R3
+        status: active
+        completed: false
+        accepted: false
+        next_action: 完成自身声明映射与隔离刷新、详情和重放旅程，交付原任务源码候选。
+      progress:
+        completed: 12
+        total: 208
+        counting_basis: PCH-REBUILD-20261020 原208项产品任务的完整验收；15项源码实现单独记录，不计为完整验收。
+      known_limits:
+      - 行动人尚未发布，保持未知。
+      - 旧PCH任务107/111属于独立历史范围，不作为本重建任务的分子或分母。
+      - 源码实现不证明正式采用、普通执行权限或整项验收。

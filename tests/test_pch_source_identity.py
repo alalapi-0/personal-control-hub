@@ -7,6 +7,7 @@ import pytest
 import yaml
 
 from connection_fixtures import Fixture
+from test_hub_project_definition import OwnHubSourceFixture
 from hub.connection_records import RecordError
 from hub.connection_records import update_key, validate_authority, validate_result
 from hub.connection_refresh import RefreshLedger, refresh, RequestConflictError
@@ -231,6 +232,67 @@ class ProjectBindingJourneyTests(unittest.TestCase):
                 'expected_head': {'sequence': 0, 'hash': '0' * 64}})
         self.assertEqual(outcome['current_authority']['state'], 'matched')
         self.assertEqual(outcome['projection']['projects']['b']['freshness'], 'fresh')
+
+
+class OwnHubSourceIdentityTests(unittest.TestCase):
+    def setUp(self):
+        self.f = OwnHubSourceFixture(); self.addCleanup(self.f.close)
+
+    def test_self_refresh_replay_preserves_all_source_bytes_and_ledger_events(self):
+        f = self.f
+        before = {name: (f.root / name).read_bytes() for name in ('STATE.yaml', 'hub.connection.yaml', 'project.yaml')}
+        self.assertEqual(f.root.resolve(), f.service.root.resolve())
+        self.assertEqual(f.fixture.projects[0]['id'], 'personal-control-hub')
+        with patch('subprocess.run', side_effect=AssertionError('metadata command executed')), \
+                patch('subprocess.Popen', side_effect=AssertionError('metadata process started')):
+            first = f.collect(); original = f.ledger.history('own-hub-source')
+            with patch('hub.connection_sources.SourceResolver.refresh', side_effect=AssertionError('replay re-read source')):
+                replay = f.collect()
+        self.assertEqual(first['resolver_errors'], {}); self.assertEqual(replay['resolver_errors'], {})
+        self.assertEqual(first['appended_project_ids'], [f.project_id]); self.assertEqual(replay['appended_project_ids'], [])
+        self.assertEqual(f.ledger.history('own-hub-source'), original)
+        self.assertEqual(len(original['requests']), 1); self.assertEqual(len(original['results']), 1)
+        self.assertEqual(replay['projection']['head'], first['projection']['head'])
+        record = original['results'][0]['result']
+        self.assertEqual(record['binding_hash'], record['authority']['project_bindings'][f.project_id])
+        self.assertTrue(record['authority']['registration_bindings'][f.project_id])
+        self.assertEqual(record['business']['progress']['completed'], 12)
+        self.assertEqual(record['business']['progress']['total'], 208)
+        for name, data in before.items(): self.assertEqual((f.root / name).read_bytes(), data)
+        self.assertFalse((f.root / '.hub/status.json').exists())
+
+    def test_mismatched_self_declaration_identity_rejects_before_state_read(self):
+        from hub.connection_sources import SourceResolver
+        f = self.f; declaration = copy.deepcopy(f.declaration); declaration['project_id'] = 'different-project'
+        (f.root / 'hub.connection.yaml').write_text(yaml.safe_dump(declaration, sort_keys=False))
+        state = (f.root / 'STATE.yaml').read_bytes(); reads = []
+        def read(root, relative, **kwargs):
+            reads.append(relative)
+            self.assertNotEqual(relative, 'STATE.yaml')
+            return _safe_relative_read(root, relative, **kwargs)
+        with patch('hub.connection_sources._safe_relative_read', read):
+            result = SourceResolver(f.root).refresh(f.project_id)
+        self.assertFalse(result['success']); self.assertEqual(result['disposition'], 'invalid')
+        self.assertEqual(result['sources'], []); self.assertEqual(result['field_provenance'], {})
+        self.assertIsNone(result['business']['current_work']['objective'])
+        self.assertIn('hub.connection.yaml', reads)
+        self.assertEqual((f.root / 'STATE.yaml').read_bytes(), state)
+
+    def test_self_permission_revocation_does_not_read_or_promote_cached_facts(self):
+        from hub.connection_sources import SourceResolver
+        f = self.f; f.collect(); before = (f.root / 'STATE.yaml').read_bytes()
+        original = copy.deepcopy(f.fixture.projects[0])
+        for changes in ({'connection_read_allowed': False}, {'access_profile': 'no_current_goal_access'},
+                        {'current_state_status': 'removed_local'}):
+            f.fixture.projects[0] = {**original, **changes}; f.fixture.save_registry()
+            with self.subTest(changes=changes), \
+                    patch('hub.connection_sources._safe_relative_read', side_effect=AssertionError('revoked source read')):
+                result = SourceResolver(f.root).refresh(f.project_id)
+                detail = f.service.get_project(f.project_id)
+            self.assertFalse(result['success']); self.assertEqual(result['sources'], [])
+            self.assertEqual(detail['semantics']['explanations']['current_work']['state'], 'unknown')
+            self.assertIsNone(detail['semantics']['explanations']['current_work']['value'])
+            self.assertEqual((f.root / 'STATE.yaml').read_bytes(), before)
 
 
 def test_stable_identity_survives_checkout_rename_without_duplicate_registration():

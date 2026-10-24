@@ -9,44 +9,68 @@ metric_export:
   entry: scripts/export_hub_metric_snapshot.py
   snapshot: .hub/status.json
 mapping:
+  current_work.objective:
+    source_ref: state
+    selector:
+      path: [pch_refactor, rebuild_planning_20261020, hub_source_view, current_work, objective]
+    value_map: null
   current_work.phase:
     source_ref: state
     selector:
-      path: [all_projects_governance, v3, stage_id]
+      path: [pch_refactor, rebuild_planning_20261020, hub_source_view, current_work, phase]
     value_map: null
   current_work.round:
     source_ref: state
     selector:
-      path: [all_projects_governance, v3, unit_id]
+      path: [pch_refactor, rebuild_planning_20261020, hub_source_view, current_work, round]
     value_map: null
   current_work.status:
     source_ref: state
     selector:
-      path: [all_projects_governance, status]
-    value_map:
-      ACTIVE: active
-      PAUSED: paused
-      BLOCKED: blocked
-      WAITING_FOR_USER: blocked
-      COMPLETE: complete
-      STOPPED: paused
+      path: [pch_refactor, rebuild_planning_20261020, hub_source_view, current_work, status]
+    value_map: null
+  current_work.completed:
+    source_ref: state
+    selector:
+      path: [pch_refactor, rebuild_planning_20261020, hub_source_view, current_work, completed]
+    value_map: null
+  current_work.accepted:
+    source_ref: state
+    selector:
+      path: [pch_refactor, rebuild_planning_20261020, hub_source_view, current_work, accepted]
+    value_map: null
   current_work.next_action:
     source_ref: state
     selector:
-      path: [all_projects_governance, next_action]
+      path: [pch_refactor, rebuild_planning_20261020, hub_source_view, current_work, next_action]
+    value_map: null
+  progress.completed:
+    source_ref: state
+    selector:
+      path: [pch_refactor, rebuild_planning_20261020, hub_source_view, progress, completed]
+    value_map: null
+  progress.total:
+    source_ref: state
+    selector:
+      path: [pch_refactor, rebuild_planning_20261020, hub_source_view, progress, total]
+    value_map: null
+  progress.counting_basis:
+    source_ref: state
+    selector:
+      path: [pch_refactor, rebuild_planning_20261020, hub_source_view, progress, counting_basis]
     value_map: null
 unknown_fields:
-  current_work.objective: The compact state publishes task identifiers but not one objective statement.
-  current_work.phase: The active V3 stage identifier is unavailable.
-  current_work.round: The active V3 project-unit identifier is unavailable.
-  current_work.status: The Hub state does not publish a recognized lifecycle status.
-  current_work.completed: Lifecycle status is not an independent completion boolean.
-  current_work.accepted: Project-unit review does not establish whole-goal acceptance.
-  current_work.next_action: The canonical Hub state does not publish one next action.
-  current_work.owner_role: The canonical Hub state does not publish one owner-role string.
-  progress.completed: The accepted count has no paired source counting basis in compact state and is not exported alone.
-  progress.total: The acceptance denominator belongs to the versioned roadmap and is not duplicated here.
-  progress.counting_basis: The compact state does not duplicate the roadmap criterion definition.
+  current_work.objective: The bounded rebuild sourceview does not publish a current objective.
+  current_work.phase: The bounded rebuild sourceview does not publish a current phase.
+  current_work.round: The bounded rebuild sourceview does not publish a current round.
+  current_work.status: The bounded rebuild sourceview does not publish a recognized lifecycle status.
+  current_work.completed: The bounded rebuild sourceview does not publish an independent completion boolean.
+  current_work.accepted: The bounded rebuild sourceview does not publish an independent acceptance boolean.
+  current_work.next_action: The bounded rebuild sourceview does not publish a next action.
+  current_work.owner_role: The bounded rebuild sourceview does not publish an actor or owner role; neither is inferred from Agent identity.
+  progress.completed: The bounded rebuild sourceview does not publish its full-acceptance numerator.
+  progress.total: The bounded rebuild sourceview does not publish its original product-task denominator.
+  progress.counting_basis: The bounded rebuild sourceview does not publish a source counting basis; historical 107/111 is a separate scope.
   progress.milestones: Acceptance history is hash-linked state history, not a current milestone array.
   blockers: Compact unresolved summaries are not typed blocker records.
   verification.status: The latest review belongs to the prior completed unit and is not rebound to the active cursor.
@@ -57,6 +81,15 @@ unknown_fields:
   delivery.branch: The compact state does not duplicate the configured target branch.
   delivery.commit: A prior-unit main commit is not the active unit's delivery commit.
   delivery.receipt_ref: CI identity is structured delivery metadata, not a string receipt pointer.
+extensions:
+  schema_version: '1.4'
+  fact_mapping:
+    project_definition:
+      source_ref: state
+      selector:
+        path: [pch_refactor, rebuild_planning_20261020, hub_source_view, definition]
+  unknown_fields:
+    project_definition: The bounded rebuild sourceview does not publish a long-term project definition.
 validation_entry:
 - python3 scripts/export_hub_metric_snapshot.py --help
 max_read_age_seconds: 604800

@@ -11,11 +11,48 @@ from hub.connection_extensions import validate_project_definition
 from hub.connection_records import RecordError, validate_result
 from hub.connection_refresh import RefreshLedger, refresh
 from hub.connection_sources import SourceResolver
-from hub.connections import validate_registry_value
+from hub.connections import validate_registry_value, parse_owned_hub_state
 from hub.project_service import ProjectService
 
 
 def known(value): return {'value': value, 'state': 'known', 'reason': None}
+
+
+class OwnHubSourceFixture:
+    """Actual candidate inputs copied to an isolated, self-registered Hub root."""
+    project_id = 'personal-control-hub'
+    selector = ['pch_refactor', 'rebuild_planning_20261020', 'hub_source_view']
+
+    def __init__(self):
+        self.fixture = Fixture()
+        self.root = self.fixture.base / self.project_id
+        (self.root / 'data/registry').mkdir(parents=True)
+        self.fixture.hub = self.root
+        repository = Path(__file__).resolve().parents[1]
+        for name in ('STATE.yaml', 'hub.connection.yaml', 'project.yaml'):
+            (self.root / name).write_bytes((repository / name).read_bytes())
+        self.state_bytes = (self.root / 'STATE.yaml').read_bytes()
+        self.state = parse_owned_hub_state(self.state_bytes)
+        self.view = self.state['pch_refactor']['rebuild_planning_20261020']['hub_source_view']
+        self.declaration = yaml.safe_load((self.root / 'hub.connection.yaml').read_bytes())
+        identity = yaml.safe_load((self.root / 'project.yaml').read_bytes())['project']
+        assert identity['id'] == self.project_id == self.declaration['project_id']
+        self.fixture.projects.append({'id': self.project_id, 'name': identity['name'],
+            'root_path': str(self.root), 'enabled': True, 'connection_read_allowed': True,
+            'current_state_paths': ['STATE.yaml']})
+        self.fixture.save_registry()
+        self.service = ProjectService(self.root)
+        self.ledger = RefreshLedger(self.root, result_validator=validate_result)
+
+    def command(self, request='own-hub-source'):
+        return {'request_id': request, 'project_ids': [self.project_id],
+                'expected_head': {'sequence': 0, 'hash': '0' * 64}}
+
+    def collect(self):
+        return self.service.refresh(self.command())
+
+    def close(self):
+        self.fixture.close()
 
 
 class ProjectDefinitionTests(unittest.TestCase):
@@ -263,6 +300,121 @@ class ProjectDefinitionTests(unittest.TestCase):
             self.assertIn('definition', row)
             self.assertEqual(row['definition']['fields']['roles']['state'], 'missing')
             self.assertEqual(row['definition']['fields']['aliases']['value'], ['Alias ' + row['project_id']])
+
+
+class OwnHubProjectDefinitionTests(unittest.TestCase):
+    def setUp(self):
+        self.f = OwnHubSourceFixture(); self.addCleanup(self.f.close)
+
+    def test_actual_declaration_selects_only_bounded_rebuild_scope(self):
+        f = self.f; declaration = f.declaration
+        self.assertEqual(f.root.name, f.project_id)
+        self.assertEqual(f.fixture.projects[0]['root_path'], str(f.root))
+        self.assertEqual(f.view['scope']['goal_id'], 'PCH-REBUILD-20261020')
+        self.assertEqual(f.view['scope']['task_id'], 'P5-personal-control-hub-01')
+        self.assertEqual(declaration['extensions']['schema_version'], '1.4')
+        self.assertEqual(declaration['extensions']['fact_mapping']['project_definition'],
+                         {'source_ref': 'state', 'selector': {'path': f.selector + ['definition']}})
+        self.assertEqual(set(declaration['mapping']), {
+            'current_work.objective', 'current_work.phase', 'current_work.round', 'current_work.status',
+            'current_work.completed', 'current_work.accepted', 'current_work.next_action',
+            'progress.completed', 'progress.total', 'progress.counting_basis'})
+        for field, rule in declaration['mapping'].items():
+            with self.subTest(field=field):
+                self.assertEqual(rule, {'source_ref': 'state', 'selector': {'path': f.selector + field.split('.')},
+                                        'value_map': None})
+        self.assertNotIn('current_work.owner_role', declaration['mapping'])
+        self.assertEqual(f.state['pch_refactor']['progress'], {'verified_total': 107, 'current_total': 111})
+
+    def test_real_refresh_detail_has_five_explanations_and_exact_field_proofs(self):
+        f = self.f; outcome = f.collect()
+        self.assertEqual(outcome['resolver_errors'], {})
+        self.assertEqual(outcome['current_authority']['state'], 'matched')
+        history = f.ledger.history('own-hub-source'); result = history['results'][0]['result']
+        self.assertTrue(result['success']); self.assertEqual(result['project_id'], f.project_id)
+        dto = f.service.get_project(f.project_id); explanations = dto['semantics']['explanations']
+        self.assertEqual(set(explanations), {'purpose', 'outputs', 'current_work', 'next_action', 'actor'})
+        expected = {'purpose': f.view['definition']['purpose']['value'],
+                    'outputs': f.view['definition']['outputs']['value'],
+                    'current_work': f.view['current_work']['objective'],
+                    'next_action': f.view['current_work']['next_action']}
+        source_sha = hashlib.sha256(f.state_bytes).hexdigest()
+        declaration_sha = hashlib.sha256((f.root / 'hub.connection.yaml').read_bytes()).hexdigest()
+        self.assertEqual(result['declaration']['sha256'], declaration_sha)
+        self.assertEqual(result['sources'][0]['sha256'], source_sha)
+        for name, value in expected.items():
+            with self.subTest(explanation=name):
+                cell = explanations[name]; self.assertEqual(cell['state'], 'known'); self.assertEqual(cell['value'], value)
+                self.assertEqual(cell['source']['sha256'], source_sha)
+                self.assertEqual(cell['source']['source_ref'], 'state')
+                self.assertTrue(cell['source']['observed_at'])
+                if name in ('purpose', 'outputs'):
+                    self.assertEqual(cell['source']['selector'], {'path': f.selector + ['definition']})
+                    self.assertEqual(cell['source']['field'], name)
+                else:
+                    field = 'current_work.' + ('objective' if name == 'current_work' else 'next_action')
+                    self.assertEqual(cell['source']['selector'], f.declaration['mapping'][field]['selector'])
+                    self.assertEqual(cell['source']['value_map'], None)
+                    self.assertEqual(cell['source']['raw_value'], value)
+                    self.assertEqual(result['field_provenance'][field]['selector'], cell['source']['selector'])
+        binding = dto['provenance']['project_binding']
+        self.assertEqual(binding['project_id'], f.project_id)
+        # GET checks registration without observing source descriptors again.
+        # The exact physical observation remains in the committed authority.
+        self.assertEqual(binding['comparison_basis'], 'registration_only')
+        self.assertIsNone(binding['observed_sha256'])
+        self.assertEqual(binding['registration_sha256'], result['authority']['registration_bindings'][f.project_id])
+        self.assertEqual(dto['provenance']['ledger_head'], f.ledger.head)
+        self.assertEqual(dto['provenance']['business_authority'], result['authority'])
+        self.assertEqual(dto['provenance']['business_authority']['project_bindings'][f.project_id], result['binding_hash'])
+        for field, rule in f.declaration['mapping'].items():
+            with self.subTest(mapped_proof=field):
+                self.assertEqual(result['field_provenance'][field]['source_ref'], rule['source_ref'])
+                self.assertEqual(result['field_provenance'][field]['selector'], rule['selector'])
+                self.assertEqual(result['field_provenance'][field]['sha256'], source_sha)
+                self.assertEqual(result['field_provenance'][field]['value_map'], rule['value_map'])
+        self.assertEqual((dto['business']['fields']['current_work']['phase'],
+                          dto['business']['fields']['current_work']['round']), ('P5', 'P5-R3'))
+        self.assertEqual(dto['business']['fields']['current_work']['objective'], f.view['current_work']['objective'])
+        progress = dto['semantics']['progress']
+        self.assertEqual((progress['completed']['value'], progress['total']['value']), (12, 208))
+        self.assertEqual(progress['counting_basis']['value'], f.view['progress']['counting_basis'])
+        self.assertEqual(progress['counting_basis']['source']['selector'],
+                         f.declaration['mapping']['progress.counting_basis']['selector'])
+        self.assertEqual(progress['counting_basis']['source']['sha256'], source_sha)
+        self.assertFalse(progress['project_completion_inferred'])
+        self.assertFalse(dto['business']['fields']['current_work']['completed'])
+        self.assertFalse(dto['business']['fields']['current_work']['accepted'])
+
+    def test_actor_roles_and_artifact_availability_are_not_inferred(self):
+        f = self.f; f.collect(); dto = f.service.get_project(f.project_id)
+        actor = dto['semantics']['explanations']['actor']
+        self.assertEqual(actor['state'], 'unknown'); self.assertIsNone(actor['value']); self.assertIsNone(actor['source'])
+        self.assertIn('actor or owner role', actor['unknown_reason'])
+        roles = dto['definition']['fields']['roles']
+        self.assertEqual(roles['state'], 'unknown'); self.assertIsNone(roles['value'])
+        self.assertEqual(roles['reason'], f.view['definition']['roles']['reason'])
+        self.assertEqual(dto['semantics']['availability']['outputs']['state'], 'unknown')
+        self.assertIn('do not verify artifact', dto['semantics']['availability']['outputs']['reason'])
+        self.assertEqual(dto['semantics']['interpretations']['origin'], 'hub_authored_interpretation')
+        self.assertNotIn('current_work.owner_role', dto['business']['quality']['current_coverage']['fields'])
+
+    def test_get_reads_cached_projection_without_refresh_or_source_writes(self):
+        f = self.f; f.collect(); history = f.ledger.history()
+        source_before = {name: (f.root / name).read_bytes() for name in ('STATE.yaml', 'hub.connection.yaml', 'project.yaml')}
+        with mock.patch.object(SourceResolver, 'refresh', side_effect=AssertionError('GET refreshed')) as refreshed, \
+                mock.patch('hub.connection_sources._safe_relative_read', side_effect=AssertionError('GET source read')) as read, \
+                mock.patch('subprocess.run', side_effect=AssertionError('metadata executed')), \
+                mock.patch('subprocess.Popen', side_effect=AssertionError('metadata spawned')):
+            detail = f.service.get_project(f.project_id)
+            listed = f.service.list_projects()['projects'][0]
+        self.assertEqual(detail['semantics'], listed['semantics'])
+        self.assertEqual(detail['definition'], listed['definition'])
+        refreshed.assert_not_called(); read.assert_not_called()
+        self.assertEqual(f.ledger.history(), history)
+        for name, before in source_before.items(): self.assertEqual((f.root / name).read_bytes(), before)
+        self.assertEqual(parse_owned_hub_state(source_before['STATE.yaml'])['pch_refactor']['progress'],
+                         {'verified_total': 107, 'current_total': 111})
 
 
 if __name__ == '__main__': unittest.main()
