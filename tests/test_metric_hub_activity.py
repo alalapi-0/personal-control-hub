@@ -180,7 +180,13 @@ class HubActivityTests(unittest.TestCase):
                 },
             },
         }
+        # Management consumes the actual declaration's bounded current scope.
+        # The V3 fixture above remains independent historical metric context.
+        published = yaml.safe_load((ROOT / 'STATE.yaml').read_text())
+        source_view = published['pch_refactor']['rebuild_planning_20261020']['hub_source_view']
+        state['pch_refactor'] = {'rebuild_planning_20261020': {'hub_source_view': source_view}}
         (self.root / 'STATE.yaml').write_text(yaml.safe_dump(state, sort_keys=False))
+        source_before = (self.root / 'STATE.yaml').read_bytes()
         fixture_registry = {'projects': [{
             'id': 'personal-control-hub', 'name': 'personal-control-hub',
             'root_path': str(self.root), 'enabled': True, 'connection_read_allowed': True,
@@ -215,11 +221,17 @@ class HubActivityTests(unittest.TestCase):
         snapshot = read_metric_snapshot(self.root)
         self.assertEqual(snapshot['project_id'], 'personal-control-hub')
         self.assertEqual(snapshot['exporter']['id'], 'personal-control-hub-export')
-        self.assertIsNone(snapshot['management']['business']['current_work']['objective'])
+        self.assertEqual(snapshot['management']['business']['current_work']['objective'], source_view['current_work']['objective'])
+        self.assertEqual(snapshot['management']['business']['current_work']['phase'], 'P5')
+        self.assertEqual(snapshot['management']['business']['current_work']['round'], 'P5-R3')
         self.assertEqual(snapshot['management']['business']['current_work']['status'], 'active')
-        self.assertIsNone(snapshot['management']['business']['current_work']['completed'])
-        self.assertIsNone(snapshot['management']['business']['progress']['completed'])
-        self.assertIsNone(snapshot['management']['business']['progress']['total'])
+        self.assertIs(snapshot['management']['business']['current_work']['completed'], False)
+        self.assertIs(snapshot['management']['business']['current_work']['accepted'], False)
+        self.assertIsNone(snapshot['management']['business']['current_work']['owner_role'])
+        self.assertEqual(snapshot['management']['business']['current_work']['next_action'], source_view['current_work']['next_action'])
+        self.assertEqual(snapshot['management']['business']['progress']['completed'], 12)
+        self.assertEqual(snapshot['management']['business']['progress']['total'], 208)
+        self.assertEqual(snapshot['management']['business']['progress']['counting_basis'], source_view['progress']['counting_basis'])
         self.assertIsNone(snapshot['management']['business']['verification']['status'])
         self.assertIsNone(snapshot['management']['business']['delivery']['status'])
         self.assertIsNone(snapshot['management']['business']['delivery']['commit'])
@@ -227,6 +239,8 @@ class HubActivityTests(unittest.TestCase):
         self.assertEqual(values['hub_activity.saved_requests'], 1)
         self.assertEqual(values['hub_activity.current_numeric_metrics'], 1)
         self.assertEqual(values['hub_activity.service_observed_issues'], 1)
+        self.assertEqual((self.root / 'STATE.yaml').read_bytes(), source_before)
+        self.assertEqual(yaml.safe_load(source_before)['all_projects_governance']['v3']['acceptance']['accepted_count'], 19)
         payload = json.dumps(snapshot)
         self.assertNotIn('PRIVATE', payload)
         self.assertNotIn('SECRET', payload)

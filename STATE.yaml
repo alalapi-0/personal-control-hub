@@ -2065,3 +2065,63 @@ pch_refactor:
       - 行动人尚未发布，保持未知。
       - 旧PCH任务107/111属于独立历史范围，不作为本重建任务的分子或分母。
       - 源码实现不证明正式采用、普通执行权限或整项验收。
+  task_id: PCH-REFACTOR-20261014
+  phase: P5
+  round: R5.4
+  plan_version: 1.0.0-20261014
+  execution_document: docs/pch_refactor_plan.md
+  task_catalog: data/roadmap/pch_refactor_v1.yaml
+  delivery:
+    local_materials: verified
+    commit: cd8ee0ef8c1b01d9cd14b0f919eac43dcab51af8
+    entry_commit: fe9701e540aaec35777c6687ec4e7f9b045acec1
+    remote_main_verified: true
+    remote_main: cd8ee0ef8c1b01d9cd14b0f919eac43dcab51af8
+    reason: Latest4file preturn reconciliation increment normallydelivered, exactfull15CI and127dailyGitblobs verified; earlier600second
+      amendment retained. LocalprivateState/task/creative content retained; required owner result/page reviews pending.
+    remote_run: https://github.com/alalapi-0/personal-control-hub/actions/runs/38714465359
+    ci_status: completed/success all15
+  candidate_paths:
+  - STATE.yaml#pch_refactor
+  - src/hub/task_store.py
+  - src/hub/task_worker.py
+  - src/hub/task_service.py
+  - src/hub/task_lifecycle.py
+  - src/hub/local_service.py
+  - src/hub/web/tasks.js
+  - tests/test_hub_task_review.py
+  - tests/test_hub_task_lifecycle.py
+  - .github/workflows/ci.yml
+  - src/hub/codex_adapter.py
+  - src/hub/web/hub.js
+  - src/hub/writer_handoff.py
+  - src/hub/task_approvals.py
+  - src/hub/runtime_trial.py
+  - tests/test_hub_writer_handoff.py
+  - tests/test_hub_task_approvals.py
+  - tests/test_hub_task_controls.py
+  - tests/test_hub_task_grants.py
+  - tests/test_hub_approval_transport.py
+  - tests/test_hub_approval_ui.mjs
+  - tests/test_hub_writer_claim.py
+  - tests/test_hub_runtime_trial.py
+  - tests/test_hub_handoff_dispatch.py
+  - tests/test_hub_web_logic.mjs
+  - src/hub/story_exchange.py
+  - src/hub/native_business.py
+  - src/hub/story_promotion.py
+  - src/hub/web/business_preview.mjs
+  - tests/test_hub_story_exchange.py
+  - tests/test_hub_native_business.py
+  - tests/test_hub_registered_business.py
+  - tests/test_hub_story_promotion.py
+  - tests/test_hub_business_preview.mjs
+  - tests/test_hub_business_task_ui.mjs
+  - tests/test_hub_business_runtime_amendment.py
+  - tests/test_hub_business_preturn_recovery.py
+  - docs/testing/pch-user-audit-20261015/TEST_PLAN.md
+  - docs/testing/pch-user-audit-20261015/TEST_CASES.md
+  - docs/testing/pch-user-audit-20261015/EXECUTION_PROMPT.md
+  next_action: 所有者已要求重新设计用户视角测试；按 docs/testing/pch-user-audit-20261015/EXECUTION_PROMPT.md 单独启动下一轮T，先核对A/B身份，再执行98项产品用例并只交付报告。其他任务持续推进。优化O、提交整理G另轮；不自动重跑故事生产或把原4项标为接受。
+  publication_scope: Versioned bounded historical task facts and rebuild source candidate only; execution resumes solely from
+    original canonical State.
