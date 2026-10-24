@@ -14,6 +14,19 @@ FORMAT = 'plan-source-evidence/1'
 SOURCE_IDS = frozenset('''P3-R1-PCH-GRAPH P3-R1-PCH-RELATIONS P3-R2-PCH-OVERVIEW P3-R2-PCH-FOCUS P3-R3-PCH-ACTIONS P3-R3-PCH-IMPACT P3-R3-PCH-PORTS P6-R1-PCH-PRECISE-SAVE P6-R1-PCH-SEMANTIC-UI P6-R2-PCH-ARTIFACTS P6-R2-PCH-VERSION'''.split())
 
 
+def is_registered_project_source_task(definition):
+    """Structure only; membership, original identity and live authority are separate."""
+    if type(definition) is not dict:
+        return False
+    project = definition.get('project_id')
+    return (type(project) is str and 0 < len(project) <= 128
+            and definition.get('phase_id') == 'P5'
+            and definition.get('admission_class') == 'verified_project_execution'
+            and definition.get('owner_route') == 'route:' + project
+            and type(definition.get('id')) is str
+            and re.fullmatch(r'P5-' + re.escape(project) + r'-(?:0[1-9]|[1-9][0-9])', definition['id']) is not None)
+
+
 def is_psh_source_task(definition):
     """Structural classification only, never adopted membership or permission.
 
@@ -101,7 +114,8 @@ def validate_policies(by):
     for ident, row in by.items():
         if 'source_admission' not in row:
             continue
-        need((ident in SOURCE_IDS or is_psh_source_task(row) or is_pch_self_source_task(row)) and row['status'] != 'done')
+        need((ident in SOURCE_IDS or is_psh_source_task(row) or is_pch_self_source_task(row)
+              or is_registered_project_source_task(row)) and row['status'] != 'done')
         p = policy(row['source_admission'])
         edges[ident] = [d['task_id'] for d in p['dependencies']]
         need(all(d in by and d != ident for d in edges[ident]))

@@ -148,21 +148,30 @@ class PlanAuthority:
  def registered_source_workspace(self,definition):
   """Exact internal Root registration, not a project-name or execution grant."""
   self._authorize()
-  from .source_admission import is_psh_source_task,workspace
-  if not is_psh_source_task(definition):return False
+  from .source_admission import is_psh_source_task,is_pch_self_source_task,is_registered_project_source_task,workspace
+  legacy=is_psh_source_task(definition)
+  if not legacy and (is_pch_self_source_task(definition) or not is_registered_project_source_task(definition)):return False
   registered=self.snapshot().get('source_workspaces',{})
   if type(registered)is not dict:return False
   item=registered.get(definition['id']);source=definition.get('source_admission')
-  if (type(item)is not dict or set(item)!={'project_id','workspace'}
-      or item['project_id']!='personal-style-hub' or type(source)is not dict):return False
+  keys={'project_id','workspace'} if legacy else {'project_id','workspace','original_identity'}
+  if (type(item)is not dict or set(item)!=keys
+      or item['project_id']!=definition['project_id'] or type(source)is not dict):return False
+  if not legacy:
+   # Root supplies this identity from the pinned first original plan, never
+   # from a proposed definition or request. Equality does not grant execution.
+   fields={'id','project_id','phase_id','admission_class','owner_route'}
+   original=item['original_identity']
+   if (type(original)is not dict or set(original)!=fields
+       or any(type(original[k])is not str or original[k]!=definition.get(k)for k in fields)):return False
   try:
    workspace(item['workspace']);workspace(source.get('workspace'))
   except ServiceError:return False
   return item['workspace']==source['workspace']
  def development(self,definition):
   self._authorize()
-  from .source_admission import is_psh_source_task
-  if is_psh_source_task(definition) and not self.registered_source_workspace(definition):return False
+  from .source_admission import is_psh_source_task,is_pch_self_source_task,is_registered_project_source_task
+  if (is_psh_source_task(definition) or is_registered_project_source_task(definition) and not is_pch_self_source_task(definition)) and not self.registered_source_workspace(definition):return False
   return self._development is not None and self._development(copy.deepcopy(definition)) is True
  def verify_source(self,record):
   self._authorize()
