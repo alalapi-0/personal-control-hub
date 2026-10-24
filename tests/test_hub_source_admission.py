@@ -11,7 +11,7 @@ from unittest import mock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 import test_hub_plan_admission as fixtures
 from hub.plan_admission import PlanAuthority, BOOTSTRAP_IDS, validate_plan, plan_history
-from hub.source_admission import source_ready, SOURCE_IDS, is_psh_source_task
+from hub.source_admission import source_ready, SOURCE_IDS, is_psh_source_task, is_pch_self_source_task
 from hub.service_contract import ServiceError
 from hub.workbench_store import digest, canonical
 from hub.task_store import TaskStore
@@ -1193,3 +1193,228 @@ class PersonalStyleCatalogSourceAdmissionTests(unittest.TestCase):
             with self.subTest(reason=reason), self.assertRaises(ServiceError): f.record(proposed, expected)
             live[0] = True
             self.assertEqual(f.store.path.read_bytes(), before); self.assert_closed(f)
+
+
+class PchSelfSourceAdmissionTests(unittest.TestCase):
+    """Own-PCH source classification still uses the existing trusted callbacks."""
+    ident = 'P5-personal-control-hub-01'
+    definition = SourceAdmissionTests.definition
+    policy = SourceAdmissionTests.policy
+    candidate = SourceAdmissionTests.candidate
+    view = SourceAdmissionTests.view
+    record = SourceAdmissionTests.record
+
+    def setUp(self):
+        f = fixtures.PlanStoreTests(); f.setUp(); self.addCleanup(f.doCleanups)
+        self.f = f; self.store = f.store; self.control = f.control
+        self.records = {}; self.verified = set(); self.develop = True; self.authorized = True
+        self.normal_dependencies = ['P1-R2-PCH-SEMANTICS', 'P1-R1-PCH-FINGERPRINT',
+                                    'P1-R1-PCH-ONBOARD', 'P1-R1-PCH-EVENTS']
+        selected = fixtures.task(self.ident, self.normal_dependencies)
+        selected.update(round_id='P5-R3', project_id='personal-control-hub',
+                        owner_route='route:personal-control-hub', admission_class='verified_project_execution')
+        self.p = fixtures.plan([fixtures.task(BASE), fixtures.task(ROUTES), fixtures.task(GRAPH, [ROUTES]),
+                               *[fixtures.task(ident) for ident in self.normal_dependencies], selected])
+        self.p['revision'] = '1.2.0-synthetic-pch-self'
+        self.definition(GRAPH)['source_admission'] = self.policy([])
+        selected['source_admission'] = self.policy([
+            {'task_id': BASE, 'kind': 'accepted'},
+            {'task_id': GRAPH, 'kind': 'source_candidate', 'candidate_sha256': 'a' * 64}])
+        self.input = self.store.root / 'synthetic-self-input.json'
+        self.input.write_bytes(b'{"synthetic": "PCH source input"}')
+        selected['source_admission']['inputs'] = [
+            {'path': self.input.name, 'sha256': hashlib.sha256(self.input.read_bytes()).hexdigest()}]
+        selected['source_admission']['workspace']['native_thread_id'] = 'synthetic-pch-self-native-thread'
+        self.delivery = Path(selected['source_admission']['workspace']['delivery_root']); self.delivery.mkdir()
+        # Test-only internal server registration; request data cannot change it.
+        # The real private capability verifier remains Root-owned and untested here.
+        self.registered_definition = copy.deepcopy(selected)
+        self.configure(); self.store.import_plan(self.p, authority=self.cap)
+
+    def development(self, definition):
+        if definition['id'] != self.ident: return True
+        if self.develop is not True or definition != self.registered_definition: return False
+        p = definition['source_admission']; root = self.store.root
+        if root.is_symlink() or self.delivery.is_symlink() or not self.delivery.is_dir(): return False
+        for item in p['inputs']:
+            target = root
+            for part in Path(item['path']).parts:
+                target = target / part
+                if target.is_symlink(): return False
+            if not target.is_file() or hashlib.sha256(target.read_bytes()).hexdigest() != item['sha256']: return False
+        return True
+
+    def configure(self, *, prior=None, development=True, verification=True):
+        def authorize():
+            if not self.authorized: raise ServiceError('PLAN_AUTHORITY_REQUIRED', status=409)
+        binding = {'plan_sha256': digest(self.p), 'owner_context': 'synthetic-owner',
+                   'verified_evidence': {k: digest(v) for k, v in self.records.items()},
+                   'verified_evidence_versions': {k: {v['plan_sha256']: digest(v)} for k, v in self.records.items()}}
+        if prior: binding['reconcile_from_sha256'] = digest(prior)
+        self.cap = PlanAuthority.configured(binding, authorize=authorize,
+            controls=lambda: copy.deepcopy(self.control), routes=lambda _: False, package_for=lambda _: None,
+            development=self.development if development else None,
+            source_evidence_verification=(lambda r: digest(r) in self.verified) if verification else None)
+
+    def seed(self):
+        accepted = self.f.evidence(BASE); accepted['plan_sha256'] = digest(self.p)
+        self.records[BASE] = accepted; self.configure()
+        self.store.record_plan_evidence(self.p['plan_id'], accepted, authority=self.cap)
+        graph = self.candidate(GRAPH, request='self-graph-source'); self.record(graph)
+        return graph
+
+    def assert_execution_closed(self):
+        view = self.store.plan_ready(self.p['plan_id'], authority=self.cap)
+        self.assertEqual(view['accepted'], [BASE]); self.assertNotIn(self.ident, view['ready'])
+        self.assertNotIn(self.ident, BOOTSTRAP_IDS)
+        self.assertEqual(self.definition(self.ident)['depends_on'], self.normal_dependencies)
+        self.assertEqual(self.store.admit_plan_window(self.p['plan_id'], authority=self.cap)['admitted'], [])
+        self.assertEqual(self.store.tasks(), [])
+        self.assertFalse(self.view()['execution_authority']); self.assertFalse(self.view()['whole_task_acceptance'])
+
+    def test_self_structure_is_exact_and_does_not_expand_legacy_or_psh_catalog(self):
+        definition = self.definition(self.ident)
+        self.assertTrue(is_pch_self_source_task(definition)); self.assertFalse(is_psh_source_task(definition))
+        self.assertEqual(len(SOURCE_IDS), 11); self.assertNotIn(self.ident, SOURCE_IDS)
+        for suffix in ('01', '99'):
+            p = copy.deepcopy(self.p); row = next(t for t in p['tasks'] if t['id'] == self.ident)
+            row['id'] = 'P5-personal-control-hub-' + suffix
+            self.assertTrue(is_pch_self_source_task(row)); self.assertEqual(validate_plan(p), p)
+        for changes in ({'phase_id': 'P1'}, {'admission_class': 'routed'}, {'project_id': 'other-project'},
+                        {'id': 'P5-other-project-01'}, {'id': 'P5-personal-control-hub-00'},
+                        {'id': 'P5-personal-control-hub-1'}, {'id': 'P5-personal-control-hub-001'},
+                        {'id': 'P5-personal-control-hub-01-extra'}, {'id': 'P5-personal-control-hub-01\n'}):
+            p = copy.deepcopy(self.p); row = next(t for t in p['tasks'] if t['id'] == self.ident); row.update(changes)
+            with self.subTest(changes=changes):
+                self.assertFalse(is_pch_self_source_task(row))
+                with self.assertRaises(ServiceError): validate_plan(p)
+
+    def test_unadopted_or_absent_self_policy_cannot_ready_or_record(self):
+        self.seed(); original = copy.deepcopy(self.p)
+        self.p['revision'] += '-no-policy'; del self.definition(self.ident)['source_admission']
+        self.configure(prior=original)
+        self.store.reconcile_plan(self.p, expected_sha256=digest(original), request_id='self-remove-policy', authority=self.cap)
+        current = copy.deepcopy(self.p); before = self.store.path.read_bytes()
+        self.assertNotIn(self.ident, self.view()['ready'])
+        proposed = copy.deepcopy(current); proposed['revision'] += '-proposed'
+        next(t for t in proposed['tasks'] if t['id'] == self.ident)['source_admission'] = copy.deepcopy(
+            self.registered_definition['source_admission'])
+        self.assertEqual(validate_plan(proposed), proposed)
+        self.p = proposed; r = self.candidate(self.ident, request='self-unadopted'); self.p = current
+        with self.assertRaises(ServiceError): self.record(r)
+        self.assertEqual(self.store.path.read_bytes(), before)
+        self.p = proposed; self.configure()
+        with self.assertRaises(ServiceError) as error: self.view()
+        self.assertEqual(error.exception.code, 'PLAN_AUTHORITY_MISMATCH')
+        self.assertEqual(self.store.path.read_bytes(), before)
+
+    def test_exact_registered_self_policy_needs_source_dependencies_and_only_source_ready(self):
+        self.assertNotIn(self.ident, self.view()['ready'])
+        accepted = self.f.evidence(BASE); accepted['plan_sha256'] = digest(self.p)
+        self.records[BASE] = accepted; self.configure()
+        self.store.record_plan_evidence(self.p['plan_id'], accepted, authority=self.cap)
+        self.record(self.candidate(GRAPH, request='self-wrong-graph', candidate='b'))
+        self.assertNotIn(self.ident, self.view()['ready'])
+        self.record(self.candidate(GRAPH, request='self-exact-graph', candidate='a'))
+        self.assertIn(self.ident, self.view()['ready'])
+        expected = self.view()['source_sha256']; kept = self.view()['source_records']
+        own = self.candidate(self.ident, request='self-source-exact'); self.record(own, expected)
+        before = self.store.path.read_bytes()
+        self.assertTrue(self.record(own, expected)['replayed']); self.assertEqual(self.store.path.read_bytes(), before)
+        self.assertEqual(self.view()['source_records'][:-1], kept)
+        with self.assertRaises(ServiceError) as error:
+            self.record(self.candidate(self.ident, request='self-source-exact', candidate='e'), expected)
+        self.assertEqual(error.exception.code, 'PLAN_SOURCE_REQUEST_CONFLICT')
+        with self.assertRaises(ServiceError) as error: self.record(self.candidate(self.ident, request='self-stale'), expected)
+        self.assertEqual(error.exception.code, 'PLAN_SOURCE_CAS_STALE')
+        self.assertEqual(self.store.path.read_bytes(), before); self.assert_execution_closed()
+
+    def test_record_current_identity_workspace_input_and_owned_bindings_stay_exact(self):
+        self.seed(); before = self.store.path.read_bytes()
+        changes = [lambda r: r.update(task_id='P5-personal-control-hub-02'),
+                   lambda r: r.update(definition_sha256='f' * 64),
+                   lambda r: r['workspace'].update(canonical_root='/synthetic/wrong-root'),
+                   lambda r: r['workspace'].update(delivery_root='/synthetic/wrong-delivery'),
+                   lambda r: r['workspace'].update(native_thread_id='wrong-native-thread'),
+                   lambda r: r['inputs'][0].update(sha256='f' * 64),
+                   lambda r: r.update(owned_paths=['src/unowned.py'])]
+        for n, change in enumerate(changes):
+            r = self.candidate(self.ident, request='self-wrong-binding-' + str(n)); change(r); self.verified.add(digest(r))
+            with self.subTest(n=n), self.assertRaises(ServiceError): self.record(r)
+            self.assertEqual(self.store.path.read_bytes(), before)
+        original = copy.deepcopy(self.p)
+        for operation in ('add', 'remove'):
+            self.p = copy.deepcopy(original); self.p['revision'] += '-' + operation
+            if operation == 'add':
+                invented = copy.deepcopy(self.definition(self.ident)); invented['id'] = 'P5-personal-control-hub-02'
+                self.p['tasks'].append(invented)
+            else: self.p['tasks'] = [t for t in self.p['tasks'] if t['id'] != self.ident]
+            self.configure(prior=original)
+            with self.subTest(operation=operation), self.assertRaises(ServiceError) as error:
+                self.store.reconcile_plan(self.p, expected_sha256=digest(original), request_id='self-' + operation, authority=self.cap)
+            self.assertEqual(error.exception.code, 'PLAN_REVISION_IDENTITY')
+            self.assertEqual(self.store.path.read_bytes(), before)
+
+    def test_live_development_input_alias_authorization_and_verifier_fail_closed(self):
+        self.seed(); before = self.store.path.read_bytes(); kept = self.view()['source_records']
+        original = self.input.read_bytes()
+        for reason in ('disabled', 'missing_development', 'missing_verifier', 'unverified', 'input', 'symlink', 'authorization'):
+            self.develop = True; self.authorized = True; self.configure()
+            r = self.candidate(self.ident, request='self-refused-' + reason.replace('_', '-'))
+            if reason == 'disabled': self.develop = False
+            elif reason == 'missing_development': self.configure(development=False)
+            elif reason == 'missing_verifier': self.configure(verification=False)
+            elif reason == 'unverified': self.verified.remove(digest(r))
+            elif reason == 'input': self.input.write_bytes(b'Changed synthetic input')
+            elif reason == 'symlink':
+                target = self.input.with_name('synthetic-alias-target.json'); target.write_bytes(original)
+                self.input.unlink(); self.input.symlink_to(target)
+            else: self.authorized = False
+            with self.subTest(reason=reason), self.assertRaises(ServiceError): self.record(r, digest(kept))
+            self.assertEqual(self.store.path.read_bytes(), before)
+            self.authorized = True; self.develop = True
+            if self.input.is_symlink(): self.input.unlink()
+            self.input.write_bytes(original); self.configure()
+            self.assertEqual(self.view()['source_records'], kept); self.assert_execution_closed()
+
+    def test_changed_policy_requires_exact_live_registration_and_unknown_cancel_remain_frozen(self):
+        self.seed(); original = copy.deepcopy(self.p); kept = self.view()['source_records']
+        self.p['revision'] += '-changed-policy'
+        self.definition(self.ident)['source_admission']['owned_paths'] = ['src/new-synthetic-owned.py']
+        self.configure(prior=original)
+        self.store.reconcile_plan(self.p, expected_sha256=digest(original), request_id='self-policy-change', authority=self.cap)
+        before = self.store.path.read_bytes()
+        self.assertNotIn(self.ident, self.view()['ready']); self.assertIn(GRAPH, self.view()['ready'])
+        with self.assertRaises(ServiceError): self.record(self.candidate(self.ident, request='self-wrong-policy'))
+        self.assertEqual(self.store.path.read_bytes(), before); self.assertEqual(self.view()['source_records'], kept)
+        # Updating this synthetic trusted registration is explicit, not request-derived.
+        self.registered_definition = copy.deepcopy(self.definition(self.ident))
+        self.assertIn(self.ident, self.view()['ready'])
+        for status in ('unknown', 'cancelled'):
+            if status == 'cancelled':
+                # Resolve the UNKNOWN explicitly before recording independent cancellation.
+                resolved = self.candidate(self.ident, request='self-resolved')
+                resolved['reconciles'] = ['self-unknown']; self.verified.add(digest(resolved)); self.record(resolved)
+            r = self.candidate(self.ident, request='self-' + status, status=status); self.record(r)
+            self.assertNotIn(self.ident, self.view()['ready']); self.assertIn(GRAPH, self.view()['ready'])
+            self.assertEqual(self.view()['source_records'][:len(kept)], kept)
+            self.assertEqual(self.view()['source_records'][-1]['record'], r)
+        self.assert_execution_closed()
+
+    def test_self_precommit_dependency_control_and_capability_revocation_roll_back(self):
+        graph = self.seed(); before = self.store.path.read_bytes(); kept = self.view()['source_records']
+        for reason in ('dependency', 'capability', 'authorization', 'control', 'pause'):
+            self.develop = True; self.authorized = True; self.control['state'] = 'active'; self.verified.add(digest(graph))
+            r = self.candidate(self.ident, request='self-precommit-' + reason)
+            def fault(phase):
+                if phase != 'before_plan_source_commit': return
+                if reason == 'dependency': self.verified.remove(digest(graph))
+                elif reason == 'capability': self.develop = False
+                elif reason == 'authorization': self.authorized = False
+                elif reason == 'control': self.control['revision'] += 1
+                else: self.control['state'] = 'paused'
+            self.store.fault = fault
+            with self.subTest(reason=reason), self.assertRaises(ServiceError): self.record(r, digest(kept))
+            self.assertEqual(self.store.path.read_bytes(), before)
+        self.store.fault = lambda _: None; self.authorized = True; self.develop = True; self.control['state'] = 'active'
+        self.verified.add(digest(graph)); self.assertEqual(self.view()['source_records'], kept); self.assert_execution_closed()
