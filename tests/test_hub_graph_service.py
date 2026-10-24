@@ -103,3 +103,24 @@ class GraphServiceTests(unittest.TestCase):
     g=project_graph(a);item=g['objects'][0]['explanations']['purpose'];self.assertEqual(item['state'],'known');self.assertEqual(item['value'],value)
   a=dto();a['semantics']['explanations']['purpose']['value']='https://example.invalid/docs and /data/private/hidden.md'
   self.assertEqual(project_graph(a)['objects'][0]['explanations']['purpose']['state'],'unknown')
+
+
+class PCHGraphCallsiteTests(unittest.TestCase):
+ def test_real_pch_branch_uses_verified_history_and_preserves_generic_graph(self):
+  from test_hub_project_definition import OwnHubSourceFixture
+  from hub.pch_domain_projection import project_pch_domain
+  from hub.graph_records import validate_graph
+  f=OwnHubSourceFixture();self.addCleanup(f.close);f.collect()
+  before=f.ledger.history();actual=f.service.get_graph(f.project_id)
+  expected=project_pch_domain(before,f.service.get_project(f.project_id))
+  validate_graph(actual);self.assertEqual(actual['projection_version'],expected['projection_version'])
+  self.assertTrue(any(o['type']=='Run' for o in actual['objects']))
+  self.assertEqual(before,f.ledger.history())
+  other=dto();service=mock.Mock();service.get_project.return_value=other
+  self.assertEqual(GraphService(service).get_project('business')['projection_version'],project_graph(other)['projection_version'])
+ def test_pch_head_mismatch_is_retryable_without_collect(self):
+  from test_hub_project_definition import OwnHubSourceFixture
+  f=OwnHubSourceFixture();self.addCleanup(f.close);f.collect()
+  with mock.patch.object(f.service,'ledger_head',return_value={'sequence':88,'hash':'a'*64}):
+   with self.assertRaises(ServiceError) as caught:f.service.get_graph(f.project_id)
+  self.assertEqual(caught.exception.status,409);self.assertTrue(caught.exception.retryable)

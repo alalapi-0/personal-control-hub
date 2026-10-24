@@ -136,7 +136,14 @@ class ActionRegistry:
         if self.designs is None:raise ServiceError('ACTION_CATALOG_UNAVAILABLE',status=503)
         snapshot=self.designs.snapshot()
         dto=self.projects.action_project(project_id,design_snapshot=snapshot)
-        graph=project_graph(dto);entries=[]
+        if project_id == 'personal-control-hub':
+            # Reuse the already authorized DTO and its exact trusted design data.
+            # Domain augmentation must precede the catalog's source/version binding.
+            from .pch_domain_actions import snapshot as pch_snapshot
+            _, _, graph = pch_snapshot(self.projects, design_snapshot=snapshot, dto=dto)
+        else:
+            graph=project_graph(dto)
+        entries=[]
         for obj,row in zip(graph['objects'],graph['rows']):
             if obj['type']!='Artifact':continue
             candidates=obj['data'].get('action_candidates',[])

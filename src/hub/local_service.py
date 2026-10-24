@@ -210,6 +210,8 @@ class HubHTTPServer(ThreadingHTTPServer):
         self.sessions = _Sessions(owner_store=owner_session_store, scope=self.origin)
         from .action_registry import ActionRegistry
         self.actions = ActionRegistry(projects, designs, host=self.origin, backend_instance=self.backend_instance)
+        from .pch_domain_actions import PCHDomainActions
+        self.pch_domain = PCHDomainActions(projects, self.actions)
 
     def get_request(self):
         request, address = super().get_request()
@@ -602,6 +604,16 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                           if len(parts) == 2 else read_capture_image(self.server.projects, parts[0], parts[2]))
             except RecordError:
                 raise ServiceError('CAPTURE_STORE_REJECTED', status=503) from None
+        elif path == '/api/projects/personal-control-hub/domain':
+            if query: raise ServiceError('INVALID_QUERY')
+            result = self.server.pch_domain.catalog()
+            self.server.sessions.validate(self._one_header('Cookie'), credential_version=self.server.owner_auth.version)
+        elif path == '/api/projects/personal-control-hub/domain/request':
+            if set(query) != {'command'}: raise ServiceError('INVALID_QUERY')
+            try: command = json.loads(query['command'], object_pairs_hook=_object_pairs, parse_constant=_reject_constant)
+            except (TypeError, ValueError): raise ServiceError('PCH_REFRESH_SCOPE_INVALID') from None
+            result = self.server.pch_domain.request_result(command)
+            self.server.sessions.validate(self._one_header('Cookie'), credential_version=self.server.owner_auth.version)
         elif re.fullmatch(r'/api/projects/[^/]+/actions(?:/artifact)?', path):
             parts=path[len('/api/projects/'):].split('/')
             if not ID.fullmatch(parts[0]):raise ServiceError('INVALID_QUERY')
@@ -699,13 +711,20 @@ class HubRequestHandler(BaseHTTPRequestHandler):
                 self._json({'api_version': API_VERSION, 'ok': True, 'data': {'owner_authenticated': False}},
                            headers={'Set-Cookie': self.server.sessions.cookie_header('', clear=True)})
                 return
-            if path not in {"/api/refresh", "/api/designs/decisions", "/api/designs/exports", '/api/annotations', '/api/task-drafts', '/api/ordinary-drafts', '/api/tasks', '/api/management/project', '/api/actions/verify'} and not (path.startswith('/api/tasks/')and path.endswith(('/cancel','/respond','/review'))):
+            if path not in {"/api/refresh", "/api/designs/decisions", "/api/designs/exports", '/api/annotations', '/api/task-drafts', '/api/ordinary-drafts', '/api/tasks', '/api/management/project', '/api/actions/verify', '/api/projects/personal-control-hub/domain/refresh'} and not (path.startswith('/api/tasks/')and path.endswith(('/cancel','/respond','/review'))):
                 raise ServiceError("NOT_FOUND", status=404)
             if not self.server.owner_auth.configured:
                 raise ServiceError('OWNER_AUTH_UNAVAILABLE', status=503)
             self.server.sessions.validate(self._one_header('Cookie'), token, require_owner=True, credential_version=self.server.owner_auth.version)
             operation_started = True
-            if path == '/api/actions/verify':
+            if path == '/api/projects/personal-control-hub/domain/refresh':
+                version = self.server.owner_auth.version
+                def authorize_pch_refresh():
+                    self._boundary(mutation=True)
+                    if self.server.owner_auth.version != version: raise ServiceError('OWNER_AUTH_REQUIRED', status=401)
+                    self.server.sessions.validate(self._one_header('Cookie'), token, require_owner=True, credential_version=version)
+                result = self.server.pch_domain.refresh(command, authorize=authorize_pch_refresh)
+            elif path == '/api/actions/verify':
                 version=self.server.owner_auth.version
                 def authorize_action():
                     self._boundary(mutation=True)

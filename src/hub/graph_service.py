@@ -334,4 +334,11 @@ class GraphService:
     def get_project(self, project_id, *, design_snapshot=None):
         dto = self.projects.get_project(project_id, design_snapshot=design_snapshot)
         need(dto['project_id'] == project_id)
+        if (project_id == 'personal-control-hub' and dto['declared'].get('connection_read_allowed') is True
+                and dto['declared'].get('access_profile') != 'no_current_goal_access'
+                and dto['freshness'].get('local_presence') != 'removed_local'
+                and dto['provenance'].get('ledger_head') is not None):
+            from .pch_domain_actions import snapshot
+            _, _, projected = snapshot(self.projects, design_snapshot=design_snapshot, dto=dto)
+            return projected
         return project_graph(dto)

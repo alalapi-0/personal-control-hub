@@ -501,5 +501,37 @@ class LocalServiceIntegrationTests(unittest.TestCase):
                             method.assert_not_called()
 
 
+
+    def test_pch_domain_actual_routes_scope_replay_and_same_head(self):
+        self.source_fixture.add('personal-control-hub')
+        self.session()
+        command={'request_id':'http-pch-domain','project_ids':['personal-control-hub'],
+                 'expected_head':{'sequence':0,'hash':'0'*64}}
+        status,_,response=self.call('POST','/api/projects/personal-control-hub/domain/refresh',command)
+        self.assertEqual(status,200,response)
+        result=response['data'];self.assertEqual(result['catalog']['head'],result['request_result']['head'])
+        self.assertEqual(result['catalog']['graph']['project_id'],'personal-control-hub')
+        before=self.projects._read_ledger().history()
+        status,_,replay=self.call('POST','/api/projects/personal-control-hub/domain/refresh',command)
+        self.assertEqual(status,200,replay);self.assertEqual(before,self.projects._read_ledger().history())
+        from urllib.parse import urlencode
+        status,_,receipt=self.call(path='/api/projects/personal-control-hub/domain/request?'+urlencode({'command':json.dumps(command)}))
+        self.assertEqual(status,200);self.assertEqual(receipt['data']['request_id'],command['request_id'])
+        bad=copy.deepcopy(command);bad['project_ids']=['fixture-project']
+        status,_,failure=self.call('POST','/api/projects/personal-control-hub/domain/refresh',bad)
+        self.assertEqual(status,400);self.assertEqual(failure['error']['code'],'PCH_REFRESH_SCOPE_INVALID')
+        self.assertEqual(before,self.projects._read_ledger().history())
+
+    def test_pch_domain_unauthorized_and_csrf_have_zero_effects(self):
+        self.source_fixture.add('personal-control-hub')
+        command={'request_id':'http-pch-denied','project_ids':['personal-control-hub'],
+                 'expected_head':{'sequence':0,'hash':'0'*64}}
+        status,_,_=self.call('POST','/api/projects/personal-control-hub/domain/refresh',command,authenticated=False)
+        self.assertEqual(status,401)
+        self.assertIsNone(self.projects.ledger_head())
+        self.session()
+        status,_,_=self.call('POST','/api/projects/personal-control-hub/domain/refresh',command,headers={'X-Hub-CSRF':'wrong'})
+        self.assertEqual(status,403);self.assertIsNone(self.projects.ledger_head())
+
 if __name__ == "__main__":
     unittest.main()

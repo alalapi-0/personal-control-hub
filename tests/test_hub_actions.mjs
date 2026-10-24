@@ -31,3 +31,112 @@ test('stream read stays bounded and releases reader before offering any download
 test('ports and tools are closed version-bound catalog data, never arbitrary image/model capabilities',()=>{const c=catalog();actionCatalog(c,'p');const a=c.entries[0].actions[0];assert.deepEqual(a.tool.input_types,['registered_artifact']);assert.deepEqual(a.tool.output_types,['bytes']);assert.equal(a.ports.inputs[0].version.artifact_sha256,binding.artifact_sha256);for(const mutate of [a=>a.ports.inputs[0].type='image_understanding',a=>a.ports.inputs[0].type='model_reference',a=>a.ports.inputs[0].direction='output',a=>a.ports.inputs[0].version.object_revision='foreign',a=>a.tool.handler='shell',a=>a.tool.capabilities=['native_execute'],a=>a.ports.outputs[0].extra=true]){const bad=catalog();mutate(bad.entries[0].actions[0]);assert.throws(()=>actionCatalog(bad,'p'));}const native=c.entries[0].actions[3];assert.equal(native.available,false);assert.deepEqual(native.ports.inputs,[]);assert.equal(native.tool.native_execution,false);});
 test('action panel renders accepted byte boundary and navigation without implying native image input',()=>dom(async()=>{let calls=0,tasks=[];const c=catalog(),p=createActionPanel({projectId:'p',selected:c.entries[0].object,catalog:c,api:()=>{calls++;},onTask:id=>tasks.push(id)});await tick();assert.match(p.element.textContent,/接受：精确版本/);assert.match(p.element.textContent,/PNG.*不是模型图像输入或参考/);assert.match(p.element.textContent,/原生运行：不可用/);assert.match(p.element.textContent,/仍需显式保存、提交/);button(p.element,'编写普通任务（显式保存\/发送）').click();assert.deepEqual(tasks,['p']);assert.equal(calls,0);p.dispose();}));
 test('post-load tool mutation is refused before fetch and mismatched frozen verification result never completes',()=>dom(async()=>{const c=catalog();let reads=0;const p=createActionPanel({projectId:'p',selected:c.entries[0].object,catalog:c,fetcher:async()=>{reads++;throw Error('must not fetch');}});await tick();c.entries[0].actions[0].ports.inputs[0].type='model_reference';button(p.element,'读取登记产物（受控下载）').click();await until(()=>!button(p.element,'读取登记产物（受控下载）').disabled);assert.equal(reads,0);p.dispose();for(const bad of ['tool','ports','input']){let calls=0;const c=catalog(),a=c.entries[0].actions[1],p=createActionPanel({projectId:'p',selected:c.entries[0].object,catalog:c,api:async(path,command)=>{calls++;const result={status:'verified_read',durable_receipt:false,external_effect:false,native_execution:false,request_id:command.request_id,input_sha256:binding.artifact_sha256,parameter_sha256:hash(command),binding_sha256:binding.binding_sha256,run_id:'local-read-'+'a'.repeat(32),bytes_read:9,frozen_input:structuredClone(binding),tool:structuredClone(a.tool),ports:structuredClone(a.ports),declaration_sha256:hash(a)};if(bad==='input')result.frozen_input.object_revision='other';else result[bad]={};return result;}});await tick();button(p.element,'只读核验产物').click();await until(()=>calls===1&&!button(p.element,'只读核验产物').disabled);assert.doesNotMatch(p.element.textContent,/已完成本次/);p.dispose();}}));
+
+// PCH domain uses the real component, never the global refresh command or Agent APIs.
+import {createPCHDomainPanel,pchDomainCatalog,pchRefreshCommand} from '../src/hub/web/actions.mjs';
+function pchCatalog(){const head={sequence:3,hash:'a'.repeat(64)},artifacts={...catalog(),project_id:'personal-control-hub',entries:[]};return {schema_version:'1.0',project_id:'personal-control-hub',route:'route:personal-control-hub',head,refresh_head:head,detail:{project_id:'personal-control-hub',provenance:{ledger_head:head}},graph:{project_id:'personal-control-hub',objects:[],source_version:artifacts.source_version,projection_version:artifacts.projection_version},requests:[],artifacts,versions:{checkout:{state:'unknown'},source:{authority_drift:false},web_resources:{installed_program_proof:false},runtime_manifest:{state:'unknown'}},read_only:true,native_execution_available:false};}
+const memoryStorage=()=>{const m=new Map();return {getItem:k=>m.get(k)||null,setItem:(k,v)=>m.set(k,v),removeItem:k=>m.delete(k)};};
+test('PCH actual component keeps missing fingerprints readable and task navigation explicit',()=>dom(async()=>{let paths=[],tasks=[];const p=createPCHDomainPanel({storage:memoryStorage(),api:async path=>{paths.push(path);return pchCatalog();},onTask:id=>tasks.push(id)});await until(()=>p.element.textContent.includes('只读目录已核对'));assert.match(p.element.textContent,/冻结运行程序：未知/);assert.match(p.element.textContent,/未发布确切页面/);button(p.element,'编写PCH普通任务').click();assert.deepEqual(tasks,['personal-control-hub']);assert.deepEqual(paths,['/api/projects/personal-control-hub/domain']);assert.ok(walk(p.element).some(n=>n.attrs.href==='#projects/personal-control-hub/tasks'));p.dispose();}));
+test('PCH foreign pending command is preserved and never executed or converted',()=>dom(async()=>{const foreign={request_id:'foreign-original',project_ids:['other'],expected_head:pchCatalog().head},before=structuredClone(foreign);let posts=0;const p=createPCHDomainPanel({pendingCommand:foreign,storage:memoryStorage(),api:async(path,command)=>{if(command)posts++;return pchCatalog();}});await until(()=>p.element.textContent.includes('另有原刷新命令'));assert.equal(button(p.element,'显式刷新PCH自身').disabled,true);button(p.element,'显式刷新PCH自身').click();await tick();assert.equal(posts,0);assert.deepEqual(foreign,before);assert.throws(()=>pchRefreshCommand(foreign));p.dispose();}));
+test('PCH uncertain result retains exact command and reconciles it before retry',()=>dom(async()=>{const calls=[],storage=memoryStorage();let posts=0;const api=async(path,command)=>{calls.push([path,command&&structuredClone(command)]);if(path.includes('/request?')){const c=JSON.parse(new URLSearchParams(path.split('?')[1]).get('command'));return {project_id:'personal-control-hub',request_id:c.request_id,command_sha256:hash(c),head:pchCatalog().head,status:posts?'FINISHED':'NOT_FOUND',results:[]};}if(command){posts++;throw Error('uncertain');}return pchCatalog();};const p=createPCHDomainPanel({api,storage,makeRequestId:()=> 'exact-original'});await until(()=>p.element.textContent.includes('只读目录已核对'));button(p.element,'显式刷新PCH自身').click();await until(()=>p.element.textContent.includes('刷新结果未确认'));const saved=JSON.parse(storage.getItem('hub:pch-domain-refresh-pending'));assert.equal(saved.request_id,'exact-original');button(p.element,'核对并重试原PCH刷新').click();await until(()=>!storage.getItem('hub:pch-domain-refresh-pending'));assert.equal(posts,1);const q=calls.filter(([path])=>path.includes('/request?')).map(([path])=>JSON.parse(new URLSearchParams(path.split('?')[1]).get('command')));assert.deepEqual(q,[saved,saved]);p.dispose();}));
+test('PCH mismatched head and disposal never publish stale catalog or execute',()=>dom(async()=>{const bad=pchCatalog();bad.detail.provenance.ledger_head={sequence:4,hash:'b'.repeat(64)};assert.throws(()=>pchDomainCatalog(bad));let resolve;const p=createPCHDomainPanel({storage:memoryStorage(),api:()=>new Promise(r=>resolve=r)});p.dispose();resolve(pchCatalog());await tick();assert.equal(p.element.textContent,'');let calls=0;const denied=createPCHDomainPanel({readAllowed:false,api:()=>{calls++;},storage:memoryStorage()});assert.match(denied.element.textContent,/未授权/);assert.equal(calls,0);denied.dispose();}));
+
+function pchBoundCatalog(){const value=pchCatalog(),b={...structuredClone(binding),project_id:'personal-control-hub',object_id:'personal-control-hub/Artifact/a'};delete b.binding_sha256;b.binding_sha256=hash(b);const object={project_id:b.project_id,id:b.object_id,revision:b.object_revision,type:'Artifact',identity:'candidate'};const entry={object,row:{object_id:object.id,revision:object.revision,label:'PCH登记候选'},actions:['open_registered_artifact','verify_registered_artifact','prepare_ordinary_task','native_program'].map(id=>actionDescriptor(id,b))};value.artifacts.entries=[entry];value.graph.objects=[structuredClone(object)];return value;}
+test('PCH nonempty catalog and selected graph object keep strict source and projection identity',()=>{const value=pchBoundCatalog();pchDomainCatalog(value);actionCatalog(value.artifacts,'personal-control-hub',value.graph.projection_version);for(const field of ['source_version','projection_version']){const bad=structuredClone(value);bad.graph[field]='0'.repeat(64);assert.throws(()=>pchDomainCatalog(bad));}assert.throws(()=>actionCatalog(value.artifacts,'personal-control-hub','0'.repeat(64)));assert.equal(value.artifacts.entries[0].actions.length,4);});
+test('PCH selected action component rejects stale projection before any content request',()=>dom(async()=>{const value=pchBoundCatalog(),entry=value.artifacts.entries[0];let reads=0;const selected=createActionPanel({projectId:'personal-control-hub',selected:entry.object,projectionVersion:value.graph.projection_version,catalog:value.artifacts,fetcher:()=>{reads++;}});await until(()=>!!button(selected.element,'读取登记产物（受控下载）'));assert.equal(reads,0);selected.dispose();const stale=createActionPanel({projectId:'personal-control-hub',selected:entry.object,projectionVersion:'0'.repeat(64),catalog:value.artifacts,fetcher:()=>{reads++;}});await until(()=>!!button(stale.element,'重新核对登记操作'));assert.equal(button(stale.element,'读取登记产物（受控下载）'),undefined);assert.equal(reads,0);stale.dispose();}));
+
+const pchPendingKey='hub:pch-domain-refresh-pending';
+const panelStatus=p=>walk(p.element).find(n=>n.attrs.role==='status').textContent;
+const originalPCHCommand=()=>({request_id:'durable-original',project_ids:['personal-control-hub'],expected_head:structuredClone(pchCatalog().head)});
+const pchReceipt=(command,status='FINISHED',head=pchCatalog().head)=>({schema_version:'1.0',project_id:'personal-control-hub',request_id:command.request_id,command_sha256:hash(command),head,status,results:status==='FINISHED'?[{success:true}]:[]});
+const queryCommand=path=>JSON.parse(new URLSearchParams(path.split('?')[1]).get('command'));
+
+test('PCH throwing storage save fails closed across panel reconstruction, with sticky error and read-only navigation',()=>dom(async()=>{
+ const calls=[],tasks=[],storage={getItem:()=>null,setItem:()=>{throw Error('quota');},removeItem:()=>{}};let ids=0;
+ for(let attempt=0;attempt<2;attempt++){
+  const p=createPCHDomainPanel({storage,makeRequestId:()=> 'unsaved-'+(++ids),onTask:id=>tasks.push(id),api:async(path,command)=>{calls.push([path,command]);if(command)throw Error('uncertain');return path.includes('/request?')?pchReceipt(queryCommand(path),'NOT_FOUND'):pchCatalog();}});
+  await until(()=>p.element.textContent.includes('版本依据'));button(p.element,'显式刷新PCH自身').click();
+  await until(()=>panelStatus(p).includes('已阻止刷新'));const notice=panelStatus(p);
+  assert.equal(button(p.element,'核对并重试原PCH刷新').disabled,true);
+  await p.reload();assert.equal(panelStatus(p),notice);
+  button(p.element,'编写PCH普通任务').click();p.dispose();
+ }
+ assert.equal(calls.filter(([,command])=>command).length,0);
+ assert.equal(calls.filter(([path])=>path.includes('/request?')).length,0);
+ assert.deepEqual(tasks,['personal-control-hub','personal-control-hub']);
+}));
+
+test('PCH missing, unreadable, silent or mismatched persistence blocks every effect',()=>dom(async()=>{
+ for(const mode of ['missing','defaultMissing','getFailure','silentWrite','readbackMismatch','readbackFailure']){
+  const data=memoryStorage();let written=false,calls=[];
+  const storage=mode==='missing'?null:mode==='defaultMissing'?undefined:{
+   getItem:key=>{if(mode==='getFailure'||mode==='readbackFailure'&&written)throw Error('read denied');return data.getItem(key);},
+   setItem:(key,value)=>{written=true;if(mode==='silentWrite')return;const command=JSON.parse(value);if(mode==='readbackMismatch')command.request_id='different-original';data.setItem(key,JSON.stringify(command));},
+   removeItem:key=>data.removeItem(key)};
+  const previous=globalThis.localStorage;if(mode==='defaultMissing')delete globalThis.localStorage;
+  const p=createPCHDomainPanel({storage,api:async(path,command)=>{calls.push([path,command]);return command?{}:path.includes('/request?')?pchReceipt(queryCommand(path),'NOT_FOUND'):pchCatalog();}});
+  try{
+   await until(()=>p.element.textContent.includes('版本依据'));
+   button(p.element,'显式刷新PCH自身').click();await tick();
+   assert.match(panelStatus(p),/已阻止刷新/,mode);assert.equal(calls.some(([,c])=>c),false,mode);
+   assert.equal(calls.some(([path])=>path.includes('/request?')),false,mode);
+   const notice=panelStatus(p);await p.reload();assert.equal(panelStatus(p),notice,mode);
+  }finally{p.dispose();if(mode==='defaultMissing'){if(previous===undefined)delete globalThis.localStorage;else globalThis.localStorage=previous;}}
+ }
+}));
+
+test('PCH rechecks the exact saved command after request lookup and before POST',()=>dom(async()=>{
+ const storage=memoryStorage();let posts=0,lookups=0;
+ const p=createPCHDomainPanel({storage,makeRequestId:()=> 'pre-post-original',api:async(path,command)=>{
+  if(command){posts++;return {};}
+  if(path.includes('/request?')){lookups++;const original=queryCommand(path);storage.removeItem(pchPendingKey);return pchReceipt(original,'NOT_FOUND');}
+  return pchCatalog();
+ }});
+ await until(()=>p.element.textContent.includes('只读目录已核对'));button(p.element,'显式刷新PCH自身').click();
+ await until(()=>panelStatus(p).includes('已阻止刷新'));assert.equal(lookups,1);assert.equal(posts,0);p.dispose();
+}));
+
+test('PCH confirmed FINISHED with throwing cleanup preserves original result across reload, retry and reconstruction',()=>dom(async()=>{
+ const original=originalPCHCommand(),saved=JSON.stringify(original),data=memoryStorage();data.setItem(pchPendingKey,saved);
+ const storage={getItem:key=>data.getItem(key),setItem:(key,value)=>data.setItem(key,value),removeItem:()=>{throw Error('cleanup denied');}};
+ let posts=0,lookups=[];const api=async(path,command)=>{if(command){posts++;throw Error('must not POST');}if(path.includes('/request?')){const c=queryCommand(path);lookups.push(c);return pchReceipt(c);}return pchCatalog();};
+ for(let attempt=0;attempt<2;attempt++){
+  const p=createPCHDomainPanel({storage,api,makeRequestId:()=>{throw Error('must keep original');}});
+  await until(()=>p.element.textContent.includes('保留原PCH刷新请求'));button(p.element,'核对并重试原PCH刷新').click();
+  await until(()=>panelStatus(p).includes('已确认结束'));assert.match(panelStatus(p),/清理未确认/);assert.doesNotMatch(panelStatus(p),/刷新结果未确认/);
+  const notice=panelStatus(p);await p.reload();assert.equal(panelStatus(p),notice);
+  assert.equal(button(p.element,'重新读取原PCH刷新结果').disabled,false);
+  button(p.element,'重新读取原PCH刷新结果').click();await until(()=>lookups.length===(attempt+1)*2&&!button(p.element,'重新读取原PCH刷新结果').disabled);
+  assert.equal(data.getItem(pchPendingKey),saved);p.dispose();
+ }
+ assert.equal(posts,0);assert.deepEqual(lookups,[original,original,original,original]);
+}));
+
+test('PCH confirmed POST result is never UNKNOWN or a new effect when cleanup throws, silently drops or cannot be read',()=>dom(async()=>{
+ for(const mode of ['throw','silent','readFailure']){
+  const data=memoryStorage();let removed=false,posts=0,lookups=[],original=null,notices=0;
+  const storage={getItem:key=>{if(removed&&mode==='readFailure')throw Error('cleanup read denied');return data.getItem(key);},setItem:(key,value)=>data.setItem(key,value),removeItem:key=>{removed=true;if(mode==='throw')throw Error('cleanup denied');if(mode!=='silent')data.removeItem(key);}};
+  const p=createPCHDomainPanel({storage,makeRequestId:()=> 'finished-'+mode,onRefresh:()=>notices++,api:async(path,command)=>{
+   if(command){posts++;original=structuredClone(command);return {command,request_result:pchReceipt(command),catalog:pchCatalog()};}
+   if(path.includes('/request?')){const c=queryCommand(path);lookups.push(c);return pchReceipt(c,posts?'FINISHED':'NOT_FOUND');}return pchCatalog();
+  }});
+  await until(()=>p.element.textContent.includes('只读目录已核对'));button(p.element,'显式刷新PCH自身').click();
+  await until(()=>panelStatus(p).includes('清理未确认'));assert.match(panelStatus(p),/已确认结束/,mode);assert.doesNotMatch(panelStatus(p),/刷新结果未确认/,mode);assert.equal(posts,1,mode);assert.equal(notices,0,mode);
+  button(p.element,'重新读取原PCH刷新结果').click();await until(()=>lookups.length===2&&!button(p.element,'重新读取原PCH刷新结果').disabled);
+  assert.equal(posts,1,mode);assert.deepEqual(lookups,[original,original],mode);p.dispose();
+ }
+}));
+
+test('PCH normal refresh persists and reads back before lookup and effect, then clears a confirmed command',()=>dom(async()=>{
+ const data=memoryStorage(),order=[];let changes=0,posted=null;
+ const storage={getItem:key=>{order.push('get');return data.getItem(key);},setItem:(key,value)=>{order.push('set');data.setItem(key,value);},removeItem:key=>{order.push('remove');data.removeItem(key);}};
+ const p=createPCHDomainPanel({storage,makeRequestId:()=> 'normal-original',onRefresh:()=>changes++,api:async(path,command)=>{
+  if(command){order.push('post');posted=structuredClone(command);assert.equal(data.getItem(pchPendingKey),JSON.stringify(command));return {command,request_result:pchReceipt(command),catalog:pchCatalog()};}
+  if(path.includes('/request?')){order.push('request');return pchReceipt(queryCommand(path),'NOT_FOUND');}return pchCatalog();
+ }});
+ await until(()=>p.element.textContent.includes('只读目录已核对'));button(p.element,'显式刷新PCH自身').click();await until(()=>changes===1);
+ assert.equal(posted.request_id,'normal-original');assert.equal(order.filter(x=>x==='post').length,1);
+ assert.ok(order.indexOf('set')<order.indexOf('request'));assert.ok(order.slice(order.indexOf('set')+1,order.indexOf('request')).includes('get'));
+ assert.ok(order.slice(order.indexOf('request')+1,order.indexOf('post')).includes('get'));assert.ok(order.indexOf('remove')>order.indexOf('post'));
+ assert.equal(data.getItem(pchPendingKey),null);assert.equal(button(p.element,'显式刷新PCH自身').disabled,false);p.dispose();
+}));

@@ -106,3 +106,108 @@ export function createArtifactDirectory({projectId,readAllowed=true,api=defaultA
  }
  element.append(el('button',{type:'button',onClick:load},'重新读取登记目录'));load();return {element,dispose(){disposed=true;generation++;clear();element.replaceChildren();}};
 }
+
+const pchProject='personal-control-hub',pchPath='/api/projects/personal-control-hub/domain';
+const headValid=h=>h&&Number.isSafeInteger(h.sequence)&&h.sequence>=0&&/^[a-f0-9]{64}$/.test(h.hash||'')&&Object.keys(h).length===2;
+const sameHead=(a,b)=>headValid(a)&&headValid(b)&&a.sequence===b.sequence&&a.hash===b.hash;
+export function pchRefreshCommand(value){
+ if(!value||Object.keys(value).sort().join(',')!=='expected_head,project_ids,request_id'||!Array.isArray(value.project_ids)||value.project_ids.length!==1||value.project_ids[0]!==pchProject||!headValid(value.expected_head)||!/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(value.request_id||''))throw Error('PCH_REFRESH_SCOPE_INVALID');
+ return structuredClone(value);
+}
+export function pchDomainCatalog(value){
+ if(value?.schema_version!=='1.0'||value.project_id!==pchProject||value.route!=='route:personal-control-hub'||value.read_only!==true||value.native_execution_available!==false||!(value.head===null&&value.detail?.provenance?.ledger_head===null||sameHead(value.head,value.detail?.provenance?.ledger_head))||value.detail?.project_id!==pchProject||value.graph?.project_id!==pchProject||!Array.isArray(value.graph?.objects)||!Array.isArray(value.requests)||!value.versions)throw Error('PCH_DOMAIN_SNAPSHOT_INVALID');
+ for(const o of value.graph.objects)if(o.data?.observation&&!sameHead(o.data.observation.head,value.head))throw Error('PCH_DOMAIN_SNAPSHOT_INVALID');
+ if(value.artifacts===null){if(!['ACTION_PROJECT_DENIED','ACTION_CATALOG_UNAVAILABLE'].includes(value.artifact_gap))throw Error('PCH_DOMAIN_SNAPSHOT_INVALID');}else {
+  actionCatalog(value.artifacts,pchProject,value.graph.projection_version);
+  if(value.artifacts.source_version!==value.graph.source_version)throw Error('PCH_DOMAIN_SNAPSHOT_INVALID');
+ }return value;
+}
+/** Self-only, explicit refresh. This component never consumes the global refresh command. */
+export function createPCHDomainPanel({api=defaultApi,readAllowed=true,isCurrent=()=>true,onRefresh=()=>{},pendingCommand=null,
+ storage,makeRequestId=()=>crypto.randomUUID(),onTask=()=>{location.hash=taskRoute(pchProject);}}={}){
+ const element=el('section',{className:'panel stack','aria-label':'PCH来源与独立入口'},el('h2',{},'PCH来源与独立入口')),
+ status=el('p',{role:'status'}),body=el('div',{className:'stack'}),controls=el('div',{className:'row'});
+ let disposed=false,generation=0,busy=false,current=null,artifacts=null,pending=null,blocked=false,knownFinished=false,recoveryNotice='';
+ const key='hub:pch-domain-refresh-pending';
+ const showStatus=message=>{status.textContent=recoveryNotice||message;};
+ const storageFailure=()=>{blocked=true;recoveryNotice='恢复记录无法持久保存或读取核对，已阻止刷新；原请求保留，只读目录与任务导航仍可用。';showStatus('');return false;};
+ try{
+  if(storage===undefined)storage=globalThis.localStorage;
+  if(!storage||!['getItem','setItem','removeItem'].every(method=>typeof storage[method]==='function'))throw Error('PCH_RECOVERY_STORAGE_UNAVAILABLE');
+  const raw=storage.getItem(key);if(raw!==null)pending=pchRefreshCommand(JSON.parse(raw));
+ }catch{storageFailure();}
+ const alive=g=>!disposed&&g===generation&&isCurrent();
+ const exactStored=command=>JSON.stringify(canonical(pchRefreshCommand(JSON.parse(storage.getItem(key)))))===JSON.stringify(canonical(command));
+ function save(command,create){
+  pending=command;
+  try{
+   if(create){
+    // Never overwrite a different pending request, including one from another panel.
+    const raw=storage.getItem(key);if(raw!==null&&!exactStored(command))throw Error('PCH_RECOVERY_CONFLICT');
+    storage.setItem(key,JSON.stringify(command));
+   }
+   if(!exactStored(command))throw Error('PCH_RECOVERY_NOT_SAVED');
+   return true;
+  }catch{return storageFailure();}
+ }
+ function finish(receipt){
+  knownFinished=true;
+  try{
+   const raw=storage.getItem(key);
+   if(raw!==null){if(!exactStored(pending))throw Error('PCH_RECOVERY_CONFLICT');storage.removeItem(key);}
+   if(storage.getItem(key)!==null)throw Error('PCH_RECOVERY_NOT_CLEARED');
+   pending=null;knownFinished=false;blocked=false;recoveryNotice='';return true;
+  }catch{
+   blocked=true;
+   recoveryNotice=(Array.isArray(receipt.results)&&receipt.results.some(r=>!r.success)?'原PCH刷新已确认结束，但来源读取失败。':'原PCH刷新已确认结束。')+'恢复记录清理未确认；保留原请求，仅可重新读取原结果，不发出新刷新。';
+   showStatus('');return false;
+  }
+ }
+ const clear=()=>{artifacts?.dispose();artifacts=null;body.replaceChildren();};
+ const reload=el('button',{type:'button',onClick:()=>load()},'重新读取PCH目录'),refresh=el('button',{type:'button',onClick:()=>perform()},'显式刷新PCH自身');
+ controls.append(reload,refresh,el('button',{type:'button',onClick:()=>{if(!disposed&&isCurrent())onTask(pchProject);}},'编写PCH普通任务'));
+ element.append(status,controls,body);
+ function render(v){clear();current=v;
+  body.append(el('p',{},'只读页面与登记产物可独立查看；普通任务仍需显式保存、提交与原有执行准入。'),
+   el('a',{className:'button',href:taskRoute(pchProject)},'进入PCH任务表单'));
+  const versions=el('section',{className:'stack'},el('h3',{},'版本依据'));
+  versions.append(el('p',{},v.versions.checkout?.state==='observed'?'Checkout：受信观察，非安装证明。':'Checkout：未知，未提供受信观察。'),
+   el('p',{},v.versions.source?.authority_drift?'来源：当前登记与历史结果有漂移。':'来源：与本次目录账本头核对。'),
+   el('p',{},'网页资源：当前处理程序文件哈希；不证明冻结程序已安装。'),
+   el('p',{},v.versions.runtime_manifest?.state==='unknown'?'冻结运行程序：未知；不影响独立只读页面。':'冻结运行程序：既有带时间的观察，不代表本次采用。'),
+   el('details',{},el('summary',{},'版本核对细节'),el('pre',{},JSON.stringify(v.versions,null,2))));body.append(versions);
+  const pages=v.graph.objects.filter(o=>o.type==='Artifact'&&o.data?.kind==='declared_page'),list=el('section',{className:'stack'},el('h3',{},'已发布页面'));
+  if(!pages.length)list.append(el('p',{},'来源未发布确切页面；不按文件名推断可读产物。'));
+  for(const page of pages)list.append(el('p',{},page.label+' · '+(page.source.applicability==='current'?'当前来源声明':'历史来源声明')+' · 字节可用性未知'));
+  body.append(list,el('details',{},el('summary',{},'原刷新请求结果'),...v.requests.map(r=>el('p',{},r.request_id+' · '+r.status+' · '+(r.results.some(x=>!x.success)?'来源读取失败，旧成功仅为历史':'请按确切结果版本核对')))));
+  if(v.artifacts===null){body.append(el('p',{className:'warning'},'登记产物目录当前不可用；不以历史产物推断当前可读。'));return;}
+  artifacts=createArtifactDirectory({projectId:pchProject,isCurrent:()=>!disposed&&isCurrent(),onTask,
+   api:(path,command)=>path==='/api/projects/'+pchProject+'/actions'&&!command?Promise.resolve(v.artifacts):api(path,command)});
+  body.append(artifacts.element);
+ }
+ function buttons(){refresh.disabled=busy||!readAllowed||!current||(blocked&&!knownFinished)||!!pendingCommand;reload.disabled=busy;
+  refresh.textContent=knownFinished?'重新读取原PCH刷新结果':pending?'核对并重试原PCH刷新':'显式刷新PCH自身';}
+ async function load(){if(disposed||busy)return;const g=++generation;clear();current=null;
+  if(!readAllowed){showStatus('当前未授权读取PCH来源。');buttons();return;}
+  showStatus('正在只读核对PCH来源与版本…');buttons();
+  try{const v=pchDomainCatalog(await api(pchPath));if(!alive(g))return;render(v);showStatus(pendingCommand?'另有原刷新命令待核对；此入口不改写或执行它，请使用原刷新恢复入口。':blocked?'原恢复记录无效，已阻止新刷新；请核对原请求。':pending?'保留原PCH刷新请求；先核对结果再重试。':'只读目录已核对；读取不刷新来源或启动Agent。');}
+  catch(error){if(alive(g))showStatus(errorText(error)+' 可重新读取PCH目录。');}finally{if(alive(g))buttons();}
+ }
+ async function perform(){if(busy||!current||!readAllowed||pendingCommand||(blocked&&!knownFinished)||disposed||!isCurrent())return;
+  const command=pending||pchRefreshCommand({request_id:makeRequestId(),project_ids:[pchProject],expected_head:current.refresh_head||current.head});
+  if(!knownFinished&&!save(command,!pending)){buttons();return;}
+  busy=true;const g=++generation;buttons();showStatus('正在核对原PCH刷新请求…');
+  try{const receipt=await api(pchPath+'/request?'+new URLSearchParams({command:JSON.stringify(command)}));if(!alive(g))return;
+   if(receipt.project_id!==pchProject||receipt.request_id!==command.request_id||receipt.command_sha256!==await hashValue(command)||!(receipt.head===null||headValid(receipt.head)))throw Error('PCH_REFRESH_RECEIPT_INVALID');if(!alive(g))return;
+   if(receipt.status==='FINISHED'){if(!finish(receipt))return;busy=false;await load();if(!disposed&&isCurrent())onRefresh();return;}
+   if(knownFinished||!['NOT_FOUND','OPEN'].includes(receipt.status))throw Error('PCH_REFRESH_RECEIPT_INVALID');
+   // Recheck persistence after the asynchronous receipt/hash read, immediately before POST.
+   if(!save(command,false))return;
+   const result=await api(pchPath+'/refresh',command);if(!alive(g))return;
+   if(JSON.stringify(canonical(result.command))!==JSON.stringify(canonical(command))||result.request_result?.request_id!==command.request_id||result.request_result?.status!=='FINISHED'||result.request_result?.command_sha256!==await hashValue(command)||!sameHead(result.request_result.head,result.catalog?.head))throw Error('PCH_REFRESH_RECEIPT_INVALID');if(!alive(g))return;
+   const next=pchDomainCatalog(result.catalog);render(next);if(!finish(result.request_result))return;showStatus(result.request_result.results.some(r=>!r.success)?'本次PCH刷新已结束但来源失败；历史成功未替代当前失败。':'本次PCH刷新已结束，详情与图引用同一结果版本。');onRefresh();
+  }catch(error){if(alive(g))showStatus(knownFinished?'原请求此前已确认结束；本次只读核对未确认，原请求保留，不发出新刷新。':'刷新结果未确认；原请求完整保留，请核对并重试原PCH刷新。');}
+  finally{if(alive(g)){busy=false;buttons();}}
+ }
+ load();return {element,reload:load,dispose(){disposed=true;generation++;clear();element.replaceChildren();}};
+}

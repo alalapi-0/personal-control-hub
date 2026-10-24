@@ -6,7 +6,7 @@ import {renderRelations} from './relations.mjs';
 import {renderTimeline} from './timeline.mjs';
 import {projectDirectory, renderDirectoryTree, renderOverviewCard, renderOverviewFocus, overviewActivity, overviewProject, createGraphReader, renderGraphObjects} from './directory.mjs';
 import {createFocusGraph,pendingGraphView} from './graph.mjs';
-import {createActionPanel,createArtifactDirectory} from './actions.mjs';
+import {createActionPanel,createArtifactDirectory,createPCHDomainPanel} from './actions.mjs';
 import {watchLedger,replaceProjection} from './ledger_watch.mjs';
 import {renderPageInventory} from './page_inventory.mjs';
 import {renderCaptures} from './captures.mjs';
@@ -519,13 +519,16 @@ async function projectDetail(id,token,section='overview',reconcile=false){
   else if(section==='schedule')body=[timeView,relations,managementPanel,renderBusinessPlan(p)];
   else {
     disposeArtifacts();
-    const artifacts=createArtifactDirectory({projectId:id,readAllowed:overviewProject(p).readAllowed,isCurrent:()=>token===generation});
+    const artifacts=id==='personal-control-hub'
+      ?createPCHDomainPanel({readAllowed:overviewProject(p).readAllowed,isCurrent:()=>token===generation,
+        pendingCommand:pendingRefresh,onRefresh:()=>{if(token===generation)route(false);}})
+      :createArtifactDirectory({projectId:id,readAllowed:overviewProject(p).readAllowed,isCurrent:()=>token===generation});
     disposeArtifacts=artifacts.dispose;
     body=[sources,artifacts.element,el('section',{className:'panel stack'},el('h2',{},'全部来源字段'),fields),renderPageInventory(p),renderCaptures(p,captures),design,
     diagnostic({source:p.source,errors:p.errors,relations:p.relations,provenance:p.provenance,exception:p.declared.hub_connection_exception,unknown_fields:p.business.unknown_fields,quality:p.business.quality})];
   }
   const next=el('section',{className:'stack'},el('a',{href:lastDirectoryHash},'← 所有项目'),el('h1',{},p.name),
-    section==='overview'?projectIntro(p):el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},el('a',{className:'button primary',href:base+'/tasks'},'编写与查看任务'),refreshButton([p])),
+    section==='overview'?projectIntro(p):el('p',{className:'muted'},sourceLine(p)),el('div',{className:'row'},el('a',{className:'button primary',href:base+'/tasks'},'编写与查看任务'),id==='personal-control-hub'?(section==='sources'?null:el('a',{className:'button',href:base+'/sources'},'PCH来源与自身刷新')):refreshButton([p])),
     navigation,identityNotice,exception?el('div',{className:'panel'},el('h2',{},'已授权的管理例外'),el('p',{},exception.reason||'已登记管理读取例外。')):null,...body);
   if(reconcile)replaceProjection(main,next);else main.replaceChildren(next);
   reconcileVisible=()=>projectDetail(id,token,section,true);

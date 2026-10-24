@@ -215,5 +215,262 @@ class PageInventoryTests(unittest.TestCase):
             validate_page_inventory(value)
 
 
+
+
+class PCHDomainActionsTests(unittest.TestCase):
+    def setUp(self):
+        from test_hub_project_definition import OwnHubSourceFixture
+        from hub.design_store import DesignStore
+        from hub.design_service import DesignService
+        from hub.action_registry import ActionRegistry
+        from hub.pch_domain_actions import PCHDomainActions
+        self.f = OwnHubSourceFixture(); self.addCleanup(self.f.close)
+        self.f.collect()
+        store = DesignStore(self.f.root, self.f.root / 'docs/reports/ui_design_governance/unit-04/pch/store.json', fixture=True)
+        store.initialize()
+        self.actions = ActionRegistry(self.f.service, DesignService(store), host='http://127.0.0.1:1234', backend_instance='a'*32)
+        self.domain = PCHDomainActions(self.f.service, self.actions)
+
+    def test_actual_self_catalog_graph_versions_and_reads_do_not_collect_or_write(self):
+        from unittest import mock
+        from hub.graph_records import validate_graph
+        from hub.graph_service import GraphService
+        before = self.f.ledger.history(); source = (self.f.root / 'STATE.yaml').read_bytes()
+        with mock.patch('hub.connection_sources.SourceResolver.refresh', side_effect=AssertionError('GET collected')):
+            value = self.domain.catalog()
+            projected = GraphService(self.f.service).get_project(self.f.project_id)
+            validate_graph(value['graph']); validate_graph(projected)
+        self.assertEqual(value['head'], value['detail']['provenance']['ledger_head'])
+        self.assertEqual(value['graph']['projection_version'], projected['projection_version'])
+        self.assertEqual(value['route'], 'route:personal-control-hub')
+        self.assertEqual(value['versions']['checkout']['state'], 'unknown')
+        self.assertFalse(value['versions']['web_resources']['installed_program_proof'])
+        self.assertEqual(self.f.ledger.history(), before)
+        self.assertEqual((self.f.root / 'STATE.yaml').read_bytes(), source)
+        self.assertNotIn(str(self.f.root), str(value['versions']))
+        self.assertFalse(value['native_execution_available'])
+
+    def test_self_refresh_replay_and_original_request_reconciliation(self):
+        from hub.pch_domain_actions import PROJECT
+        command = {'request_id':'self-second', 'project_ids':[PROJECT], 'expected_head':self.f.ledger.head}
+        first = self.domain.refresh(command, authorize=lambda:None)
+        history = self.f.ledger.history()
+        second = self.domain.refresh(command, authorize=lambda:None)
+        self.assertEqual(history, self.f.ledger.history())
+        self.assertEqual(first['request_result'], second['request_result'])
+        self.assertEqual(first['catalog']['head'], first['request_result']['head'])
+        wrong = copy.deepcopy(command); wrong['expected_head']['hash']='f'*64
+        from hub.service_contract import ServiceError
+        with self.assertRaises(ServiceError) as caught:self.domain.request_result(wrong)
+        self.assertEqual(caught.exception.code,'PCH_REFRESH_REQUEST_CONFLICT')
+
+    def test_foreign_scope_permission_and_head_mismatch_are_zero_effects(self):
+        from unittest import mock
+        from hub.service_contract import ServiceError
+        before = self.f.ledger.history()
+        for ids in (['foreign'], ['personal-control-hub','foreign'], [], 'personal-control-hub'):
+            with self.subTest(ids=ids), mock.patch.object(self.f.service,'refresh',side_effect=AssertionError('refresh')):
+                with self.assertRaises(ServiceError):self.domain.refresh({'request_id':'bad','project_ids':ids,'expected_head':self.f.ledger.head},authorize=lambda:None)
+        def denied():raise ServiceError('OWNER_AUTH_REQUIRED',status=401)
+        with self.assertRaises(ServiceError):self.domain.refresh({'request_id':'denied','project_ids':[self.f.project_id],'expected_head':self.f.ledger.head},authorize=denied)
+        with mock.patch.object(self.f.service,'ledger_head',return_value={'sequence':99,'hash':'f'*64}):
+            with self.assertRaises(ServiceError) as caught:self.domain.catalog()
+        self.assertEqual(caught.exception.status,409)
+        self.assertEqual(before,self.f.ledger.history())
+
+    def test_current_failure_remains_current_and_uncertain_response_preserves_original_command(self):
+        from unittest import mock
+        from hub.service_contract import ServiceError
+        command = {'request_id':'self-failure','project_ids':[self.f.project_id],'expected_head':self.f.ledger.head}
+        (self.f.root / 'STATE.yaml').write_text('broken: [')
+        value = self.domain.refresh(command,authorize=lambda:None)
+        self.assertFalse(value['request_result']['results'][0]['success'])
+        runs=[o for o in value['catalog']['graph']['objects'] if o['type']=='Run']
+        self.assertTrue(any(o['source']['applicability']=='current' and not o['data']['success'] for o in runs))
+        self.assertEqual(value['command'],command)
+        with mock.patch.object(self.domain,'catalog',side_effect=ServiceError('PCH_DOMAIN_HEAD_CHANGED',status=409)):
+            with self.assertRaises(ServiceError) as caught:self.domain.refresh(command,authorize=lambda:None)
+        self.assertEqual(caught.exception.outcome,'UNKNOWN')
+        self.assertEqual(self.domain.request_result(command)['status'],'FINISHED')
+
+
+    def test_unread_catalog_has_explicit_genesis_refresh_head_and_permission_revocation_refuses(self):
+        from test_hub_project_definition import OwnHubSourceFixture
+        from hub.pch_domain_actions import PCHDomainActions
+        from hub.service_contract import ServiceError
+        from unittest import mock
+        f=OwnHubSourceFixture(); self.addCleanup(f.close)
+        # Fixture initialized the empty ledger; this is still a verified genesis head.
+        class EmptyActions:
+            def catalog(self, project):raise ServiceError('ACTION_CATALOG_UNAVAILABLE',status=503)
+        domain=PCHDomainActions(f.service,EmptyActions());value=domain.catalog()
+        self.assertEqual(value['refresh_head'],{'sequence':0,'hash':'0'*64})
+        self.assertIsNone(value['artifacts']);self.assertEqual(value['artifact_gap'],'ACTION_CATALOG_UNAVAILABLE')
+        self.assertFalse(value['requests'])
+        old=f.service.get_project(f.project_id);denied=copy.deepcopy(old);denied['declared']['connection_read_allowed']=False
+        with mock.patch.object(f.service,'get_project',side_effect=[old,denied]):
+            with self.assertRaises(ServiceError) as caught:domain.catalog()
+        self.assertEqual(caught.exception.code,'PCH_DOMAIN_READ_DENIED')
+
+
+
+class RegisteredPCHArtifactFixture:
+    """Real isolated registry/source/ledger and nonempty DesignService records."""
+    def __init__(self):
+        import hashlib
+        from test_hub_project_definition import OwnHubSourceFixture
+        from hub.design_cli import _artifact, _baseline, _candidate
+        from hub.design_records import with_content_hash
+        from hub.design_store import DesignStore
+        from hub.design_service import DesignService
+        from hub.action_registry import ActionRegistry
+        from hub.pch_domain_actions import PCHDomainActions
+        self.source = OwnHubSourceFixture()
+        self.root, self.projects = self.source.root, self.source.service
+        self.source.collect()
+        self.work = self.root / 'docs/reports/ui_design_governance/pch-actions'
+        self.work.mkdir(parents=True)
+        self.payload = b'\x89PNG\r\n\x1a\nsynthetic-pch-artifact-bytes'
+        self.path = self.work / 'candidate.png'; self.path.write_bytes(self.payload)
+        baseline_path = self.work / 'baseline.txt'; baseline_path.write_bytes(b'synthetic PCH baseline')
+        self.artifact = _artifact('pch-candidate-preview', str(self.path.relative_to(self.root)), hashlib.sha256(self.payload).hexdigest())
+        baseline_artifact = _artifact('pch-baseline-preview', str(baseline_path.relative_to(self.root)), hashlib.sha256(baseline_path.read_bytes()).hexdigest())
+        for artifact in (self.artifact, baseline_artifact):
+            artifact['classification'] = 'imported'
+            artifact['scope']['members'][0]['project_id'] = 'personal-control-hub'
+        self.baseline = _baseline(1, baseline_artifact)
+        self.baseline.update(id='pch-baseline', project_id='personal-control-hub', classification='imported')
+        self.baseline = with_content_hash(self.baseline)
+        # Use the actual disposable registry to validate PCH, not fixture-only IDs.
+        self.store = DesignStore(self.root, self.work / 'store.json')
+        self.store.initialize()
+        for index, fact in enumerate((baseline_artifact, self.artifact, self.baseline)):
+            self.append(fact, 'pch-design-fact-'+str(index))
+        self.publish_candidate(1)
+        self.designs = DesignService(self.store)
+        self.actions = ActionRegistry(self.projects, self.designs, host='http://127.0.0.1:1234', backend_instance='a'*32)
+        self.domain = PCHDomainActions(self.projects, self.actions)
+
+    def append(self, fact, request):
+        self.store.append_fact(fact, expected_revision=self.store.read()['revision'], request_id=request)
+
+    def publish_candidate(self, revision):
+        from hub.design_cli import _candidate
+        from hub.design_records import with_content_hash
+        candidate = _candidate(revision, self.baseline, self.artifact)
+        candidate['id'] = 'pch-candidate'
+        candidate['classification'] = 'imported'
+        candidate['scope']['members'][0]['project_id'] = 'personal-control-hub'
+        candidate['baseline_bindings'][0]['project_id'] = 'personal-control-hub'
+        self.candidate = with_content_hash(candidate)
+        self.append(self.candidate, 'pch-design-candidate-'+str(revision))
+
+    def close(self):
+        self.source.close()
+
+
+class PCHRegisteredArtifactBindingTests(unittest.TestCase):
+    def setUp(self):
+        self.f = RegisteredPCHArtifactFixture(); self.addCleanup(self.f.close)
+
+    def bound(self):
+        value = self.f.domain.catalog()
+        entry = next(e for e in value['artifacts']['entries'] if e['object']['native_id'] == self.f.artifact['id'])
+        self.assertTrue(entry['actions'])
+        return value, entry, next(a['binding'] for a in entry['actions'] if a['id'] == 'open_registered_artifact')
+
+    def test_nonempty_facade_actual_graph_and_catalog_have_same_trusted_design_versions(self):
+        from hub.graph_records import validate_graph
+        from hub.graph_service import GraphService
+        value, entry, binding = self.bound()
+        snapshot = self.f.designs.snapshot()
+        graph = GraphService(self.f.projects).get_project('personal-control-hub', design_snapshot=snapshot)
+        for published in (graph, value['graph']):
+            validate_graph(published)
+            self.assertEqual(published['source_version'], value['artifacts']['source_version'])
+            self.assertEqual(published['projection_version'], value['artifacts']['projection_version'])
+            selected = next(o for o in published['objects'] if (o['id'],o['revision']) == (entry['object']['id'],entry['object']['revision']))
+            self.assertEqual(selected, entry['object'])
+        self.assertEqual(binding['project_id'], 'personal-control-hub')
+        self.assertEqual(binding['candidate_id'], self.f.candidate['id'])
+        self.assertEqual(binding['candidate_sha256'], self.f.candidate['content_hash'])
+        self.assertEqual(binding['artifact_sha256'], self.f.artifact['sha256'])
+        self.assertEqual({a['id'] for a in entry['actions']}, {'open_registered_artifact','verify_registered_artifact','prepare_ordinary_task','native_program'})
+        self.assertFalse(next(a for a in entry['actions'] if a['id']=='native_program')['available'])
+
+    def test_real_bytes_read_once_and_receipt_binding_stays_authoritative(self):
+        from unittest import mock
+        from hub.action_registry import request_id, digest
+        _, _, binding = self.bound(); history = self.f.source.ledger.history(); before = self.f.store.path.read_bytes()
+        with mock.patch.object(self.f.designs, 'artifact', wraps=self.f.designs.artifact) as read:
+            value = self.f.actions.read_with_receipt(binding, authorize=lambda:None)
+        self.assertEqual(read.call_count, 1)
+        self.assertEqual(value.response.data, self.f.payload)
+        self.assertEqual(value.receipt['binding_sha256'], binding['binding_sha256'])
+        command = {'action_id':'open_registered_artifact','binding':binding,'request_id':request_id('open_registered_artifact',binding)}
+        self.assertEqual(value.receipt['parameter_sha256'], digest(command))
+        self.assertEqual(value.receipt['input_sha256'], self.f.artifact['sha256'])
+        self.assertFalse(value.receipt['native_execution']); self.assertFalse(value.receipt['durable_receipt'])
+        self.assertEqual(self.f.store.path.read_bytes(), before)
+        self.assertEqual(self.f.source.ledger.history(), history)
+
+    def test_stale_source_graph_candidate_or_binding_rejected_before_content(self):
+        from hub.action_registry import digest
+        from hub.service_contract import ServiceError
+        from unittest import mock
+        _, _, binding = self.bound()
+        for field, replacement in [('source_version','f'*64), ('object_revision','foreign-revision'),
+                                   ('candidate_revision',99), ('candidate_sha256','f'*64), ('artifact_sha256','f'*64)]:
+            bad = {**binding, field:replacement}
+            bad['binding_sha256'] = digest({k:v for k,v in bad.items() if k!='binding_sha256'})
+            with self.subTest(field=field), mock.patch.object(self.f.designs,'artifact',side_effect=AssertionError('stale content read')):
+                with self.assertRaises(ServiceError) as error:self.f.actions.read_with_receipt(bad, authorize=lambda:None)
+            self.assertEqual(error.exception.code, 'ACTION_BINDING_STALE')
+        # An actual new source result invalidates the old source-bound permission.
+        command = {'request_id':'pch-next-result','project_ids':['personal-control-hub'],'expected_head':self.f.source.ledger.head}
+        self.f.projects.refresh(command)
+        with mock.patch.object(self.f.designs,'artifact',side_effect=AssertionError('old source read')):
+            with self.assertRaises(ServiceError) as error:self.f.actions.read(binding,authorize=lambda:None)
+        self.assertEqual(error.exception.code, 'ACTION_BINDING_STALE')
+
+    def test_same_head_design_change_has_new_graph_version_and_mixed_snapshot_rejects(self):
+        from hub.graph_service import GraphService
+        from hub.service_contract import ServiceError
+        from unittest import mock
+        old = self.f.designs.snapshot(); original = self.f.domain.catalog(); head = self.f.source.ledger.head
+        self.f.publish_candidate(2); new = self.f.designs.snapshot()
+        changed = self.f.domain.catalog()
+        self.assertEqual(original['head'], changed['head']); self.assertEqual(head,self.f.source.ledger.head)
+        self.assertNotEqual(original['graph']['projection_version'], changed['graph']['projection_version'])
+        old_graph = GraphService(self.f.projects).get_project('personal-control-hub', design_snapshot=old)
+        new_graph = GraphService(self.f.projects).get_project('personal-control-hub', design_snapshot=new)
+        self.assertEqual(old_graph['projection_version'], original['artifacts']['projection_version'])
+        self.assertEqual(new_graph['projection_version'], changed['artifacts']['projection_version'])
+        with mock.patch.object(self.f.designs,'snapshot',side_effect=[old,new]):
+            with self.assertRaises(ServiceError) as error:self.f.domain.catalog()
+        self.assertEqual(error.exception.code,'PCH_DOMAIN_DESIGN_CHANGED')
+        self.assertEqual(error.exception.status,409); self.assertTrue(error.exception.retryable)
+
+    def test_design_service_unavailable_preserves_independent_source_and_failure_visibility(self):
+        from hub.service_contract import ServiceError
+        from unittest import mock
+        before=self.f.source.ledger.history()
+        with mock.patch.object(self.f.designs,'snapshot',side_effect=ServiceError('DESIGN_STORE_UNAVAILABLE',status=503)):
+            value=self.f.domain.catalog()
+        self.assertIsNone(value['artifacts']);self.assertEqual(value['artifact_gap'],'ACTION_CATALOG_UNAVAILABLE')
+        self.assertEqual(value['head'],before['head'])
+        self.assertTrue(any(o['type']=='Run' for o in value['graph']['objects']))
+        self.assertEqual(before,self.f.source.ledger.history())
+
+
+    def test_denied_pch_does_not_observe_design_store(self):
+        from hub.service_contract import ServiceError
+        from unittest import mock
+        value = self.f.projects.get_project('personal-control-hub')
+        value['declared']['connection_read_allowed'] = False
+        with mock.patch.object(self.f.projects,'get_project',return_value=value), mock.patch.object(self.f.designs,'snapshot',side_effect=AssertionError('denied design access')):
+            with self.assertRaises(ServiceError) as error:self.f.domain.catalog()
+        self.assertEqual(error.exception.code, 'PCH_DOMAIN_READ_DENIED')
+
 if __name__ == "__main__":
     unittest.main()
