@@ -2498,7 +2498,7 @@ class TaskStore:
     def _plan_source_context(self,connection,plan_id,authority):
         from .plan_admission import plan_history,reject
         from .dispatch_budget import split as split_budget
-        from .source_admission import split
+        from .source_admission import split,is_psh_source_task
         plan=self._plan_input(connection,plan_id,authority)
         states,accepted,controls=self._plan_state(connection,plan,authority)
         row=connection.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(plan_id,)).fetchone()
@@ -2507,7 +2507,7 @@ class TaskStore:
         for definition in plan['tasks']:
             if 'source_admission'not in definition:continue
             root=definition['source_admission']['workspace']['canonical_root']
-            if definition['id']in {'P5-personal-style-hub-01','P5-personal-style-hub-02','P5-personal-style-hub-03'}:
+            if is_psh_source_task(definition):
                 if (root==str(self.root) or not authority.registered_source_workspace(definition)
                         or not authority.development(definition)):
                     blocked_sources.add(definition['id'])

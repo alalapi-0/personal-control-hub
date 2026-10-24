@@ -11,7 +11,22 @@ from .service_contract import ServiceError
 from .workbench_store import canonical, digest
 
 FORMAT = 'plan-source-evidence/1'
-SOURCE_IDS = frozenset('''P3-R1-PCH-GRAPH P3-R1-PCH-RELATIONS P3-R2-PCH-OVERVIEW P3-R2-PCH-FOCUS P3-R3-PCH-ACTIONS P3-R3-PCH-IMPACT P3-R3-PCH-PORTS P6-R1-PCH-PRECISE-SAVE P6-R1-PCH-SEMANTIC-UI P6-R2-PCH-ARTIFACTS P6-R2-PCH-VERSION P5-personal-style-hub-01 P5-personal-style-hub-02 P5-personal-style-hub-03'''.split())
+SOURCE_IDS = frozenset('''P3-R1-PCH-GRAPH P3-R1-PCH-RELATIONS P3-R2-PCH-OVERVIEW P3-R2-PCH-FOCUS P3-R3-PCH-ACTIONS P3-R3-PCH-IMPACT P3-R3-PCH-PORTS P6-R1-PCH-PRECISE-SAVE P6-R1-PCH-SEMANTIC-UI P6-R2-PCH-ARTIFACTS P6-R2-PCH-VERSION'''.split())
+
+
+def is_psh_source_task(definition):
+    """Structural classification only, never adopted membership or permission.
+
+    The Store binds the exact existing plan definition; plan CAS cannot add IDs.
+    Each classified task still needs its own live workspace registration and
+    development/evidence callbacks, including when sharing another task's root.
+    """
+    return (type(definition) is dict
+            and definition.get('phase_id') == 'P5'
+            and definition.get('admission_class') == 'verified_project_execution'
+            and definition.get('project_id') == 'personal-style-hub'
+            and type(definition.get('id')) is str
+            and re.fullmatch(r'P5-personal-style-hub-(?:0[1-9]|[1-9][0-9])', definition['id']) is not None)
 
 
 def need(ok, code='PLAN_SOURCE_REJECTED'):
@@ -76,7 +91,7 @@ def validate_policies(by):
     for ident, row in by.items():
         if 'source_admission' not in row:
             continue
-        need(ident in SOURCE_IDS and row['status'] != 'done')
+        need((ident in SOURCE_IDS or is_psh_source_task(row)) and row['status'] != 'done')
         p = policy(row['source_admission'])
         edges[ident] = [d['task_id'] for d in p['dependencies']]
         need(all(d in by and d != ident for d in edges[ident]))

@@ -148,21 +148,21 @@ class PlanAuthority:
  def registered_source_workspace(self,definition):
   """Exact internal Root registration, not a project-name or execution grant."""
   self._authorize()
-  if (type(definition)is not dict or definition.get('id')not in {'P5-personal-style-hub-01','P5-personal-style-hub-02','P5-personal-style-hub-03'}
-      or definition.get('project_id')!='personal-style-hub'):return False
+  from .source_admission import is_psh_source_task,workspace
+  if not is_psh_source_task(definition):return False
   registered=self.snapshot().get('source_workspaces',{})
   if type(registered)is not dict:return False
   item=registered.get(definition['id']);source=definition.get('source_admission')
   if (type(item)is not dict or set(item)!={'project_id','workspace'}
       or item['project_id']!='personal-style-hub' or type(source)is not dict):return False
-  from .source_admission import workspace
   try:
    workspace(item['workspace']);workspace(source.get('workspace'))
   except ServiceError:return False
   return item['workspace']==source['workspace']
  def development(self,definition):
   self._authorize()
-  if definition.get('id')in {'P5-personal-style-hub-01','P5-personal-style-hub-02','P5-personal-style-hub-03'} and not self.registered_source_workspace(definition):return False
+  from .source_admission import is_psh_source_task
+  if is_psh_source_task(definition) and not self.registered_source_workspace(definition):return False
   return self._development is not None and self._development(copy.deepcopy(definition)) is True
  def verify_source(self,record):
   self._authorize()
