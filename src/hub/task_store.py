@@ -2507,7 +2507,7 @@ class TaskStore:
         for definition in plan['tasks']:
             if 'source_admission'not in definition:continue
             root=definition['source_admission']['workspace']['canonical_root']
-            if definition['id']in {'P5-personal-style-hub-01','P5-personal-style-hub-02'}:
+            if definition['id']in {'P5-personal-style-hub-01','P5-personal-style-hub-02','P5-personal-style-hub-03'}:
                 if (root==str(self.root) or not authority.registered_source_workspace(definition)
                         or not authority.development(definition)):
                     blocked_sources.add(definition['id'])
