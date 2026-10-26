@@ -756,11 +756,11 @@ class TaskStore:
                 if prior_amendment is not None:replayed=True
                 else:
                     if digest(p)!=change['expected_policy_sha256']:reject('DISPATCH_AMENDMENT_STALE')
-                    if p['limit']!=480 or budget.get('amendments'):reject('DISPATCH_AMENDMENT_CONFLICT')
-                    new_policy={**copy.deepcopy(p),'limit':960}
+                    if p['limit']!=change['previous_limit']:reject('DISPATCH_AMENDMENT_CONFLICT')
+                    new_policy={**copy.deepcopy(p),'limit':change['new_limit']}
                     receipt={'request':change,'sha256':digest(change),'previous_policy':copy.deepcopy(p),
                         'new_policy_sha256':digest(new_policy),'authorized_binding_sha256':digest(cap.snapshot()),'applied_at':time.time()}
-                    budget={**budget,'policy':new_policy,'amendments':[receipt]}
+                    budget={**budget,'policy':new_policy,'amendments':[*budget.get('amendments',[]),receipt]}
             elif operation=='close':
                 proof=closure(body);row=next((x for x in budget['reservations']if x['request']['dispatch_id']==proof['dispatch_id']),None)
                 if row is None or row['sha256']!=proof['reservation_sha256']:reject('DISPATCH_CLOSURE_MISMATCH')
@@ -788,7 +788,7 @@ class TaskStore:
         return self._dispatch_budget_operation(plan_id,'status',{},authority)
 
     def amend_dispatch_budget(self,plan_id,amendment,*,authority):
-        """Internal owner-authorized 480→960 CAS; no execution/HTTP capability."""
+        """Internal individually owner-authorized doubling CAS; no execution grant."""
         return self._dispatch_budget_operation(plan_id,'amend',amendment,authority)
 
     def _normal_dispatch_event(self,db,ident,stage,marker):
