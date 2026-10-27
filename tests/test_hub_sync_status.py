@@ -198,6 +198,66 @@ class PchDomainProjectionTests(unittest.TestCase):
         self.assertTrue(any(history['head']['hash'] in item for item in edge['evidence']))
         self.assertFalse(any(e['type'] == 'produces' for e in result['relations']))
 
+    def test_final_domain_impacts_bind_exact_source_versions_and_exclude_references(self):
+        from hub.graph_service import project_graph, _impact_projection
+        f = self.f; f.publish_page(); f.collect('impact-old')
+        first = f.project()
+        old_file = next(o for o in first['objects'] if o['type'] == 'FileRef')
+        state_path = f.source / 'STATE.yaml'
+        state = yaml.safe_load(state_path.read_bytes())
+        state['current_work']['objective'] = 'Synthetic next source revision'
+        state_path.write_text(yaml.safe_dump(state))
+        f.collect('impact-new')
+        history, dto = f.snapshot(); inputs = copy.deepcopy((history, dto))
+        result = project_pch_domain(history, dto); validate_graph(result)
+        self.assertEqual((history, dto), inputs)
+        objects = {(o['id'], o['revision']): o for o in result['objects']}
+        files = [o for o in result['objects'] if o['type'] == 'FileRef']
+        self.assertEqual(len(files), 2)
+        self.assertEqual({o['id'] for o in files}, {old_file['id']})
+        self.assertEqual(len({o['revision'] for o in files}), 2)
+        runs = {o['data']['request_id']: o for o in result['objects'] if o['type'] == 'Run'}
+        self.assertEqual(set(runs), {'impact-old', 'impact-new'})
+        consumes = [e for e in result['relations'] if e['type'] == 'consumes']
+        self.assertEqual(len(consumes), 2)
+        for file in files:
+            ref = {'id': file['id'], 'revision': file['revision']}
+            historical = file['revision'] == old_file['revision']
+            run = runs['impact-old' if historical else 'impact-new']
+            target = {'id': run['id'], 'revision': run['revision']}
+            edge = next(e for e in consumes if e['to'] == ref)
+            with self.subTest(source_revision=file['revision']):
+                self.assertEqual(file['source']['applicability'], 'historical' if historical else 'current')
+                self.assertEqual(edge['from'], target)
+                impact = file['data']['impact']
+                self.assertEqual(impact['state'], 'available')
+                self.assertEqual(impact['candidate_paths'], [])
+                self.assertEqual(impact['fact_paths'], [{'target': target, 'path': [{
+                    'relation': {'id': edge['id'], 'revision': edge['revision']},
+                    'type': 'consumes', 'from': ref, 'to': target,
+                    'evidence': edge['evidence'], 'source': edge['source']}]}])
+        self.assertEqual(len([e for e in result['relations'] if e['type'] == 'references']), 2)
+        artifacts = [o for o in result['objects'] if o['type'] == 'Artifact']
+        self.assertTrue(artifacts)
+        for artifact in artifacts:
+            self.assertEqual(artifact['data']['impact']['state'], 'unknown')
+            self.assertEqual(artifact['data']['impact']['fact_paths'], [])
+            self.assertEqual(artifact['data']['impact']['candidate_paths'], [])
+            self.assertEqual(artifact['data']['availability']['state'], 'unknown')
+        # Original objects and added domain objects share the final algorithm,
+        # hash and rows; no cached base-only impact is published.
+        base = project_graph(dto)
+        self.assertTrue({(o['id'], o['revision']) for o in base['objects']} <= set(objects))
+        expected = _impact_projection(result['objects'], result['relations'])
+        for key, item in objects.items():
+            self.assertEqual(item['data']['impact'], expected[key])
+            self.assertEqual(item['data']['impact']['subject'], {'id': key[0], 'revision': key[1]})
+            self.assertFalse(item['data']['impact']['rerun']['available'])
+        self.assertEqual(result['layouts'], base['layouts'])
+        self.assertEqual({(r['object_id'], r['revision']) for r in result['rows']}, set(objects))
+        self.assertTrue(all(r['projection_version'] == result['projection_version'] for r in result['rows']))
+        self.assertNotIn(str(f.fixture.base), json.dumps(result))
+
     def test_mismatched_heads_projects_anchors_and_malformed_snapshots_reject(self):
         f = self.f; f.collect(); history, dto = f.snapshot()
         mutations = [lambda h, d: d.update(project_id='other-project'),

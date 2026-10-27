@@ -21,7 +21,7 @@ import re
 from .connection_records import authority_matches, validate_result
 from .connection_refresh import SCHEMA_VERSION, GENESIS_HASH
 from .graph_records import graph, stable_id, SHA
-from .graph_service import project_graph, explanations, safe
+from .graph_service import project_graph, explanations, safe, _impact_projection
 from .page_inventory import validate_page_inventory
 from .service_contract import ServiceError
 from .workbench_store import canonical, digest
@@ -211,6 +211,13 @@ def _project(history, dto):
                 edge('references', file, value, row, file['source'], ['page_inventory', 'source-sha256:' + proof['sha256']])
     version = digest({'base': base['source_version'], 'domain_revisions': semantic})
     projected = graph(PROJECT, version, list(objects.values()), list(relations.values()), base['layouts'], projected_at=base['projected_at'])
+    # The base graph's impacts predate the domain records. Recompute every
+    # object against the validated final graph before hashing derived data.
+    impacts = _impact_projection(projected['objects'], projected['relations'])
+    for item in projected['objects']:
+        item['data']['impact'] = impacts[(item['id'], item['revision'])]
+    projected = graph(PROJECT, version, projected['objects'], projected['relations'],
+                      projected['layouts'], projected_at=projected['projected_at'])
     if 'Artifact' in projected['unknown_types']:
         projected['unknown_types']['Artifact'] = 'No explicitly evidenced source page or artifact is published in this snapshot.'
     return projected
