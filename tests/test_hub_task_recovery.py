@@ -511,3 +511,239 @@ class OwnedProcessRecoveryTests(unittest.TestCase):
         records=f.store.events('fixture-task');self.assertEqual(len(records),1);self.assertEqual(records[0]['key'],'process-crash-event')
         self.assertFalse(f.store.event('fixture-task','process-crash-event',{'method':'owned/mock-crash'}))
         self.assertEqual(f.store.events('fixture-task'),records);self.assertEqual(fixture.FakeAdapter.effects,0)
+
+
+class PlanHistoryRecoveryStatusTests(unittest.TestCase):
+    """Only disposable registered SQLite; status never retries migration."""
+    def fixture(self):
+        import test_hub_plan_admission as plans
+        f=plans.PlanRevisionTests();f.setUp();self.addCleanup(f.doCleanups)
+        return f
+
+    def bind(self,f,*,authorize=lambda:None,readers=lambda _:True,command=None):
+        from hub.plan_admission import PlanHistoryMigrationAuthority,HISTORY_V2
+        from hub.workbench_store import digest
+        with f.store._connection()as db:raw=f.store._decode(*db.execute('SELECT body,hash FROM plan_inputs').fetchone())
+        command=command or {'request_id':'synthetic-history-query','plan_id':f.p['plan_id'],
+            'plan_sha256':digest(f.p),'expected_input_sha256':digest(raw),
+            'reader_set_sha256':'c'*64,'target_format':HISTORY_V2}
+        cap=PlanHistoryMigrationAuthority.configured(command,plan_authority=f.cap,authorize=authorize,readers_compatible=readers)
+        reader=TaskStore(f.store.root,plan_authority=f.cap,plan_history_recovery_authority=cap)
+        return command,cap,reader
+
+    def status(self,reader,command,expected):
+        from hub.workbench_store import digest
+        before=reader.path.read_bytes();registration=reader.registration_path.read_bytes()
+        result=reader.plan_history_migration_status(command['plan_id'],command)
+        self.assertEqual(result,{'state':expected,'request_sha256':digest(command)})
+        self.assertEqual(reader.path.read_bytes(),before);self.assertEqual(reader.registration_path.read_bytes(),registration)
+        self.assertNotIn(str(reader.root),json.dumps(result))
+        return result
+
+    def migrate(self,f,command,cap):
+        return f.store.migrate_plan_history(command['plan_id'],command,authority=cap)
+
+    def test_raw_v1_preimage_and_failed_transaction_are_read_without_retry(self):
+        from hub.workbench_store import digest
+        f=self.fixture();command,cap,reader=self.bind(f)
+        self.status(reader,command,'legacy_preimage_intact')
+        old=copy.deepcopy(f.p);target=f.target();f.bind(target,digest(old))
+        f.store.reconcile_plan(target,expected_sha256=digest(old),request_id='synthetic-v1',authority=f.cap)
+        self.status(reader,command,'requires_reconcile')
+        command,cap,reader=self.bind(f)
+        self.status(reader,command,'legacy_preimage_intact');before=f.store.path.read_bytes()
+        for phase in ('before_plan_history_write','before_plan_history_commit','before_commit'):
+            def fail(where):
+                if where==phase:raise OSError('synthetic rollback')
+            f.store.fault=fail
+            with self.subTest(phase=phase),self.assertRaises((OSError,ServiceError)):self.migrate(f,command,cap)
+            self.assertEqual(f.store.path.read_bytes(),before)
+            self.status(reader,command,'legacy_preimage_intact')
+        self.assertEqual(f.store.tasks(),[])
+
+    def test_lost_commit_receipt_and_later_versions_are_observed_without_replay(self):
+        from hub.workbench_store import digest
+        f=self.fixture();command,cap,reader=self.bind(f)
+        def lost(where):
+            if where=='after_commit':raise OSError('synthetic lost response')
+        f.store.fault=lost
+        with self.assertRaises(ServiceError)as error:self.migrate(f,command,cap)
+        self.assertEqual(error.exception.outcome,'UNKNOWN');f.store.fault=lambda _:None
+        with patch.object(TaskStore,'migrate_plan_history',side_effect=AssertionError('Status must not retry')):
+            self.status(reader,command,'migration_committed')
+            old=copy.deepcopy(f.p);target=f.target();f.bind(target,digest(old))
+            f.store.reconcile_plan(target,expected_sha256=digest(old),request_id='after-migration',authority=f.cap)
+            self.status(reader,command,'migration_committed')
+            # Read authorization does not reactivate a paused plan or certify
+            # reader deployment. The frozen original capability is retained.
+            f.control={'state':'paused','revision':2}
+            self.status(reader,command,'migration_committed')
+        self.assertEqual(f.store.tasks(),[])
+
+    def test_host_capability_same_plan_and_exact_request_are_required(self):
+        from hub.plan_admission import PlanAuthority
+        f=self.fixture();command,cap,reader=self.bind(f);before=f.store.path.read_bytes()
+        with self.assertRaises(ServiceError)as error:f.store.plan_history_migration_status(f.p['plan_id'],command)
+        self.assertEqual(error.exception.code,'PLAN_HISTORY_AUTHORITY_REQUIRED')
+        with self.assertRaises(ServiceError):TaskStore(f.store.root,plan_authority=f.cap,plan_history_recovery_authority={})
+        clone=PlanAuthority.configured(f.cap.snapshot(),authorize=f.cap._authorize,controls=f.cap._controls,routes=f.cap._routes,package_for=f.cap._package)
+        with self.assertRaises(ServiceError)as error:TaskStore(f.store.root,plan_authority=clone,plan_history_recovery_authority=cap)
+        self.assertEqual(error.exception.code,'PLAN_HISTORY_AUTHORITY_MISMATCH')
+        for field in command:
+            changed={**command,field:'wrong-request'if field in ('request_id','plan_id')else'f'*64}
+            with self.subTest(field=field),self.assertRaises(ServiceError):reader.plan_history_migration_status(f.p['plan_id'],changed)
+        for extra in ({'authority':cap},{'authorize':lambda:None},{'readers_compatible':lambda _:True}):
+            with self.subTest(extra=list(extra)),self.assertRaises(TypeError):reader.plan_history_migration_status(f.p['plan_id'],command,**extra)
+        with self.assertRaises(ServiceError):reader.plan_history_migration_status('OTHER-PLAN',command)
+        f.store.plan_history_recovery_authority=cap
+        with self.assertRaises(ServiceError):f.store.plan_history_migration_status(f.p['plan_id'],command)
+        self.assertEqual(f.store.path.read_bytes(),before)
+
+    def test_reader_unavailable_does_not_block_facts_or_authorize_migration(self):
+        from hub.workbench_store import digest
+        f=self.fixture();old=copy.deepcopy(f.p);target=f.target();f.bind(target,digest(old))
+        f.store.reconcile_plan(target,expected_sha256=digest(old),request_id='legacy-v1',authority=f.cap)
+        calls=[];answer=[False]
+        def proof(observed):
+            calls.append(copy.deepcopy(observed))
+            if isinstance(answer[0],Exception):raise answer[0]
+            return answer[0]
+        command,cap,reader=self.bind(f,readers=proof)
+        def query_with_unavailable_readers(state):
+            for value in (False,None,1,{'verified':True},OSError('synthetic reader observation unavailable')):
+                answer[0]=value;calls.clear()
+                with self.subTest(state=state,reader=type(value).__name__):self.status(reader,command,state)
+                self.assertEqual(calls,[]) # A callback failure cannot be swallowed: it must never be called.
+        query_with_unavailable_readers('legacy_preimage_intact')
+        for value in (False,None):
+            answer[0]=value;calls.clear();before=f.store.path.read_bytes()
+            with self.subTest(migration_reader=value),self.assertRaises(ServiceError)as error:self.migrate(f,command,cap)
+            self.assertEqual(error.exception.code,'PLAN_HISTORY_READERS_UNVERIFIED')
+            self.assertTrue(calls);self.assertTrue(all(c==command for c in calls))
+            self.assertEqual(f.store.path.read_bytes(),before)
+        # The same capability still rejects a migration if its reader witness
+        # is revoked during the real isolated transaction, including commit.
+        for phase in ('before_plan_history_write','before_plan_history_commit','before_commit'):
+            answer[0]=True;before=f.store.path.read_bytes()
+            def revoke(where):
+                if where==phase:answer[0]=False
+            f.store.fault=revoke
+            with self.subTest(phase=phase),self.assertRaises(ServiceError)as error:self.migrate(f,command,cap)
+            self.assertEqual(error.exception.code,'PLAN_HISTORY_READERS_UNVERIFIED')
+            self.assertEqual(f.store.path.read_bytes(),before)
+        f.store.fault=lambda _:None;answer[0]=True
+        self.migrate(f,command,cap)
+        query_with_unavailable_readers('migration_committed')
+        old=copy.deepcopy(f.p);target={**copy.deepcopy(old),'revision':'later-valid'};f.bind(target,digest(old))
+        f.store.reconcile_plan(target,expected_sha256=digest(old),request_id='later-valid',authority=f.cap)
+        query_with_unavailable_readers('migration_committed')
+        with f.store._connection(True)as db:
+            value=f.store._decode(*db.execute('SELECT body,hash FROM plan_inputs').fetchone())
+            value['migration']['sha256']='f'*64;f.store._replace_plan_input(db,f.p['plan_id'],value)
+        query_with_unavailable_readers('requires_reconcile')
+        self.assertEqual(f.store.tasks(),[])
+
+    def test_both_authorizers_remain_live_and_errors_are_not_reconcile_results(self):
+        from hub.plan_admission import PlanAuthority
+        f=self.fixture();before=f.store.path.read_bytes()
+        counts=[0]
+        def revoked():
+            counts[0]+=1
+            if counts[0]>=3:raise ServiceError('SYNTHETIC_AUTH_REVOKED',status=403)
+        command,cap,reader=self.bind(f,authorize=revoked)
+        with self.assertRaises(ServiceError)as error:reader.plan_history_migration_status(f.p['plan_id'],command)
+        self.assertEqual(error.exception.code,'SYNTHETIC_AUTH_REVOKED')
+        self.assertEqual(f.store.path.read_bytes(),before)
+        def plan_revoked():raise ServiceError('SYNTHETIC_PLAN_AUTH_REVOKED',status=403)
+        f.cap=PlanAuthority.configured(f.cap.snapshot(),authorize=plan_revoked,
+            controls=f.cap._controls,routes=f.cap._routes,package_for=f.cap._package)
+        command,cap,reader=self.bind(f)
+        with self.assertRaises(ServiceError)as error:reader.plan_history_migration_status(f.p['plan_id'],command)
+        self.assertEqual(error.exception.code,'SYNTHETIC_PLAN_AUTH_REVOKED')
+        self.assertEqual(f.store.path.read_bytes(),before)
+
+    def test_valid_access_mismatched_or_damaged_rows_never_claim_committed(self):
+        from hub.workbench_store import canonical,digest
+        for case in ('receipt-request','receipt-digest','version','blob','row-hash','json','budget','source','foreign-plan','missing'):
+            with self.subTest(case=case):
+                f=self.fixture();command,cap,reader=self.bind(f);self.migrate(f,command,cap)
+                with f.store._connection(True)as db:
+                    value=f.store._decode(*db.execute('SELECT body,hash FROM plan_inputs').fetchone())
+                    if case=='receipt-request':
+                        value['migration']['request']['request_id']='other-original-request'
+                        value['migration']['sha256']=digest(value['migration']['request'])
+                    elif case=='receipt-digest':value['migration']['sha256']='f'*64
+                    elif case=='version':value['versions'][0]['sha256']='f'*64
+                    elif case=='blob':next(iter(value['blobs'].values()))['data']='!invalid!'
+                    elif case=='budget':value={'schema_version':'plan-dispatch-budget/1','plan_history':value,'dispatch_budget':{}}
+                    elif case=='source':value={'schema_version':'plan-source-evidence/1','plan_history':value,'records':[{}]}
+                    elif case=='foreign-plan':value={**f.p,'plan_id':'OTHER-PLAN'}
+                    if case=='missing':db.execute('DELETE FROM plan_inputs')
+                    else:
+                        body='not JSON'if case=='json'else canonical(value).decode()
+                        db.execute('UPDATE plan_inputs SET body=?,hash=?',(body,'f'*64 if case=='row-hash'else digest(value)))
+                self.status(reader,command,'requires_reconcile')
+                self.assertEqual(f.store.tasks(),[])
+
+    def test_original_plan_absent_and_legacy_row_hash_mismatch_are_unknown(self):
+        from hub.workbench_store import canonical,digest
+        f=self.fixture();command,cap,reader=self.bind(f)
+        altered={**copy.deepcopy(f.p),'revision':'other-version'}
+        with f.store._connection(True)as db:f.store._replace_plan_input(db,f.p['plan_id'],altered)
+        self.status(reader,command,'requires_reconcile')
+        # A valid independently authorized migration for another version is
+        # not evidence that our original request committed.
+        f.bind(altered,None);other,other_cap,_=self.bind(f)
+        self.migrate(f,other,other_cap);self.status(reader,command,'requires_reconcile')
+        f=self.fixture();command,cap,reader=self.bind(f)
+        with f.store._connection(True)as db:
+            value={**f.p,'observation':'changed-row'}
+            db.execute('UPDATE plan_inputs SET body=?,hash=?',(canonical(value).decode(),digest(value)))
+        self.status(reader,command,'requires_reconcile')
+
+    def test_storage_identity_and_io_errors_propagate_instead_of_reconcile(self):
+        f=self.fixture();command,cap,reader=self.bind(f);before=f.store.path.read_bytes()
+        saved=f.store.registration_path.read_bytes();f.store.registration_path.unlink()
+        with self.assertRaises(ServiceError)as error:reader.plan_history_migration_status(f.p['plan_id'],command)
+        self.assertEqual(error.exception.details['reason_code'],'REGISTRATION_MISSING')
+        self.assertEqual(f.store.path.read_bytes(),before)
+        f=self.fixture();command,cap,reader=self.bind(f)
+        moved=f.store.path.with_name('original.sqlite3');f.store.path.rename(moved);shutil.copyfile(moved,f.store.path)
+        before=f.store.path.read_bytes()
+        with self.assertRaises(ServiceError)as error:reader.plan_history_migration_status(f.p['plan_id'],command)
+        self.assertEqual(error.exception.details['reason_code'],'LEDGER_IDENTITY_CHANGED');self.assertEqual(f.store.path.read_bytes(),before)
+        f=self.fixture();command,cap,reader=self.bind(f);before=f.store.path.read_bytes()
+        denied=PermissionError('synthetic IO denial')
+        with patch.object(reader,'_ledger_profile',side_effect=denied),self.assertRaises(PermissionError)as error:
+            reader.plan_history_migration_status(f.p['plan_id'],command)
+        self.assertIs(error.exception,denied);self.assertEqual(f.store.path.read_bytes(),before)
+        # A physical SQLite error is outside the pure row-decoding boundary.
+        f.store.path.write_bytes(b'not a SQLite database')
+        with self.assertRaises(ServiceError)as error:reader.plan_history_migration_status(f.p['plan_id'],command)
+        self.assertEqual(error.exception.code,'TASK_STORE_CORRUPT')
+        self.assertEqual(f.store.path.read_bytes(),b'not a SQLite database')
+
+    def test_source_budget_unknown_task_events_and_receipts_remain_exact(self):
+        import test_hub_source_admission as sources
+        import test_hub_dispatch_budget as budgets
+        from hub.workbench_store import canonical,digest
+        from hub.dispatch_budget import split
+        from hub.source_admission import split as split_source
+        f=sources.SourceAdmissionTests();f.setUp();self.addCleanup(f.doCleanups)
+        receipt=f.f.evidence(sources.BASE);receipt['plan_sha256']=digest(f.p);f.records[sources.BASE]=receipt;f.configure()
+        f.store.record_plan_evidence(f.p['plan_id'],receipt,authority=f.cap);f.record(f.candidate(status='unknown'))
+        b=budgets.DispatchBudgetTests();b.store=f.store;b.p=f.p;b.plan_cap=f.cap;b.control=f.control
+        b.policy={'schema_version':'1.0','lineage_id':f.p['plan_id'],'source_state_sha256':'a'*64,'cutoff_id':'synthetic-cutoff','covered_dispatch_ids':['covered-call'],'observed_model_dispatches':1,'historical_unknown_allowance':8,'closure_reserve':12,'conservative_deterministic_dispatches':0,'limit':480,'provenance_ref':'synthetic/state-cutoff.json'}
+        b.initialize();dispatch=b.req();b.reserve(dispatch);b.close(dispatch,outcome='unknown',resources_closed=False)
+        f.store.admit({'request_id':'retained-task','project_id':'synthetic','parent_task_id':None},{'fixture':'unchanged'})
+        f.store.event('retained-task','unchanged-event',{'method':'synthetic/observation'})
+        def retained():
+            with f.store._connection()as db:
+                raw=f.store._decode(*db.execute('SELECT body,hash FROM plan_inputs').fetchone())
+                tables={t:[tuple(r)for r in db.execute('SELECT *FROM '+t)]for t in ('tasks','events','plan_receipts','plan_conflicts')}
+            history,budget=split(raw);_,source=split_source(history)
+            return tables,canonical(budget),canonical(source)
+        before=retained();command,cap,reader=self.bind(f)
+        self.status(reader,command,'legacy_preimage_intact');self.migrate(f,command,cap)
+        self.status(reader,command,'migration_committed');self.assertEqual(retained(),before)
+        self.assertNotIn(sources.GRAPH,f.view()['ready']);self.assertEqual(b.status()['held_dispatch_ids'],[dispatch['dispatch_id']])

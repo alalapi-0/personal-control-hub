@@ -90,7 +90,16 @@ def _effect_root(grant):
 
 
 class TaskStore:
-    def __init__(self, root, *, fault=None, storage_guard=None):
+    def __init__(self, root, *, fault=None, storage_guard=None,
+                 plan_authority=None, plan_history_recovery_authority=None):
+        # Recovery queries use host configuration, never request-selected
+        # authority/callbacks. Existing stores need neither capability.
+        from .plan_admission import authority as require,PlanHistoryMigrationAuthority,reject
+        if plan_history_recovery_authority is not None:
+            if type(plan_history_recovery_authority)is not PlanHistoryMigrationAuthority:reject('PLAN_HISTORY_AUTHORITY_REQUIRED')
+            if plan_history_recovery_authority._plan is not require(plan_authority):reject('PLAN_HISTORY_AUTHORITY_MISMATCH')
+        self.__history_recovery_authority=plan_history_recovery_authority
+        self.__history_plan_authority=plan_authority
         self.root = Path(root).absolute()
         self.path = self.root / 'data/workbench/tasks.sqlite3'
         # This server-owned record is independent of SQLite. Ordinary startup
@@ -2403,6 +2412,65 @@ class TaskStore:
             self._replace_plan_input(db,plan_id,body)
             self.fault('before_plan_history_commit');guard()
         return {'replayed':False,'format':HISTORY_V2,'current_sha256':digest(current),'execution_rows_created':0}
+
+    def plan_history_migration_status(self,plan_id,request):
+        """Read-only facts for one original migration, never an adoption grant.
+
+        Host capabilities and registered storage are rechecked around a single
+        read transaction. Only pure row/history validation errors become
+        requires_reconcile; authorization, IO and storage errors propagate.
+        A paused plan can still be inspected if its trusted authorizer permits
+        it. Reader compatibility gates migration, not this factual query: no
+        reader callback is invoked or certified here. This query neither
+        activates controls nor retries a migration.
+        """
+        from .plan_admission import (PlanHistoryMigrationAuthority,authority as require,
+            _migration_request,plan_history,is_history_v2,reject)
+        from .dispatch_budget import split as split_budget
+        from .source_admission import split as split_source
+        cap=self.__history_recovery_authority
+        if type(cap)is not PlanHistoryMigrationAuthority:reject('PLAN_HISTORY_AUTHORITY_REQUIRED')
+        plan_cap=require(self.__history_plan_authority)
+        if cap._plan is not plan_cap:reject('PLAN_HISTORY_AUTHORITY_MISMATCH')
+        command=_migration_request(request)
+        def authorized():
+            cap._authorize();plan_cap._authorize()
+            if (command['plan_id']!=plan_id or canonical(command)!=cap._data
+                    or plan_cap.snapshot().get('plan_sha256')!=command['plan_sha256']):
+                reject('PLAN_HISTORY_AUTHORITY_MISMATCH')
+        authorized()
+        state='requires_reconcile'
+        with self._connection() as db:
+            db.execute('BEGIN')
+            registration=self._registration()
+            row=(db.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(plan_id,)).fetchone()
+                 if self._plan_schema(db)else None)
+            parsed=None
+            if row is not None:
+                try:
+                    raw=self._decode(*row)
+                    current,versions,_=plan_history(raw)
+                    inner,_=split_budget(raw);history,_=split_source(inner)
+                    parsed=(current,versions,history)
+                except (ServiceError,RecursionError):
+                    # No capability, filesystem or SQLite operations in this
+                    # block: these are malformed stored content, not denials.
+                    pass
+            if parsed is not None:
+                current,versions,history=parsed
+                bound=versions.get(command['plan_sha256'])
+                if bound is not None and current['plan_id']==command['plan_id']:
+                    # Preserve both trusted authorizers and the original plan
+                    # check without cap.check's migration-only reader gate.
+                    cap._authorize();plan_cap.check(bound)
+                    if is_history_v2(history):
+                        if canonical(history['migration']['request'])==canonical(command):state='migration_committed'
+                    elif (row['hash']==command['expected_input_sha256']
+                          and digest(current)==command['plan_sha256']):state='legacy_preimage_intact'
+            authorized()
+            self._check_storage(readonly=True,connection=db)
+            if self._registration()!=registration:raise blocked('REGISTRATION_REJECTED')
+        return {'state':state,'request_sha256':digest(command)}
 
     def reconcile_plan(self,plan,*,expected_sha256,request_id,authority,rollback=False):
         """Root-wired CAS only; immutable packages/attempts/receipts never reset."""
