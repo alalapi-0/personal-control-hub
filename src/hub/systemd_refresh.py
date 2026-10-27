@@ -116,9 +116,11 @@ def runtime_manifest(role, *, metadata=None, expected_program_id=None, process_i
     else: roles[role]['unknown_reason'] = 'Supplied process identity does not match this observer; no foreign process was read.'
     schemas = {}
     for key, name in (('task_package', 'schemas/rebuild/task-package.schema.json'), ('receipt', 'schemas/rebuild/receipt.schema.json')):
-        schemas[key] = {'sha256': (package or {}).get('files', {}).get(name, {}).get('sha256'),
-                        'version': interfaces.get(key, {}).get('version'),
-                        'unknown_reason': 'Schema interface version not declared.' if name in (package or {}).get('files', {}) else 'Schema is not published by the verified program.'}
+        schema_sha = (package or {}).get('files', {}).get(name, {}).get('sha256')
+        schema_version = interfaces.get(key, {}).get('version')
+        schemas[key] = {'sha256': schema_sha, 'version': schema_version,
+                        'unknown_reason': ('Schema is not published by the verified program.' if schema_sha is None
+                                           else 'Schema interface version not declared.' if schema_version is None else None)}
     dirty_inputs = metadata.get('dirty_inputs')
     if source and source['dirty'] is False:
         require(not dirty_inputs, 'clean source cannot publish dirty inputs'); dirty_inputs = {}

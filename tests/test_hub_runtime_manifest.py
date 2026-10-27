@@ -206,3 +206,72 @@ class RuntimeManifestTests(unittest.TestCase):
    for thread in threads:thread.start()
    for thread in threads:thread.join(5);self.assertFalse(thread.is_alive())
   self.assertEqual(errors,[]);self.assertEqual(len(results),4);self.assertTrue(all(row==results[0]for row in results));callback.assert_called_once_with()
+
+ def test_declared_published_schema_versions_are_known_without_changing_projection_authority(self):
+  metadata=copy.deepcopy(self.metadata)
+  for key in ('task_package','receipt'):
+   metadata['interfaces'][key]={'version':'1.0','compatible_versions':['1.0']}
+  before=copy.deepcopy(metadata);observed=self.observe(metadata=metadata)
+  for key,name in (('task_package','task-package'),('receipt','receipt')):
+   with self.subTest(schema=key):
+    self.assertEqual(observed['schemas'][key],{'sha256':self.files['schemas/rebuild/'+name+'.schema.json']['sha256'],
+                                            'version':'1.0','unknown_reason':None})
+    compatible=copy.deepcopy(observed)
+    compatible['interfaces'][key]={'version':'2.0','compatible_versions':['1.0','2.0']}
+    compatible['schemas'][key]['version']='2.0'
+    self.assertEqual(compare_runtime_manifests(observed,compatible)['status'],'check_required')
+    compatible['interfaces'][key]['compatible_versions']=['2.0']
+    self.assertEqual(compare_runtime_manifests(observed,compatible)['status'],'incompatible')
+  public=public_runtime_manifest(observed)
+  self.assertEqual(public,observed);self.assertIsNot(public,observed)
+  self.assertEqual(compare_runtime_manifests(observed,public)['status'],'match')
+  self.assertEqual(metadata,before);self.assertFalse(public['adoption_proven']);self.assertFalse(public['execution_admitted'])
+  self.assertNotIn(str(self.root),json.dumps(public))
+  value=dto();value['operational']={};original=copy.deepcopy(value)
+  service=ProjectService('/synthetic/hub',runtime_observer=lambda:observed)
+  with mock.patch.object(service,'_all',return_value=([value],{'ledger_head':{'sequence':1,'hash':'c'*64}})):
+   detail=service.get_project('business')
+   self.assertEqual(detail['operational']['runtime_manifest'],observed)
+   self.assertEqual(detail,service.list_projects()['projects'][0])
+  self.assertEqual(project_graph(detail),project_graph(original))
+  self.assertEqual(value,original)
+
+ def test_schema_version_requires_its_own_interface_declaration(self):
+  for key,other in (('task_package','receipt'),('receipt','task_package')):
+   metadata=copy.deepcopy(self.metadata)
+   metadata['interfaces'][other]={'version':'1.0','compatible_versions':['1.0']}
+   with self.subTest(schema=key):
+    observed=self.observe(metadata=metadata)
+    self.assertEqual(observed['program']['state'],'verified')
+    self.assertIsNotNone(observed['schemas'][key]['sha256'])
+    self.assertIsNone(observed['schemas'][key]['version'])
+    self.assertEqual(observed['schemas'][key]['unknown_reason'],'Schema interface version not declared.')
+    self.assertIsNone(observed['schemas'][other]['unknown_reason'])
+    self.assertEqual(public_runtime_manifest(observed),observed)
+    for invalid in (None,'',True):
+     bad=copy.deepcopy(metadata);bad['interfaces'][key]={'version':invalid,'compatible_versions':[invalid]}
+     with self.subTest(invalid=invalid),self.assertRaises(ValueError):self.observe(metadata=bad)
+
+ def test_declared_interface_does_not_make_unpublished_or_missing_schema_known(self):
+  metadata=copy.deepcopy(self.metadata)
+  for key in ('task_package','receipt'):
+   metadata['interfaces'][key]={'version':'1.0','compatible_versions':['1.0']}
+  known=self.observe(metadata=metadata)
+  for key,name in (('task_package','task-package'),('receipt','receipt')):
+   relative='schemas/rebuild/'+name+'.schema.json';path=self.root/relative
+   raw=path.read_bytes();entry=copy.deepcopy(self.files[relative]);program=self.program
+   for published in (False,True):
+    with self.subTest(schema=key,published=published):
+     try:
+      path.unlink()
+      if not published:
+       del self.files[relative];self.program=hashlib.sha256(canonical_json(self.files)).hexdigest();self.write_manifest()
+      observed=self.observe(metadata=metadata)
+      self.assertEqual(observed['schemas'][key],{'sha256':None,'version':'1.0',
+                       'unknown_reason':'Schema is not published by the verified program.'})
+      self.assertEqual(observed['program']['state'],'unknown' if published else 'verified')
+      self.assertEqual(public_runtime_manifest(observed),observed)
+      self.assertEqual(compare_runtime_manifests(observed,known)['status'],'check_required')
+      self.assertFalse(observed['adoption_proven']);self.assertFalse(observed['execution_admitted'])
+     finally:
+      path.write_bytes(raw);path.chmod(0o600);self.files[relative]=entry;self.program=program;self.write_manifest()
