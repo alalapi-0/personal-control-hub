@@ -1054,3 +1054,165 @@ class PlanHistoryRawCompatibilityTests(unittest.TestCase):
   f.store.fault=fail
   with self.assertRaises(OSError):self.move(f,{**copy.deepcopy(p),'revision':'not-committed'},'raw-fault')
   self.assertEqual(f.store.path.read_bytes(),before);self.assertEqual(self.raw(f),p)
+
+class PlanHistoryMigrationServiceTests(unittest.TestCase):
+ fixture=PlanHistoryFormatV2Tests.fixture
+ raw=PlanHistoryFormatV2Tests.raw
+ capability=PlanHistoryFormatV2Tests.capability
+ def service(self,f,cap):
+  from hub.task_service import TaskService
+  return TaskService(None,None,f.store,plan_authority=f.cap,plan_history_migration_authority=cap)
+ def call(self,service,f,command):
+  return service.migrate_plan_history(f.p['plan_id'],command,owner_context='synthetic-owner')
+
+ def test_host_injection_requires_exact_capability_identity_and_owner(self):
+  from hub.task_service import TaskService
+  from hub.plan_admission import PlanHistoryMigrationAuthority
+  f=self.fixture();command,cap=self.capability(f);before=f.store.path.read_bytes()
+  clone=PlanAuthority.configured(f.cap.snapshot(),authorize=f.cap._authorize,
+      controls=f.cap._controls,routes=f.cap._routes,package_for=f.cap._package)
+  self.assertEqual(clone,f.cap);self.assertIsNot(clone,f.cap)
+  for wrong,code in (({},'PLAN_HISTORY_AUTHORITY_REQUIRED'),(f.cap,'PLAN_HISTORY_AUTHORITY_REQUIRED'),
+                     (PlanHistoryMigrationAuthority.configured(command,plan_authority=clone,
+                         authorize=lambda:None,readers_compatible=lambda _:True),'PLAN_HISTORY_AUTHORITY_MISMATCH')):
+   with self.subTest(code=code,type=type(wrong).__name__),self.assertRaises(ServiceError)as error:self.service(f,wrong)
+   self.assertEqual(error.exception.code,code);self.assertEqual(f.store.path.read_bytes(),before)
+  with self.assertRaises(ServiceError)as error:TaskService(None,None,f.store,plan_history_migration_authority=cap)
+  self.assertEqual(error.exception.code,'PLAN_HISTORY_AUTHORITY_MISMATCH')
+  legacy=self.service(f,None)
+  self.assertTrue(legacy.import_plan(f.p,owner_context='synthetic-owner')['replayed'])
+  self.assertEqual(legacy.plan_revision_status(f.p['plan_id'],owner_context='synthetic-owner')['current_sha256'],digest(f.p))
+  with self.assertRaises(ServiceError)as error:self.call(legacy,f,command)
+  self.assertEqual(error.exception.code,'PLAN_HISTORY_AUTHORITY_REQUIRED')
+  service=self.service(f,cap)
+  for owner in (None,'','other-owner',{},False):
+   with self.subTest(owner=owner),self.assertRaises(ServiceError)as error:
+    service.migrate_plan_history(f.p['plan_id'],command,owner_context=owner)
+   self.assertEqual(error.exception.code,'TASK_OWNER_REJECTED');self.assertEqual(f.store.path.read_bytes(),before)
+  for extra in ({'authority':cap},{'authorize':lambda:None},{'readers_compatible':lambda _:True},
+                {'plan_history_migration_authority':cap}):
+   with self.subTest(extra=list(extra)),self.assertRaises(TypeError):
+    service.migrate_plan_history(f.p['plan_id'],command,owner_context='synthetic-owner',**extra)
+   self.assertEqual(f.store.path.read_bytes(),before)
+  # Public attributes are not a capability replacement path.
+  legacy.plan_history_migration_authority=cap
+  with self.assertRaises(ServiceError)as error:self.call(legacy,f,command)
+  self.assertEqual(error.exception.code,'PLAN_HISTORY_AUTHORITY_REQUIRED')
+  self.assertEqual(f.store.path.read_bytes(),before);self.assertEqual(f.store.tasks(),[])
+
+ def test_controls_absent_invalid_and_commit_drift_preserve_preimage(self):
+  f=self.fixture();command,cap=self.capability(f);service=self.service(f,cap);before=f.store.path.read_bytes()
+  for controls in (None,{}, {'state':'active'}, {'state':'active','revision':True},
+                   *({'state':s,'revision':1}for s in ('paused','cancelled','unknown','stopped'))):
+   f.control=controls
+   with self.subTest(controls=controls),self.assertRaises(ServiceError)as error:self.call(service,f,command)
+   self.assertEqual(error.exception.code,'PLAN_CONTROL_BLOCKED');self.assertEqual(f.store.path.read_bytes(),before)
+  for phase in ('before_plan_history_write','before_plan_history_commit','before_commit'):
+   f.control={'state':'active','revision':1}
+   def drift(where):
+    if where==phase:f.control={'state':'active','revision':2}
+   f.store.fault=drift
+   with self.subTest(phase=phase),self.assertRaises(ServiceError)as error:self.call(service,f,command)
+   self.assertEqual(error.exception.code,'PLAN_CONTROL_CHANGED');self.assertEqual(f.store.path.read_bytes(),before)
+  f.store.fault=lambda _:None;self.assertEqual(self.raw(f),f.original)
+
+ def test_reader_proof_is_exact_strict_true_and_revocable_in_transaction(self):
+  f=self.fixture();before=f.store.path.read_bytes()
+  for answer in (False,None,1,'true',{'compatible':True}):
+   command,cap=self.capability(f,readers=lambda _,a=answer:a)
+   with self.subTest(answer=answer),self.assertRaises(ServiceError)as error:self.call(self.service(f,cap),f,command)
+   self.assertEqual(error.exception.code,'PLAN_HISTORY_READERS_UNVERIFIED');self.assertEqual(f.store.path.read_bytes(),before)
+  seen=[];allowed=[True];command,unused=self.capability(f)
+  def readers(observed):
+   seen.append(copy.deepcopy(observed))
+   return allowed[0] and observed==command
+  _,cap=self.capability(f,readers=readers);service=self.service(f,cap)
+  for field in ('request_id','reader_set_sha256','expected_input_sha256','plan_sha256'):
+   changed={**command,field:'different-request'if field=='request_id'else'f'*64};seen.clear()
+   with self.subTest(field=field),self.assertRaises(ServiceError)as error:self.call(service,f,changed)
+   self.assertEqual(error.exception.code,'PLAN_HISTORY_AUTHORITY_MISMATCH')
+   self.assertEqual(seen,[]);self.assertEqual(f.store.path.read_bytes(),before)
+  for phase in ('before_plan_history_write','before_plan_history_commit','before_commit'):
+   allowed[0]=True;seen.clear()
+   def revoke(where):
+    if where==phase:allowed[0]=False
+   f.store.fault=revoke
+   with self.subTest(phase=phase),self.assertRaises(ServiceError)as error:self.call(service,f,command)
+   self.assertEqual(error.exception.code,'PLAN_HISTORY_READERS_UNVERIFIED')
+   self.assertTrue(seen);self.assertTrue(all(observed==command for observed in seen))
+   self.assertEqual(f.store.path.read_bytes(),before)
+  f.store.fault=lambda _:None
+
+ def test_plan_and_migration_authorization_revocation_are_not_cached(self):
+  for which in ('plan','migration'):
+   f=self.fixture();allowed=[True];before=f.store.path.read_bytes()
+   def authorize():
+    if not allowed[0]:raise ServiceError('SYNTHETIC_AUTH_REVOKED',status=403)
+   if which=='plan':
+    f.cap=PlanAuthority.configured(f.cap.snapshot(),authorize=authorize,
+       controls=lambda:copy.deepcopy(f.control),routes=lambda _:True,package_for=lambda _:None)
+   command,cap=self.capability(f,authorize=authorize if which=='migration'else lambda:None)
+   service=self.service(f,cap);allowed[0]=False
+   with self.subTest(which=which,phase='before-call'),self.assertRaises(ServiceError)as error:self.call(service,f,command)
+   self.assertEqual(error.exception.code,'SYNTHETIC_AUTH_REVOKED');self.assertEqual(f.store.path.read_bytes(),before)
+   for phase in ('before_plan_history_write','before_plan_history_commit','before_commit'):
+    allowed[0]=True
+    def revoke(where):
+     if where==phase:allowed[0]=False
+    f.store.fault=revoke
+    with self.subTest(which=which,phase=phase),self.assertRaises(ServiceError)as error:self.call(service,f,command)
+    self.assertEqual(error.exception.code,'SYNTHETIC_AUTH_REVOKED');self.assertEqual(f.store.path.read_bytes(),before)
+
+ def test_service_success_preserves_history_wrappers_unknown_receipts_and_replay(self):
+  import test_hub_source_admission as sources
+  import test_hub_dispatch_budget as budgets
+  from hub.dispatch_budget import split
+  from hub.source_admission import split as split_source
+  from hub.plan_admission import plan_history
+  from hub.workbench_store import canonical
+  from hub.task_storage_restore import _snapshot
+  f=sources.SourceAdmissionTests();f.setUp();self.addCleanup(f.doCleanups)
+  receipt=f.f.evidence(BASE);receipt['plan_sha256']=digest(f.p);f.records[BASE]=receipt;f.configure()
+  f.store.record_plan_evidence(f.p['plan_id'],receipt,authority=f.cap);f.record(f.candidate(status='unknown'))
+  original=copy.deepcopy(f.p);f.p={**copy.deepcopy(original),'revision':'service-second'};f.configure(prior=original)
+  from hub.task_service import TaskService
+  TaskService(None,None,f.store,plan_authority=f.cap).reconcile_plan(f.p,expected_sha256=digest(original),request_id='service-prior',owner_context='synthetic-owner')
+  b=budgets.DispatchBudgetTests();b.store=f.store;b.p=f.p;b.plan_cap=f.cap;b.control=f.control
+  b.policy={'schema_version':'1.0','lineage_id':f.p['plan_id'],'source_state_sha256':'a'*64,'cutoff_id':'synthetic-cutoff','covered_dispatch_ids':['covered-call'],'observed_model_dispatches':1,'historical_unknown_allowance':8,'closure_reserve':12,'conservative_deterministic_dispatches':0,'limit':480,'provenance_ref':'synthetic/state-cutoff.json'}
+  b.initialize();request=b.req();b.reserve(request);b.close(request,outcome='unknown',resources_closed=False)
+  def retained():
+   history,budget=split(self.raw(f));_,source=split_source(history)
+   with f.store._connection()as db:
+    tables={name:[tuple(r)for r in db.execute('SELECT * FROM '+name)]for name in ('plan_receipts','plan_conflicts','tasks','events')}
+   return canonical(budget),canonical(source),tables
+  kept=retained();logical=plan_history(self.raw(f));command,cap=self.capability(f);service=self.service(f,cap)
+  result=self.call(service,f,command)
+  self.assertEqual(result,{'replayed':False,'format':'plan-revisions/2','current_sha256':digest(f.p),'execution_rows_created':0})
+  self.assertEqual(plan_history(self.raw(f)),logical);self.assertEqual(retained(),kept)
+  self.assertEqual(len(service.plan_revision_status(f.p['plan_id'],owner_context='synthetic-owner')['requests']),1)
+  self.assertNotIn(sources.GRAPH,service.plan_source_ready(f.p['plan_id'],owner_context='synthetic-owner')['ready'])
+  self.assertEqual(service.plan_ready(f.p['plan_id'],owner_context='synthetic-owner')['accepted'],[BASE])
+  before=f.store.path.read_bytes();self.assertTrue(self.call(service,f,command)['replayed'])
+  self.assertEqual(f.store.path.read_bytes(),before);self.assertEqual(retained(),kept)
+  self.assertEqual(f.store.tasks(),[]);_snapshot(f.store,before)
+
+ def test_unknown_commit_resolves_original_request_and_write_fault_rolls_back(self):
+  f=self.fixture();command,cap=self.capability(f);service=self.service(f,cap);before=f.store.path.read_bytes()
+  for phase in ('before_plan_history_write','before_plan_history_commit','before_commit'):
+   def fail(where):
+    if where==phase:raise OSError('synthetic failed commit')
+   f.store.fault=fail
+   with self.subTest(phase=phase),self.assertRaises((OSError,ServiceError)):self.call(service,f,command)
+   self.assertEqual(f.store.path.read_bytes(),before)
+  def lost(where):
+   if where=='after_commit':raise OSError('synthetic lost response')
+  f.store.fault=lost
+  with self.assertRaises(ServiceError)as error:self.call(service,f,command)
+  self.assertEqual(error.exception.outcome,'UNKNOWN');f.store.fault=lambda _:None
+  committed=f.store.path.read_bytes();self.assertNotEqual(committed,before)
+  f.store=TaskStore(f.root);service=self.service(f,cap)
+  self.assertTrue(self.call(service,f,command)['replayed']);self.assertEqual(f.store.path.read_bytes(),committed)
+  changed={**command,'request_id':'replacement-request'}
+  with self.assertRaises(ServiceError)as error:self.call(service,f,changed)
+  self.assertEqual(error.exception.code,'PLAN_HISTORY_AUTHORITY_MISMATCH');self.assertEqual(f.store.path.read_bytes(),committed)
+  self.assertEqual(f.store.tasks(),[])

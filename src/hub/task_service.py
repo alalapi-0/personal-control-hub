@@ -105,9 +105,14 @@ def validate_grant(grant, *, live=False):
 
 class TaskService:
     def __init__(self,projects,annotations,store, *, test_gate=False, writer_check=None, runtime_status=None, ordinary_enabled=False,
-                 ordinary_grant_ids=None, rebuild_binding=None, rebuild_authority=None, plan_authority=None, normal_budget_bindings=None):
-        from .plan_admission import authority as plan_capability
+                 ordinary_grant_ids=None, rebuild_binding=None, rebuild_authority=None, plan_authority=None, normal_budget_bindings=None,
+                 plan_history_migration_authority=None):
+        from .plan_admission import authority as plan_capability,PlanHistoryMigrationAuthority,reject
         self.__plan_authority=plan_capability(plan_authority) if plan_authority is not None else None
+        if plan_history_migration_authority is not None:
+            if type(plan_history_migration_authority)is not PlanHistoryMigrationAuthority:reject('PLAN_HISTORY_AUTHORITY_REQUIRED')
+            if plan_history_migration_authority._plan is not self.__plan_authority:reject('PLAN_HISTORY_AUTHORITY_MISMATCH')
+        self.__plan_history_migration_authority=plan_history_migration_authority
         self.projects,self.annotations,self.store=projects,annotations,store
         self.test_gate=test_gate
         # An internal lease cannot certify an unrelated writer's absence.
@@ -205,6 +210,20 @@ class TaskService:
 
     def plan_revision_status(self,plan_id,*,owner_context):
         return self.store.plan_revision_status(plan_id,authority=self._plan_authority(owner_context))
+
+    def migrate_plan_history(self,plan_id,request,*,owner_context):
+        """Internal host-bound delegation; no caller-selected grants or callbacks.
+
+        Store retains exact request/reader checks and its transaction guards.
+        Host reader compatibility must be established before any live use.
+        """
+        from .plan_admission import PlanHistoryMigrationAuthority,reject
+        if type(owner_context)is not str or not owner_context:reject('TASK_OWNER_REJECTED')
+        plan_cap=self._plan_authority(owner_context)
+        cap=self.__plan_history_migration_authority
+        if type(cap)is not PlanHistoryMigrationAuthority:reject('PLAN_HISTORY_AUTHORITY_REQUIRED')
+        if cap._plan is not plan_cap:reject('PLAN_HISTORY_AUTHORITY_MISMATCH')
+        return self.store.migrate_plan_history(plan_id,request,authority=cap)
 
     def plan_ready(self,plan_id,*,owner_context):
         return self.store.plan_ready(plan_id,authority=self._plan_authority(owner_context))
