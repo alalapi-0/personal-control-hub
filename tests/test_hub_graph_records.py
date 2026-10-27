@@ -63,3 +63,53 @@ class GraphRecordTests(unittest.TestCase):
   self.assertNotEqual(stable_id('business','Relation',native),stable_id('business','Relation','b'*128+':depends:'+'a'*128))
   with self.assertRaises(ServiceError):stable_id('business','Task','a'*257)
   with self.assertRaises(ServiceError):stable_id('business','Relation','a'*1025)
+
+ def test_long_dependency_chain_within_contract_capacity(self):
+  nodes=[obj(native='task-'+str(i)) for i in range(1100)]
+  edges=[edge(nodes[i],nodes[i+1],'depends_on','dep-'+str(i)) for i in range(len(nodes)-1)]
+  before=copy.deepcopy((nodes,edges))
+  result=graph('business','a'*64,nodes,edges)
+  self.assertEqual(len(result['objects']),1100)
+  self.assertEqual(len(result['relations']),1099)
+  self.assertEqual((nodes,edges),before)
+
+ def test_long_dependency_cycle_raises_existing_service_error(self):
+  nodes=[obj(native='task-'+str(i)) for i in range(1100)]
+  edges=[edge(nodes[i],nodes[(i+1)%len(nodes)],'depends_on','dep-'+str(i)) for i in range(len(nodes))]
+  with self.assertRaises(ServiceError) as caught:graph('business','a'*64,nodes,edges)
+  self.assertEqual(caught.exception.code,'GRAPH_RECORD_INVALID')
+  self.assertEqual(caught.exception.status,400)
+
+ def test_mixed_blocks_shared_subgraph_and_exact_revisions(self):
+  a=obj();new_a=obj(revision='v2');b=obj(native='task-b');c=obj(native='task-c');d=obj(native='task-d')
+  # Diamond A/v1 -> B,C -> D -> A/v2 is acyclic. Parallel declarations
+  # of B -> D count independently; different revisions remain distinct.
+  edges=[edge(a,b,'depends_on','a-b'),edge(c,a,'blocks','c-a'),
+         edge(b,d,'depends_on','b-d'),edge(d,c,'blocks','d-c'),
+         edge(d,b,'blocks','d-b'),edge(d,new_a,'depends_on','d-new-a'),
+         edge(new_a,a,'related_to','reference-cycle'),
+         edge(new_a,a,'depends_on','unconfirmed-cycle',identity='candidate')]
+  result=graph('business','a'*64,[a,new_a,b,c,d],edges)
+  self.assertEqual(len(result['relations']),8)
+  self.assertEqual({(o['id'],o['revision']) for o in result['objects']},
+                   {(o['id'],o['revision']) for o in [a,new_a,b,c,d]})
+  # A/v2 blocks D means D -> A/v2 (valid); D blocks A/v2 is the
+  # opposite dependency and closes a cycle with the fact D -> A/v2.
+  graph('business','a'*64,[a,new_a,b,c,d],edges+[edge(new_a,d,'blocks','same-direction')])
+  with self.assertRaises(ServiceError) as caught:
+   graph('business','a'*64,[a,new_a,b,c,d],edges+[edge(d,new_a,'blocks','reverse-direction')])
+  self.assertEqual(caught.exception.code,'GRAPH_RECORD_INVALID')
+
+ def test_only_accepted_management_candidates_participate_in_dependency_cycles(self):
+  a=obj();b=obj(native='task-b',identity='candidate')
+  edges=[edge(a,b,'depends_on','a-b',identity='candidate'),
+         edge(b,a,'depends_on','b-a',identity='candidate')]
+  for item in edges:
+   item['source']['origin']='hub_management'
+   item['management']={'state':'candidate','origin':'explicit','item_sha256':'b'*64}
+  self.assertEqual(len(graph('business','a'*64,[a,b],edges)['relations']),2)
+  edges[0]['management']['state']='accepted'
+  self.assertEqual(len(graph('business','a'*64,[a,b],edges)['relations']),2)
+  edges[1]['management']['state']='accepted'
+  with self.assertRaises(ServiceError) as caught:graph('business','a'*64,[a,b],edges)
+  self.assertEqual(caught.exception.code,'GRAPH_RECORD_INVALID')

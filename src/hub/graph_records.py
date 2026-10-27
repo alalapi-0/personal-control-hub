@@ -124,13 +124,20 @@ def validate_graph(value):
             a, b = ((edge['from']['id'], edge['from']['revision']), (edge['to']['id'], edge['to']['revision']))
             if edge['type'] == 'blocks': a, b = b, a
             dependencies.setdefault(a, []).append(b)
-    def visit(node, active, done):
-        need(node not in active)
-        if node in done: return
-        for child in dependencies.get(node, []): visit(child, active | {node}, done)
-        done.add(node)
-    done = set()
-    for node in dependencies: visit(node, set(), done)
+    # Iterative topological removal: bounded by the validated object/edge
+    # counts, without recursion or copying the active path for each edge.
+    incoming = {node: 0 for node in dependencies}
+    for children in dependencies.values():
+        for child in children:
+            incoming[child] = incoming.get(child, 0) + 1
+    pending = [node for node, count in incoming.items() if count == 0]
+    visited = 0
+    while pending:
+        node = pending.pop(); visited += 1
+        for child in dependencies.get(node, ()):
+            incoming[child] -= 1
+            if incoming[child] == 0: pending.append(child)
+    need(visited == len(incoming))
     need(type(value['layouts']) is list and len(value['layouts']) <= 10000)
     layout_ids = set()
     for layout in value['layouts']:
