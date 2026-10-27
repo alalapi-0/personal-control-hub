@@ -2536,7 +2536,7 @@ class TaskStore:
                     'execution_authority':False,'whole_task_acceptance':False}
 
     def record_plan_source_evidence(self,plan_id,record,*,expected_source_sha256,authority):
-        from .source_admission import record as validate_record,source_ready,wrap,need
+        from .source_admission import record as validate_record,source_eligible,wrap,need
         from .dispatch_budget import wrap as wrap_budget
         from .plan_admission import reject,plan_history
         context={}
@@ -2547,9 +2547,9 @@ class TaskStore:
                 if authority.development(context['definition']) is not True or authority.verify_source(record) is not True:reject('PLAN_SOURCE_UNVERIFIED')
                 if 'predecessors' in context:
                     states,accepted,_=self._plan_state(db,context['plan'],authority)
-                    current=source_ready(context['plan'],states,accepted,context['predecessors'],authority.development,authority.verify_source,
+                    eligible=source_eligible(context['plan'],states,accepted,context['predecessors'],authority.development,authority.verify_source,record['task_id'],
                         reconciliation=record if 'reconciles' in record else None)
-                    need(record['task_id'] in current,'PLAN_SOURCE_NOT_READY')
+                    need(eligible,'PLAN_SOURCE_NOT_READY')
         with self._connection(True,guard=guard) as db:
             plan,states,accepted,controls,history,budget,records,versions=self._plan_source_context(db,plan_id,authority)
             record=validate_record(record,versions)
@@ -2563,9 +2563,9 @@ class TaskStore:
                 need(previous==command,'PLAN_SOURCE_REQUEST_CONFLICT')
                 return {'replayed':True,'source_sha256':digest(records),'execution_rows_created':0}
             need(expected_source_sha256==digest(records),'PLAN_SOURCE_CAS_STALE')
-            ready=source_ready(plan,states,accepted,records,authority.development,authority.verify_source,
+            eligible=source_eligible(plan,states,accepted,records,authority.development,authority.verify_source,record['task_id'],
                 reconciliation=record if 'reconciles' in record else None)
-            need(record['task_id'] in ready,'PLAN_SOURCE_NOT_READY')
+            need(eligible,'PLAN_SOURCE_NOT_READY')
             # Revalidate dependency evidence at commit, not just this candidate.
             context['predecessors']=json.loads(canonical(records))
             records.append(command)

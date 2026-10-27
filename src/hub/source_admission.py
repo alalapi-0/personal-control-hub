@@ -250,8 +250,8 @@ def applicable(plan, rows, verify):
     return available, blocked
 
 
-def source_ready(plan, states, accepted, rows, development, verify, *, reconciliation=None):
-    """Pure candidates only; neither ROUTES bypass nor dispatch permission."""
+def _source_candidates(plan, states, accepted, rows, development, verify, *, reconciliation=None, target=None):
+    """Evaluate eligibility before applying the bounded presentation window."""
     from .plan_admission import validate_plan
     plan = validate_plan(plan)
     if reconciliation is not None:
@@ -280,8 +280,22 @@ def source_ready(plan, states, accepted, rows, development, verify, *, reconcili
     ready = []
     for t in plan['tasks']:
         ident = t['id']
+        if target is not None and ident != target:
+            continue
         if 'source_admission' not in t or ident in accepted or ident in states or ident in blocked or t['status'] == 'done':
             continue
         if deps_ok(t) and development(copy.deepcopy(t)) is True:
             ready.append(ident)
-    return sorted(ready, key=lambda i: (definitions[i]['dispatch_priority'], i))[:32]
+    return sorted(ready, key=lambda i: (definitions[i]['dispatch_priority'], i))
+
+
+def source_ready(plan, states, accepted, rows, development, verify, *, reconciliation=None):
+    """Bounded presentation of pure candidates; never execution authority."""
+    return _source_candidates(plan, states, accepted, rows, development, verify,
+                              reconciliation=reconciliation)[:32]
+
+
+def source_eligible(plan, states, accepted, rows, development, verify, target, *, reconciliation=None):
+    """Check one exact source candidate with the same rules, without window truncation."""
+    return target in _source_candidates(plan, states, accepted, rows, development, verify,
+                                        reconciliation=reconciliation, target=target)

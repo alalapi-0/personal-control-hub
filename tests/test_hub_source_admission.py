@@ -750,6 +750,148 @@ class PersonalStyleSourceAdmissionTests(unittest.TestCase):
         f.assert_execution_still_closed()
 
 
+class SourceWindowEligibilityTests(unittest.TestCase):
+    """The display window cannot become a source-evidence authorization gate."""
+
+    def setUp(self):
+        f = fixtures.PlanStoreTests(); f.setUp(); self.addCleanup(f.doCleanups)
+        self.store = f.store; self.control = f.control
+        self.develop = True; self.verified = set()
+        self.ids = [f'P5-personal-style-hub-{n:02d}' for n in range(1, 34)]
+        foreign = self.store.root.parent / 'window-style-root'
+        delivery = self.store.root.parent / 'window-style-delivery'
+        foreign.mkdir(); delivery.mkdir()
+        self.workspace = {'canonical_root': str(foreign), 'delivery_root': str(delivery),
+                          'native_thread_id': 'window-synthetic-thread'}
+        self.registrations = {}
+        tasks = [fixtures.task(BASE)]
+        for ident in self.ids:
+            task = fixtures.task(ident)
+            task.update(project_id='personal-style-hub', owner_route='route:personal-style-hub',
+                        admission_class='verified_project_execution')
+            task['source_admission'] = {'schema_version': 'source-admission/1', 'dependencies': [],
+                'inputs': [{'path': 'schema.json', 'sha256': 'b' * 64}],
+                'owned_paths': ['src/graph.py'], 'workspace': copy.deepcopy(self.workspace)}
+            if ident == self.ids[-1]:
+                task['source_admission']['dependencies'] = [
+                    {'task_id': self.ids[0], 'kind': 'source_candidate', 'candidate_sha256': 'a' * 64}]
+            tasks.append(task)
+            self.registrations[ident] = {'project_id': 'personal-style-hub', 'workspace': copy.deepcopy(self.workspace)}
+        self.p = fixtures.plan(tasks); self.p['revision'] = '1.2.0-window-synthetic'
+        self.configure(); self.store.import_plan(self.p, authority=self.cap)
+        for ident in self.ids[:32]:
+            self.record(self.candidate(ident, 'implemented-' + ident.lower()))
+
+    def configure(self):
+        self.cap = PlanAuthority.configured(
+            {'plan_sha256': digest(self.p), 'owner_context': 'synthetic-owner',
+             'verified_evidence': {}, 'source_workspaces': self.registrations},
+            authorize=lambda: None, controls=lambda: copy.deepcopy(self.control),
+            routes=lambda _: False, package_for=lambda _: None,
+            development=lambda _: self.develop,
+            source_evidence_verification=lambda r: digest(r) in self.verified)
+
+    def view(self):
+        return self.store.plan_source_ready(self.p['plan_id'], authority=self.cap)
+
+    def candidate(self, ident, request, *, status='implemented'):
+        t = next(t for t in self.p['tasks'] if t['id'] == ident)
+        r = {'schema_version': 'plan-source-record/1', 'request_id': request,
+             'plan_sha256': digest(self.p), 'task_id': ident, 'definition_sha256': digest(t),
+             'candidate_sha256': 'a' * 64, 'status': status,
+             'unknowns': ['outcome_unknown'] if status == 'unknown' else [],
+             'checks': [{'name': 'targeted', 'status': 'passed', 'evidence_sha256': 'c' * 64}],
+             'provenance': {'source': 'root_verified', 'evidence_sha256': 'd' * 64}}
+        for key in ('workspace', 'inputs', 'owned_paths'):
+            r[key] = copy.deepcopy(t['source_admission'][key])
+        self.verified.add(digest(r)); return r
+
+    def record(self, r, expected=None):
+        return self.store.record_plan_source_evidence(self.p['plan_id'], r,
+            expected_source_sha256=expected or self.view()['source_sha256'], authority=self.cap)
+
+    def test_window_outside_eligible_append_replay_conflict_and_stale(self):
+        before = self.view(); target = self.ids[-1]
+        self.assertEqual(before['ready'], self.ids[:32]); self.assertNotIn(target, before['ready'])
+        r = self.candidate(target, 'outside-window'); expected = before['source_sha256']
+        result = self.record(r, expected)
+        self.assertFalse(result['replayed']); self.assertEqual(result['execution_rows_created'], 0)
+        after = self.view(); self.assertEqual(after['source_records'][:-1], before['source_records'])
+        self.assertEqual(after['source_records'][-1]['record'], r)
+        self.assertEqual(after['ready'], self.ids[:32]); self.assertEqual(after['accepted'], [])
+        self.assertEqual(self.store.tasks(), []); snapshot = self.store.path.read_bytes()
+        self.assertTrue(self.record(r, expected)['replayed']); self.assertEqual(self.store.path.read_bytes(), snapshot)
+        changed = self.candidate(target, 'outside-window'); changed['candidate_sha256'] = 'e' * 64
+        self.verified.add(digest(changed))
+        with self.assertRaises(ServiceError) as conflict: self.record(changed, expected)
+        self.assertEqual(conflict.exception.code, 'PLAN_SOURCE_REQUEST_CONFLICT')
+        with self.assertRaises(ServiceError) as stale: self.record(self.candidate(target, 'stale'), expected)
+        self.assertEqual(stale.exception.code, 'PLAN_SOURCE_CAS_STALE')
+        self.assertEqual(self.store.path.read_bytes(), snapshot)
+
+    def test_previous_window_membership_rule_reproduces_starvation(self):
+        target = self.ids[-1]; r = self.candidate(target, 'legacy-window-rule')
+        before = self.store.path.read_bytes()
+        def previous_rule(plan, states, accepted, rows, development, verify, ident, *, reconciliation=None):
+            return ident in source_ready(plan, states, accepted, rows, development, verify,
+                                         reconciliation=reconciliation)
+        with mock.patch('hub.source_admission.source_eligible', side_effect=previous_rule):
+            with self.assertRaises(ServiceError) as failure: self.record(r)
+        self.assertEqual(failure.exception.code, 'PLAN_SOURCE_NOT_READY')
+        self.assertEqual(self.store.path.read_bytes(), before)
+
+    def test_window_outside_still_requires_workspace_development_control_and_evidence(self):
+        target = self.ids[-1]; snapshot = self.store.path.read_bytes()
+        for kind in ('workspace', 'development', 'evidence', 'paused', 'definition', 'inputs'):
+            r = self.candidate(target, 'denied-' + kind)
+            registration = self.registrations.pop(target) if kind == 'workspace' else None
+            if kind == 'development': self.develop = False
+            if kind == 'evidence': self.verified.remove(digest(r))
+            if kind == 'paused': self.control = {'state': 'paused', 'revision': 2}
+            if kind == 'definition': r['definition_sha256'] = 'e' * 64; self.verified.add(digest(r))
+            if kind == 'inputs': r['inputs'][0]['sha256'] = 'e' * 64; self.verified.add(digest(r))
+            self.configure()
+            with self.subTest(kind=kind), self.assertRaises(ServiceError): self.record(r)
+            self.assertEqual(self.store.path.read_bytes(), snapshot)
+            if registration is not None: self.registrations[target] = registration
+            self.develop = True; self.control = {'state': 'active', 'revision': 1}; self.configure()
+
+    def test_window_outside_unknown_requires_exact_reconciliation(self):
+        target = self.ids[-1]; unknown = self.candidate(target, 'outside-unknown', status='unknown')
+        self.record(unknown); before = self.store.path.read_bytes()
+        with self.assertRaises(ServiceError): self.record(self.candidate(target, 'without-resolution'))
+        self.assertEqual(self.store.path.read_bytes(), before)
+        resolved = self.candidate(target, 'outside-resolved'); resolved['reconciles'] = [unknown['request_id']]
+        self.verified.add(digest(resolved)); self.record(resolved)
+        rows = self.view()['source_records']; self.assertEqual(rows[-2]['record'], unknown)
+        self.assertEqual(rows[-1]['record'], resolved); self.assertEqual(self.store.tasks(), [])
+
+    def test_window_outside_revoked_source_dependency_is_rejected(self):
+        target = self.ids[-1]; producer = self.view()['source_records'][0]['record']
+        self.verified.remove(digest(producer)); r = self.candidate(target, 'dependency-revoked')
+        before = self.store.path.read_bytes()
+        with self.assertRaises(ServiceError): self.record(r)
+        self.assertEqual(self.store.path.read_bytes(), before)
+        self.assertEqual(self.store.tasks(), [])
+
+    def test_window_outside_cancelled_remains_blocked(self):
+        target = self.ids[-1]; cancelled = self.candidate(target, 'outside-cancelled', status='cancelled')
+        self.record(cancelled); before = self.store.path.read_bytes()
+        with self.assertRaises(ServiceError): self.record(self.candidate(target, 'after-cancel'))
+        self.assertEqual(self.store.path.read_bytes(), before)
+        self.assertEqual(self.view()['source_records'][-1]['record'], cancelled)
+
+    def test_window_outside_revocation_before_commit_rolls_back(self):
+        target = self.ids[-1]; r = self.candidate(target, 'outside-revoked')
+        before = self.store.path.read_bytes()
+        def revoke(phase):
+            if phase == 'before_plan_source_commit': self.develop = False
+        self.store.fault = revoke
+        with self.assertRaises(ServiceError): self.record(r)
+        self.assertEqual(self.store.path.read_bytes(), before)
+        self.assertEqual(self.store.tasks(), [])
+
+
 class PersonalStyleGraphSourceAdmissionTests(unittest.TestCase):
     """Task02 reuses a workspace, never task01's registration or source receipt."""
     ident = 'P5-personal-style-hub-02'
