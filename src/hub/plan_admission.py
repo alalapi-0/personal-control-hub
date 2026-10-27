@@ -1,7 +1,9 @@
 """Static plan inputs and readiness; no executor, grants or business completion."""
 from __future__ import annotations
-import copy,json,re
+import base64,copy,json,re,zlib
+from collections.abc import Mapping
 from dataclasses import dataclass
+from hashlib import sha256
 from .service_contract import ServiceError
 from .workbench_store import canonical,digest
 
@@ -10,6 +12,19 @@ POLICY='P1-R3-PSH-POLICY'
 ROUTES='P2-R1-PCH-ROUTES'
 WINDOW=32
 MAX_PLAN_TASKS=512
+HISTORY_V2='plan-revisions/2'
+MAX_HISTORY_VERSIONS=256
+MAX_HISTORY_REQUESTS=512
+MAX_HISTORY_ENCODED=16*1024*1024
+MAX_HISTORY_PLAN=2*1024*1024
+MAX_HISTORY_EXPANDED=MAX_HISTORY_PLAN*MAX_HISTORY_VERSIONS
+MAX_HISTORY_COMPRESSED=MAX_HISTORY_PLAN+65536
+HISTORY_ENCODING='plan-fields/1'
+MAX_HISTORY_SHARED_BYTES=16*1024*1024
+MAX_HISTORY_BLOBS=16384
+MAX_HISTORY_FIELDS=128
+MAX_HISTORY_JSON_NODES=262144
+MAX_HISTORY_JSON_DEPTH=64
 BOOTSTRAP_IDS=frozenset('''P1-R1-PCH-BASE P1-R1-PCH-FINGERPRINT P1-R1-PCH-ONBOARD P1-R1-PCH-OFFLINE P1-R1-PCH-REFRESH P1-R1-PCH-EVENTS P1-R2-PCH-SEMANTICS P2-R1-PCH-CONTRACT P2-R1-PCH-ADAPTER P2-R1-PCH-ROUTES P2-R2-PCH-DAG P2-R2-PCH-BUDGET P2-R2-PCH-CONTROL P2-R2-PCH-RECOVER P2-R2-PCH-RUNTIME P2-R3-PCH-ORDINARY P2-R3-PCH-PROXY P2-R3-PCH-ISOLATE P1-R1-RECOVER-desktop-downloads-scripts P1-R1-RECOVER-desktop-magnet P1-R3-PSH-POLICY P1-R3-PSH-DECIDE P1-R3-PSH-MIGRATE'''.split())
 
 def reject(code='PLAN_REJECTED'):
@@ -87,7 +102,174 @@ def changed_definitions(old,new):
  if old['plan_id']!=new['plan_id'] or old_by.keys()!=new_by.keys():reject('PLAN_REVISION_IDENTITY')
  return sorted(k for k in old_by if digest(old_by[k])!=digest(new_by[k]))
 
+def _json_work(raw,remaining):
+ """Count JSON tokens/depth before parsing; no unbounded object allocation."""
+ nodes=depth=0;quoted=escaped=token=False
+ for c in raw:
+  if quoted:
+   if escaped:escaped=False
+   elif c==92:escaped=True
+   elif c==34:quoted=False
+   continue
+  if c==34:nodes+=1;quoted=True;token=False
+  elif c in (123,91):nodes+=1;depth+=1;token=False
+  elif c in (125,93):depth-=1;token=False
+  elif c in (32,9,10,13,44,58):token=False
+  elif not token:nodes+=1;token=True
+  if depth<0 or depth>MAX_HISTORY_JSON_DEPTH or nodes>remaining:reject('PLAN_HISTORY_CAPACITY')
+ if depth or quoted:reject('PLAN_HISTORY_CORRUPT')
+ return nodes
+
+def _compressed_plan(row,remaining=MAX_HISTORY_JSON_NODES):
+ if type(row)is not dict or set(row)!={'sha256','codec','bytes','data'}:reject('PLAN_HISTORY_CORRUPT')
+ if row['codec']!='zlib-base64/1' or type(row['bytes'])is not int or not 0<row['bytes']<=MAX_HISTORY_PLAN:reject('PLAN_HISTORY_CAPACITY')
+ data=row['data']
+ if type(data)is not str or len(data)>4*((MAX_HISTORY_COMPRESSED+2)//3):reject('PLAN_HISTORY_CAPACITY')
+ try:
+  compressed=base64.b64decode(data,validate=True)
+  if len(compressed)>MAX_HISTORY_COMPRESSED or base64.b64encode(compressed).decode('ascii')!=data:reject('PLAN_HISTORY_CORRUPT')
+  decoder=zlib.decompressobj()
+  raw=decoder.decompress(compressed,row['bytes']+1)
+  # Never flush/unboundedly decompress a truncated, concatenated or oversized stream.
+  if len(raw)!=row['bytes'] or not decoder.eof or decoder.unused_data or decoder.unconsumed_tail:reject('PLAN_HISTORY_CORRUPT')
+  nodes=_json_work(raw,remaining)
+  p=json.loads(raw.decode('utf-8'))
+  if canonical(p)!=raw or sha256(raw).hexdigest()!=row['sha256']:reject('PLAN_HISTORY_CORRUPT')
+  return p,nodes
+ except (ValueError,TypeError,UnicodeError,zlib.error,RecursionError):reject('PLAN_HISTORY_CORRUPT')
+
+def _migration_request(value):
+ fields={'request_id','plan_id','plan_sha256','expected_input_sha256','reader_set_sha256','target_format'}
+ if type(value)is not dict or set(value)!=fields or value['target_format']!=HISTORY_V2:reject('PLAN_HISTORY_MIGRATION_REJECTED')
+ from .task_store import stable_id
+ stable_id(value['request_id']);plan_id(value['plan_id'])
+ for key in ('plan_sha256','expected_input_sha256','reader_set_sha256'):
+  if type(value[key])is not str or re.fullmatch('[0-9a-f]{64}',value[key])is None:reject('PLAN_HISTORY_MIGRATION_REJECTED')
+ return copy.deepcopy(value)
+
+def is_history_v2(value):
+ """Select an envelope, not authority or validity.
+
+ Before v2, every schema_version except exact v1 was optional raw-plan
+ metadata. Complete raw-plan shape therefore wins even if it contains v2
+ field names. Malformed envelopes still go through strict validation below;
+ they cannot fall back to raw merely because one envelope field is missing.
+ """
+ return (type(value)is dict and value.get('schema_version')==HISTORY_V2
+         and not {'plan_id','revision','tasks','admission_policy'}<=value.keys())
+
+def validate_plan_input(value):
+ """Ordinary writes accept a plan that the storage reader reads unchanged.
+
+ In particular exact v1 has always been reserved by the old reader. An
+ envelope (including one grafted onto a plan) cannot be imported as history.
+ """
+ p=validate_plan(value);current,versions,requests=plan_history(p)
+ if digest(current)!=digest(p)or len(versions)!=1 or requests:reject('PLAN_HISTORY_CORRUPT')
+ return p
+
+def history_envelope(current,versions,requests,*,previous=None,migration=None):
+ """Encode only an explicitly migrated history; ordinary legacy writes stay v1."""
+ compressed=migration is not None or is_history_v2(previous)
+ if not compressed:
+  return {'schema_version':'plan-revisions/1','plan_id':current['plan_id'],'current_sha256':digest(current),
+          'versions':[{'sha256':h,'plan':p}for h,p in versions.items()],'requests':requests}
+ if not 1<=len(versions)<=MAX_HISTORY_VERSIONS or len(requests)>MAX_HISTORY_REQUESTS:reject('PLAN_HISTORY_CAPACITY')
+ retained={r['sha256']:r for r in previous['versions']}if previous and previous.get('encoding')==HISTORY_ENCODING else {}
+ blobs=dict(previous['blobs'])if retained else {};shared=sum(r['bytes']for r in blobs.values())
+ def intern(part):
+  nonlocal shared
+  raw=canonical(part);h=sha256(raw).hexdigest()
+  if h not in blobs:
+   shared+=len(raw)
+   if len(raw)>MAX_HISTORY_PLAN or shared>MAX_HISTORY_SHARED_BYTES or len(blobs)>=MAX_HISTORY_BLOBS:reject('PLAN_HISTORY_CAPACITY')
+   _json_work(raw,MAX_HISTORY_JSON_NODES)
+   blobs[h]={'sha256':h,'codec':'zlib-base64/1','bytes':len(raw),'data':base64.b64encode(zlib.compress(raw,9)).decode('ascii')}
+  return h
+ rows=[];expanded=0
+ for h in versions:
+  if h in retained:row=retained[h]
+  else:
+   p=versions[h];raw=canonical(p)
+   if sha256(raw).hexdigest()!=h:reject('PLAN_HISTORY_CORRUPT')
+   if len(p)>MAX_HISTORY_FIELDS or len(p['tasks'])>MAX_PLAN_TASKS:reject('PLAN_HISTORY_CAPACITY')
+   row={'sha256':h,'codec':HISTORY_ENCODING,'bytes':len(raw),
+        'fields':{k:intern(v)for k,v in sorted(p.items())if k!='tasks'},'tasks':[intern(t)for t in p['tasks']]}
+  expanded+=row['bytes']
+  if row['bytes']>MAX_HISTORY_PLAN or expanded>MAX_HISTORY_EXPANDED:reject('PLAN_HISTORY_CAPACITY')
+  rows.append(row)
+ receipt=previous['migration']if migration is None else {'request':_migration_request(migration),'sha256':digest(migration)}
+ value={'schema_version':HISTORY_V2,'encoding':HISTORY_ENCODING,'blobs':blobs,'plan_id':current['plan_id'],'current_sha256':digest(current),
+        'versions':rows,'requests':requests,'migration':receipt}
+ if len(canonical(value))>MAX_HISTORY_ENCODED:reject('PLAN_HISTORY_CAPACITY')
+ return value
+
+class _SharedPlans(Mapping):
+ """Validated history with bounded shared storage and detached, on-demand reads.
+
+ No mutable decoded value escapes. Equality streams one version at a time;
+ materializing a dict of 256 full plans would defeat the resident-memory bound.
+ """
+ def __init__(self,rows,pool):
+  self._rows={r['sha256']:copy.deepcopy(r)for r in rows};self._pool=pool
+ def __len__(self):return len(self._rows)
+ def __iter__(self):return iter(self._rows)
+ def __reversed__(self):return reversed(self._rows)
+ def __contains__(self,key):return key in self._rows
+ def __getitem__(self,key):
+  r=self._rows[key]
+  return {**{k:copy.deepcopy(self._pool[h])for k,h in r['fields'].items()},
+          'tasks':[copy.deepcopy(self._pool[h])for h in r['tasks']]}
+ def __eq__(self,other):
+  return isinstance(other,Mapping)and self.keys()==other.keys()and all(self[k]==other[k]for k in self)
+
+def _shared_versions(value):
+ """Only direct field/task -> content-hash references, never delta paths/bases.
+
+ Decompress each unique blob once (<=16MiB / 262144 JSON tokens), validate at
+ most 256 plans (<=512MiB logical work), keep only shared blobs and row refs.
+ Request-chain checks use validated task hashes, not repeated decompression.
+ """
+ if value.get('encoding')!=HISTORY_ENCODING:reject('PLAN_HISTORY_CORRUPT')
+ blobs=value['blobs']
+ if type(blobs)is not dict or not 1<=len(blobs)<=MAX_HISTORY_BLOBS:reject('PLAN_HISTORY_CAPACITY')
+ sizes=[r.get('bytes')for r in blobs.values()if type(r)is dict]
+ if len(sizes)!=len(blobs)or any(type(n)is not int or not 0<n<=MAX_HISTORY_PLAN for n in sizes)or sum(sizes)>MAX_HISTORY_SHARED_BYTES:reject('PLAN_HISTORY_CAPACITY')
+ pool={};nodes=0
+ for h,row in blobs.items():
+  if type(h)is not str or re.fullmatch('[0-9a-f]{64}',h)is None or row.get('sha256')!=h:reject('PLAN_HISTORY_CORRUPT')
+  part,count=_compressed_plan(row,MAX_HISTORY_JSON_NODES-nodes);nodes+=count;pool[h]=part
+ used=set();plans={};task_hashes={};revisions=set()
+ for row in value['versions']:
+  if type(row)is not dict or set(row)!={'sha256','codec','bytes','fields','tasks'}or row['codec']!=HISTORY_ENCODING:reject('PLAN_HISTORY_CORRUPT')
+  fields,tasks=row['fields'],row['tasks']
+  if type(fields)is not dict or not 1<=len(fields)<MAX_HISTORY_FIELDS or 'tasks'in fields or type(tasks)is not list or not 1<=len(tasks)<=MAX_PLAN_TASKS:reject('PLAN_HISTORY_CAPACITY')
+  refs=list(fields.values())+tasks
+  if any(type(h)is not str or h not in pool for h in refs):reject('PLAN_HISTORY_CORRUPT')
+  if any(type(k)is not str for k in fields)or any(type(pool[h])is not dict for h in tasks):reject('PLAN_HISTORY_CORRUPT')
+  # Exact canonical size from literal blob lengths, BEFORE concatenation:
+  # many references to a large blob must not allocate an oversized plan.
+  size=(2+len(fields)+sum(len(canonical(k))+1+blobs[h]['bytes']for k,h in fields.items())
+        +len(canonical('tasks'))+1+2+sum(blobs[h]['bytes']for h in tasks)+len(tasks)-1)
+  if size>MAX_HISTORY_PLAN or size!=row['bytes']:reject('PLAN_HISTORY_CAPACITY')
+  # All referenced payloads are literal JSON, not references into other blobs
+  # or versions. Reconstructing never follows user-supplied paths or cycles.
+  p={**{k:pool[h]for k,h in fields.items()},'tasks':[pool[h]for h in tasks]}
+  raw=canonical(p)
+  if len(raw)>MAX_HISTORY_PLAN or len(raw)!=row['bytes']:reject('PLAN_HISTORY_CAPACITY')
+  validate_plan(p);h=sha256(raw).hexdigest()
+  if h!=row['sha256']or h in plans or p['plan_id']!=value['plan_id']or p['revision']in revisions:reject('PLAN_HISTORY_CORRUPT')
+  plans[h]=row;revisions.add(p['revision']);used.update(refs)
+  task_hashes[h]={t['id']:ref for t,ref in zip(p['tasks'],tasks)}
+ if used!=pool.keys():reject('PLAN_HISTORY_CORRUPT')
+ return _SharedPlans(value['versions'],pool),task_hashes
+
 def plan_history(value):
+ try:return _plan_history(value)
+ except ServiceError:raise
+ except (ValueError,TypeError,KeyError,AttributeError,RecursionError):reject('PLAN_HISTORY_CORRUPT')
+
+def _plan_history(value):
  """Strict versioned content in the existing plan_inputs row; no new schema.
 
  Legacy raw plans are read unchanged. Revision envelopes retain every original
@@ -101,17 +283,29 @@ def plan_history(value):
  history,records=split_source(value)
  if records:
   result=plan_history(history);validate_records(records,result[1]);return result
- if type(value)is not dict or value.get('schema_version')!='plan-revisions/1':
+ fmt=value.get('schema_version')if type(value)is dict else None
+ compressed=is_history_v2(value)
+ if fmt!='plan-revisions/1'and not compressed:
   p=validate_plan(value);return p,{digest(p):p},[]
- if set(value)!={'schema_version','plan_id','current_sha256','versions','requests'}:reject('PLAN_HISTORY_CORRUPT')
+ if set(value)!=({'schema_version','plan_id','current_sha256','versions','requests'}|({'migration','encoding','blobs'}if compressed else set())):reject('PLAN_HISTORY_CORRUPT')
  versions=value['versions'];requests=value['requests']
- if type(versions)is not list or not 1<=len(versions)<=64 or type(requests)is not list or not 1<=len(requests)<=128:reject('PLAN_HISTORY_CAPACITY')
- known={};revisions=set()
- for row in versions:
-  if type(row)is not dict or set(row)!={'sha256','plan'}:reject('PLAN_HISTORY_CORRUPT')
-  p=validate_plan(row['plan']);h=digest(p)
-  if h!=row['sha256']or h in known or p['plan_id']!=value['plan_id']or p['revision']in revisions:reject('PLAN_HISTORY_CORRUPT')
-  known[h]=p;revisions.add(p['revision'])
+ if type(versions)is not list or not 1<=len(versions)<=(MAX_HISTORY_VERSIONS if compressed else 64) or type(requests)is not list or not (0 if compressed else 1)<=len(requests)<=(MAX_HISTORY_REQUESTS if compressed else 128):reject('PLAN_HISTORY_CAPACITY')
+ if compressed:
+  if len(canonical(value))>MAX_HISTORY_ENCODED:reject('PLAN_HISTORY_CAPACITY')
+  receipt=value['migration']
+  if type(receipt)is not dict or set(receipt)!={'request','sha256'}:reject('PLAN_HISTORY_CORRUPT')
+  command=_migration_request(receipt['request'])
+  if command['plan_id']!=value['plan_id']or receipt['sha256']!=digest(command):reject('PLAN_HISTORY_CORRUPT')
+  sizes=[r.get('bytes')for r in versions if type(r)is dict]
+  if len(sizes)!=len(versions)or any(type(n)is not int or not 0<n<=MAX_HISTORY_PLAN for n in sizes)or sum(sizes)>MAX_HISTORY_EXPANDED:reject('PLAN_HISTORY_CAPACITY')
+ if compressed:known,task_hashes=_shared_versions(value)
+ else:
+  known={};revisions=set()
+  for row in versions:
+   if type(row)is not dict or set(row)!={'sha256','plan'}:reject('PLAN_HISTORY_CORRUPT')
+   p=validate_plan(row['plan']);h=digest(p)
+   if h!=row['sha256']or h in known or p['plan_id']!=value['plan_id']or p['revision']in revisions:reject('PLAN_HISTORY_CORRUPT')
+   known[h]=p;revisions.add(p['revision'])
  current=versions[0]['sha256'];seen={current};ids=set()
  from .task_store import stable_id
  for r in requests:
@@ -120,9 +314,16 @@ def plan_history(value):
   if r['request_id']in ids or r['from_sha256']!=current or r['to_sha256']not in known or r['to_sha256']==current:reject('PLAN_HISTORY_CORRUPT')
   target=r['to_sha256']
   if r['operation']not in {'reconcile','rollback'}or (r['operation']=='rollback')!=(target in seen):reject('PLAN_HISTORY_CORRUPT')
-  if r['affected_task_ids']!=changed_definitions(known[current],known[target]):reject('PLAN_HISTORY_CORRUPT')
+  if compressed and target not in seen and target!=versions[len(seen)]['sha256']:reject('PLAN_HISTORY_CORRUPT')
+  if compressed:
+   before,after=task_hashes[current],task_hashes[target]
+   if before.keys()!=after.keys():reject('PLAN_REVISION_IDENTITY')
+   affected=sorted(k for k in before if before[k]!=after[k])
+  else:affected=changed_definitions(known[current],known[target])
+  if r['affected_task_ids']!=affected:reject('PLAN_HISTORY_CORRUPT')
   ids.add(r['request_id']);seen.add(target);current=target
  if seen!=known.keys()or current!=value['current_sha256']:reject('PLAN_HISTORY_CORRUPT')
+ if compressed and command['plan_sha256']not in known:reject('PLAN_HISTORY_CORRUPT')
  return known[current],known,requests
 
 @dataclass(frozen=True,slots=True)
@@ -196,6 +397,27 @@ class PlanAuthority:
 def authority(value):
  if type(value)is not PlanAuthority:reject('PLAN_AUTHORITY_REQUIRED')
  return value
+
+@dataclass(frozen=True,slots=True)
+class PlanHistoryMigrationAuthority:
+ """Internal exact migration capability; never available through plan requests.
+
+ Root must establish reader compatibility independently. A hash or caller JSON
+ is not that proof; both trusted callbacks are rechecked at commit.
+ """
+ _data:bytes
+ _plan:PlanAuthority
+ _authorize:object
+ _readers:object
+ @classmethod
+ def configured(cls,binding,*,plan_authority,authorize,readers_compatible):
+  authority(plan_authority)
+  if not callable(authorize)or not callable(readers_compatible):reject('PLAN_HISTORY_AUTHORITY_REQUIRED')
+  return cls(canonical(_migration_request(binding)),plan_authority,authorize,readers_compatible)
+ def check(self,plan,command):
+  self._authorize();self._plan.check(plan)
+  if canonical(command)!=self._data or command['plan_id']!=plan['plan_id']or command['plan_sha256']!=digest(plan):reject('PLAN_HISTORY_AUTHORITY_MISMATCH')
+  if self._readers(copy.deepcopy(command))is not True:reject('PLAN_HISTORY_READERS_UNVERIFIED')
 
 
 def validate_offline_snapshot(store,db):

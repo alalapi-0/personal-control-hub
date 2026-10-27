@@ -2334,8 +2334,8 @@ class TaskStore:
         return plan
 
     def import_plan(self,plan,*,authority):
-        from .plan_admission import authority as require,validate_plan,reject,plan_history
-        authority=require(authority);plan=validate_plan(plan);authority.check(plan)
+        from .plan_admission import authority as require,validate_plan_input,reject,plan_history
+        authority=require(authority);plan=validate_plan_input(plan);authority.check(plan)
         with self._connection(True) as connection:
             self._plan_schema(connection,create=True)
             row=connection.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(plan['plan_id'],)).fetchone()
@@ -2358,10 +2358,56 @@ class TaskStore:
             cap._authorize()
             return {'plan_id':plan_id,'current_sha256':digest(current),'revision':current['revision'],'version_hashes':list(versions),'requests':requests,'execution_started':False}
 
+    def migrate_plan_history(self,plan_id,request,*,authority):
+        """Explicit internal-only v2 conversion. Never called by read/import/CAS.
+
+        Old readers must be retired/isolated by Root before any live use. This
+        API only checks the supplied trusted compatibility capability, not PIDs.
+        """
+        from .plan_admission import (PlanHistoryMigrationAuthority,HISTORY_V2,
+            _migration_request,plan_history,history_envelope,is_history_v2,reject)
+        from .dispatch_budget import split as split_budget,wrap as wrap_budget
+        from .source_admission import split as split_source,wrap as wrap_source
+        if type(authority)is not PlanHistoryMigrationAuthority:reject('PLAN_HISTORY_AUTHORITY_REQUIRED')
+        command=_migration_request(request)
+        if command['plan_id']!=plan_id:reject('PLAN_HISTORY_AUTHORITY_MISMATCH')
+        authority._authorize();context=[]
+        def guard():
+            if context:
+                plan,controls=context
+                authority.check(plan,command)
+                if authority._plan._controls()!=controls:reject('PLAN_CONTROL_CHANGED')
+        with self._connection(True,guard=guard) as db:
+            if not self._plan_schema(db):reject('PLAN_NOT_IMPORTED')
+            row=db.execute('SELECT body,hash FROM plan_inputs WHERE id=?',(plan_id,)).fetchone()
+            if not row:reject('PLAN_NOT_IMPORTED')
+            raw=self._decode(*row);current,versions,requests=plan_history(raw)
+            # Replays remain bound to the originally authorized plan even if
+            # later ordinary revisions have advanced the current history.
+            bound=versions.get(command['plan_sha256'])
+            if bound is None:reject('PLAN_HISTORY_AUTHORITY_MISMATCH')
+            authority.check(bound,command)
+            controls=authority._plan._controls()
+            if type(controls)is not dict or controls.get('state')!='active'or type(controls.get('revision'))is not int:reject('PLAN_CONTROL_BLOCKED')
+            context.extend((bound,json.loads(canonical(controls))))
+            inner,budget=split_budget(raw);history,source=split_source(inner)
+            if is_history_v2(history):
+                if history['migration']['request']!=command:reject('PLAN_HISTORY_MIGRATION_CONFLICT')
+                guard()
+                return {'replayed':True,'format':HISTORY_V2,'current_sha256':digest(current),'execution_rows_created':0}
+            if row['hash']!=command['expected_input_sha256']or digest(current)!=command['plan_sha256']:reject('PLAN_CAS_STALE')
+            converted=history_envelope(current,versions,requests,migration=command)
+            body=wrap_budget(wrap_source(converted,source),budget)
+            if plan_history(body)!=(current,versions,requests):reject('PLAN_HISTORY_CORRUPT')
+            guard();self.fault('before_plan_history_write');guard()
+            self._replace_plan_input(db,plan_id,body)
+            self.fault('before_plan_history_commit');guard()
+        return {'replayed':False,'format':HISTORY_V2,'current_sha256':digest(current),'execution_rows_created':0}
+
     def reconcile_plan(self,plan,*,expected_sha256,request_id,authority,rollback=False):
         """Root-wired CAS only; immutable packages/attempts/receipts never reset."""
-        from .plan_admission import authority as require,validate_plan,plan_history,changed_definitions,reject
-        cap=require(authority);target=validate_plan(plan);cap.check(target);stable_id(request_id)
+        from .plan_admission import authority as require,validate_plan_input,plan_history,history_envelope,changed_definitions,reject
+        cap=require(authority);target=validate_plan_input(plan);cap.check(target);stable_id(request_id)
         if type(rollback)is not bool or cap.snapshot().get('reconcile_from_sha256')!=expected_sha256:reject('PLAN_REVISION_AUTHORITY')
         command={'request_id':request_id,'from_sha256':expected_sha256,'to_sha256':digest(target),'operation':'rollback'if rollback else'reconcile','affected_task_ids':[]}
         guard_controls=[]
@@ -2397,14 +2443,18 @@ class TaskStore:
                     records.extend(self._decode(r['body'],r['hash'])for r in db.execute('SELECT body,hash FROM '+table+' WHERE plan_id=? AND task_id=?',(target['plan_id'],ident)))
                 if any(r['effect_state']=='unknown'or r['unknowns']for r in records):reject('PLAN_REVISION_UNKNOWN_EFFECT')
                 if len({r['plan_sha256']for r in records})!=len(records):reject('PLAN_REVISION_UNRESOLVED_CONFLICT')
-            if not rollback:versions[digest(target)]=target
+            if not rollback:
+                # Keep validated shared history lazy; copying all expanded
+                # versions into a dict would multiply resident memory.
+                from collections import ChainMap
+                versions=ChainMap({digest(target):target},versions)
             requests.append(command)
-            body={'schema_version':'plan-revisions/1','plan_id':target['plan_id'],'current_sha256':digest(target),'versions':[{'sha256':h,'plan':p}for h,p in versions.items()],'requests':requests}
             from .dispatch_budget import split as split_budget,wrap as wrap_budget
             _,retained_budget=split_budget(self._decode(*row))
             from .source_admission import split as split_source,wrap as wrap_source
             original_history,_=split_budget(self._decode(*row))
-            _,retained_source=split_source(original_history)
+            previous_history,retained_source=split_source(original_history)
+            body=history_envelope(target,versions,requests,previous=previous_history)
             body=wrap_budget(wrap_source(body,retained_source),retained_budget)
             plan_history(body)
             self._replace_plan_input(db,target['plan_id'],body)
