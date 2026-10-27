@@ -7,6 +7,7 @@ import os
 import shutil
 import sqlite3
 import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -747,3 +748,223 @@ class PlanHistoryRecoveryStatusTests(unittest.TestCase):
         self.status(reader,command,'legacy_preimage_intact');self.migrate(f,command,cap)
         self.status(reader,command,'migration_committed');self.assertEqual(retained(),before)
         self.assertNotIn(sources.GRAPH,f.view()['ready']);self.assertEqual(b.status()['held_dispatch_ids'],[dispatch['dispatch_id']])
+
+
+class PlanHistoryV2RestoreCLITests(unittest.TestCase):
+    """Actual offline CLI on disposable copies, never an installed runtime."""
+    bind = PlanHistoryRecoveryStatusTests.bind
+
+    def setUp(self):
+        import test_hub_source_admission as sources
+        import test_hub_dispatch_budget as budgets
+        from hub.workbench_store import digest
+
+        f = sources.SourceAdmissionTests(); f.setUp(); self.addCleanup(f.doCleanups)
+        self.f = f; self.store = f.store; self.number = 0
+        receipt = f.f.evidence(sources.BASE); receipt['plan_sha256'] = digest(f.p)
+        f.records[sources.BASE] = receipt; f.configure()
+        self.assertFalse(f.store.record_plan_evidence(f.p['plan_id'], receipt, authority=f.cap)['replayed'])
+        self.source_unknown = f.candidate(status='unknown'); f.record(self.source_unknown)
+        b = budgets.DispatchBudgetTests()
+        b.store = f.store; b.p = f.p; b.plan_cap = f.cap; b.control = f.control
+        b.policy = {'schema_version': '1.0', 'lineage_id': f.p['plan_id'],
+                    'source_state_sha256': 'a'*64, 'cutoff_id': 'synthetic-cutoff',
+                    'covered_dispatch_ids': ['covered-call'], 'observed_model_dispatches': 1,
+                    'historical_unknown_allowance': 8, 'closure_reserve': 12,
+                    'conservative_deterministic_dispatches': 0, 'limit': 480,
+                    'provenance_ref': 'synthetic/state-cutoff.json'}
+        b.initialize(); self.dispatch = b.req(); b.reserve(self.dispatch)
+        b.close(self.dispatch, outcome='unknown', resources_closed=False)
+        self.budget_status = b.status(); self.budget = b
+
+        # Only public TaskStore transitions: no SQL-fabricated terminal rows,
+        # worker process, provider invocation or source business effects.
+        payload = {'request_id': 'offline-unknown-task', 'project_id': 'synthetic',
+                   'parent_task_id': None, 'mode': 'new'}
+        f.store.admit(payload, {'fixture': 'no-provider-called'})
+        claimed = f.store.claim('synthetic-offline-worker')
+        self.assertEqual(claimed['id'], payload['request_id'])
+        f.store.event(claimed['id'], 'synthetic-unknown-receipt',
+                      {'outcome': 'UNKNOWN', 'external_effect': 'not_observed'})
+        f.store.update(claimed['id'], claimed['owner'], status='requires_reconcile',
+                       result={'outcome': 'UNKNOWN', 'reason': 'synthetic lost response'})
+        self.task_id = claimed['id']
+        self.task = f.store.task(self.task_id); self.events = f.store.events(self.task_id)
+
+        original = copy.deepcopy(f.p)
+        second = {**copy.deepcopy(original), 'revision': 'synthetic-offline-v2'}
+        self.revise(second, 'before-migration')
+        self.assertEqual(self.parts(self.store)[0]['schema_version'], 'plan-revisions/1')
+        logical_before = self.logical(self.store)
+        self.command, self.migration_cap, _ = self.bind(f)
+        result = f.store.migrate_plan_history(f.p['plan_id'], self.command, authority=self.migration_cap)
+        self.assertFalse(result['replayed']); self.assertEqual(result['execution_rows_created'], 0)
+        self.assertEqual(self.logical(self.store), logical_before)
+        third = {**copy.deepcopy(second), 'revision': 'synthetic-offline-v3'}
+        self.revise(third, 'after-migration')
+        self.revise(second, 'rollback-migrated-version', rollback=True)
+        self.revise(third, 'return-later-version', rollback=True)
+        b.p = f.p; b.plan_cap = f.cap # Explicit synthetic authority for the current plan.
+        self.assertEqual(len(self.logical(self.store)['versions']), 3)
+        self.assertEqual(len(self.logical(self.store)['requests']), 4)
+        self.expected = self.business_rows(self.store)
+        self.expected_logic = self.logical(self.store)
+        self.expected_parts = self.parts(self.store)
+        self.expected_revision = f.store.plan_revision_status(f.p['plan_id'], authority=f.cap)
+        self.assertEqual(len(f.store.tasks()), 1)
+        self.assertTrue(all(t['status'] == 'requires_reconcile' for t in f.store.tasks()))
+        # Every connection above was context-managed and closed. These fixtures
+        # start no runtime/worker, and perform no more writes before copying.
+        self.source_bytes = self.bytes(self.store)
+        self.source_identity = self.identity(self.store.path)
+
+    def revise(self, target, request, *, rollback=False):
+        from hub.workbench_store import digest
+        f = self.f; prior = copy.deepcopy(f.p); f.p = target; f.configure(prior=prior)
+        result = f.store.reconcile_plan(target, expected_sha256=digest(prior),
+                                       request_id=request, authority=f.cap, rollback=rollback)
+        self.assertEqual(result['execution_rows_created'], 0)
+
+    @staticmethod
+    def identity(path):
+        info = path.stat(); return [info.st_dev, info.st_ino]
+
+    @staticmethod
+    def bytes(store):
+        return store.path.read_bytes(), store.registration_path.read_bytes()
+
+    def raw(self, store):
+        with store._connection() as db:
+            return store._decode(*db.execute('SELECT body,hash FROM plan_inputs').fetchone())
+
+    def parts(self, store):
+        from hub.dispatch_budget import split
+        from hub.source_admission import split as split_source
+        inner, budget = split(self.raw(store)); history, source = split_source(inner)
+        return history, source, budget
+
+    def logical(self, store):
+        from hub.plan_admission import plan_history, validate_plan
+        from hub.workbench_store import digest
+        current, versions, requests = plan_history(self.raw(store))
+        plans = {}
+        for key in versions:
+            value = versions[key]
+            self.assertEqual(digest(validate_plan(value)), key)
+            plans[key] = value
+        return {'current': current, 'versions': plans, 'requests': requests}
+
+    @staticmethod
+    def business_rows(store):
+        # Independent exact-row comparison includes encoded histories/receipts,
+        # hashes, UNKNOWNs, sequences and every optional business table.
+        with store._connection() as db:
+            tables = [r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")]
+            return {t: [tuple(row) for row in db.execute('SELECT * FROM "'+t+'" ORDER BY rowid')]
+                    for t in tables if t != 'storage_profile'}
+
+    def copied(self):
+        self.number += 1
+        root = self.store.root.parent / ('offline-copy-'+str(self.number)); root.mkdir(mode=0o700)
+        target = TaskStore(root); target.path.parent.mkdir(parents=True, mode=0o700)
+        for suffix in ('-journal', '-wal', '-shm'):
+            self.assertFalse(self.store.path.with_name(self.store.path.name+suffix).exists())
+        shutil.copy2(self.store.path, target.path)
+        shutil.copy2(self.store.registration_path, target.registration_path)
+        self.assertEqual(set(target.path.parent.iterdir()), {target.path, target.registration_path})
+        self.assertEqual(self.bytes(target), self.source_bytes)
+        self.assertNotEqual(self.identity(target.path), self.source_identity)
+        self.assertEqual(target.storage_status()['reason_code'], 'PROFILE_REJECTED')
+        return target
+
+    def cli(self, store, *, confirm=True, **pins):
+        script = Path(__file__).resolve().parents[1] / 'scripts/restore_task_storage.py'
+        pins = {**dict(zip(('database_sha256', 'registration_sha256'),
+                          (hashlib.sha256(v).hexdigest() for v in self.bytes(store)))), **pins}
+        argv = [sys.executable, '-B', str(script), '--root', str(store.root),
+                '--database-sha256', pins['database_sha256'],
+                '--registration-sha256', pins['registration_sha256']]
+        if confirm: argv.append('--confirm-offline')
+        result = subprocess.run(argv, capture_output=True, text=True, timeout=30,
+                                env={**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'})
+        print('RESTORE_CLI '+json.dumps({'argv': argv, 'exit': result.returncode,
+              'stdout': result.stdout, 'stderr': result.stderr}), flush=True)
+        return result
+
+    def assert_source_unchanged(self):
+        self.assertEqual(self.bytes(self.store), self.source_bytes)
+        self.assertEqual(self.identity(self.store.path), self.source_identity)
+
+    def test_real_cli_rebinds_v2_and_preserves_full_history_wrappers_and_unknown(self):
+        from hub.workbench_store import digest
+        from hub.task_storage_restore import _snapshot
+        target = self.copied(); copied_identity = self.identity(target.path)
+        result = self.cli(target)
+        self.assertEqual(result.returncode, 0, result.stdout+result.stderr)
+        output = json.loads(result.stdout); self.assertEqual(output['state'], 'ready')
+        # A fresh instance must pass the real registration/profile/inode check.
+        reopened = TaskStore(target.root, plan_authority=self.migration_cap._plan,
+                             plan_history_recovery_authority=self.migration_cap)
+        self.assertEqual(reopened.check_storage()['state'], 'ready')
+        registration = json.loads(reopened.registration_path.read_bytes())
+        self.assertEqual(registration['hash'], digest(registration['record']))
+        self.assertEqual(registration['record']['ledger_identity'], self.identity(reopened.path))
+        self.assertNotEqual(self.identity(reopened.path), copied_identity)
+        self.assertEqual(registration['record']['profile']['root'], str(target.root))
+        self.assertEqual(registration['record']['profile']['inode'], target.root.stat().st_ino)
+        restored_bytes = self.bytes(reopened)
+        self.assertEqual(self.business_rows(reopened), self.expected)
+        self.assertEqual(self.logical(reopened), self.expected_logic)
+        self.assertEqual(self.parts(reopened), self.expected_parts)
+        history, source, budget = self.parts(reopened)
+        self.assertEqual(history['migration'], {'request': self.command, 'sha256': digest(self.command)})
+        self.assertEqual(source[0]['record'], self.source_unknown)
+        self.assertEqual(reopened.plan_history_migration_status(self.f.p['plan_id'], self.command)['state'],
+                         'migration_committed')
+        self.assertEqual(reopened.plan_revision_status(self.f.p['plan_id'], authority=self.f.cap), self.expected_revision)
+        self.assertEqual(reopened.task(self.task_id), self.task)
+        self.assertEqual(reopened.events(self.task_id), self.events)
+        self.assertEqual(len(reopened.tasks()), 1)
+        self.assertEqual(reopened.dispatch_budget_status(self.f.p['plan_id'], authority=self.budget.cap('status', {})),
+                         self.budget_status)
+        self.assertEqual(self.budget_status['held_dispatch_ids'], [self.dispatch['dispatch_id']])
+        profile, content = _snapshot(reopened, reopened.path.read_bytes())
+        self.assertEqual(profile, registration['record']['profile'])
+        self.assertEqual(output['business_sha256'], digest(content))
+        self.assertEqual(output['row_counts'], {t: len(rows) for t, rows in content.items()})
+        self.assertEqual(self.bytes(reopened), restored_bytes) # Reads create no effect/replay.
+        self.assert_source_unchanged()
+
+    def test_cli_wrong_each_pin_missing_confirmation_and_healthy_store_are_nonmutating(self):
+        target = self.copied()
+        for options, reason in (({'database_sha256': '0'*64}, 'RESTORE_PIN_CHANGED'),
+                                ({'registration_sha256': '0'*64}, 'RESTORE_PIN_CHANGED'),
+                                ({'confirm': False}, None)):
+            with self.subTest(options=options):
+                before = self.bytes(target); result = self.cli(target, **options)
+                self.assertEqual(result.returncode, 2, result.stdout+result.stderr)
+                if reason: self.assertEqual(json.loads(result.stdout)['details']['reason_code'], reason)
+                else: self.assertIn('--confirm-offline', result.stderr)
+                self.assertEqual(self.bytes(target), before); self.assert_source_unchanged()
+        # The healthy registered fixture is never rebound, even with exact pins.
+        result = self.cli(self.store)
+        self.assertEqual(result.returncode, 2, result.stdout+result.stderr)
+        self.assertEqual(json.loads(result.stdout)['details']['reason_code'], 'RESTORE_HEALTHY_STORE')
+        self.assert_source_unchanged()
+
+    def test_cli_rejects_corrupt_v2_receipt_with_matching_file_pins(self):
+        from hub.workbench_store import canonical, digest
+        target = self.copied()
+        # Damage only a disposable offline copy; keep its row hash valid so
+        # the real CLI must validate the embedded v2 migration receipt.
+        with sqlite3.connect(':memory:') as db:
+            db.deserialize(target.path.read_bytes())
+            raw = json.loads(db.execute('SELECT body FROM plan_inputs').fetchone()[0])
+            raw['plan_history']['plan_history']['migration']['sha256'] = 'f'*64
+            db.execute('UPDATE plan_inputs SET body=?,hash=?', (canonical(raw).decode(), digest(raw)))
+            db.commit(); damaged = db.serialize()
+        target.path.write_bytes(damaged); before = self.bytes(target)
+        result = self.cli(target)
+        self.assertEqual(result.returncode, 2, result.stdout+result.stderr)
+        self.assertEqual(json.loads(result.stdout)['details']['reason_code'], 'RESTORE_DATABASE_CORRUPT')
+        self.assertEqual(self.bytes(target), before); self.assert_source_unchanged()
