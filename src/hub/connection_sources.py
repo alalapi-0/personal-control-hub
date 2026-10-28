@@ -3,22 +3,33 @@ from __future__ import annotations
 
 import errno
 import hashlib
+import json
 import os
 import stat
+import subprocess
+import sys
+import threading
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Callable
 
 from hub.connection_records import (FIELDS, VERSION, RecordError, content_hash,
-                                    credential_path_component, empty_business, put_field,
+                                    credential_path_component, empty_business,
                                     record_schema, relative_path, require, update_key,
                                     validate_declaration, validate_result)
 from hub.connection_records import authority_matches
 from hub.connection_records import FORBIDDEN_PARTS, CREDENTIAL_PATH_TOKENS, CREDENTIAL_PATH_NAMES
-from hub.connections import parse_owned_hub_state, parse_source, select_value, validate_registry_value
+from hub.connections import parse_owned_hub_state, parse_source, validate_registry_value
+from hub.connection_normalize import normalize_source
 
 MAX_SOURCE_BYTES = 1024 * 1024
 MAX_OWNED_HUB_STATE_BYTES = 2 * 1024 * 1024
+# Only the registered light-novel current-state YAML receives this budget.
+# The child enforces 512 MiB address space, 30 CPU seconds and 4 MiB output;
+# a 45-second wall timeout and one child per process bound concurrent work.
+MAX_LIGHT_NOVEL_STATE_BYTES = 8 * 1024 * 1024
+_large_source_slot = threading.BoundedSemaphore(1)
+_light_novel_read_grant = object()
 DECLARATION_PATH = "hub.connection.yaml"
 
 
@@ -94,8 +105,26 @@ def _root_path_allowed(path: Path) -> None:
 def _safe_relative_read(root: Path, relative: str, *, authority_check: Callable[[], None],
                         max_bytes: int = MAX_SOURCE_BYTES) -> tuple[bytes, dict]:
     """No-follow read with stable file metadata and descriptor-to-path bindings."""
-    relative_path(relative)
     require(type(max_bytes) is int and 0 < max_bytes <= MAX_OWNED_HUB_STATE_BYTES, "invalid read budget")
+    return _read_pinned(root, relative, authority_check=authority_check, max_bytes=max_bytes)
+
+
+def _safe_light_novel_read(root: Path, source: dict, *, project_id: str,
+                           authority_check: Callable[[], None]) -> tuple[bytes, dict]:
+    """The larger budget is available only to the registered, exact source route."""
+    require(project_id == "light-novel" and source.get("id") == "state"
+            and source.get("role") == "current_state" and source.get("path") == "governance/round_state.yaml"
+            and source.get("format") == "yaml", "invalid large source identity")
+    return _read_pinned(root, source["path"], authority_check=authority_check,
+                        max_bytes=MAX_LIGHT_NOVEL_STATE_BYTES, grant=_light_novel_read_grant)
+
+
+def _read_pinned(root: Path, relative: str, *, authority_check: Callable[[], None],
+                 max_bytes: int, grant=None) -> tuple[bytes, dict]:
+    relative_path(relative)
+    require(type(max_bytes) is int and (0 < max_bytes <= MAX_OWNED_HUB_STATE_BYTES
+            or (grant is _light_novel_read_grant and relative == "governance/round_state.yaml"
+                and max_bytes == MAX_LIGHT_NOVEL_STATE_BYTES)), "invalid read budget")
     authority_check()
     descriptor = os.open(root.anchor, os.O_RDONLY | os.O_DIRECTORY)
     opened = [descriptor]
@@ -140,6 +169,39 @@ def _safe_relative_read(root: Path, relative: str, *, authority_check: Callable[
             os.close(file_descriptor)
         for item in reversed(opened):
             os.close(item)
+
+
+def _normalize_large_light_novel(data, declaration, source, metadata, observed_at):
+    """Parse the complete document in a resource-limited child, never a truncated view."""
+    if not _large_source_slot.acquire(blocking=False):
+        raise SourceFailure("invalid", "Large source reader is busy; retry this project later.")
+    try:
+        header = json.dumps({"declaration": declaration, "source": source, "metadata": metadata,
+                             "observed_at": observed_at}, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        require(len(header) <= MAX_SOURCE_BYTES, "large source request exceeds header budget")
+        packet = len(header).to_bytes(4, "big") + header + data
+        try:
+            child = subprocess.run([sys.executable, "-I", str(Path(__file__).with_name("connection_large_worker.py"))],
+                                   input=packet, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                   timeout=45, check=False)
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise SourceFailure("invalid", "Large source reader failed or timed out; retry after resolving the limit.") from exc
+        if child.returncode != 0 or len(child.stdout) > 4 * 1024 * 1024:
+            raise SourceFailure("invalid", "Large source reader failed or exceeded its resource limit.")
+        try:
+            output = json.loads(child.stdout)
+        except (ValueError, UnicodeError) as exc:
+            raise SourceFailure("invalid", "Large source reader returned an invalid result.") from exc
+        if type(output) is not dict or output.get("ok") is not True:
+            raise SourceFailure("invalid", "Large source is invalid or exceeded its resource limit; fix it and retry.")
+        require(set(output) == {"ok", "value", "peak_rss_kib", "limits"} and type(output["value"]) is dict,
+                "large source reader returned an invalid result")
+        require(set(output["value"]) in ({"business", "field_provenance", "unknown_fields"},
+                                         {"business", "field_provenance", "unknown_fields", "extensions"}),
+                "large source reader returned unexpected fields")
+        return output["value"]
+    finally:
+        _large_source_slot.release()
 
 
 class SourceResolver:
@@ -266,50 +328,29 @@ class SourceResolver:
             owned_hub_state = (project_id == "personal-control-hub"
                                and root == self.root.resolve(strict=True)
                                and source["path"] == "STATE.yaml" and source["format"] == "yaml")
+            large_light_novel = (project_id == "light-novel" and source["id"] == "state"
+                                 and source["role"] == "current_state"
+                                 and source["path"] == "governance/round_state.yaml"
+                                 and source["format"] == "yaml")
             source_budget = MAX_OWNED_HUB_STATE_BYTES if owned_hub_state else MAX_SOURCE_BYTES
-            data, metadata = _safe_relative_read(root, source["path"], authority_check=check,
-                                                 max_bytes=source_budget)
+
+            def read_source():
+                if large_light_novel:
+                    return _safe_light_novel_read(root, source, project_id=project_id, authority_check=check)
+                return _safe_relative_read(root, source["path"], authority_check=check, max_bytes=source_budget)
+
+            data, metadata = read_source()
             result["sources"] = [{**source, **metadata}]
-            if owned_hub_state:
-                parsed = parse_owned_hub_state(data)
+            if large_light_novel:
+                normalized = _normalize_large_light_novel(data, declaration, source, metadata, result["observed_at"])
             else:
-                parsed = parse_source(data, source["format"])
-            result["unknown_fields"] = dict(declaration["unknown_fields"])
-            for field, rule in declaration["mapping"].items():
-                raw = select_value(parsed, rule["selector"])
-                if raw is None:
-                    continue
-                value = raw
-                if rule["value_map"] is not None:
-                    require(type(raw) is str and raw in rule["value_map"], "unmapped source enum")
-                    value = rule["value_map"][raw]
-                put_field(result["business"], field, value)
-                result["field_provenance"][field] = {"source_ref": source["id"], "sha256": metadata["sha256"],
-                                                     "selector": rule["selector"], "value_map": rule["value_map"], "raw_value": raw}
-                del result["unknown_fields"][field]
-            if "extensions" in declaration:
-                from .connection_extensions import validate_extensions
-                config = declaration["extensions"]
-                envelope = {"schema_version": config["schema_version"],
-                            "fact": {}, "managed": {}, "derived": {}, "proposed": {}}
-                for field, rule in config["fact_mapping"].items():
-                    raw = select_value(parsed, rule["selector"])
-                    envelope["fact"][field] = {
-                        "value": raw, "unknown_reason": config["unknown_fields"][field] if raw is None else None,
-                        "proof": None if raw is None else {"source_ref": source["id"],
-                            "selector": rule["selector"], "sha256": metadata["sha256"],
-                            "observed_at": result["observed_at"]}}
-                    if (field == "task_plan" and raw is not None and project_id == "personal-control-hub"
-                            and root == self.root.resolve(strict=True) and source["path"] == "STATE.yaml"):
-                        from .task_view_projection import validate_refactor_task_view
-                        validate_refactor_task_view(parsed["pch_refactor"], raw)
-                result["extensions"] = validate_extensions(envelope, source_context={source["id"]: {
-                    "sha256": metadata["sha256"], "observed_at": result["observed_at"],
-                    "format": source["format"], "data": parsed}})
+                parsed = parse_owned_hub_state(data) if owned_hub_state else parse_source(data, source["format"])
+                normalized = normalize_source(parsed, declaration, source, metadata, result["observed_at"],
+                                              owned_hub_state=owned_hub_state)
+            result.update(normalized)
             # Keep normalization bound to a stable source version, then verify
             # that the declaration used for its mapping still agrees.
-            _, source_metadata = _safe_relative_read(root, source["path"], authority_check=check,
-                                                     max_bytes=source_budget)
+            _, source_metadata = read_source()
             require(source_metadata == metadata, "source changed during normalization")
             recheck, _ = _safe_relative_read(root, DECLARATION_PATH, authority_check=check)
             require(hashlib.sha256(recheck).hexdigest() == result["declaration"]["sha256"], "declaration changed during read")
