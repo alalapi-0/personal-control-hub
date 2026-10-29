@@ -153,7 +153,8 @@ projects:
   watch_paths: []
   access_profile: bounded_named_business_state_read
   connection_read_allowed: true
-  connection_authority: ALL-PROJECTS-CODEX-GOVERNANCE-V1 owner authorization; business state only, storage exclusion remains
+  connection_authority: ALL-PROJECTS-CODEX-GOVERNANCE-V1 owner authorization; business
+    state only, storage exclusion remains
   external_write_allowed: false
   storage_governance:
     scope: accepted_exclusion_record_only
@@ -956,3 +957,43 @@ projects:
       path
     native_project_id: local-1e00315201990d02930e2c56de2f87e8
     retry_allowed: false
+- id: local-software-manager
+  name: 本地软件管家
+  root_path: /home/alalapi/Projects/local-software-manager
+  github_remote: https://github.com/alalapi-0/local-software-manager.git
+  enabled: true
+  scan_enabled: false
+  profile_enabled: true
+  summary_enabled: true
+  project_type: python_git_project
+  priority_link: null
+  priority_source: user
+  connection_read_allowed: true
+  external_write_allowed: false
+  access_profile: bounded_named_business_state_read
+  watch_paths:
+  - README.md
+  - AGENTS.md
+  - STATE.yaml
+  - hub.connection.yaml
+  - docs/PLAN.md
+  rules_paths:
+  - AGENTS.md
+  current_state_paths:
+  - STATE.yaml
+  current_state_status: sole_project_execution_state
+  supporting_authority_paths:
+  - README.md
+  - hub.connection.yaml
+  - docs/PLAN.md
+  storage_governance:
+    scope: owner_named_existing_external_project
+    migration_allowed: false
+    cleanup_allowed: false
+    authority_source: Owner LSM onboarding request 2026-10-29; registry grants no
+      business effects
+  category:
+  - 系统运维
+  - 应用管理
+  - Windows 兼容
+  description: 本机应用的注册表、盘点、生命周期与兼容管理入口；向 PCH 只发布目标、阶段、进度、下一步、阻塞与交付状态。
