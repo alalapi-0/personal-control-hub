@@ -16,7 +16,7 @@ candidate_paths:
 - scripts/admin20/test_boundary.py
 - scripts/admin20/README.md
 feishu_cloud_sync: {task_id: FEISHU-PROJECT-CLOUD-SYNC-V1, status: PREPARED_NOT_ACTIVATED, plan_version: 1, prepared_at: '2026-09-14', plan: docs/feishu_project_cloud_sync_plan.md, prompt: prompts/feishu_project_cloud_sync_goal_mode.md, lane: DIRECT, baseline_main: e967d46a4357d950488e68ac2a06d08d6d4346bd, objective: 每现存登记项目独立Sheets、总Bitable；真实数据经程序与API自动同步，运行不依赖Agent。, authority: owner_20260914_plan_and_per_round_main_delivery; implementation awaits goal prompt, acceptance: docs/feishu_project_cloud_sync_plan.md#6-最终验收清单, implementation_acceptance_passed: [], owner_setup: H01-H07 not_checked; upfront checklist in plan section 1, scope_baseline: 26 registered / 24 local / 2 removed; 17 cloud excluded; new unsynced deferred, preserved_work: 原工作树registry未提交新增条目未纳入；v3证据与65轮历史原样保留。, round_accounting: {planning_units: 1, implementation_rounds: 0}, delivery: {status: verify_in_git, remote: origin, branch: main}, planning_validation: 'PASS; repository checks, new state references and prior-state preservation', blocker: null, unverified: 个人租户、应用、权限、目标、凭据入口、运行环境与所有真实云同步均未验证。, next_action: 所有者将启动prompt交给新Agent后，从最新main执行P00并集中完成H01-H07。, ci_repair: {contract: TC-CI-RESTORE-1, lane: GOVERNED, evidence: git, verdict: approved}}
-linux_network_maintenance: {status: HANDOFF_SENT, next: linux_result}
+linux_network_maintenance: {status: MAC_SOURCE_UPDATED, next: linux_ssh_recovery}
 linux_visual_workbench:
   task_id: HUB-LINUX-VISUAL-WORKBENCH-V1
   native_task_id: 01a113a8-9079-7d91-ac27-c2d32f860d84

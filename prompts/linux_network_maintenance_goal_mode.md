@@ -10,11 +10,11 @@
 
 只保证 VPN/Codex 兼容后续系统更新，其他软件沿用现有更新方式。不要为让 Mac/Linux 版本数字相等而安装其他渠道版本。当前没有授权全系统升级、改 Mac/VPS/路由器、自动重启、强杀进程或迁移凭据。
 
-用户已自行重启，报告网络恢复；该报告不能替代本 boot 的实际验收。之前网络修复已交付到 /home/alalapi/Projects/linux-agent-bootstrap，commit bf2db998f4c8a55e3cdb298a73892e7e35069968；先检查当前项目与差异，不重新覆盖本地 Agent 的后续工作。SSD 是运行中的根盘，历史核验 UUID 为 9d258b70-f313-4a5d-9cf6-c715c5edca3d；重新核对，不操作分区、EFI、initramfs 或旧 APFS。
+网络修复和受限更新入口补丁已有真实部署与历史验收，详情沿 Skill 的 references/incidents.md 读取；当前 boot 仍须实测，不重放旧安装命令。网络项目仍为 /home/alalapi/Projects/linux-agent-bootstrap，既有提交 bf2db998f4c8a55e3cdb298a73892e7e35069968；先检查当前项目与差异，不覆盖后续工作。SSD 是运行中的根盘，历史 UUID 为 9d258b70-f313-4a5d-9cf6-c715c5edca3d；有过实际存储 I/O 故障，恢复写入前只读核对当前根盘传输、挂载和相关内核错误。新的根盘 I/O 错误先停新增写入；不在线 fsck，不操作分区、EFI、initramfs 或旧 APFS。
 
 用户物理启动 SSH 后，照片已显示 ssh.service active 且监听 IPv4/IPv6 22，TriggeredBy ssh.socket，但 Mac 新连接仍超时。需实际诊断；不要直接关闭防火墙、放开公网 SSH 或盲目 enable/restart。已核验主机指纹是 SHA256:zGkVZegf0pwqIgZ8X/dAwDuHzhPkj+EerSaq1D1Elk0；未知/变化必须停下核验。
 
-最新故障报告：用户自建的“局域共享 / LAN FILE SHARE”使用途中断开，认为 Linux 把局域网流量送入 VPN；照片显示 http://192.168.0.100:9417/，当前监听/出口仍待核对。该归因尚待实际取证。检查现行策略路由、TUN 接管、必要过滤与双向回程，并核对各次代码差异；不能因旧 SSH 通道正常就宣告局域网正常，也不要断言是谁造成。用户要求先完成既有 VPN/Codex 维护、Skill安装和交接任务；此工具仅作为网络回归验收项，不展开工具项目改造，不读取现有上传文件。
+局域网故障已取证为 DHCP 地址/前缀变化后直连排除未更新，普通应用被 TUN 接管；已有动态物理前缀规则、NetworkManager 钩子和 ExecStartPre 的有限部署，以及两方向新测试文件的真实验收交接。新启动仍须核当前监听、规则和路径，不能因旧 SSH 成功就宣告局域网正常。内接 SSD 后曾观察 Wi-Fi 名称变为 wlp9s0；当前接口需重新发现，接口限制/过滤须实际核验，不照搬旧 wlp8s0。互传原入口为 http://192.168.0.100:9417/，仅作为网络回归验收项，不展开产品改造，不读取旧上传文件。
 
 ## 执行顺序
 
@@ -27,7 +27,7 @@
 4. 诊断并恢复 Mac 的新 SSH 连接和实际局域网互传。核对当前直连前缀、真实对端、工具监听地址/端口、发现/名称解析、策略规则、TUN 规则优先级与双向回程。根据监听、必要过滤规则、实际出口和回程证据，一次只修一个确认的问题；不要把所有私有地址一概直连，因为既有 VPN 可能有内部私有网段。涉及重连、代理/网络重启、路由或防火墙修改，先说明断线风险并准备、核验独立本机回退；没有可核验回退时等我在物理终端配合。不用现有旧连接或普通 ip route get 证明应用路径正常，不用 service active 替代连接测试。
 
 
-5. 完成待部署的 Codex 受限更新入口兼容修复：先检查 /usr/local/libexec/linux-codex-update-ssh、/usr/local/sbin/linux-codex-update、/etc/sudoers.d/linux-codex-update 的当前代码/权限及规则。核实默认 provider 对摘要规则的实际行为、已安装传统 /usr/bin/sudo.ws 的包来源和能力。若旧入口仍固定调用不支持摘要的默认 sudo，则只改入口为固定 sudo.ws 调用，保留 shebang、拒绝额外参数、DEVNULL stdin、固定最小 env 和 cwd。不存在可用 provider 时固定 deferred，不安装/改全局 sudo，不回退密码或其他 key。
+5. 核验已部署 Codex 受限更新入口的持久化：检查 /usr/local/libexec/linux-codex-update-ssh、/usr/local/sbin/linux-codex-update、/etc/sudoers.d/linux-codex-update 的当前代码/权限及规则，与原状态和已接受候选比较。固定 shim 已部署为调用 /usr/bin/sudo.ws，匹配时不重装；若变化先查合法后续修改。只有实际证据证明兼容回归且当前授权覆盖时才作最小修复。保留 shebang、拒绝额外参数、DEVNULL stdin、固定最小 env/cwd；provider 不可用时固定 deferred，不安装/改全局 sudo，不回退密码或其他 key。
 
    保留 sudoers 的用户、NOSETENV、helper 摘要、零参数与 NOPASSWD 限制；保留 helper、Mac 检查器、专用密钥、钥匙串、自动检查日程和包仓库。修改前保存有限前像并核验不依赖当前 SSH 的本机恢复方法。用不执行真实更新器的 mock/直接执行测试及只读非交互权限查询验证；不得为测试篡改真实 helper，无法安全验证的负例明确记未验证。
 

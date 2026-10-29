@@ -11,9 +11,11 @@ description: 排查和修复 Linux 工作站的 VPN、DNS、HTTPS、TUN、路由
 
 先定位实际执行端：Mac、本机 Linux 或其他远端。跨 SSH 时重新核对主机身份、根盘 UUID、boot_id、时间、地址和管理连接回程；沿用已核验的主机密钥，变化或未知时停止敏感操作。只在安全交互终端输入密码，不读取或搬运登录会话。
 
+曾有根盘 I/O 故障时，恢复写入前先只读核对真实传输、挂载状态和当前启动的相关内核错误。新的根盘 I/O、设备重置或文件系统错误须先停止依赖该盘的新增写入，保留错误与恢复条件；不能把物理存储故障当作 VPN 根因，也不用在线 fsck、压力测试、反复重启或重装代替诊断。
+
 读取已有项目入口和唯一状态文件，确认是否有任务正在修改重叠配置。普通项目进程不能当作网络修改者；不要强杀 Agent、apt 或 dpkg。先完成无冲突的只读工作。
 
-仅在症状匹配时读取 [已验证故障与限制](references/incidents.md)：Wi-Fi/DNS、sing-box 更新后启动、sudo provider、SSH 重启后不可达。历史版本、IP、文件哈希是当时证据，不是未来兼容条件。
+仅在症状匹配时读取 [已验证故障与限制](references/incidents.md)：Wi-Fi/DNS、sing-box 更新后启动、sudo provider、DHCP 后局域网接管、接口变化与 SSH、根盘 I/O。历史版本、IP、文件哈希是当时证据，不是未来兼容条件。
 
 ## 建立少量、有界的基线
 
@@ -25,6 +27,8 @@ description: 排查和修复 Linux 工作站的 VPN、DNS、HTTPS、TUN、路由
 - 功能：少量重复 DNS 与 HTTPS 请求，开启 TLS 验证并限制连接和总时长。curl 计时是累计值；阶段耗时分别计算 connect−namelookup、appconnect−connect、starttransfer−appconnect、total−starttransfer。
 
 SSH 不可达时，先区分监听、主机地址、数据包路径与防火墙。ssh.service inactive 可能与 socket 激活有关；已监听仍超时要继续查路径，不盲目 enable 或改认证。只让用户补充无法远程取得的一条必要物理终端信息。
+
+硬件位置变化后重新发现物理接口；若名称改变，比较实际防火墙接口限制、服务绑定和生成来源。不能把旧接口名作为当前命令前提，也不能仅凭接口改名就断言过滤规则是根因。
 
 ## 最小修复与更新兼容
 

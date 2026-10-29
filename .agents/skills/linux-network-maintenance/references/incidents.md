@@ -26,7 +26,9 @@
 
 既有 /etc/sudoers.d/linux-codex-update 是固定用户、NOSETENV、NOPASSWD、helper SHA-256 和空参数串限制。保留这些约束；不得删除摘要或放宽成 NOPASSWD: ALL。
 
-截至此记录，修复 /usr/local/libexec/linux-codex-update-ssh 的方案仍是待部署候选：保留原 Python shebang、零参数拒绝、固定 stdin/env/cwd，改为调用已验证的 /usr/bin/sudo.ws -n -- /usr/local/sbin/linux-codex-update；provider 不可用则输出固定 deferred，不使用其他认证回退。4 个 mock 与 2 个同字节直接执行用例通过，但尚未证明真实部署或实际更新成功。Linux 应重新核对前像、provider 包来源、root 所有权、摘要规则、受保护文件和有限回退后，才安装最小差异。
+2026-10-05 20:10:44（北京时间）的有限部署已成功：/usr/local/libexec/linux-codex-update-ssh 保留原 Python shebang、零参数拒绝、固定 stdin/env/cwd，改为调用已验证的 /usr/bin/sudo.ws -n -- /usr/local/sbin/linux-codex-update；provider 不可用则固定 deferred，不使用其他认证回退。部署时核得 root:0555、SHA-256 d35f3bf701582e2e6065c8c135c729c783c9faedc2ab7fa2db0952f5418c5136，VPN 未重启。此前测试和真实安装通过，不代表真实 Codex 更新已执行成功，也不代表已开启 16 小时后台管理员能力。
+
+以上是前一会话的实际工具验收交接。后续先核当前文件、合法修改、provider 与摘要限制；匹配已接受候选时只做持久化验收，不重复安装。摘要变化须先查后续修改，不能直接覆盖。有限部署及局域网规则的带守卫恢复入口在 /var/lib/linux-agent-bootstrap/network-maintenance-20261005/restore.py；不能为测试恢复而对实机回滚，也不能重放绑定旧 boot_id 的安装命令。
 
 既有 Codex 更新器根据官方签名仓库动态选择版本；运行中或包管理繁忙会等待。Mac/Linux 发布节奏不同，不要求版本号相同。保护签名、包摘要、依赖计划及禁止结束应用的检查；不用真正更新或篡改 helper 充当权限测试。
 
@@ -40,10 +42,22 @@
 
 参考：[Ubuntu OpenSSH 文档](https://ubuntu.com/server/docs/how-to/security/openssh-server/)。
 
-## 局域网互传：新报告，根因待核
+## DHCP 后局域网被 TUN 接管：已取证并部署
 
-2026-10-05 用户补充：自建的局域网互传工具使用途中断开，并认为 Linux 将局域网流量发送到 VPN。随后截图识别为“局域共享 / LAN FILE SHARE”，显示 http://192.168.0.100:9417/。这是照片中的访问端点，仍需核对当前监听与路径；未采集实际出口或双向包路径，不能把该推测写成已确认根因，也不能断言哪位 Agent 的改动导致。用户要求先完成既有网络维护/Skill任务，不展开互传工具改造。
+2026-10-05 已有实际路径证据：VPN 启动后 NetworkManager 先得到 192.168.124.16，随后变为 192.168.0.100；一次生成的直连排除未随 DHCP 更新。源地址专用 8999 规则保住 SSH 回程，普通 Linux 发起的局域网连接却经 labtun0/table2022。因此旧 SSH 成功不能证明局域网应用正常。
 
-上次验收覆盖了管理 SSH 与外网请求，未完成这个互传工具的实际验收。后续必须补齐实际局域网应用路径，核对当时/当前项目差异和现行规则。直连子网应来自当前拓扑与用途；不得因为某地址是私有地址就覆盖已有 VPN 内部路由。小型非秘密测试文件需校验两端摘要，用户已有文件不读取或重传。
+同次有限部署已加入当前物理直连前缀处理，复用 NetworkManager up/down/DHCP 事件和既有 VPN ExecStartPre；本任务规则为 priority 8998/protocol 222，保留 8999 与其他规则。安装文件为 /usr/local/lib/linux-agent-bootstrap/linux_lan_routes.py（root:0555）、/etc/NetworkManager/dispatcher.d/90-linux-agent-lan（root:0755）和 /etc/systemd/system/linux-agent-network.service.d/20-lan-routes.conf（root:0644）。钩子使用 /usr/bin/python3，不绑定 Python 小版本；不将全部 RFC1918 网段一概直连。
+
+前一会话实际验收：23 项相关测试通过，普通 Linux 请求经局域网到达 Mac，Mac 收到 peer 192.168.0.100；Linux→Mac 新测试文件 107B、HTTP200、SHA-256 21cf29ff2797cfa0141d2f40cd29f6f7d3be66853eebebe38892e9199ca55517；Mac→Linux 新测试文件 105B，上传 201/200/200，Linux 只回读该测试文件并核长度/摘要，SHA-256 a2c67b48a6ce8d44908dbb3961ca76d9158732c368819c1b279d7d62a4cd8b2d。新独立 SSH、getent 与 5 次 TLS 校验开启的 HTTPS 请求也通过，用户确认网页和 Codex 正常。这是交接证据，不是后续会话独立复测。
+
+后续启动要少量核验动态前缀、事件钩子与实际两方向互传；仅用本次新建非秘密小文件，校验两端摘要，不读取旧上传内容。网络业务状态仍在 /home/alalapi/Projects/linux-agent-bootstrap/PROJECT_STATE.md，互传服务仍用所属项目的原入口；不复制进度账本，也不照搬旧 Goal 的完成率。
 
 参考：[sing-box TUN 接管与路由排除](https://sing-box.sagernet.org/configuration/inbound/tun/)、[路由规则](https://sing-box.sagernet.org/configuration/route/rule/)。字段与行为应以已安装程序能力及实际路径为准。
+
+## 根盘物理 I/O 与内接后接口变化
+
+此前外接系统 SSD 曾因触碰连接线冻结；/bin/bash 与 systemd-journald 同时出现 Input/output error，Codex app-server 也不可用。这是存储 I/O 故障证据，尚未区分线缆、硬盘盒、供电、SSD 或文件系统，不把它归因于 VPN。新的根盘错误须停止依赖该盘的新增写入；不插拔运行中根盘、不在线 fsck、不改 GPT/EFI/initramfs 或旧 APFS。
+
+用户关机后将同一 SSD 装到主板。2026-10-05 21:56（北京时间）原 Linux 会话的当前启动工具输出确认 hostname lab-root、boot_id 086ae6ea-dd60-4a62-9ae5-6367b660e1f6、根 UUID 9d258b70-f313-4a5d-9cf6-c715c5edca3d，/dev/nvme0n1p3 为内接 NVMe、ext4/rw；相关当前启动日志未见根盘 I/O/重置/文件系统错误。日志中 usb 3-9 的断开属于 Lenovo 键盘，不能当作系统 SSD 断开证据。这只是当次有限稳定检查，不保证 SSD 以后不出错。
+
+同次观察：Wi-Fi 从 wlp8s0 变为 wlp9s0，地址 192.168.0.100/24；8998 直连规则仍在，到 Mac 192.168.0.104 走物理网卡。ssh.socket 监听 IPv4/IPv6 22、ssh.service inactive，9417 未监听；Mac ping 成功而 TCP22/9417 超时。入站过滤/接口限制仍待实际规则核验，不能仅凭改名确认根因。随后原生远端工具返回主机不可用；这条结果自身不能证明根盘 I/O 再次发生，也不能确认服务恢复请求已完成。继续时先核真实通道与启动身份，不重复部署或误读旧成功记录。
