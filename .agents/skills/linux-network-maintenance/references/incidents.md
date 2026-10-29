@@ -61,3 +61,15 @@
 用户关机后将同一 SSD 装到主板。2026-10-05 21:56（北京时间）原 Linux 会话的当前启动工具输出确认 hostname lab-root、boot_id 086ae6ea-dd60-4a62-9ae5-6367b660e1f6、根 UUID 9d258b70-f313-4a5d-9cf6-c715c5edca3d，/dev/nvme0n1p3 为内接 NVMe、ext4/rw；相关当前启动日志未见根盘 I/O/重置/文件系统错误。日志中 usb 3-9 的断开属于 Lenovo 键盘，不能当作系统 SSD 断开证据。这只是当次有限稳定检查，不保证 SSD 以后不出错。
 
 同次观察：Wi-Fi 从 wlp8s0 变为 wlp9s0，地址 192.168.0.100/24；8998 直连规则仍在，到 Mac 192.168.0.104 走物理网卡。ssh.socket 监听 IPv4/IPv6 22、ssh.service inactive，9417 未监听；Mac ping 成功而 TCP22/9417 超时。入站过滤/接口限制仍待实际规则核验，不能仅凭改名确认根因。随后原生远端工具返回主机不可用；这条结果自身不能证明根盘 I/O 再次发生，也不能确认服务恢复请求已完成。继续时先核真实通道与启动身份，不重复部署或误读旧成功记录。
+
+## 远程开发只能经 Tailscale 中继（2026-10-29）
+
+现象：Cursor Remote-SSH 连 lab-linux 首次输出需 8–30 秒，心跳偶尔卡 20–48 秒；18:00–18:10 十分钟内重连 28 次，其间出现 `connect to host 100.72.159.92 port 22: Operation timed out`。认证始终正常，Linux 的 tailscaled、ssh 与 linux-agent-network 均 active。
+
+已确认原因：两端一直 `direct connection not established`。Mac 在公司网络为对称 NAT（MappingVariesByDestIP=true）且无 IPv6；Linux 家宽为双重 NAT，路由器 UPnP 映射成功，但其外网地址仍是私网地址。Mac 的 Tailscale UDP 不经 Shadowrocket（STUN 出口不同于代理出口）。两端都必须保持代理，网络也不归所有者控制，所以只能走 DERP 中继。同时段 A/B：Mac→新加坡中继约 77 ms、零重传，Mac→香港 280–350 ms 有重传；Linux→香港 130–175 ms 基本无重传，Linux→新加坡约 370 ms 持续重传。自动选择（Mac 主中继新加坡、Linux 主中继香港）已是现有最优组合；临时强制 Mac 用香港使超时更多，已用 `tailscale debug force-prefer-derp 0` 撤回。经中继的 SSH 内层 TCP 往返可排队到 2.5–4 秒；Cursor 的 SOCKS 通道有扩展内置、无设置项的 30 秒超时，超时后杀掉 SSH 重新握手，坏时段一次握手 10–100 秒，形成重连风暴。
+
+测量陷阱：Linux 上普通 `ping` 公网地址进入 labtun0，由 sing-box 本地应答（约 0.1 ms），不是真实延迟；CLI `tailscale netcheck` 不带 tailscaled 的 0x80000 标记，同样走 sing-box。分段质量用 `tailscale ping`、Linux `ss -tni`（tailscaled 到中继连接的 rtt、bytes_retrans）和 Mac `nettop -m tcp` 看，并须两端同时段对比，只看一侧会选错方向。lab-connection-doctor 的 SSH 检查固定 ConnectTimeout=5、ServerAlive 3×1，在该路径上会把慢但可连判为 key_exchange 超时。
+
+已采用的缓解（仅 Mac 本机，可撤回）：`~/.ssh/config` 新增 `lab-linux-cursor`，目标、身份和主机密钥选项与 lab-linux 逐项相同，另加 ControlMaster auto、ControlPath ~/.ssh/cm-%C、ControlPersist 30m、ConnectTimeout 30、ServerAlive 15×4、Compression yes；lab-linux、lab-linux-backup、lab-root-lan 生效配置不变，Codex 桌面与 linux-codex 自动化继续用原别名，doctor 自带 ControlMaster=no 不受影响。实测首次连接 9.8 秒，复用 1.4–4.8 秒，经复用的 `-D` 转发访问 Cursor 服务端 /version 返回 200。Cursor 用户设置 `remote.SSH.serverShutdownTimeout` 由默认 300 改为 3600，断线一小时内保留远端服务端与会话，下次服务端启动时生效。回退：删除 `cursor-lab-linux-resilience-20261029` 配置块（备份 `~/.ssh/config.bak-20261029-cursor`）并删去该设置项。
+
+快速恢复：Cursor 远程主机改用 `lab-linux-cursor`。持续重连超过约 2 分钟时，在 Mac 终端执行 `ssh -O exit lab-linux-cursor` 清掉旧共享连接，再在 Cursor 执行 Developer: Reload Window；长时间命令放进 Linux 的 tmux。根本改善只能来自可直连的网络（如同一局域网），或经所有者批准的新中继/备用通道；lab-linux-backup 当日 VPS 一跳认证未通过，由 VPS 所属任务处理。

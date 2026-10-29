@@ -15,7 +15,7 @@ description: 排查和修复 Linux 工作站的 VPN、DNS、HTTPS、TUN、路由
 
 读取已有项目入口和唯一状态文件，确认是否有任务正在修改重叠配置。普通项目进程不能当作网络修改者；不要强杀 Agent、apt 或 dpkg。先完成无冲突的只读工作。
 
-仅在症状匹配时读取 [已验证故障与限制](references/incidents.md)：Wi-Fi/DNS、sing-box 更新后启动、sudo provider、DHCP 后局域网接管、接口变化与 SSH、根盘 I/O。历史版本、IP、文件哈希是当时证据，不是未来兼容条件。
+仅在症状匹配时读取 [已验证故障与限制](references/incidents.md)：Wi-Fi/DNS、sing-box 更新后启动、sudo provider、DHCP 后局域网接管、接口变化与 SSH、根盘 I/O、远程开发只能经 Tailscale 中继。历史版本、IP、文件哈希是当时证据，不是未来兼容条件。
 
 ## 建立少量、有界的基线
 
